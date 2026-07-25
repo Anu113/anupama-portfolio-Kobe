@@ -27,6 +27,7 @@
 
   /* --- SPACE -------------------------------------------- */
   --space-section: clamp(5rem, 12vw, 11rem);
+  --space-band-tight: clamp(2rem, 4vw, 3.5rem);  /* band that sits under its own heading */
   --gutter: clamp(1.25rem, 4vw, 4rem);
   --measure: 62ch;
 
@@ -50,6 +51,9 @@
   --fg-dim: #a2968a;
   --accent: #e8613c;
   --rule: #322a24;
+  --shell: #0e0b09; 
+  --screen: #1e1814; 
+  --accent-text: #e8613c;
 }
 
 [data-theme='sand'] {
@@ -57,7 +61,10 @@
   --fg: #2f7d45;          /* green — display type only */
   --fg-dim: #276237;      /* darker green — passes AA at body size */
   --accent: #2f7d45;
-  --rule: #c4ac89;
+  --rule: #c4ac89; 
+  --shell: #17120f; 
+  --screen: #d8bd95; 
+  --accent-text: #276237;
 }
 
 [data-theme='bone'] {
@@ -66,6 +73,9 @@
   --fg-dim: #5d534a;
   --accent: #e8613c;
   --rule: #ddd2c3;
+  --shell: #17120f;
+  --screen: #e8dece;
+  --accent-text: #a83a19;
 }
 
 [data-theme='clay'] {
@@ -74,4 +84,7 @@
   --fg-dim: #c3a99f;
   --accent: #e3caa5;
   --rule: #6b3d34;
+  --shell: #17120f; 
+  --screen: #3b1d18; 
+  --accent-text: #e3caa5;
 }

@@ -2,20 +2,33 @@
 import Base from '../layouts/Base.astro';
 import Section from '../components/Section.astro';
 import Reveal from '../components/Reveal.astro';
-import DragRail from '../components/DragRail.astro';
-import CaseCard from '../components/CaseCard.astro';
+
 import OneWord from '../components/OneWord.astro';
 import Mosaic from '../components/Mosaic.astro';
+import CasePreview from '../components/CasePreview.astro';
+
 import { site } from '../data/site';
 
 // Placeholder tiles — swap image paths once real assets land in /public/images.
 const work = [
-  { title: 'Rebuilding IAM for enterprise admins', href: '/work/okta-iam', image: '/images/placeholder-1.svg',
-    scope: 'Okta · Led 6 designers', metric: 'Admin task time ↓ [X]%', w: 36 },
-  { title: "PayPal's privacy settings", href: '/work/paypal-privacy', image: '/images/placeholder-2.svg',
-    scope: 'PayPal · Design lead', metric: 'Comprehension ↑ [X]%', w: 28 },
-  { title: 'Scan & Go, in-store', href: '/work/walmart-scan-go', image: '/images/placeholder-3.svg',
-    scope: 'Walmart Labs · End-to-end', metric: 'Ethnographic research → ship', w: 32 },
+  { company: 'Okta', theme: 'ink', device: 'desktop',
+    title: 'Rebuilding IAM for enterprise admins',
+    summary: 'Admins ran identity for thousands of employees through a console built for a smaller company. I led six designers through a rebuild of the core administrative surfaces — no migration freeze.',
+    role: 'Staff Product Designer · Led 6 designers',
+    impact: 'Admin task time down [X]% across the four highest-volume flows',
+    href: '/work/okta-iam', image: '/images/placeholder-1.svg', alt: 'Okta IAM admin console' },
+  { company: 'PayPal', theme: 'bone', device: 'phone',
+    title: 'Privacy settings people can read',
+    summary: 'Data-sharing controls were legally complete and practically unreadable. We rebuilt the model around what a person is deciding, not what the policy document contains.',
+    role: 'Design lead',
+    impact: 'Comprehension up [X]% in unmoderated testing',
+    href: '/work/paypal-privacy', image: '/images/placeholder-2.svg', alt: 'PayPal privacy settings' },
+  { company: 'Walmart Labs', theme: 'ink', device: 'phone',
+    title: 'Scan & Go, in-store',
+    summary: 'Six weeks of store-floor ethnography turned a checkout-replacement bet into a shipped product. The research set the scope, and the scope survived three rounds of executive review.',
+    role: 'End-to-end designer',
+    impact: 'Ethnographic research to shipped pilot in [X] stores',
+    href: '/work/walmart-scan-go', image: '/images/placeholder-3.svg', alt: 'Scan & Go' },
 ];
 ---
 <Base title={`${site.name} — Design Leader`}>
@@ -38,16 +51,13 @@ const work = [
     </Reveal>
   </Section>
 
-  <!-- ACT 2 — the work rail, drag to move -->
-  <Section theme="ink" full id="work">
-    <div class="u-shell railhead">
-      <h2 class="u-label">Selected work</h2>
-      <p class="u-label railhead__hint">Drag →</p>
-    </div>
-    <DragRail label="Selected work">
-      {work.map((w) => <CaseCard {...w} />)}
-    </DragRail>
-  </Section>
+  <!-- ACT 2 — selected work, one project per full-bleed band -->
+<Section theme="ink" full id="work" class="workhead-section">
+  <div class="u-shell workhead">
+    <h2 class="u-label">Selected work</h2>
+  </div>
+</Section>
+{work.map((w, i) => <CasePreview {...w} flip={i % 2 === 1} />)}
 
   <!-- ACT 3 — palette flips, the interactive moment -->
   <Section theme="sand" id="approach">
@@ -107,4 +117,16 @@ const work = [
 
   .contact__links { display: flex; gap: 1.5rem; padding-top: 1rem; }
   .contact__links a { color: var(--fg); }
+  
+  .workhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: clamp(1rem, 2vw, 1.5rem); }
+  .workhead__count { font-family: var(--font-accent); font-style: italic; font-size: var(--step-h3); color: var(--fg-dim); margin: 0; }
+
+  /* The "Selected work" label owns the band right below it, so that pair closes
+     up: no section padding underneath, and the first band drops its own top
+     padding plus the 88svh centring slack that floated it a screen away.
+     Later bands keep both. :global — these two elements are rendered by
+     Section.astro / CasePreview.astro, so they don't carry this page's scope. */
+  :global(.workhead-section) { padding-bottom: 0; }
+  :global(.workhead-section + .band) { padding-top: var(--space-band-tight); min-height: auto; }
+
 </style>
