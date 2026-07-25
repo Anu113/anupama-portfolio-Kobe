@@ -9,6 +9,18 @@ const { title, description = 'Anupama Mishra — design leader. Design Manager &
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Day/night mode is resolved before first paint so a returning
+         visitor never sees the wrong palette flash. Runs inline on
+         purpose — do not move this to a bundled script. -->
+    <script is:inline>
+      (() => {
+        let stored = null;
+        try { stored = localStorage.getItem('mode'); } catch (e) {}
+        document.documentElement.dataset.mode =
+          stored ||
+          (matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day');
+      })();
+    </script>
     <title>{title}</title>
     <meta name="description" content={description} />
     <!-- Indexable. The Wix site was serving noindex — do not reintroduce it. -->

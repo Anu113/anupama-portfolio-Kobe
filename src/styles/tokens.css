@@ -84,7 +84,52 @@
   --fg-dim: #c3a99f;
   --accent: #e3caa5;
   --rule: #6b3d34;
-  --shell: #17120f; 
-  --screen: #3b1d18; 
+  --shell: #17120f;
+  --screen: #3b1d18;
   --accent-text: #e3caa5;
+}
+
+/* ============================================================
+   NIGHT MODE — a second dimension on top of the four themes.
+   `data-mode="night"` on <html> (set by the nav toggle) restates
+   each palette after dark. Still the same four themes, not new ones.
+   ============================================================ */
+
+/* Ink is the hero band (and the work head + mosaic — they share the
+   theme, so all three turn together). By day it's a warm near-black;
+   at night it cools to midnight so the flip is legible, not just a
+   shade darker. The orange accent stays — it's the through-line. */
+[data-mode='night'] [data-theme='ink'] {
+  --bg: #0e1119;          /* midnight */
+  --fg: #eceef4;          /* cream, cooled — 16.3:1 */
+  --fg-dim: #9aa1b0;      /* 7.3:1 */
+  --accent: #e8613c;
+  --rule: #232838;
+  --shell: #070910;
+  --screen: #151a26;
+  --accent-text: #e8613c; /* 5.6:1 on --bg */
+}
+
+[data-mode='night'] [data-theme='bone'] {
+  --bg: #1b1512;
+  --fg: #f4ece1;
+  --fg-dim: #a2968a;
+  --accent: #e8613c;
+  --rule: #362d27;
+  --shell: #0e0b09;
+  --screen: #241d18;
+  --accent-text: #e8613c;   /* 5.3:1 on --bg */
+}
+
+/* Sand keeps its two greens — inverted. --fg is the display green,
+   --fg-dim the body green. Both clear AA on the dark ground. */
+[data-mode='night'] [data-theme='sand'] {
+  --bg: #16211b;
+  --fg: #8fd6a4;            /* display type only — 9.7:1 */
+  --fg-dim: #a9dfb9;        /* body copy — brighter, 11:1 */
+  --accent: #8fd6a4;
+  --rule: #2a3b30;
+  --shell: #0e0b09;
+  --screen: #1b291f;
+  --accent-text: #a9dfb9;
 }

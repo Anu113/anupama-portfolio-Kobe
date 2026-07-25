@@ -23,6 +23,12 @@ body {
               color var(--dur-hover) var(--ease-out);
 }
 
+/* Themed bands cross-fade when night mode is toggled. */
+[data-themeband] {
+  transition: background var(--dur-hover) var(--ease-out),
+              color var(--dur-hover) var(--ease-out);
+}
+
 /* --- Reusable type roles ---------------------------------- */
 .u-display {
   font-family: var(--font-display);
