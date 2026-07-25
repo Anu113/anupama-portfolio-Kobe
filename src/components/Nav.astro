@@ -1,6 +1,10 @@
 ---
 /* Fixed nav, top-right, matching the reference. It watches which
-   themed section is behind it and adopts that palette. */
+   themed section is behind it and adopts that palette.
+   Also carries the day/night toggle: a sun that swings into a
+   crescent with two stars. It flips `data-mode` on <html>, which
+   darkens the light bands (see the night block in tokens.css) and
+   is remembered in localStorage. First visit follows the OS setting. */
 const links = [
   { label: 'Work', href: '/work' },
   { label: 'Approach', href: '/approach' },
@@ -9,11 +13,49 @@ const links = [
 ---
 <header class="nav" data-theme="ink" id="site-nav">
   <a class="nav__mark" href="/">A.</a>
-  <nav aria-label="Primary">
-    <ul>
-      {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
-    </ul>
-  </nav>
+  <div class="nav__right">
+    <nav aria-label="Primary">
+      <ul>
+        {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </nav>
+    <button
+      type="button"
+      id="mode-toggle"
+      class="nav__mode"
+      aria-pressed="false"
+      aria-label="Night mode"
+    >
+      <svg class="mode" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <!-- The mask's #fff / #000 are keep/cut values, not palette
+             colours — everything visible is currentColor. -->
+        <mask id="mode-crescent">
+          <rect x="0" y="0" width="24" height="24" fill="#fff" />
+          <circle class="mode__bite" cx="12" cy="12" r="5.4" fill="#000" />
+        </mask>
+        <circle
+          class="mode__core"
+          cx="12" cy="12" r="5.4"
+          fill="currentColor"
+          mask="url(#mode-crescent)"
+        />
+        <g class="mode__rays" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <line x1="12" y1="4" x2="12" y2="1.5" />
+          <line x1="17.66" y1="6.34" x2="19.42" y2="4.58" />
+          <line x1="20" y1="12" x2="22.5" y2="12" />
+          <line x1="17.66" y1="17.66" x2="19.42" y2="19.42" />
+          <line x1="12" y1="20" x2="12" y2="22.5" />
+          <line x1="6.34" y1="17.66" x2="4.58" y2="19.42" />
+          <line x1="4" y1="12" x2="1.5" y2="12" />
+          <line x1="6.34" y1="6.34" x2="4.58" y2="4.58" />
+        </g>
+        <g class="mode__stars" fill="currentColor">
+          <circle class="mode__star" cx="18.8" cy="5.2" r="1.1" />
+          <circle class="mode__star" cx="21.3" cy="9.4" r="0.7" />
+        </g>
+      </svg>
+    </button>
+  </div>
 </header>
 
 <style>
@@ -26,7 +68,12 @@ const links = [
     transition: color var(--dur-hover) var(--ease-out);
     pointer-events: none;
   }
-  .nav a { pointer-events: auto; }
+  .nav a,
+  .nav button { pointer-events: auto; }
+  .nav__right {
+    display: flex; align-items: center;
+    gap: clamp(1.25rem, 3vw, 2.75rem);
+  }
   .nav__mark {
     font-family: var(--font-display); font-size: 1.1rem; font-weight: 600;
     text-decoration: none; color: inherit;
@@ -50,9 +97,91 @@ const links = [
     transition: transform var(--dur-hover) var(--ease-out);
   }
   .nav nav a:hover::after { transform: scaleX(1); }
+
+  /* --- Day / night toggle ---------------------------------- */
+  .nav__mode {
+    display: grid; place-items: center;
+    width: 2.5rem; height: 2.5rem;   /* 40px — comfortable tap target */
+    margin: -0.5rem;                 /* keeps the icon optically aligned */
+    padding: 0; border: 0; background: none;
+    color: inherit; cursor: pointer;
+    border-radius: 50%;
+  }
+  .mode {
+    width: 1.25rem; height: 1.25rem;
+    overflow: visible;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .nav__mode:hover .mode { transform: rotate(18deg); }
+
+  .mode__core,
+  .mode__bite,
+  .mode__rays,
+  .mode__star {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform var(--dur-hover) var(--ease-out),
+                opacity var(--dur-hover) var(--ease-out);
+  }
+  /* Day: the bite is parked off-canvas, rays are out, stars hidden. */
+  .mode__bite { transform: translate(13px, -13px); }
+  .mode__rays { opacity: 1; transform: scale(1) rotate(0deg); }
+  .mode__star { opacity: 0; transform: scale(0.2); }
+
+  /* Night: the bite slides in to carve the crescent, rays tuck away,
+     stars pop in just behind it. */
+  :global([data-mode='night']) .mode__bite { transform: translate(4.8px, -3.4px); }
+  :global([data-mode='night']) .mode__rays { opacity: 0; transform: scale(0.45) rotate(-45deg); }
+  :global([data-mode='night']) .mode__star { opacity: 1; transform: scale(1); }
+  :global([data-mode='night']) .mode__star:nth-child(2) { transition-delay: 90ms; }
 </style>
 
 <script>
+  // Day/night toggle. The mode itself is set before paint in Base.astro;
+  // this only flips it, remembers the choice, and keeps aria-pressed honest.
+  const root = document.documentElement;
+  const toggle = document.getElementById('mode-toggle');
+
+  // A soft tick on toggle. Synthesised with Web Audio — no audio file to
+  // load, ~100ms. The pitch falls going to night and rises going to day,
+  // so the sound says which way you went. Silenced under
+  // prefers-reduced-motion: it's the closest signal the platform gives
+  // for "less sensory noise, please".
+  let audio = null;
+  const tick = (toNight) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.AudioContext) return;
+    try {
+      audio = audio || new AudioContext();
+      if (audio.state === 'suspended') audio.resume();
+      const t = audio.currentTime;
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(toNight ? 1046 : 659, t);
+      osc.frequency.exponentialRampToValueAtTime(toNight ? 523 : 1318, t + 0.07);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.05, t + 0.006);   // quiet on purpose
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+      osc.connect(gain).connect(audio.destination);
+      osc.start(t);
+      osc.stop(t + 0.1);
+    } catch (e) { /* audio is a nicety — never let it break the toggle */ }
+  };
+
+  if (toggle) {
+    const sync = () =>
+      toggle.setAttribute('aria-pressed', String(root.dataset.mode === 'night'));
+    sync();
+    toggle.addEventListener('click', () => {
+      const next = root.dataset.mode === 'night' ? 'day' : 'night';
+      root.dataset.mode = next;
+      try { localStorage.setItem('mode', next); } catch (e) {}
+      sync();
+      tick(next === 'night');
+    });
+  }
+
   // Nav adopts the theme of the section currently under it.
   const nav = document.getElementById('site-nav');
   const bands = [...document.querySelectorAll('[data-themeband]')];
