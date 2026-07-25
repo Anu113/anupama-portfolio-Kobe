@@ -1,0 +1,64 @@
+---
+/* The asymmetric full-bleed image grid from the reference.
+   Tiles anchor to a viewport edge and get cropped by it.
+   Usage:
+   <Mosaic items={[
+     { src:'/images/a.jpg', alt:'…', edge:'left',   w:42, y:0  },
+     { src:'/images/b.jpg', alt:'…', edge:'right',  w:38, y:-6 },
+     { src:'/images/c.jpg', alt:'…', edge:'center', w:58, y:12 },
+   ]} /> */
+interface Item { src: string; alt: string; edge?: 'left' | 'right' | 'center'; w?: number; y?: number; ratio?: string; }
+interface Props { items: Item[]; }
+const { items } = Astro.props;
+---
+<div class="mosaic">
+  {items.map((it, i) => (
+    <figure
+      class="mosaic__item"
+      data-edge={it.edge ?? 'center'}
+      data-parallax={i % 2 === 0 ? '0.06' : '-0.04'}
+      style={`--w:${it.w ?? 44}vw; --y:${it.y ?? 0}vh; --ratio:${it.ratio ?? '4/3'};`}
+    >
+      <img src={it.src} alt={it.alt} loading="lazy" decoding="async" />
+    </figure>
+  ))}
+</div>
+
+<style>
+  .mosaic { display: flex; flex-direction: column; gap: clamp(2rem, 8vh, 7rem); }
+  .mosaic__item {
+    margin: 0; width: var(--w); translate: 0 var(--y);
+    aspect-ratio: var(--ratio); overflow: hidden;
+    border-radius: var(--radius);
+  }
+  .mosaic__item[data-edge='left']   { align-self: flex-start; margin-left: calc(var(--gutter) * -1); }
+  .mosaic__item[data-edge='right']  { align-self: flex-end;   margin-right: calc(var(--gutter) * -1); }
+  .mosaic__item[data-edge='center'] { align-self: center; }
+  .mosaic__item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  @media (max-width: 700px) {
+    .mosaic__item { width: 86vw; translate: none; align-self: center; margin-inline: 0; }
+  }
+</style>
+
+<script>
+  // Light parallax drift. Skipped entirely under reduced-motion.
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const els = [...document.querySelectorAll('[data-parallax]')];
+    let raf = null;
+    const tick = () => {
+      const vh = innerHeight;
+      els.forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < -200 || r.top > vh + 200) return;
+        const k = parseFloat(el.dataset.parallax || '0');
+        const progress = (r.top + r.height / 2 - vh / 2) / vh;
+        el.style.setProperty('--px', `${progress * k * 100}px`);
+        el.style.translate = `0 calc(var(--y) + var(--px, 0px))`;
+      });
+      raf = null;
+    };
+    addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
+    tick();
+  }
+</script>

@@ -1,0 +1,68 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+@font-face {
+  font-family: 'General Sans';
+  src: url('https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap');
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--step-body);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background var(--dur-hover) var(--ease-out),
+              color var(--dur-hover) var(--ease-out);
+}
+
+/* --- Reusable type roles ---------------------------------- */
+.u-display {
+  font-family: var(--font-display);
+  font-size: var(--step-display);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+  font-weight: 500;
+  margin: 0;
+  text-wrap: balance;
+}
+.u-display em,
+.u-accent {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.u-label {
+  font-size: var(--step-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--fg-dim);
+}
+.u-measure { max-width: var(--measure); }
+
+/* --- Layout ----------------------------------------------- */
+.u-shell { padding-inline: var(--gutter); }
+.u-section { padding-block: var(--space-section); }
+
+/* --- Focus + reduced motion (do not remove) --------------- */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
+}

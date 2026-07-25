@@ -1,0 +1,116 @@
+---
+/* The interactive headline from the reference: a word in the display
+   type is typed by the visitor. Small, memorable, and it doubles as
+   proof of front-end craft.
+   Change the copy via props — no code edits needed. */
+interface Props {
+  before?: string;
+  after?: string;
+  seed?: string;
+  prompt?: string;
+  suggestions?: string[];
+}
+const {
+  before = 'The best design teams are',
+  after = '.',
+  seed = 'candid',
+  prompt = 'Type one word',
+  suggestions = ['candid', 'unblocked', 'opinionated', 'trusted', 'fast'],
+} = Astro.props;
+---
+<div class="oneword" data-oneword>
+  <h2 class="u-display oneword__line">
+    <span>{before}</span>{' '}
+    <span class="oneword__slot">
+      <em data-oneword-out>{seed}</em>
+      <input
+        data-oneword-in
+        type="text"
+        value={seed}
+        maxlength="14"
+        aria-label={`${prompt} to complete the sentence: ${before} …${after}`}
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </span><span>{after}</span>
+  </h2>
+
+  <div class="oneword__aside">
+    <svg class="oneword__arrow" viewBox="0 0 120 90" fill="none" aria-hidden="true">
+      <path d="M6 4C6 34 10 62 34 74c18 9 52 10 80 10" stroke="currentColor" stroke-width="3"
+            stroke-linecap="round" pathLength="1" />
+    </svg>
+    <p class="u-label oneword__prompt">{prompt}</p>
+    <ul class="oneword__chips">
+      {suggestions.map((s) => <li><button type="button" data-oneword-chip={s}>{s}</button></li>)}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .oneword { display: grid; gap: clamp(1.5rem, 4vw, 3rem); }
+  .oneword__line { position: relative; }
+
+  /* The input sits invisibly on top of the rendered word and is sized
+     to match it, so editing feels like typing straight into the headline. */
+  .oneword__slot { position: relative; display: inline-block; }
+  .oneword__slot em {
+    font-family: var(--font-accent); font-style: italic;
+    border-bottom: 2px dashed color-mix(in srgb, currentColor 35%, transparent);
+    white-space: pre;
+  }
+  .oneword__slot input {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    font: inherit; font-family: var(--font-accent); font-style: italic;
+    color: transparent; background: transparent; border: 0; padding: 0;
+    caret-color: currentColor;
+    letter-spacing: inherit;
+  }
+  .oneword__slot input:focus { outline: none; }
+  .oneword__slot:focus-within em {
+    border-bottom-style: solid;
+    border-bottom-color: currentColor;
+  }
+
+  .oneword__aside {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    padding-left: clamp(0rem, 22vw, 20rem);
+  }
+  .oneword__arrow { width: clamp(56px, 7vw, 92px); color: var(--fg-dim); flex: 0 0 auto; }
+  .oneword__prompt { margin: 0; }
+  .oneword__chips { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
+  .oneword__chips button {
+    font: inherit; font-size: var(--step-label);
+    letter-spacing: var(--tracking-label); text-transform: uppercase;
+    background: transparent; color: var(--fg-dim);
+    border: 1px solid var(--rule); border-radius: 999px;
+    padding: 0.3rem 0.7rem; cursor: pointer;
+    transition: color var(--dur-hover) var(--ease-out),
+                border-color var(--dur-hover) var(--ease-out);
+  }
+  .oneword__chips button:hover { color: var(--fg); border-color: currentColor; }
+</style>
+
+<script>
+  document.querySelectorAll('[data-oneword]').forEach((root) => {
+    const input = root.querySelector('[data-oneword-in]');
+    const out = root.querySelector('[data-oneword-out]');
+    if (!input || !out) return;
+
+    const fallback = out.textContent || '';
+    const sync = () => { out.textContent = input.value.trim() === '' ? fallback : input.value; };
+
+    input.addEventListener('input', sync);
+    input.addEventListener('blur', () => { if (!input.value.trim()) { input.value = fallback; sync(); } });
+
+    root.querySelectorAll('[data-oneword-chip]').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        input.value = chip.dataset.onewordChip || fallback;
+        sync();
+        input.focus();
+      });
+    });
+  });
+</script>

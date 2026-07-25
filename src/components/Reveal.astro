@@ -1,0 +1,27 @@
+---
+/* Fades + lifts its contents in on scroll. Honours reduced-motion.
+   Usage: <Reveal delay={120}>...</Reveal> */
+interface Props { delay?: number; y?: number; class?: string; }
+const { delay = 0, y = 28, class: cls = '' } = Astro.props;
+---
+<div data-reveal class={cls} style={`--d:${delay}ms; --y:${y}px;`}><slot /></div>
+
+<style>
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(var(--y));
+    transition: opacity var(--dur-reveal) var(--ease-out) var(--d),
+                transform var(--dur-reveal) var(--ease-out) var(--d);
+  }
+  [data-reveal].is-in { opacity: 1; transform: none; }
+</style>
+
+<script>
+  const io = new IntersectionObserver(
+    (entries) => entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+    }),
+    { rootMargin: '0px 0px -12% 0px', threshold: 0.1 }
+  );
+  document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
+</script>

@@ -1,0 +1,110 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Reveal from '../components/Reveal.astro';
+import DragRail from '../components/DragRail.astro';
+import CaseCard from '../components/CaseCard.astro';
+import OneWord from '../components/OneWord.astro';
+import Mosaic from '../components/Mosaic.astro';
+import { site } from '../data/site';
+
+// Placeholder tiles — swap image paths once real assets land in /public/images.
+const work = [
+  { title: 'Rebuilding IAM for enterprise admins', href: '/work/okta-iam', image: '/images/placeholder-1.svg',
+    scope: 'Okta · Led 6 designers', metric: 'Admin task time ↓ [X]%', w: 36 },
+  { title: "PayPal's privacy settings", href: '/work/paypal-privacy', image: '/images/placeholder-2.svg',
+    scope: 'PayPal · Design lead', metric: 'Comprehension ↑ [X]%', w: 28 },
+  { title: 'Scan & Go, in-store', href: '/work/walmart-scan-go', image: '/images/placeholder-3.svg',
+    scope: 'Walmart Labs · End-to-end', metric: 'Ethnographic research → ship', w: 32 },
+];
+---
+<Base title={`${site.name} — Design Leader`}>
+  <!-- ACT 1 — the dark editorial opening -->
+  <Section theme="ink" class="hero">
+    <Reveal>
+      <p class="u-label">{site.seeking}</p>
+    </Reveal>
+    <Reveal delay={120}>
+      <h1 class="u-display hero__line">
+        I build design <em>teams</em><br />that ship the hard things.
+      </h1>
+    </Reveal>
+    <Reveal delay={260}>
+      <p class="u-measure hero__body">
+        Ten years designing and leading. Most recently Staff Product Designer at Okta,
+        where I led a team of six across Identity &amp; Access Management. Before that,
+        PayPal, Walmart Labs, Deloitte Digital and Zomato.
+      </p>
+    </Reveal>
+  </Section>
+
+  <!-- ACT 2 — the work rail, drag to move -->
+  <Section theme="ink" full id="work">
+    <div class="u-shell railhead">
+      <h2 class="u-label">Selected work</h2>
+      <p class="u-label railhead__hint">Drag →</p>
+    </div>
+    <DragRail label="Selected work">
+      {work.map((w) => <CaseCard {...w} />)}
+    </DragRail>
+  </Section>
+
+  <!-- ACT 3 — palette flips, the interactive moment -->
+  <Section theme="sand" id="approach">
+    <OneWord
+      before="The best design teams are"
+      after="."
+      seed="candid"
+      prompt="Type one word"
+      suggestions={['candid', 'unblocked', 'opinionated', 'trusted', 'fast']}
+    />
+    <Reveal delay={200}>
+      <p class="u-measure sand__body">
+        I've spent the last four years learning what actually unblocks a team:
+        clear decision rights, a design system people want to use, and critique
+        that's kind and specific. <a href="/approach">How I run a team →</a>
+      </p>
+    </Reveal>
+  </Section>
+
+  <!-- ACT 4 — full-bleed mosaic, back to dark -->
+  <Section theme="ink" full>
+    <Mosaic items={[
+      { src: '/images/placeholder-1.svg', alt: 'Placeholder — replace with work imagery', edge: 'left', w: 44 },
+      { src: '/images/placeholder-2.svg', alt: 'Placeholder — replace with work imagery', edge: 'right', w: 38, y: -4 },
+      { src: '/images/placeholder-3.svg', alt: 'Placeholder — replace with work imagery', edge: 'center', w: 56, y: 4 },
+    ]} />
+  </Section>
+
+  <!-- ACT 5 — contact -->
+  <Section theme="bone" id="contact">
+    <Reveal>
+      <h2 class="u-display">Open to work.</h2>
+    </Reveal>
+    <Reveal delay={140}>
+      <p class="u-measure">
+        Looking for a Design Manager or Lead UX role where leadership and craft
+        both count.
+      </p>
+      <p class="contact__links">
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+        <a href={site.linkedin}>LinkedIn</a>
+      </p>
+    </Reveal>
+  </Section>
+</Base>
+
+<style>
+  .hero { min-height: 92svh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
+  .hero__line { max-width: 18ch; }
+  .hero__body { color: var(--fg-dim); }
+
+  .railhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 2.5rem; }
+  .railhead__hint { margin: 0; }
+
+  .sand__body { color: var(--fg-dim); font-size: var(--step-h3); }
+  .sand__body a { color: var(--fg); text-decoration: none; border-bottom: 1px solid currentColor; }
+
+  .contact__links { display: flex; gap: 1.5rem; padding-top: 1rem; }
+  .contact__links a { color: var(--fg); }
+</style>

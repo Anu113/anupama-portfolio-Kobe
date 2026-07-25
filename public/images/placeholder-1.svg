@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img">
+  <rect width="800" height="600" fill="#2f7d45"/>
+  <circle cx="400" cy="300" r="150" fill="#e3caa5" opacity="0.5"/>
+  <text x="400" y="310" font-family="system-ui" font-size="26" fill="#e3caa5"
+        text-anchor="middle" letter-spacing="3">REPLACE ME 1</text>
+</svg>

@@ -1,0 +1,77 @@
+/* ============================================================
+   TOKENS — the one file to restyle the whole site.
+   Change a value here and it updates everywhere.
+   ============================================================ */
+
+:root {
+  /* --- TYPE FAMILIES ------------------------------------ */
+  --font-display: 'General Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-accent: 'Instrument Serif', Georgia, serif;   /* the italic word */
+  --font-body: 'General Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* --- TYPE SCALE ---------------------------------------
+     Display sizes use vw so type overflows the viewport
+     the way the reference does. Raise the vw number to
+     make headlines bleed further off-screen.            */
+  --step-display: clamp(3.5rem, 13vw, 15rem);
+  --step-h1: clamp(2.5rem, 7vw, 6rem);
+  --step-h2: clamp(1.75rem, 3.6vw, 3rem);
+  --step-h3: clamp(1.25rem, 2vw, 1.75rem);
+  --step-body: clamp(1rem, 1.15vw, 1.1875rem);
+  --step-label: 0.72rem;
+
+  --tracking-label: 0.14em;
+  --tracking-display: -0.035em;
+  --leading-display: 0.85;
+  --leading-body: 1.6;
+
+  /* --- SPACE -------------------------------------------- */
+  --space-section: clamp(5rem, 12vw, 11rem);
+  --gutter: clamp(1.25rem, 4vw, 4rem);
+  --measure: 62ch;
+
+  /* --- MOTION ------------------------------------------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-reveal: 900ms;
+  --dur-hover: 320ms;
+
+  --radius: 0px;   /* reference is hard-edged. Raise for softer cards. */
+}
+
+/* ============================================================
+   THEMES — each section can wear a different palette.
+   The nav recolours itself to match whatever is behind it.
+   Add a new theme by copying a block and renaming it.
+   ============================================================ */
+
+[data-theme='ink'] {
+  --bg: #17120f;          /* warm near-black */
+  --fg: #f4ece1;          /* cream */
+  --fg-dim: #a2968a;
+  --accent: #e8613c;
+  --rule: #322a24;
+}
+
+[data-theme='sand'] {
+  --bg: #e3caa5;          /* warm sand */
+  --fg: #2f7d45;          /* green — display type only */
+  --fg-dim: #276237;      /* darker green — passes AA at body size */
+  --accent: #2f7d45;
+  --rule: #c4ac89;
+}
+
+[data-theme='bone'] {
+  --bg: #f4ece1;
+  --fg: #17120f;
+  --fg-dim: #5d534a;
+  --accent: #e8613c;
+  --rule: #ddd2c3;
+}
+
+[data-theme='clay'] {
+  --bg: #4a2620;
+  --fg: #f4ece1;
+  --fg-dim: #c3a99f;
+  --accent: #e3caa5;
+  --rule: #6b3d34;
+}

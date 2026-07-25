@@ -1,0 +1,42 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+interface Props { title: string; description?: string; }
+const { title, description = 'Anupama Mishra — design leader. Design Manager & Lead UX Designer.' } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <!-- Indexable. The Wix site was serving noindex — do not reintroduce it. -->
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap"
+    />
+  </head>
+  <body>
+    <a href="#main" class="skip">Skip to content</a>
+    <Nav />
+    <main id="main"><slot /></main>
+    <style>
+      .skip {
+        position: absolute; left: -9999px;
+        background: var(--fg); color: var(--bg);
+        padding: 0.75rem 1rem; z-index: 100;
+      }
+      .skip:focus { left: var(--gutter); top: 1rem; }
+    </style>
+  </body>
+</html>

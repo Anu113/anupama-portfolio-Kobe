@@ -1,0 +1,74 @@
+---
+/* Fixed nav, top-right, matching the reference. It watches which
+   themed section is behind it and adopts that palette. */
+const links = [
+  { label: 'Work', href: '/work' },
+  { label: 'Approach', href: '/approach' },
+  { label: 'Profile', href: '/profile' },
+];
+---
+<header class="nav" data-theme="ink" id="site-nav">
+  <a class="nav__mark" href="/">A.</a>
+  <nav aria-label="Primary">
+    <ul>
+      {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+    </ul>
+  </nav>
+</header>
+
+<style>
+  .nav {
+    position: fixed; inset-inline: 0; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem var(--gutter);
+    color: var(--fg);
+    mix-blend-mode: normal;
+    transition: color var(--dur-hover) var(--ease-out);
+    pointer-events: none;
+  }
+  .nav a { pointer-events: auto; }
+  .nav__mark {
+    font-family: var(--font-display); font-size: 1.1rem; font-weight: 600;
+    text-decoration: none; color: inherit;
+  }
+  .nav ul {
+    display: flex; gap: clamp(1.25rem, 3vw, 2.75rem);
+    list-style: none; margin: 0; padding: 0;
+  }
+  .nav a[href^='/'] { color: inherit; text-decoration: none; }
+  .nav nav a {
+    font-size: var(--step-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    font-weight: 500;
+    position: relative;
+  }
+  .nav nav a::after {
+    content: ''; position: absolute; left: 0; bottom: -4px;
+    width: 100%; height: 1px; background: currentColor;
+    transform: scaleX(0); transform-origin: left;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .nav nav a:hover::after { transform: scaleX(1); }
+</style>
+
+<script>
+  // Nav adopts the theme of the section currently under it.
+  const nav = document.getElementById('site-nav');
+  const bands = [...document.querySelectorAll('[data-themeband]')];
+  if (nav && bands.length) {
+    const pick = () => {
+      const probe = nav.offsetHeight / 2;
+      let current = bands[0];
+      for (const b of bands) {
+        const r = b.getBoundingClientRect();
+        if (r.top <= probe && r.bottom > probe) current = b;
+      }
+      const t = current.getAttribute('data-theme');
+      if (t && nav.getAttribute('data-theme') !== t) nav.setAttribute('data-theme', t);
+    };
+    pick();
+    addEventListener('scroll', pick, { passive: true });
+    addEventListener('resize', pick);
+  }
+</script>
