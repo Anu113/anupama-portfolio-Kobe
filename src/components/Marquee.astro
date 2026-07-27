@@ -1,0 +1,195 @@
+---
+/* Marquee.astro — a row that scrolls itself, forever.
+
+   Used twice on the home page: the logo strip under the hero (`kind="logo"`)
+   and the playground preview near the bottom (`kind="card"`).
+
+   The track holds the items as repeated *sets* and slides left by exactly one
+   set, so the loop has no seam. Spacing lives on each item rather than in a
+   flex `gap` — with a gap, a set is n items plus n-1 gaps and the seam lands
+   a gap short.
+
+   Two sets are rendered server-side, which is enough whenever one set is
+   wider than the screen. Five short wordmarks are not, so a small script
+   measures a set, pins the shift in pixels, and clones sets until the track
+   outruns the container. Without JS the CSS falls back to shifting 50% of a
+   two-set track — the same thing, just without the clones.
+
+   `seconds` is the time to travel one set, not one pass, so adding clones
+   doesn't change the speed.
+
+   Every set after the first is aria-hidden with its links out of the tab
+   order: a screen reader and a keyboard both meet one copy. It pauses on
+   hover and on focus inside it, and under prefers-reduced-motion the
+   animation is off and the row becomes a plain horizontal scroller. */
+interface Item {
+  label: string;
+  /** Mono SVG. Masked in currentColor, so it wears the band's palette. */
+  src?: string;
+  alt?: string;
+  href?: string;
+  w?: number;
+  h?: number;
+}
+interface Props {
+  items: Item[];
+  kind?: 'logo' | 'card';
+  /** Seconds to travel one set. Longer = slower. */
+  seconds?: number;
+  /** What this row is, for the screen reader that meets it. */
+  label: string;
+}
+const { items, kind = 'logo', seconds = 22, label } = Astro.props;
+const sets = [0, 1];
+---
+<div
+  class:list={['mq', `mq--${kind}`]}
+  style={`--mq-dur:${seconds}s`}
+  role="group"
+  aria-label={label}
+  data-marquee
+>
+  <div class="mq__track">
+    {sets.map((s) => (
+      <ul class="mq__set" data-set aria-hidden={s > 0 ? 'true' : undefined}>
+        {items.map((item) => (
+          <li class="mq__item">
+            {kind === 'card' ? (
+              <a class="mq__card" href={item.href} tabindex={s > 0 ? -1 : undefined}>
+                <img
+                  src={item.src}
+                  alt={s > 0 ? '' : (item.alt ?? item.label)}
+                  width={item.w}
+                  height={item.h}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </a>
+            ) : item.src ? (
+              <span
+                class="mq__logo"
+                style={`--logo:url('${item.src}')`}
+                role={s > 0 ? undefined : 'img'}
+                aria-label={s > 0 ? undefined : item.label}
+              ></span>
+            ) : (
+              <span class="mq__word">{item.label}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    ))}
+  </div>
+</div>
+
+<style>
+  .mq { overflow: hidden; }
+  /* One line, always. Every level says nowrap and refuses to shrink — a
+     marquee that wraps or squashes stops being a marquee. */
+  .mq__track {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    width: max-content;
+    animation: mq-run var(--mq-dur) linear infinite;
+  }
+  .mq__set {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mq__item { flex: 0 0 auto; }
+  .mq:hover .mq__track,
+  .mq:focus-within .mq__track { animation-play-state: paused; }
+
+  /* --mq-shift is one set, set in px by the script. The 50% fallback is
+     correct for the two sets that render without it. */
+  @keyframes mq-run {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(calc(-1 * var(--mq-shift, 50%)), 0, 0); }
+  }
+
+  /* --- the logo strip ------------------------------------- */
+  .mq--logo .mq__item { margin-inline-end: clamp(2.5rem, 7vw, 6rem); }
+  .mq__word {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--fg-dim);
+    white-space: nowrap;
+  }
+  .mq__logo {
+    display: block;
+    width: 8rem;
+    height: 1.75rem;
+    background: var(--fg-dim);
+    -webkit-mask: var(--logo) no-repeat center / contain;
+    mask: var(--logo) no-repeat center / contain;
+  }
+
+  /* --- the playground cards -------------------------------- */
+  .mq--card .mq__item { margin-inline-end: clamp(0.75rem, 2vw, 1.25rem); }
+  .mq__card {
+    display: block;
+    width: clamp(190px, 22vw, 280px);
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--screen);
+  }
+  .mq__card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .mq__card:hover img { transform: scale(1.04); }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* animation: none rather than a duration override — the global
+       reduced-motion block forces durations to 0.01ms, which would snap the
+       track to the end of the loop instead of stopping it. */
+    .mq__track { animation: none; }
+    .mq { overflow-x: auto; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-marquee]').forEach((mq) => {
+    const track = mq.querySelector<HTMLElement>('.mq__track');
+    if (!track) return;
+
+    const fit = () => {
+      const first = track.querySelector<HTMLElement>('[data-set]');
+      if (!first) return;
+      const set = first.getBoundingClientRect().width;
+      if (!set) return;   // fonts or images not in yet; the resize pass retries
+
+      // Shift by one whole set, whatever it measures.
+      mq.style.setProperty('--mq-shift', `${set}px`);
+
+      // Enough sets that the track always overruns the container, or the
+      // row would run out mid-loop and leave a gap.
+      const need = Math.ceil(mq.getBoundingClientRect().width / set) + 1;
+      let have = track.querySelectorAll('[data-set]').length;
+      while (have < need) {
+        const copy = first.cloneNode(true) as HTMLElement;
+        copy.setAttribute('aria-hidden', 'true');
+        copy.querySelectorAll('a').forEach((a) => { a.tabIndex = -1; });
+        track.appendChild(copy);
+        have += 1;
+      }
+    };
+
+    fit();
+    addEventListener('resize', fit);
+    // Wordmark widths move when the webfont lands.
+    if ('fonts' in document) document.fonts.ready.then(fit);
+  });
+</script>

@@ -1,0 +1,66 @@
+---
+/* PageHeader.astro — the standing header for every interior page.
+   One structure everywhere: a centred eyebrow, a display title carrying one
+   italic accent word, and optional intro copy beneath. /work and /about wrap
+   it in a <Section>; /playground drops it into its fixed bed. If a page needs
+   a different header, change it here so they all move together — the pages
+   are meant to differ below the fold, not at the top.
+
+   The title arrives as a slot so each page marks its own accent word:
+     <PageHeader label="About me">
+       I lead design teams in <em>enterprise</em> software.
+       <Fragment slot="intro"><p>…</p></Fragment>
+     </PageHeader>
+
+   That <em> is styled by the global `.u-display em` role in global.css, not
+   by this file — slotted content carries the calling page's scope hash, not
+   this component's, so a scoped rule here would never match it. Same reason
+   the intro's <p> rules below are wrapped in :global(). */
+import Reveal from './Reveal.astro';
+
+interface Props { label: string; class?: string; }
+const { label, class: cls = '' } = Astro.props;
+---
+<header class:list={['phead', cls]}>
+  <Reveal>
+    <p class="u-label phead__label">{label}</p>
+  </Reveal>
+  <Reveal delay={120}>
+    <h1 class="u-display phead__title"><slot /></h1>
+  </Reveal>
+  {Astro.slots.has('intro') && (
+    <Reveal delay={240}>
+      <div class="phead__intro"><slot name="intro" /></div>
+    </Reveal>
+  )}
+</header>
+
+<style>
+  .phead {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    text-align: center;
+  }
+  .phead__label { margin: 0; }
+
+  /* Overrides .u-display, which is sized for the home-page hero. The scope
+     hash gives these the specificity to win. */
+  .phead__title {
+    font-size: var(--step-h1);
+    line-height: 1;
+    font-weight: 500;
+    max-width: 18ch;
+    margin: 0;
+  }
+
+  /* Tighter than --measure: centred copy needs shorter lines than
+     left-aligned copy to stay readable. */
+  .phead__intro {
+    max-width: 52ch;
+    color: var(--fg-dim);
+  }
+  .phead__intro :global(p) { margin: 0 0 1rem; }
+  .phead__intro :global(p:last-child) { margin-bottom: 0; }
+</style>

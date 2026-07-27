@@ -1,0 +1,165 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Reveal from '../components/Reveal.astro';
+import PageHeader from '../components/PageHeader.astro';
+import InfiniteStream from '../components/InfiniteStream.astro';
+
+import { tiles } from '../data/play';
+---
+<!-- No cursor trail here: the stream is a two-axis pannable field and wears
+     the grab/grabbing hand instead. See the note on Base's `trail` prop. -->
+<Base
+  title="Playground — Anupama Mishra"
+  description="Sketches, motion studies and interface experiments by Anupama Mishra."
+  trail={false}
+>
+  <!-- The heading is the page's ground: a fixed, full-viewport layer that
+       never moves, with the stream scrolling over it. Same construction as
+       the reference — fixed layer at z-index 0, transparent gallery above
+       it. It is NOT a <Section>: Section paints an opaque background, which
+       would hide the text completely. No data-themeband either, or a layer
+       that always covers the probe point would fight the nav's colour
+       watching; the stream below carries the band instead. -->
+  <div class="playbed" data-theme="bone">
+    <div class="playbed__inner">
+      <PageHeader label="The playground">
+        A place for <em>endless</em> experimentation
+      </PageHeader>
+    </div>
+  </div>
+
+  <div class="playstream" data-theme="bone" data-themeband>
+    <div class="playstream__shell">
+      <InfiniteStream items={tiles} />
+    </div>
+  </div>
+
+  <Section theme="ink" class="playcoda">
+    <Reveal>
+      <p class="u-label">End of the loop</p>
+      <h2 class="playcoda__title">The rest is still in progress.</h2>
+      <p class="u-measure playcoda__body">
+        Sketches, motion studies and interface experiments — no brief, no
+        stakeholders. The work with outcomes attached is in
+        <a href="/work">selected work</a>.
+      </p>
+    </Reveal>
+  </Section>
+</Base>
+
+<style>
+  /* The bed: the heading, pinned. It also paints the page's ground, since
+     the stream above it is transparent and nothing else is behind. */
+  .playbed {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--fg);
+    /* the band cross-fade the themed sections get, since this one is
+       hand-rolled rather than a <Section> */
+    transition: background var(--dur-hover) var(--ease-out),
+                color var(--dur-hover) var(--ease-out);
+  }
+  /* Only the type fades on the way out — the bed itself keeps painting the
+     ground, or the page would end on bare white. */
+  /* Just the fade target and the gutter now — the type inside is PageHeader,
+     the same header /work and /about carry. The script below sets opacity on
+     this element, so it has to stay. */
+  .playbed__inner {
+    padding-inline: var(--gutter);
+    opacity: 1;
+    /* Short enough not to lag the scroll-linked value, long enough to smooth
+       the one step it can take: the frame the stream caps on, where the
+       heading goes from held-at-full to wherever the ramp already is. */
+    transition: opacity 150ms linear;
+  }
+
+  /* The stream rides over the bed. Transparent on purpose — the tiles are
+     the only opaque things, so the heading shows through the gaps the whole
+     way down. The first screen is empty so the heading is alone above the
+     fold, the way it is on the reference. */
+  .playstream {
+    position: relative;
+    z-index: 1;
+    padding-bottom: var(--space-section);
+  }
+  /* The opening screen is empty FIELD, not empty page — so the lead-in sits
+     inside the stream rather than on the wrapper around it. That is what puts
+     the grab hand over the heading and lets a drag start there: this layer
+     covers the banner (the heading itself is fixed behind it at z-index 0),
+     so whatever owns this box owns the gesture. With the padding out here the
+     banner was a plain arrow that grabbed nothing. */
+  .playstream :global([data-stream]) {
+    padding-top: 100svh;
+  }
+  /* Full-bleed, unlike every other page's content. The horizontal wrap needs
+     the field to be at least as wide as the viewport — inside a 1200px
+     column you'd be panning tiles through a window, and the seam between a
+     set and its twin would land on screen. */
+  .playstream__shell {
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  /* The closing band is opaque, so it slides up over the heading and ends
+     the loop rather than letting it sit under the footer. */
+  :global(.playcoda) { position: relative; z-index: 1; }
+
+  .playcoda__title {
+    font-family: var(--font-display);
+    font-size: var(--step-h2);
+    letter-spacing: var(--tracking-display);
+    font-weight: 500;
+    margin: 0.75rem 0 1rem;
+  }
+  .playcoda__body { color: var(--fg-dim); }
+</style>
+
+<script>
+  /* The heading fades out over the last screen and a half, so the closing
+     band arrives on a clear ground instead of sliding over live type.
+     (The reference never touches opacity — its footer simply covers the
+     text. A fade reads calmer here, where the band underneath is a
+     different palette.) Driven straight off scroll position rather than a
+     transition, so it tracks the scrollbar in both directions. */
+  const bed = document.querySelector<HTMLElement>('.playbed__inner');
+  const coda = document.querySelector<HTMLElement>('.playcoda');
+  const stream = document.querySelector<HTMLElement>('[data-stream]');
+
+  if (bed && coda) {
+    let queued = false;
+
+    const fade = () => {
+      queued = false;
+      // Hold at full while the stream is still growing. Until it caps, the
+      // closing band is not where it will end up — on a refresh that
+      // restores a scrolled position the page still has only its seed rows,
+      // which used to put the band at the fold and blank the heading until
+      // the first scroll appended enough to push it back down.
+      if (stream && !stream.hasAttribute('data-full')) {
+        bed.style.opacity = '1';
+        return;
+      }
+      // How far the closing band still has to travel to reach the fold.
+      // A screen and a half out the type is solid; when the band lands, gone.
+      const lead = innerHeight * 1.5;
+      const togo = coda.getBoundingClientRect().top - innerHeight;
+      bed.style.opacity = Math.max(0, Math.min(1, togo / lead)).toFixed(3);
+    };
+
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(fade);
+    };
+
+    fade();
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll);
+  }
+</script>

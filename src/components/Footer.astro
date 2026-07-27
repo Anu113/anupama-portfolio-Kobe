@@ -1,0 +1,215 @@
+---
+/* The footer closing every page, in `Base.astro` below <main>.
+   Three rows, top to bottom:
+     1. a hairline rule, then three columns — who she is, how to reach her,
+        and the ask ("Building something complicated? Let's talk.")
+     2. a meta line — her city and a live clock in HER timezone, the credit,
+        the copyright
+     3. the wordmark, full-bleed across the bottom
+   It is a themed band (data-themeband) so the nav recolours over it, and it
+   wears `ink` on every page so the site always closes on the same note.
+
+   The wordmark is SVG with textLength set to the viewBox width: it spans the
+   page exactly at any width, and it can't wrap or overflow if General Sans
+   fails to load — the fallback face just gets tracked to fit instead. */
+import { site } from '../data/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer id="site-footer" data-theme="ink" data-themeband class="foot">
+  <div class="foot__top u-shell">
+    <p class="foot__bio">
+      {site.name} is a staff product designer working in identity, access and
+      enterprise software — most recently at Okta, on the console enterprises
+      use to run identity for thousands of employees, where she also led a team
+      of six. Currently looking for a {site.ask}.
+    </p>
+
+    <div class="foot__contact">
+      <p class="u-label foot__eyebrow">Get in touch</p>
+      <ul class="foot__links">
+        <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+        <li><a href={site.linkedin} rel="me">LinkedIn</a></li>
+      </ul>
+    </div>
+
+    <p class="foot__cta">
+      Building something complicated?<br />
+      <em>Let's talk.</em>
+    </p>
+  </div>
+
+  <div class="foot__meta u-shell">
+    <p class="foot__where u-label">
+      <span>{site.location}</span>
+      <!-- Filled by the script below; the dashes are what a visitor with no
+           JS sees, which is honest about a clock that can't tick. -->
+      <span class="foot__clock" data-clock={site.timezone}>--:--:--</span>
+    </p>
+
+    <p class="foot__credit u-label">
+      Designed + coded with <span class="foot__heart" aria-hidden="true">♡</span
+      ><span class="foot__vh">love</span> by {site.name.split(' ')[0]}
+    </p>
+
+    <p class="foot__legal u-label">
+      © {year}, {site.name}<br />All rights reserved
+    </p>
+  </div>
+
+  <div class="foot__mark" aria-hidden="true">
+    <svg viewBox="0 0 1700 250" role="presentation" focusable="false">
+      <defs>
+        <!-- currentColor at two opacities, so the mark recolours with the
+             band instead of carrying a hex of its own. -->
+        <linearGradient id="footmark" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stop-color="currentColor" stop-opacity="0.26" />
+          <stop offset="1" stop-color="currentColor" stop-opacity="0.09" />
+        </linearGradient>
+      </defs>
+      <text
+        x="0"
+        y="200"
+        textLength="1700"
+        lengthAdjust="spacing"
+        fill="url(#footmark)"
+      >{site.name.toUpperCase()}</text>
+    </svg>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    background: var(--bg);
+    color: var(--fg);
+    border-top: 1px solid var(--rule);
+    /* The playground paints its heading on a fixed layer at z-index 0.
+       A static footer would be painted under it — stay positioned. */
+    position: relative;
+    z-index: 1;
+    padding-top: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  /* --- Row 1: bio | contact | ask ------------------------------------ */
+  .foot__top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.8fr) minmax(0, 1.1fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+  }
+
+  .foot__bio {
+    margin: 0;
+    max-width: 46ch;
+    font-size: var(--step-small);
+    color: var(--fg-dim);
+  }
+
+  .foot__eyebrow { margin: 0 0 1rem; }
+
+  .foot__links { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+  .foot__links a {
+    font-size: var(--step-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--fg);
+    text-decoration: none;
+    /* Underline sits off the baseline rather than through the descenders,
+       and it's the hover target as well — colour alone never carries it. */
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 0.2em;
+    transition: color var(--dur-hover) var(--ease-out);
+  }
+  .foot__links a:hover { color: var(--accent-text); }
+
+  .foot__cta {
+    margin: 0;
+    justify-self: end;
+    text-align: right;
+    font-family: var(--font-accent);
+    /* Sized off the column, not off the page: at --step-h2 the first line
+       wraps inside a third of the grid, which turns two lines into three. */
+    font-size: clamp(var(--step-h3), 2.6vw, var(--step-h2));
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+  }
+  .foot__cta em { font-style: italic; }
+
+  /* --- Row 2: city + clock, credit, copyright ------------------------ */
+  .foot__meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem clamp(2rem, 5vw, 4rem);
+    padding-top: clamp(3rem, 7vw, 6rem);
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+  }
+
+  .foot__where,
+  .foot__credit,
+  .foot__legal { margin: 0; }
+
+  .foot__where {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    color: var(--fg);
+  }
+  /* Tabular figures so the seconds don't shuffle the line every tick. */
+  .foot__clock { font-variant-numeric: tabular-nums; letter-spacing: 0.06em; }
+
+  .foot__legal { text-align: right; }
+
+  .foot__heart {
+    display: inline-block;
+    padding-inline: 0.15em;
+    transform: translateY(0.05em);
+    font-size: 1.1em;
+  }
+
+  .foot__vh {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* --- Row 3: the wordmark ------------------------------------------- */
+  .foot__mark { padding-inline: var(--gutter); }
+  .foot__mark svg { display: block; width: 100%; height: auto; }
+  .foot__mark text {
+    font-family: var(--font-display);
+    font-size: 200px;   /* SVG user units, not screen px — the viewBox scales it */
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .foot__top { grid-template-columns: 1fr; gap: 2.5rem; }
+    .foot__cta { justify-self: start; text-align: left; }
+    .foot__meta { flex-direction: column; align-items: flex-start; }
+    .foot__legal { text-align: left; }
+  }
+</style>
+
+<script>
+  // The clock reads in her timezone, not the visitor's — that's the point of
+  // putting a city next to it. A bad zone string throws in the constructor;
+  // if that happens the dashes stay rather than the page breaking.
+  const el = document.querySelector<HTMLElement>('.foot__clock');
+  if (el?.dataset.clock) {
+    try {
+      const fmt = new Intl.DateTimeFormat('en-GB', {
+        timeZone: el.dataset.clock,
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+      });
+      const tick = () => { el.textContent = fmt.format(new Date()); };
+      tick();
+      setInterval(tick, 1000);
+    } catch (e) { /* leave the placeholder in place */ }
+  }
+</script>
