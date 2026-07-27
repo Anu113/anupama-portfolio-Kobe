@@ -1,0 +1,560 @@
+---
+/* InfiniteStream.astro — the playground's endless collage, on two axes.
+
+   Structure follows the reference (allierho.com/playground): a stack of
+   rows, each row a set of columns, each column drifting at its own rate as
+   you scroll. Nothing is absolutely positioned — the scatter comes from
+   per-tile width and alignment, and from columns starting at different
+   heights.
+
+   VERTICAL is the document's own scroll. A sentinel below the last row
+   clones an earlier row and appends it, so the scroll never bottoms out
+   until `maxRows`. The rows rendered server-side are the real gallery and
+   carry alt text; every cloned repeat is aria-hidden, so a screen reader
+   hears the set once and then lands on whatever follows the stream instead
+   of an endless loop.
+
+   HORIZONTAL is a pan, borrowed from the moodboard on
+   meagandurlak.com/case-studies (`case-studies/js/moodboard.js`): grab the
+   field and it moves under the cursor, with inertia on release. Each row
+   renders its column set TWICE — the second copy is aria-hidden — and the
+   pan wraps by exactly the distance between the two, so the field repeats
+   seamlessly instead of running out. Rows carry a fixed fractional offset
+   so they don't slide as one slab. The two copies are identical on purpose:
+   that is what makes the seam invisible.
+
+   The two axes are separate gestures, not one. A wheel goes to whichever
+   axis dominates it — sideways scrolls the field, up and down is handed
+   back to the browser untouched, and native scrolling is what keeps
+   everything below the stream reachable. (A drag is the exception, because
+   direct manipulation has to follow the hand: it pans and scrolls at once.)
+
+   Motion is a single rAF-throttled handler. Under prefers-reduced-motion
+   the drift and the release inertia both switch off; drag, wheel and arrow
+   keys still pan, because those are the visitor's own hand, not motion. */
+/* `w` / `h` are the image's own pixel dimensions. They go straight onto the
+   <img> so every tile reserves its space before it loads — without them a
+   lazy-loaded tile has zero height, which both shifts the layout and stops
+   the sentinel from ever being pushed out of view. */
+interface Item { src: string; alt: string; w: number; h: number }
+interface Props {
+  items: Item[];
+  /** Distinct rows rendered server-side. These are what JS cycles through. */
+  rows?: number;
+  /** Stop appending here, so the page has an end even though it reads endless. */
+  maxRows?: number;
+  columns?: number;
+  label?: string;
+}
+/* Density is measured off the reference (allierho.com/playground, read at a
+   1280 viewport): 10 bands over ~10,300px, 2.2 tiles a band and never four,
+   ~592px of empty between one band and the next, tiles averaging a quarter
+   of the viewport wide, and 0–77px of stagger inside a band. The numbers
+   below are set to land on that — the empty space is the point, so resist
+   filling it. `maxRows` is 12 because the reference has ten bands and every
+   row here carries two copies of its slots for the horizontal wrap. */
+const {
+  items,
+  rows = 5,
+  maxRows = 12,
+  columns = 3,
+  label = 'Playground collage — drag, scroll sideways or use the arrow keys to pan',
+} = Astro.props;
+
+/* Which slots in a band actually carry a tile. This is what makes the field
+   loose: the reference runs 3, 2, 2, 3 and drops to a single tile twice in
+   ten bands, so a filled grid reads as clutter beside it. Eleven slots over
+   five bands, against ten pieces of art. */
+const occupancy = [
+  [1, 1, 1],
+  [1, 0, 1],
+  [0, 1, 0],
+  [1, 1, 1],
+  [0, 1, 1],
+];
+
+/* Width, alignment and vertical offset cycle on three different lengths, so
+   no two bands land the same way. Widths average 79% of a column — at a 1280
+   viewport that is ~325px against the reference's measured 322px average. */
+const widths = ['100%', '68%', '86%', '55%', '92%', '74%'];
+const aligns = ['flex-start', 'flex-end', 'center', 'flex-end', 'flex-start'];
+const offsets = ['0', '3.5vw', '0', '5.5vw', '1vw', '2vw', '6vw'];
+/* The ground each piece is mounted on, from the six palette tints in
+   tokens.css. Eight entries against widths' six, aligns' five and offsets'
+   seven — four lengths with no common factor, so a tile's colour, size,
+   alignment and offset never come round together and the field reads as
+   scattered rather than patterned. Deliberately not Math.random(): the twin
+   copy of every band has to be identical or the horizontal wrap seams, and a
+   build that reshuffles itself is one a designer can't art-direct. To pin a
+   pairing that clashes, reorder this list. */
+const tints = [
+  'var(--tint-clay)',
+  'var(--tint-sage)',
+  'var(--tint-shell)',
+  'var(--tint-oat)',
+  'var(--tint-stone)',
+  'var(--tint-mauve)',
+  'var(--tint-sage)',
+  'var(--tint-oat)',
+];
+
+let dealt = 0;
+const deck = Array.from({ length: rows }, (_, r) =>
+  Array.from({ length: columns }, (_, c) => {
+    const pattern = occupancy[r % occupancy.length];
+    if (!pattern[c % pattern.length]) return null;      // a deliberate hole
+    const k = dealt;
+    dealt += 1;
+    return {
+      ...items[k % items.length],
+      span: widths[k % widths.length],
+      align: aligns[k % aligns.length],
+      off: offsets[k % offsets.length],
+      tint: tints[k % tints.length],
+    };
+  })
+);
+---
+<div
+  class="stream"
+  data-stream
+  data-max-rows={maxRows}
+  style={`--cols:${columns}`}
+  tabindex="0"
+  role="region"
+  aria-label={label}
+>
+  {deck.map((row) => (
+    <div class="stream__row" data-row>
+      <div class="stream__track" data-track>
+        {/* The set the screen reader hears, then its silent twin. The twin is
+            what the pan wraps onto; it must match the original exactly. */}
+        {[0, 1].map((copy) => (
+          <div class="stream__set" data-set aria-hidden={copy === 1 ? 'true' : undefined}>
+            {row.map((tile, c) => (
+              <div class="stream__col" data-col={c}>
+                {tile && (
+                  <figure
+                    class="tile"
+                    style={`--w:${tile.span}; --al:${tile.align}; --off:${tile.off}; --tint:${tile.tint}`}
+                  >
+                    <img
+                      src={tile.src}
+                      alt={copy === 1 ? '' : tile.alt}
+                      width={tile.w}
+                      height={tile.h}
+                      loading="lazy"
+                      decoding="async"
+                      draggable="false"
+                    />
+                  </figure>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  ))}
+  <div class="stream__end" data-stream-end aria-hidden="true"></div>
+</div>
+
+<style>
+  .stream {
+    display: flex;
+    flex-direction: column;
+    /* The single value that decides whether this reads as a collage or as a
+       contact sheet. The reference leaves ~592px between one band and the
+       next at a 1280 viewport — more empty than the tiles are tall. 46vw
+       lands on that and keeps the proportion at other widths. */
+    gap: clamp(5rem, 46vw, 38rem);
+    overflow: hidden;          /* the second copy of every row lives out here */
+    /* The reference's cursor: an open hand over the field, a closed one from
+       the moment the button goes down. Native cursors on purpose — they're
+       crisp at every scale and they respect the visitor's own pointer
+       settings. This element is the whole gesture surface, so any lead-in a
+       page puts above the tiles belongs INSIDE it (see `.playstream` in
+       playground.astro) — padding on a wrapper would leave a strip that
+       shows an arrow and grabs nothing. */
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    /* Vertical stays the browser's; horizontal is ours. Also stops a
+       sideways trackpad flick from triggering back-navigation. */
+    touch-action: pan-y;
+    overscroll-behavior-x: contain;
+  }
+  /* Set on <body> so the closed hand holds even when the pointer leaves the
+     field mid-drag — pointer capture keeps the gesture, the cursor should
+     keep up with it. */
+  :global(body.is-panning) { cursor: grabbing; }
+  :global(body.is-panning) .stream { cursor: grabbing; }
+
+  .stream__row { position: relative; }
+  /* The gap between the two sets is the same clamp as the gap between
+     columns inside one. That is what makes the wrap invisible: the seam is
+     just another column gap. Don't let the two values drift apart. */
+  .stream__track {
+    display: flex;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+  }
+  /* Each set is a full field width; the second one overflows to the right
+     and is clipped until the pan brings it in. */
+  .stream__set {
+    flex: 0 0 100%;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    align-items: start;
+  }
+  .stream__col {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  .tile {
+    margin: 0;
+    /* Per-tile rather than per-column, so the stagger changes from band to
+       band instead of repeating down the page. The reference measures 0–77px
+       inside a band; the offsets in the deck top out at 6vw. */
+    margin-top: var(--off, 0);
+    width: var(--w, 100%);
+    align-self: var(--al, flex-start);
+    /* Each piece is mounted on a palette ground rather than floating on the
+       band. The art is trimmed to its own edge (see prepare-play-images.mjs),
+       so this mount is the ONLY border any tile has — even padding, same on
+       all ten, which is what stops it reading as the accidental margins the
+       source files used to carry. */
+    background: var(--tint, transparent);
+    padding: clamp(0.7rem, 1.7vw, 1.35rem);
+  }
+  .tile img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    -webkit-user-drag: none;   /* or a drag starts a native image drag */
+  }
+  .stream__end { height: 1px; }
+
+  /* Narrower screens drop a slot at a time. A band's third tile wraps into an
+     implicit grid row rather than squeezing — the empty slots in the deck
+     mean that lands as more scatter, not as a broken grid. */
+  @media (max-width: 900px) {
+    .stream { --cols: 2 !important; }
+  }
+  @media (max-width: 560px) {
+    .stream { --cols: 1 !important; }
+    /* One tile across: the stagger has nothing left to stagger against, and
+       a 55%-wide tile in a single column is just a small picture. */
+    .tile { width: 100%; margin-top: 0; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll('[data-stream]').forEach((stream) => {
+    const el = stream as HTMLElement;
+    const maxRows = Number(el.dataset.maxRows || 15);
+    const seeds = [...el.querySelectorAll<HTMLElement>('[data-row]')];
+    const sentinel = el.querySelector('[data-stream-end]');
+    if (!seeds.length || !sentinel) return;
+
+    const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+    // --- endless: keep a screenful of rows in hand below the fold ---
+    // Deliberately not an IntersectionObserver: the sentinel stays on screen
+    // after an append, and an observer only reports transitions, so it would
+    // hand over one row and go quiet. Measuring on scroll tops up as often as
+    // it needs to.
+    // Generous, because the bands are now most of a viewport apart: the next
+    // one has to be in the DOM well before it is due on screen.
+    const REACH = 1200;         // px below the fold to keep filled
+    let added = 0;
+    let capped = false;
+
+    const topUp = () => {
+      let guard = 0;            // at most a few rows per frame
+      while (
+        seeds.length + added < maxRows &&
+        guard < 4 &&
+        sentinel.getBoundingClientRect().top < innerHeight + REACH
+      ) {
+        const next = seeds[added % seeds.length].cloneNode(true) as HTMLElement;
+        next.setAttribute('aria-hidden', 'true');   // a repeat, not new content
+        el.insertBefore(next, sentinel);
+        added += 1;
+        guard += 1;
+      }
+      // Once the stream stops growing its end stops moving. Anything keyed
+      // to the bottom of the page — the playground's heading fade — is
+      // meaningless before this and correct after it. Latched, because
+      // topUp now runs every frame and rewriting the attribute on each one
+      // is a style invalidation for nothing.
+      if (!capped && seeds.length + added >= maxRows) {
+        capped = true;
+        el.dataset.full = '';
+      }
+    };
+
+    // --- the horizontal axis ---
+    // One pan for the whole field, wrapped per row onto the width between a
+    // set and its twin. Measured rather than assumed, so gaps and
+    // breakpoints can change without touching this.
+    let panX = 0;
+    let period = 0;
+    const ROW_OFFSET = 0.37;    // fraction of a period each row is nudged on
+
+    const measure = () => {
+      const sets = seeds[0].querySelectorAll<HTMLElement>('[data-set]');
+      period = sets.length > 1 ? sets[1].offsetLeft - sets[0].offsetLeft : 0;
+    };
+
+    // → (-period, 0], the one window where the two copies together always
+    // cover the viewport. At rest that leaves the authored set on screen and
+    // its twin waiting off to the right.
+    const wrapX = (v: number) => {
+      if (!period) return 0;
+      const m = ((v % period) + period) % period;   // [0, period)
+      return m === 0 ? 0 : m - period;
+    };
+
+    // --- drift: each column tracks the row's progress past the viewport ---
+    const speeds = [-0.055, 0.04, -0.025];
+    // How far past the viewport a row keeps drifting, in screens. Half a
+    // screen is enough for a row to be settled before anyone can see it, and
+    // it roughly halves how much of the field is in motion at once — every
+    // drifting column is a full-width composited layer.
+    const MARGIN = 0.5;
+    // A drift shift smaller than this isn't visible, and writing it costs the
+    // same as writing a real one. Matters most on a slow diagonal, where
+    // every column would otherwise be rewritten each frame for nothing.
+    const MIN_SHIFT = 1;
+    // Last drift written per column, so the check above has something to
+    // compare against. Rebuilt (not cleared — WeakMap can't be) whenever the
+    // columns are reset out from under it.
+    let driftAt = new WeakMap<HTMLElement, number>();
+
+    // --- the frame ---
+    // Everything that moves lands here, in one pass. Two rules hold it
+    // together, and a drag — the one gesture that still moves both axes at
+    // once — shows it immediately if either is relaxed.
+    //
+    // BOTH AXES IN THE SAME FRAME. The sideways half is a transform, so it
+    // can only be applied in a frame. If the vertical half were scrolled
+    // straight from the event handler it would land a frame earlier and the
+    // drag would shear — page already moved down, tiles not yet moved
+    // across. So vertical is QUEUED here, never applied at the event.
+    //
+    // READ EVERYTHING, THEN WRITE EVERYTHING. Reading a rect after writing a
+    // transform forces a style recalc, so interleaving them costs one per
+    // row, on a main thread that is already carrying the drag.
+    const FRICTION = 0.935;     // inertia, both axes (the reference's constants)
+    const MIN_VELOCITY = 0.05;
+    let pendingY = 0;           // asked for, not yet applied — sub-pixel included
+    let velX = 0;
+    let velY = 0;
+    let coasting = false;
+    let queued = false;
+
+    const frame = () => {
+      queued = false;
+
+      if (coasting) {
+        panX += velX;
+        pendingY -= velY;
+        velX *= FRICTION;
+        velY *= FRICTION;
+        if (Math.abs(velX) < MIN_VELOCITY && Math.abs(velY) < MIN_VELOCITY) {
+          velX = velY = 0;
+          coasting = false;
+        }
+      }
+
+      // Writes that move the page go first, so the reads below see where
+      // things actually ended up and the whole frame costs one layout.
+      if (pendingY) {
+        // scrollBy truncates, so anything under a pixel would be thrown away
+        // and a slow glide would stall. Keep the remainder for next frame.
+        const step = Math.trunc(pendingY);
+        pendingY -= step;
+        if (step) scrollBy(0, step);
+      }
+      topUp();
+
+      const vh = innerHeight;
+      const quiet = still.matches;
+
+      // read
+      const live: { row: HTMLElement; i: number; p: number }[] = [];
+      el.querySelectorAll<HTMLElement>('[data-row]').forEach((row, i) => {
+        const r = row.getBoundingClientRect();
+        if (r.bottom < -vh * MARGIN || r.top > vh * (1 + MARGIN)) return;  // offscreen
+        live.push({ row, i, p: (r.top + r.height / 2 - vh / 2) / vh });    // ~-1 .. 1
+      });
+
+      // write
+      for (const { row, i, p } of live) {
+        const track = row.querySelector<HTMLElement>('[data-track]');
+        if (track) {
+          const x = wrapX(panX + ((i * ROW_OFFSET) % 1) * period);
+          track.style.transform = `translate3d(${x.toFixed(1)}px, 0, 0)`;
+        }
+        if (quiet) continue;
+        row.querySelectorAll<HTMLElement>('.stream__col').forEach((col) => {
+          // Keyed to data-col, not DOM order: the twin set's columns have to
+          // drift by the same amount as the originals or the seam shows.
+          const c = Number(col.dataset.col || 0);
+          const y = Math.max(-70, Math.min(70, p * speeds[c % speeds.length] * vh));
+          const was = driftAt.get(col);
+          if (was !== undefined && Math.abs(y - was) < MIN_SHIFT) return;
+          driftAt.set(col, y);
+          col.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+        });
+      }
+
+      if (coasting) schedule();
+    };
+
+    const schedule = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(frame);
+    };
+
+    // Only the glide is stopped — never `pendingY`, which is input the
+    // visitor has already given and this frame hasn't spent yet.
+    const stopCoast = () => {
+      coasting = false;
+      velX = velY = 0;
+    };
+
+    const startCoast = () => {
+      if (still.matches) return;                 // a flick shouldn't keep going
+      if (Math.abs(velX) < MIN_VELOCITY && Math.abs(velY) < MIN_VELOCITY) return;
+      coasting = true;
+      schedule();
+    };
+
+    // --- drag ---
+    let pointerId: number | null = null;
+    let dragging = false;
+    let downX = 0, downY = 0, lastX = 0, lastY = 0, lastT = 0;
+
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      stopCoast();
+      pointerId = e.pointerId;
+      dragging = false;
+      downX = lastX = e.clientX;
+      downY = lastY = e.clientY;
+      lastT = performance.now();
+      el.setPointerCapture(e.pointerId);
+      // The hand closes on PRESS, not on the 4px that makes it a drag. The
+      // slack below is about whether a twitch should throw the field; it was
+      // never meant to hold the cursor open while the button is down.
+      if (e.pointerType === 'mouse') document.body.classList.add('is-panning');
+    });
+
+    el.addEventListener('pointermove', (e) => {
+      if (pointerId !== e.pointerId) return;
+      if (!dragging) {
+        // 4px of slack, so a twitch isn't a drag.
+        if (Math.abs(e.clientX - downX) < 4 && Math.abs(e.clientY - downY) < 4) return;
+        dragging = true;
+      }
+
+      const now = performance.now();
+      const dt = Math.max(now - lastT, 8);
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      lastT = now;
+
+      panX += dx;
+      velX = (dx / dt) * 18;
+      // Touch keeps the browser's own vertical scrolling (touch-action:
+      // pan-y) — dragging the page as well would move it twice.
+      if (e.pointerType === 'mouse') {
+        pendingY -= dy;
+        velY = (dy / dt) * 18;
+      }
+      schedule();
+    });
+
+    const endDrag = (e: PointerEvent) => {
+      if (pointerId !== e.pointerId) return;
+      if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+      pointerId = null;
+      document.body.classList.remove('is-panning');
+      if (dragging) startCoast();
+      dragging = false;
+    };
+    el.addEventListener('pointerup', endDrag);
+    el.addEventListener('pointercancel', endDrag);
+
+    // --- wheel / trackpad ---
+    // A diagonal gesture stays diagonal. Both halves of it are kept, which
+    // means the vertical half has to be carried by hand: a wheel event is
+    // all or nothing, so preventing the default to keep the sideways pan
+    // means owning the scroll too.
+    //
+    // Only a mostly-sideways gesture is taken; anything else falls through to
+    // the document untouched. Native vertical scrolling feels better than
+    // anything done here, and it is what keeps the closing band and the
+    // footer reachable.
+    el.addEventListener('wheel', (e) => {
+      if (e.ctrlKey) return;                                  // pinch zoom
+      // Firefox reports lines, and page-at-a-time exists; normalise to px
+      // or a mouse wheel would pan by three.
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1;
+      const dx = (e.deltaX || (e.shiftKey ? e.deltaY : 0)) * unit;
+      const dy = (e.shiftKey ? 0 : e.deltaY) * unit;
+      if (Math.abs(dx) <= Math.abs(dy)) return;               // a vertical gesture
+      e.preventDefault();
+      stopCoast();
+      panX -= dx;
+      schedule();
+    }, { passive: false });
+
+    // --- keyboard ---
+    // Up/down are left to the browser; left/right are the only thing the
+    // document can't already do.
+    el.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      stopCoast();
+      panX += e.key === 'ArrowLeft' ? 140 : -140;
+      schedule();
+    });
+
+    // topUp used to run here, on the event. It lives in the frame now: our
+    // own scrollBy fires this listener, so keeping it here meant a forced
+    // layout per wheel event on top of the one the frame already pays.
+    const onScroll = () => schedule();
+
+    const onResize = () => {
+      measure();
+      schedule();
+    };
+
+    // The scroll listener runs whatever the motion preference — topping the
+    // stream up isn't motion, and the frame opts the drift out.
+    measure();
+    frame();
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onResize);
+    still.addEventListener('change', () => {
+      if (still.matches) {
+        stopCoast();
+        el.querySelectorAll<HTMLElement>('.stream__col').forEach((c) => (c.style.transform = ''));
+        // The columns are back at zero, so what was last written about them
+        // is no longer true — a stale entry would suppress the first write
+        // after motion is allowed again and leave them stuck there.
+        driftAt = new WeakMap<HTMLElement, number>();
+      }
+      schedule();
+    });
+  });
+</script>

@@ -7,24 +7,57 @@
    band in the set the nav watches, so the nav recolours over it too; without
    it the nav keeps the previous band's colours and can drop below AA.
    `flip` puts content left, mockup right. `device` picks the frame.
-   No motion by design — this band is deliberately still. */
+   Still by default — the band carries no scroll motion of its own.
+
+   `video` is the one exception: a phone can hold a screen recording of the
+   real prototype instead of a still. It came from a GIF; it is served as
+   mp4/webm because the source GIF was 4.9MB and a GIF cannot be paused.
+   Three things keep that honest, and none of them are optional:
+     · a visible pause control — it loops for 17s, and WCAG 2.2.2 wants
+       anything auto-playing past 5s to be stoppable;
+     · no autoplay under prefers-reduced-motion, where it holds the poster
+       until the visitor asks for it;
+     · playback only while the band is on screen.
+   `mediaRatio` lets the frame take the recording's own aspect instead of the
+   default 9/19.5 — the alternative is cropping 9% off each side of a real
+   screen recording, which eats the UI. A recording also brings its own
+   status bar, so the frame drops the notch. */
 interface Props {
   company: string; title: string; summary: string; role: string;
   impact: string; href: string; image?: string; alt?: string;
   theme?: 'ink' | 'bone' | 'sand' | 'clay' | 'sage' | 'lilac' | 'coral';
   flip?: boolean; device?: 'desktop' | 'phone';
+  /* `alt` here describes the recording, not the still — they are different
+     media and the still's alt is written for a landscape crop. */
+  video?: { mp4: string; webm?: string; poster: string; alt?: string };
+  mediaRatio?: string;
 }
 const { company, title, summary, role, impact, href, image, alt = '',
-        theme = 'ink', flip = false, device = 'desktop' } = Astro.props;
+        theme = 'ink', flip = false, device = 'desktop',
+        video, mediaRatio } = Astro.props;
 ---
 <article class:list={['band', flip && 'band--flip']} data-theme={theme} data-themeband>
   <div class="band__media">
     {device === 'phone' ? (
-      <div class="phone">
+      <div class:list={['phone', mediaRatio && 'phone--auto']}
+           style={mediaRatio ? `--screen-ratio: ${mediaRatio};` : undefined}>
         <div class="phone__screen">
-          <div class="phone__notch"></div>
-          {image && <img src={image} alt={alt} loading="lazy" decoding="async" />}
+          {!video && <div class="phone__notch"></div>}
+          {video ? (
+            <video class="phone__video" poster={video.poster} aria-label={video.alt ?? alt}
+                   muted loop playsinline preload="none">
+              {video.webm && <source src={video.webm} type="video/webm" />}
+              <source src={video.mp4} type="video/mp4" />
+            </video>
+          ) : (
+            image && <img src={image} alt={alt} loading="lazy" decoding="async" />
+          )}
         </div>
+        {video && (
+          <button class="phone__toggle" type="button" data-play aria-pressed="false">
+            <span data-play-label>Play</span> prototype
+          </button>
+        )}
       </div>
     ) : (
       <div class="desktop">
@@ -58,11 +91,29 @@ const { company, title, summary, role, impact, href, image, alt = '',
   .role { margin: 0 0 2rem; }
   .role b { font-weight: 600; color: var(--fg); }
   .impact { font-family: var(--font-display); font-size: var(--step-h3); font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; margin: 0; max-width: 22ch; border-top: 1px solid var(--rule); padding-top: 1.25rem; }
-  .cta { display: inline-block; margin-top: 2rem; color: var(--accent-text); font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; font-weight: 600; text-decoration: none; }
+  .cta { display: inline-block; margin-top: 2rem; color: var(--accent-text); font-family: var(--font-display); font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; font-weight: 600; text-decoration: none; }
 
   /* Device frames. --shell / --screen come from tokens.css (see note below). */
   .phone { width: min(300px, 80%); aspect-ratio: 9 / 19.5; background: var(--shell); border-radius: 38px; padding: 10px; box-shadow: 0 40px 80px -40px rgba(0,0,0,0.55); }
   .phone__screen { position: relative; width: 100%; height: 100%; border-radius: 29px; overflow: hidden; background: var(--screen); }
+
+  /* The frame stops dictating its own height and takes the recording's,
+     so nothing gets cropped. --screen-ratio comes from `mediaRatio`. */
+  .phone--auto { aspect-ratio: auto; }
+  .phone--auto .phone__screen { height: auto; aspect-ratio: var(--screen-ratio); }
+  .phone__video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* Sits under the phone, in the band's own palette — a control, not chrome
+     stuck on the mockup. */
+  .phone__toggle {
+    display: block; margin: 1rem auto 0;
+    font-family: var(--font-display); font-size: var(--step-label);
+    letter-spacing: var(--tracking-label); text-transform: uppercase;
+    font-weight: 600; color: var(--fg-dim);
+    background: none; border: 0; padding: 0.5rem;
+    cursor: pointer;
+  }
+  .phone__toggle:hover { color: var(--fg); }
   .phone__notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 34%; height: 22px; background: var(--shell); border-radius: 12px; z-index: 1; }
   .desktop { width: 100%; background: var(--shell); border-radius: 10px; padding: 8px; box-shadow: 0 40px 80px -40px rgba(0,0,0,0.55); }
   .desktop__bar { height: 14px; display: flex; gap: 5px; align-items: center; padding-inline: 6px; }
@@ -86,3 +137,53 @@ const { company, title, summary, role, impact, href, image, alt = '',
     .phone { width: min(260px, 72%); }
   }
 </style>
+
+<script>
+  /* Prototype playback. Plays only while the band is on screen, never
+     autoplays under prefers-reduced-motion, and the button is the WCAG
+     2.2.2 stop control for a 17-second loop. The button is the only path
+     to playback when motion is reduced, so it always reflects real state
+     rather than intent — `ended` can't fire on a loop, but a failed
+     play() promise can, and a toggle that lies is worse than no toggle. */
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll<HTMLElement>('.phone--auto').forEach((phone) => {
+    const video = phone.querySelector<HTMLVideoElement>('.phone__video');
+    const button = phone.querySelector<HTMLButtonElement>('[data-play]');
+    const label = phone.querySelector<HTMLElement>('[data-play-label]');
+    if (!video || !button || !label) return;
+
+    let wanted = !reduced.matches;   // whether the visitor wants it running
+    let onScreen = false;
+
+    const sync = () => {
+      const playing = !video.paused;
+      label.textContent = playing ? 'Pause' : 'Play';
+      button.setAttribute('aria-pressed', String(playing));
+    };
+
+    const play = () => video.play().then(sync, sync);
+    const pause = () => { video.pause(); sync(); };
+
+    /* A click plays straight away. The observer is an optimisation — it must
+       never be the reason a button the visitor just pressed does nothing. */
+    button.addEventListener('click', () => {
+      wanted = !wanted;
+      wanted ? play() : pause();
+    });
+    video.addEventListener('play', sync);
+    video.addEventListener('pause', sync);
+
+    // Reduced motion can be switched on mid-visit; stop when it is.
+    reduced.addEventListener('change', (e) => {
+      if (e.matches) { wanted = false; pause(); }
+    });
+
+    new IntersectionObserver((entries) => {
+      onScreen = entries[0].isIntersecting;
+      if (wanted) onScreen ? play() : pause();
+    }, { threshold: 0.25 }).observe(phone);
+
+    sync();
+  });
+</script>

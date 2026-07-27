@@ -1,0 +1,442 @@
+---
+/* /work/[slug] — the case study layout.
+   Structure follows rachelchen.tech/projects/openai: ONE two-column grid for
+   the whole page — the sticky rail on the left, everything else (eyebrow,
+   title, hero image, meta row, then every section) stacked in the right
+   column — followed by a closing band with the next project.
+
+   This used to be two separate bands: a full-width hero, then a lower
+   two-column "body". The reference doesn't split them — on the reference,
+   the rail starts flush under the nav and runs the full height of the
+   article, visible alongside the title from the first scroll rather than
+   only appearing once the reader scrolls past the hero image. Merging them
+   is what "bring the rail toward the top" meant structurally. Role now
+   lives in the meta row (see below) rather than its own line above the
+   image, which is also how the reference sets it — one row of Role /
+   Timeline / Team / Partners under the image, not two.
+
+   Content and order come from data/cases.ts, and the order is the point.
+   CLAUDE.md rule 3: situation → my scope → the hard call → how the team
+   worked → the craft → impact → what I'd do differently. Do not reorder
+   these to put screens first — the leadership evidence is what the page
+   is for, and a portfolio that opens on wireframes argues for an IC role.
+
+   Two things are deliberately duplicated for the 60-second skim: team
+   scope sits in the hero meta row (not only in the scope section), and the
+   headline metric sits in the closing band. A recruiter who reads the hero
+   and nothing else should still come away with team size and outcome. */
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Reveal from '../../components/Reveal.astro';
+import CaseRail from '../../components/CaseRail.astro';
+import CaseBlocks from '../../components/CaseBlocks.astro';
+import CaseGate from '../../components/CaseGate.astro';
+import LockedGate from '../../components/LockedGate.astro';
+import LockIcon from '../../components/LockIcon.astro';
+import { cases, caseBySlug } from '../../data/cases';
+
+export function getStaticPaths() {
+  return cases.map((c) => ({ params: { slug: c.slug }, props: { study: c } }));
+}
+
+const { study } = Astro.props;
+const next = caseBySlug(study.next);
+
+/* Two gate shapes off the one `locked` field — see its comment in
+   cases.ts. fullyLocked (preview: 0) swaps the ENTIRE page below for
+   LockedGate; the real page renders underneath it in one `hidden`
+   container, revealed on a correct password. Partially gated (preview > 0)
+   keeps the page itself, splitting its sections into what's free and what
+   sits behind an inline CaseGate further down. */
+const fullyLocked = study.locked?.preview === 0;
+const previewCount = study.locked?.preview ?? study.sections.length;
+const openSections = study.sections.slice(0, previewCount);
+const gatedSections = study.sections.slice(previewCount);
+const gateId = `${study.slug}-gate-content`;
+const pageId = `${study.slug}-page-content`;
+---
+<Base title={`${study.title} — ${study.company} — Anupama Mishra`} description={study.description}>
+  {fullyLocked && (
+    <LockedGate
+      slug={study.slug}
+      caseTitle={study.title}
+      password={study.locked!.password}
+      targetId={pageId}
+    />
+  )}
+  <div id={fullyLocked ? pageId : undefined} hidden={fullyLocked || undefined}>
+  <!-- Bone, not the project's palette. A full-bleed saturated ground behind
+       display type reads as a poster, and it fights the reading page under
+       it. The project's hue is still on its /work tile and on the closing
+       "next case study" band — it doesn't need to be the first thing in
+       the room.
+
+       ONE grid for the whole page: CaseRail is the sticky left column,
+       everything else — eyebrow, title, lede, hero image, meta row, then
+       every section — is the right column. See the header comment for why
+       this is no longer a separate hero band above a lower two-column
+       body. -->
+  <Section theme="bone" class="casepage">
+    <div class="body">
+      {/* Only the free sections' nav entries, plus one for the gate when
+          there is one — a rail link that scrolled to hidden content would
+          be a dead click, and the gate's own id is a real, visible anchor
+          either way. */}
+      <CaseRail sections={[
+        ...openSections.map((s) => ({ id: s.id, nav: s.nav })),
+        ...(gatedSections.length ? [{ id: gateId, nav: 'Full case study' }] : []),
+      ]} />
+
+      <div class="body__col">
+        <Reveal>
+          <p class="u-label hero__eyebrow">{study.eyebrow}</p>
+        </Reveal>
+        {/* Title and the lede paragraph share column 1 so they read as one
+            column; the optional CTA sits beside the lede, on its row. Role
+            no longer lives here — it's a meta-row cell below, alongside
+            Timeline/Team/Partners, the way the reference sets it.
+
+            ONE Reveal wraps title+lede+cta on purpose: Reveal emits a
+            wrapper div, so a Reveal per element would make those wrappers
+            the grid items instead of the h1/p/a, and the columns would
+            collapse. */}
+        <Reveal delay={100}>
+          <div class:list={['lede', !study.live && 'lede--nocta']}>
+            <h1 class="hero__title">{study.title}</h1>
+            <p class="lede__text">{study.description}</p>
+            {study.live && (
+              <a class="lede__cta u-label" href={study.live.href}
+                 target="_blank" rel="noopener noreferrer">{study.live.label}</a>
+            )}
+          </div>
+        </Reveal>
+        <Reveal delay={240}>
+          <div class="hero__frame">
+            <img src={study.hero.src} alt={study.hero.alt} decoding="async" />
+          </div>
+        </Reveal>
+        {/* Role first, then whatever this case's own meta fields are
+            (Team/Scope, Partners, Timeline) — one row, matching the
+            reference's Role / Timeline / Team / Skills line under the
+            image. Role stays a separate field on `study` rather than
+            folding back into `meta` — nothing else about it changed, only
+            where it renders. */}
+        <Reveal delay={260}>
+          <dl class="meta">
+            <div class="meta__cell">
+              <dt class="u-label meta__label">Role</dt>
+              <dd class="meta__value">{study.role}</dd>
+            </div>
+            {study.meta.map((m) => (
+              <div class="meta__cell">
+                <dt class="u-label meta__label">{m.label}</dt>
+                <dd class="meta__value">{m.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </Reveal>
+
+        {openSections.map((s) => (
+          <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
+            <Reveal>
+              <p class="u-label cs__label">{s.label}</p>
+              <h2 class="cs__head" id={`${s.id}-h`}>{s.heading}</h2>
+            </Reveal>
+            <div class="cs__blocks">
+              <CaseBlocks blocks={s.blocks} />
+            </div>
+          </section>
+        ))}
+
+        {study.locked && gatedSections.length > 0 && (
+          <section class="cs" id={gateId} aria-label="Full case study">
+            <Reveal>
+              <CaseGate
+                slug={study.slug}
+                caseTitle={study.title}
+                password={study.locked.password}
+                targetId={`${gateId}-content`}
+              />
+            </Reveal>
+            {/* The real remainder, shipped in the page and hidden until
+                CaseGate's script clears this attribute — see the security
+                note on `locked` in cases.ts: `hidden` is a display/AT
+                mechanism, not a delivery one. */}
+            <div id={`${gateId}-content`} hidden>
+              {gatedSections.map((s) => (
+                <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
+                  <Reveal>
+                    <p class="u-label cs__label">{s.label}</p>
+                    <h2 class="cs__head" id={`${s.id}-h`}>{s.heading}</h2>
+                  </Reveal>
+                  <div class="cs__blocks">
+                    <CaseBlocks blocks={s.blocks} />
+                  </div>
+                </section>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  </Section>
+
+  <!-- NEXT ----------------------------------------------------------
+       Minimal on purpose — allierho.com/projects/pst2024's own "next"
+       band is a small label over one line of title, nothing else. The
+       previous version carried the company name at display size plus the
+       title in italic underneath; two things competing for the same
+       moment. One line reads faster leaving a case study, which is exactly
+       when a reader is least likely to stop for it. Centred, and the
+       hover cue is a pill that follows the cursor rather than an
+       underline — same reference, same reason: a static underline is a
+       hint; a cue that tracks your hand reads as "this whole area is one
+       thing to click," which a single line of text can't say on its own. -->
+  {next && (
+    <Section theme={next.theme} class="casenext">
+      <Reveal>
+        <p class="u-label">Next</p>
+        <a class="next" href={`/work/${next.slug}`} data-follow-hover>
+          {next.title}
+          {next.locked && <LockIcon class="next__lock" size="0.55em" />}
+          <span class="next__peek u-label" aria-hidden="true" data-follow-pill>
+            View case study
+          </span>
+        </a>
+      </Reveal>
+    </Section>
+  )}
+
+  </div>
+</Base>
+
+<style>
+  /* :global — this band is rendered by Section.astro, so the class passed
+     through `class` doesn't carry this page's scope hash. Top clears the
+     fixed nav the same amount the old hero band did; bottom is the one gap
+     before the "next case study" band, now that hero and body are the same
+     section rather than two padded bands back to back. */
+  :global(.casepage) {
+    padding-block-start: calc(var(--nav-h) + var(--space-band-tight));
+    padding-block-end: var(--space-section);
+  }
+
+  .hero__eyebrow { margin: 0 0 1.25rem; color: var(--fg-dim); }
+  .hero__title {
+    font-family: var(--font-display);
+    font-size: var(--step-h1);
+    line-height: 1;
+    letter-spacing: var(--tracking-display);
+    font-weight: 500;
+    margin: 0;
+    /* No max-width: column 1 of the lede grid bounds it, which is what
+       makes the title and the description beneath it one column. */
+    text-wrap: balance;
+  }
+  /* --- Lede grid: [title / description] | CTA --------------------------
+     Column 1 carries the title and the description stacked, so they read
+     as one column. Role used to be a second column here; it now lives in
+     the meta row below instead (see the header comment), so this is back
+     to the description's own row with just an optional CTA beside it. */
+  .lede {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--gutter);
+    row-gap: clamp(1.75rem, 3vw, 2.5rem);
+    align-items: start;
+    margin-top: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  /* No CTA: the second track would still be laid out at zero width but its
+     column-gap would leave a dead gutter after the description. Drop the
+     track so the description runs the lede's full width. */
+  .lede--nocta { grid-template-columns: 1fr; }
+
+  .hero__title  { grid-column: 1; grid-row: 1; }
+  .lede__text   { grid-column: 1; grid-row: 2; }
+  .lede__cta    { grid-column: 2; grid-row: 2; }
+
+  .lede__text {
+    margin: 0;
+    color: var(--fg-dim);
+    text-wrap: pretty;
+  }
+  /* The pill. Border rather than a filled ground so it reads as a control
+     without needing a colour that clears AA against the bone band. */
+  .lede__cta {
+    display: inline-block;
+    justify-self: end;
+    align-self: start;
+    white-space: nowrap;
+    text-decoration: none;
+    color: var(--fg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.65rem 1.15rem;
+    transition: background var(--dur-hover) var(--ease-out),
+                border-color var(--dur-hover) var(--ease-out);
+  }
+  .lede__cta:hover { background: var(--screen); border-color: var(--fg-dim); }
+
+  .hero__frame {
+    background: var(--screen);
+    /* Panoramic on purpose — 16/7 keeps the title, lede and image inside
+       the first screen on a laptop now that the lede sits above it. */
+    aspect-ratio: 16 / 7;
+    overflow: hidden;
+    margin-top: clamp(2rem, 4vw, 3rem);
+  }
+  .hero__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* The meta row: Role first, then this case's own fields. No divider —
+     the image above and the whitespace here already separate it from what
+     comes next; a rule on top of that read as one line too many. */
+  .meta {
+    margin: 2.5rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.75rem var(--gutter);
+  }
+  .meta__cell { min-width: 0; }
+  .meta__label { margin: 0 0 0.5rem; }
+  .meta__value { margin: 0; font-weight: 500; text-wrap: pretty; }
+
+  /* --- Body: rail + content ------------------------------------------ */
+  .body {
+    max-width: 82rem;
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: var(--rail-width) minmax(0, 1fr);
+    column-gap: var(--gutter);
+    align-items: start;
+  }
+  .body__col { min-width: 0; }
+
+  .cs {
+    /* Clears the fixed nav when the rail's anchors jump here. */
+    scroll-margin-top: calc(var(--nav-h) + 1rem);
+  }
+  .cs + .cs { margin-block-start: var(--space-case); }
+  /* The first section used to open a fresh Section band with its own top
+     padding; now it follows the meta row directly in the same column, so
+     it needs that gap stated explicitly instead of inheriting it. */
+  .meta + .cs { margin-block-start: var(--space-case); }
+  .cs__label { margin: 0 0 0.85rem; }
+  .cs__head {
+    font-family: var(--font-display);
+    font-size: var(--step-h2);
+    line-height: 1.1;
+    letter-spacing: var(--tracking-display);
+    font-weight: 500;
+    margin: 0;
+    max-width: 26ch;
+    text-wrap: balance;
+  }
+  /* One rhythm for every block in a section, set here rather than in
+     CaseBlocks so a section's internal spacing is one number. */
+  .cs__blocks {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 3.5vw, 3rem);
+    margin-block-start: clamp(1.75rem, 3vw, 2.5rem);
+  }
+
+  /* --- Next / footer -------------------------------------------------- */
+  /* Centred on the band, matching the reference. :global because Section
+     renders this band and the class doesn't carry this page's scope. */
+  :global(.casenext) { text-align: center; }
+
+  /* One line: label above, title below, nothing else competing for the
+     moment — see the header comment above the markup for why. */
+  .next {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--fg);
+    margin-top: 0.75rem;
+    max-width: 28ch;
+    font-family: var(--font-accent);
+    font-style: italic;
+    font-size: var(--step-h2);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+  .next__lock { flex: 0 0 auto; }
+
+  /* The hover cue: a pill that follows the cursor instead of an underline —
+     see the header comment by the markup. Positioned by the script below,
+     which writes --peek-x/--peek-y in pixels local to .next; this only
+     supplies the offset that centres the pill ON that point rather than
+     tucking its corner under it. Hidden until the script has a position to
+     give it, so it never flashes at (0,0) before the first pointermove. */
+  .next__peek {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    transform: translate(calc(var(--peek-x, 0px) - 50%), calc(var(--peek-y, 0px) - 50%));
+    background: var(--fg);
+    color: var(--bg);
+    white-space: nowrap;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    /* Direct manipulation, not ambient motion — the pill only moves because
+       the visitor's own cursor did, the same exemption the playground's
+       drag interactions get. Opacity is the one thing genuinely animated
+       here (a fade-in/out on enter/leave), so only that transitions. */
+    transition: opacity var(--dur-hover) var(--ease-out);
+  }
+  .next:hover .next__peek,
+  .next:focus-visible .next__peek { opacity: 1; }
+  /* No pointer to follow on touch, and no hover to trigger it — the pill
+     never shows there regardless of the JS below. */
+  @media (hover: none) {
+    .next__peek { display: none; }
+  }
+
+  @media (max-width: 1080px) {
+    .body { grid-template-columns: 1fr; row-gap: clamp(2rem, 5vw, 3rem); }
+    /* The horizontal rail is pinned under the nav, so anchored sections
+       need to clear both. */
+    .cs { scroll-margin-top: calc(var(--nav-h) + 5rem); }
+  }
+  @media (max-width: 820px) {
+    .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* A 16/7 letterbox is too thin to read on a phone. */
+    .hero__frame { aspect-ratio: 16 / 10; }
+    /* A CTA beside the description gets cramped at this width — stack it
+       instead, back on the left edge rather than stranded right. */
+    .lede,
+    .lede--nocta { grid-template-columns: 1fr; row-gap: 1.75rem; }
+    .hero__title, .lede__text, .lede__cta {
+      grid-column: 1;
+      grid-row: auto;
+    }
+    .lede__cta { justify-self: start; }
+  }
+</style>
+
+<script>
+  // The "next case study" pill tracks the cursor within the link — a direct
+  // 1:1 position update, not an eased animation, so it's the same category
+  // of motion the playground's own drag interactions are: the visitor's own
+  // hand, not something ambient. That's why this has no reduced-motion gate
+  // (only opacity, which fades the pill in and out, is ever transitioned —
+  // see the CSS). Hover-capable pointers only: there's no continuous
+  // pointer position to track on touch, so the pill is display:none there
+  // regardless of whether this runs.
+  document.querySelectorAll<HTMLElement>('[data-follow-hover]').forEach((link) => {
+    const pill = link.querySelector<HTMLElement>('[data-follow-pill]');
+    if (!pill) return;
+
+    link.addEventListener('pointermove', (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      const r = link.getBoundingClientRect();
+      link.style.setProperty('--peek-x', `${(e.clientX - r.left).toFixed(1)}px`);
+      link.style.setProperty('--peek-y', `${(e.clientY - r.top).toFixed(1)}px`);
+    });
+  });
+</script>

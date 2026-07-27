@@ -1,0 +1,71 @@
+---
+/* Testimonials.astro — what other people say, three across.
+
+   Marked up as <figure><blockquote> + <figcaption> so the attribution is
+   tied to the quote for a screen reader rather than floating after it.
+   No carousel: three quotes fit, and a recruiter skimming for 60 seconds
+   should not have to press anything to read the second one. */
+interface Item { quote: string; name: string; role: string }
+interface Props { items: Item[] }
+const { items } = Astro.props;
+---
+<ul class="quotes">
+  {items.map((t) => (
+    <li>
+      <figure class="quote">
+        <blockquote class="quote__body">{t.quote}</blockquote>
+        <figcaption class="quote__by">
+          <span class="quote__name">{t.name}</span>
+          <span class="quote__role">{t.role}</span>
+        </figcaption>
+      </figure>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .quotes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+  }
+  .quote {
+    margin: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+  }
+  .quote__body {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+    text-wrap: pretty;
+    flex: 1;
+  }
+  .quote__by {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+  .quote__name { font-weight: 600; }
+  .quote__role {
+    font-family: var(--font-display);
+    font-size: var(--step-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+
+  @media (max-width: 900px) {
+    .quotes { grid-template-columns: 1fr; }
+  }
+</style>

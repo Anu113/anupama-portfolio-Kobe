@@ -1,0 +1,254 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Reveal from '../components/Reveal.astro';
+import PageHeader from '../components/PageHeader.astro';
+import IndexRotator from '../components/IndexRotator.astro';
+import { site } from '../data/site';
+
+// The rotator on the right and the "NN / Title" numbering on each band both
+// read from this one list — matching ozgur.design's wayfinding rail, where
+// every section of a single continuous page is numbered and indexed. Four
+// sections, not eleven: this page has four real bands, and inventing more
+// to fill the reel would be padding, not content.
+const sections = [
+  { id: 'intro', label: 'Intro', num: '00' },
+  { id: 'approach', label: 'How I work', num: '01' },
+  { id: 'worked', label: 'Where I’ve worked', num: '02' },
+  { id: 'contact', label: 'Get in touch', num: '03' },
+];
+const [secIntro, secApproach, secWorked, secContact] = sections;
+
+// Bracketed values are still to be confirmed — same convention as the
+// case-study impact lines in src/data/work.ts.
+const timeline = [
+  { years: '[2021]–[2025]', org: 'Okta', role: 'Staff Product Designer',
+    note: 'Led six designers across Identity & Access Management. Owned the admin console surfaces and the design system that served them.' },
+  { years: '[2019]–[2021]', org: 'PayPal', role: 'Design lead',
+    note: 'Privacy and data-sharing controls. Ran the research and the reviews with legal.' },
+  { years: '[2017]–[2019]', org: 'Walmart Labs', role: 'Product designer',
+    note: 'Scan & Go, in-store. Six weeks of store-floor ethnography set the scope.' },
+  { years: '[2014]–[2017]', org: 'Deloitte Digital', role: 'Experience designer',
+    note: 'Enterprise clients, mostly financial services.' },
+  { years: '[2013]–[2014]', org: 'Zomato', role: 'Designer',
+    note: 'Consumer product, early team.' },
+];
+---
+<Base
+  title="About me — Anupama Mishra"
+  description="Staff product designer, ten years across identity, fintech and enterprise software. Led a team of six at Okta. Looking for a Staff Product Designer role, remote."
+>
+  <IndexRotator sections={sections} />
+
+  <Section theme="bone" id={secIntro.id} index={secIntro.num} class="abouthead">
+    <PageHeader label="About me">
+      Staff product designer in <em>enterprise</em> software.
+      <Fragment slot="intro">
+        <p>
+          Ten years of it. Most recently Staff Product Designer at Okta, on
+          Identity &amp; Access Management — the console enterprises use to run
+          identity for thousands of employees — where I also led a team of six.
+          Before that: PayPal, Walmart Labs, Deloitte Digital and Zomato.
+        </p>
+        <p>
+          I took a career break in [year] and I'm returning to a {site.ask}. What
+          I want next is a hard problem with real constraints, and my hands on
+          the work.
+        </p>
+      </Fragment>
+    </PageHeader>
+    <Reveal delay={360}>
+      <figure class="abouthead__portrait">
+        <img
+          src="/images/about/anupama-portrait.png"
+          width="1086"
+          height="1448"
+          alt="Portrait of Anupama Mishra"
+          loading="eager"
+        />
+      </figure>
+    </Reveal>
+  </Section>
+
+  <!-- The home page links here: "How I work →" -->
+  <Section theme="sand" id={secApproach.id} index={secApproach.num} class="approach">
+    <Reveal>
+      <p class="u-label section-num">{secApproach.num} / {secApproach.label}</p>
+      <h2 class="approach__title">How I work</h2>
+    </Reveal>
+    <Reveal delay={120}>
+      <ol class="approach__list">
+        <li>
+          <h3>Decision rights before process</h3>
+          <p>
+            Most design work isn't slow because it lacks a process — it's slow
+            because nobody knows who decides. I write down who owns which call,
+            and I take the unpopular ones to a decision instead of letting them
+            sit.
+          </p>
+        </li>
+        <li>
+          <h3>A design system people actually want to use</h3>
+          <p>
+            A system earns adoption by being faster than the workaround. I argue
+            for it as product work, with an owner and a roadmap, not as a side
+            project between deadlines.
+          </p>
+        </li>
+        <li>
+          <h3>Critique that is kind and specific</h3>
+          <p>
+            Named work, named problems, no ambushes. Designers bring the
+            decision they're stuck on rather than a finished screen, which is
+            the only version of critique that changes an outcome.
+          </p>
+        </li>
+        <li>
+          <h3>Accessibility as a default, not a pass</h3>
+          <p>
+            I gave a talk called <em>The Saga of Accessibility</em> for a
+            reason: retrofitting it costs more than building it in, every time.
+            WCAG AA is the floor I ship against.
+          </p>
+        </li>
+      </ol>
+    </Reveal>
+  </Section>
+
+  <Section theme="bone" id={secWorked.id} index={secWorked.num} class="path">
+    <Reveal>
+      <p class="u-label section-num">{secWorked.num} / {secWorked.label}</p>
+      <h2 class="path__title">Where I've worked</h2>
+    </Reveal>
+    <Reveal delay={120}>
+      <ul class="path__list">
+        {timeline.map((t) => (
+          <li class="path__row">
+            <span class="u-label path__years">{t.years}</span>
+            <span class="path__org">{t.org}</span>
+            <span class="path__role">{t.role}</span>
+            <p class="path__note">{t.note}</p>
+          </li>
+        ))}
+      </ul>
+    </Reveal>
+  </Section>
+
+  <Section theme="clay" id={secContact.id} index={secContact.num} class="aboutfoot">
+    <Reveal>
+      <p class="u-label section-num">{secContact.num} / {secContact.label}</p>
+      <h2 class="aboutfoot__title">Open to work.</h2>
+      <p class="u-measure aboutfoot__body">
+        {site.ask}. The fastest way to find out if it fits is a conversation.
+      </p>
+      <p class="aboutfoot__links">
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+        <a href={site.linkedin}>LinkedIn</a>
+        <a href="/work">Selected work</a>
+      </p>
+    </Reveal>
+  </Section>
+</Base>
+
+<style>
+  /* :global — the band is rendered by Section.astro, so it doesn't carry
+     this page's scope. */
+  /* Type comes from PageHeader; this only sets the band height.
+     Keep in step with .workindex-head. */
+  :global(.abouthead) {
+    min-height: 72svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+  }
+
+  /* The portrait, allierho-style: a plain image under the intro prose, not
+     cropped into the Mosaic treatment used elsewhere — this is a person,
+     not artwork. Hard-edged per --radius; a thin rule stands in for a
+     border since the palette has no dedicated border colour. */
+  .abouthead__portrait {
+    margin: 0;
+    width: min(20rem, 60vw);
+  }
+  .abouthead__portrait img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+  }
+
+  /* The "NN / Title" eyebrow allierho.com uses ahead of every section on
+     its /about page — same numbers IndexRotator lists and Section's
+     `index` prop prints as a watermark, so the three stay in lockstep by
+     reading the same `sections` array rather than three hand-typed copies. */
+  .section-num { margin: 0 0 1rem; }
+
+  .approach__title,
+  .path__title,
+  .aboutfoot__title {
+    font-family: var(--font-display);
+    font-size: var(--step-h2);
+    letter-spacing: var(--tracking-display);
+    font-weight: 500;
+    margin: 0 0 2.5rem;
+  }
+  .approach__list {
+    list-style: none;
+    counter-reset: step;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(2rem, 4vw, 3.5rem);
+  }
+  .approach__list li { counter-increment: step; }
+  .approach__list h3 {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 1rem;
+  }
+  .approach__list h3::before {
+    content: counter(step, decimal-leading-zero);
+    display: block;
+    font-size: var(--step-label);
+    letter-spacing: var(--tracking-label);
+    color: var(--fg-dim);
+    margin-bottom: 0.5rem;
+  }
+  .approach__list p { margin: 0; color: var(--fg-dim); max-width: 44ch; }
+  .approach__list em { font-family: var(--font-accent); font-style: italic; }
+
+  .path__list { list-style: none; margin: 0; padding: 0; }
+  .path__row {
+    display: grid;
+    grid-template-columns: 10rem 12rem 1fr;
+    gap: 0.5rem 1.5rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--rule);
+    align-items: baseline;
+  }
+  .path__years { color: var(--fg-dim); }
+  .path__org {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .path__role { color: var(--fg-dim); }
+  .path__note { grid-column: 2 / -1; margin: 0; color: var(--fg-dim); max-width: 58ch; }
+
+  .aboutfoot__body { color: var(--fg-dim); }
+  .aboutfoot__links { display: flex; flex-wrap: wrap; gap: 1.5rem; padding-top: 1.5rem; }
+
+  @media (max-width: 860px) {
+    .approach__list { grid-template-columns: 1fr; }
+    .path__row { grid-template-columns: 1fr; }
+    .path__note { grid-column: 1 / -1; }
+  }
+</style>

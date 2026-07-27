@@ -1,0 +1,27 @@
+---
+/* LockIcon.astro — a small padlock, inline SVG rather than an icon font or
+   library (CLAUDE.md: no new dependencies for a decoration this small).
+   Used wherever a locked case study is named as a link — the /work tile,
+   the archive rows, the "Next case study" band, and the gate panel itself —
+   so a visitor never clicks into a gated case expecting the full thing.
+   `size` is in em so it tracks the surrounding text; colour is always
+   currentColor so it never needs its own theme wiring. Always aria-hidden:
+   the adjacent link text is what a screen reader announces the lock state
+   through (see CaseGate.astro and the call sites), not this glyph alone. */
+interface Props { size?: string; class?: string; }
+const { size = '0.75em', class: cls = '' } = Astro.props;
+---
+<svg
+  class={cls}
+  aria-hidden="true"
+  width={size} height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect x="4" y="11" width="16" height="10" rx="2" />
+  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+</svg>

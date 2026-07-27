@@ -6,32 +6,21 @@ import Reveal from '../components/Reveal.astro';
 import OneWord from '../components/OneWord.astro';
 import Mosaic from '../components/Mosaic.astro';
 import CasePreview from '../components/CasePreview.astro';
+import Marquee from '../components/Marquee.astro';
+import Testimonials from '../components/Testimonials.astro';
 
 import { site } from '../data/site';
+import { work } from '../data/work';
+import { companies, testimonials } from '../data/home';
+import { tiles } from '../data/play';
 
-// Placeholder tiles — swap image paths once real assets land in /public/images.
-const work = [
-  { company: 'Okta', theme: 'coral', device: 'desktop',
-    title: 'Rebuilding IAM for enterprise admins',
-    summary: 'Admins ran identity for thousands of employees through a console built for a smaller company. I led six designers through a rebuild of the core administrative surfaces — no migration freeze.',
-    role: 'Staff Product Designer · Led 6 designers',
-    impact: 'Admin task time down [X]% across the four highest-volume flows',
-    href: '/work/okta-iam', image: '/images/placeholder-1.svg', alt: 'Okta IAM admin console' },
-  { company: 'PayPal', theme: 'lilac', device: 'phone',
-    title: 'Privacy settings people can read',
-    summary: 'Data-sharing controls were legally complete and practically unreadable. We rebuilt the model around what a person is deciding, not what the policy document contains.',
-    role: 'Design lead',
-    impact: 'Comprehension up [X]% in unmoderated testing',
-    href: '/work/paypal-privacy', image: '/images/placeholder-2.svg', alt: 'PayPal privacy settings' },
-  { company: 'Walmart Labs', theme: 'sage', device: 'phone',
-    title: 'Scan & Go, in-store',
-    summary: 'Six weeks of store-floor ethnography turned a checkout-replacement bet into a shipped product. The research set the scope, and the scope survived three rounds of executive review.',
-    role: 'End-to-end designer',
-    impact: 'Ethnographic research to shipped pilot in [X] stores',
-    href: '/work/walmart-scan-go', image: '/images/placeholder-3.svg', alt: 'Scan & Go' },
-];
+// The preview shows the first six playground tiles — enough to read as a set,
+// short enough that the loop isn't a minute long. The card is a 4:3 crop, so
+// the order in `play.ts` decides which pieces survive it: the squarer ones
+// lead, the tall portraits sit further down where this slice won't reach.
+const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/playground' }));
 ---
-<Base title={`${site.name} — Design Leader`}>
+<Base title={`${site.name} — ${site.seeking}`}>
   <!-- ACT 1 — the dark editorial opening -->
   <Section theme="ink" class="hero">
     <Reveal>
@@ -39,19 +28,32 @@ const work = [
     </Reveal>
     <Reveal delay={120}>
       <h1 class="u-display hero__line">
-        I build design <em>teams</em><br />that ship the hard things.
+        Designer<br />refining the<br />interplay between<br />tools, interfaces<br />&amp; experience<span class="hero__dot">.</span>
       </h1>
     </Reveal>
     <Reveal delay={260}>
       <p class="u-measure hero__body">
-        Ten years designing and leading. Most recently Staff Product Designer at Okta,
-        where I led a team of six across Identity &amp; Access Management. Before that,
-        PayPal, Walmart Labs, Deloitte Digital and Zomato.
+        Ten years in enterprise software. Most recently Staff Product Designer at
+        Okta, on the console enterprises use to run identity for thousands of
+        employees — where I also led a team of six. Before that, PayPal, Walmart
+        Labs, Deloitte Digital and Zomato.
       </p>
     </Reveal>
   </Section>
 
-  <!-- ACT 2 — selected work, one project per full-bleed band -->
+  <!-- The logo strip. Directly under the hero on purpose: a recruiter
+       skimming for 60 seconds gets the names before anything else. -->
+  <Section theme="ink" full class="logos-section">
+    <div class="u-shell logos__head">
+      <h2 class="u-label">Where I've worked</h2>
+    </div>
+    <Marquee items={companies} kind="logo" seconds={18} label="Companies I've worked at" />
+  </Section>
+
+  <!-- ACT 2 — selected work, one project per full-bleed band.
+       Five bands: the three finished case studies in the chapter hues, then
+       the two newer ones in the editorial grounds. The palette shift is the
+       hierarchy — see the note in data/work.ts. -->
 <Section theme="ink" full id="work" class="workhead-section">
   <div class="u-shell workhead">
     <h2 class="u-label">Selected work</h2>
@@ -62,18 +64,31 @@ const work = [
   <!-- ACT 3 — palette flips, the interactive moment -->
   <Section theme="sand" id="approach">
     <OneWord
-      before="The best design teams are"
+      before="The best enterprise software feels"
       after="."
-      seed="candid"
+      seed="obvious"
       prompt="Type one word"
-      suggestions={['candid', 'unblocked', 'opinionated', 'trusted', 'fast']}
+      suggestions={['obvious', 'learnable', 'quiet', 'honest', 'fast']}
     />
     <Reveal delay={200}>
       <p class="u-measure sand__body">
-        I've spent the last four years learning what actually unblocks a team:
-        clear decision rights, a design system people want to use, and critique
-        that's kind and specific. <a href="/approach">How I run a team →</a>
+        Ten years of it has taught me what holds up: a model the admin can
+        predict, a system that's faster than the workaround, and critique that's
+        kind and specific. <a href="/about#approach">How I work →</a>
       </p>
+    </Reveal>
+  </Section>
+
+  <!-- Testimonials. Placed after the work and the approach, where a hiring
+       manager already knows what she did and is looking for corroboration.
+       Clay is shared with the fourth work band — far enough up the page that
+       the two don't read as a pair. -->
+  <Section theme="clay" class="saidabout">
+    <Reveal>
+      <h2 class="u-label">What people say</h2>
+    </Reveal>
+    <Reveal delay={120}>
+      <Testimonials items={testimonials} />
     </Reveal>
   </Section>
 
@@ -86,6 +101,16 @@ const work = [
     ]} />
   </Section>
 
+  <!-- The playground, previewed. Last light note before the contact band;
+       the whole row is a way into /playground. -->
+  <Section theme="sand" full class="playpeek">
+    <div class="u-shell playpeek__head">
+      <h2 class="u-label">From the playground</h2>
+      <a class="playpeek__link" href="/playground">See all &rarr;</a>
+    </div>
+    <Marquee items={playCards} kind="card" seconds={26} label="From the playground" />
+  </Section>
+
   <!-- ACT 5 — contact -->
   <Section theme="bone" id="contact">
     <Reveal>
@@ -93,8 +118,8 @@ const work = [
     </Reveal>
     <Reveal delay={140}>
       <p class="u-measure">
-        Looking for a Design Manager or Lead UX role where leadership and craft
-        both count.
+        Looking for a {site.ask}. The hard, systemic parts of enterprise
+        software, hands on the work.
       </p>
       <p class="contact__links">
         <a href={`mailto:${site.email}`}>{site.email}</a>
@@ -106,8 +131,26 @@ const work = [
 
 <style>
   .hero { min-height: 92svh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
-  .hero__line { max-width: 18ch; }
+  /* The five lines are broken by hand. The measure is set to roughly the
+     longest of them so a narrow screen re-wraps close to the same shape
+     instead of fighting the <br>s. */
+  .hero__line { max-width: 20ch; }
   .hero__body { color: var(--fg-dim); }
+
+  /* The full stop blinks like a terminal caret — steps(), not a fade, so it
+     snaps rather than pulses. It stays inside the sentence rather than being
+     aria-hidden, so the line still ends in a full stop when read aloud. */
+  .hero__dot { animation: hero-blink 1.15s steps(1, end) infinite; }
+  @keyframes hero-blink {
+    0%, 60%   { opacity: 1; }
+    61%, 100% { opacity: 0; }
+  }
+  /* The global reduced-motion block only collapses the duration, which on an
+     infinite animation leaves the dot resting in an arbitrary state. Park it
+     visible instead. */
+  @media (prefers-reduced-motion: reduce) {
+    .hero__dot { animation: none; opacity: 1; }
+  }
 
   .railhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 2.5rem; }
   .railhead__hint { margin: 0; }
@@ -118,6 +161,20 @@ const work = [
   .contact__links { display: flex; gap: 1.5rem; padding-top: 1rem; }
   .contact__links a { color: var(--fg); }
   
+  /* The strip's head sits tight to the row it labels, and the band itself
+     is short — it's a credential, not an act. :global on the band, since
+     the class rides on Section and doesn't carry this page's scope. */
+  :global(.logos-section) { padding-block: clamp(2.5rem, 6vw, 4.5rem); }
+  .logos__head { padding-bottom: clamp(1rem, 2vw, 1.5rem); }
+
+  .playpeek__head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: clamp(1rem, 2vw, 1.5rem); }
+  .playpeek__link {
+    font-family: var(--font-display);
+    font-size: var(--step-label); letter-spacing: var(--tracking-label);
+    text-transform: uppercase; font-weight: 600;
+    color: var(--accent-text); text-decoration: none;
+  }
+
   .workhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: clamp(1rem, 2vw, 1.5rem); }
   .workhead__count { font-family: var(--font-accent); font-style: italic; font-size: var(--step-h3); color: var(--fg-dim); margin: 0; }
 

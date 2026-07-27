@@ -4,26 +4,33 @@ Context for Claude Code working in this repo.
 
 ## What this is
 
-The portfolio site for **Anupama Mishra**, a design leader with 10+ years'
-experience returning to work after a career break. Most recently Staff Product
-Designer at Okta, where she led a team of six across Identity & Access
-Management. Earlier: PayPal, Walmart Labs, Deloitte Digital, Zomato.
+The portfolio site for **Anupama Mishra**, a staff product designer with 10+
+years' experience returning to work after a career break. Most recently Staff
+Product Designer at Okta on Identity & Access Management, where she also led a
+team of six. Earlier: PayPal, Walmart Labs, Deloitte Digital, Zomato.
 
-**The site has one job: land a Design Manager or Staff UX Designer role
-(remote).** Every decision serves that. When a change would make the site
-prettier but less effective at that job, say so.
+**The site has one job: land a Staff Product Designer/Lead Product Designer role.** Every
+decision serves that. When a change would make the site prettier but less
+effective at that job, say so.
+
+The role she is asking for is a **senior IC one**. Leading six designers is
+evidence of scope, influence and judgement — it is not the ask, and no band
+should read as a management pitch. The ask is written once, in `site.ask`
+(`data/site.ts`); every band that states it reads from there. It drifted into
+"Design Manager or Lead UX" across three files once already.
 
 Live site today: `anupama.design` (Wix). This repo replaces it.
 
 ## The two audiences, in tension
 
-1. **A recruiter, 60–90 seconds, skimming.** Needs team scope and business
-   impact fast. Will not scroll patiently or wait for animations.
+1. **A recruiter, 60–90 seconds, skimming.** Needs the level, the surface area
+   and business impact fast. Will not scroll patiently or wait for animations.
 2. **A hiring manager or design leader, reading properly.** Wants craft,
-   judgement, and evidence she can run a team.
+   judgement, and evidence she can carry a hard problem end to end and pull
+   other people along with her.
 
 The visual language is deliberately expressive (see `REFERENCE-NOTES.md`), but
-it sits on top of a fast scannable spine. If a change buries team scope or a
+it sits on top of a fast scannable spine. If a change buries her scope or a
 metric behind an interaction, flag it.
 
 ## Architecture
@@ -40,7 +47,7 @@ src/
 │  ├─ tokens.css     ← every colour, type size, space value, easing. THE file.
 │  └─ global.css     ← type roles (.u-display, .u-label), a11y baseline
 ├─ layouts/Base.astro
-├─ components/       ← 8 components, each with a header comment
+├─ components/       ← 11 components, each with a header comment
 ├─ data/site.ts      ← email, links, one-liners
 └─ pages/
 public/
@@ -68,21 +75,27 @@ toggle sets `data-mode` on `<html>`; the mode is resolved by an inline script in
 `Base.astro` before first paint. **A new palette needs a night block too**, or
 that band will sit unchanged while everything around it turns.
 
-**3. Case studies are leadership-first.**
+**3. Case studies lead with scope and judgement, then craft.**
 This matters more than anything else in the repo. The standard portfolio
-narrative — persona, user journey, wireframes, hi-fi screens — argues she is an
-individual contributor, which loses the role. Every case study runs:
+narrative — persona, user journey, wireframes, hi-fi screens — argues she is a
+mid-level designer who executes, which loses a staff role. Staff is bought on
+blast radius and judgement: the size of the problem she can hold, the calls she
+made, and the quality of what shipped. Every case study runs:
 
 1. The situation (business stakes, two sentences)
-2. **My scope** — team size, what she owned, what she delegated, who she reported to
+2. **My scope** — what she owned, what she influenced, who else was on it
 3. The hard call — one real tradeoff and why she made it
-4. How the team worked — process she built, not just output
-5. The craft — screens, now that leadership is established
-6. Impact — business, team, and craft numbers
+4. How the work got made — the process and the partners, not just output
+5. The craft — screens, now that the scope is established
+6. Impact — business, craft, and team numbers
 7. What I'd do differently
 
 If asked to write or restructure a case study and this shape is missing, rebuild
 it to this shape and explain why. Pushing back here is correct.
+
+The case bodies in `cases.ts` still narrate several of these sections in a
+manager's voice ("the team I ran", "I staffed it"). That reads as scope, which
+is fine, but any rewrite should keep her hands visibly on the design work.
 
 **4. Accessibility is not optional.**
 Anupama has a public talk titled *The Saga of Accessibility*. An inaccessible
@@ -132,6 +145,15 @@ must change.
 | `CaseCard.astro` | A work tile. Carries scope and metric — keep both. |
 | `OneWord.astro` | Interactive headline; visitor types a word into it. |
 | `CursorTrail.astro` | A 12-point spring chain following the pointer. Hover devices only. |
+| `CasePreview.astro` | One project as a full-bleed band. Home page ACT 2 and `/work`. |
+| `InfiniteStream.astro` | The playground's looping collage. Pans on both axes: the page scrolls down, the field wraps sideways. Drifting columns, tops itself up as you scroll. |
+| `Marquee.astro` | A row that scrolls itself. `kind="logo"` for the company strip, `kind="card"` for the playground preview. |
+| `Testimonials.astro` | Three quotes across. Content in `data/home.ts` is **placeholder — not real quotes**. |
+| `PageHeader.astro` | The standing header for every interior page. Centred eyebrow + display title + optional intro. |
+| `CaseRail.astro` | The sticky section rail on a case study. Scroll-spy; becomes a horizontal strip under 1080px. |
+| `CaseBlocks.astro` | Renders one case-study section's body from the `CaseBlock` union in `data/cases.ts`. |
+| `CaseDoodle.astro` | Seven hand-drawn creatures, one per case-study section. Shared body/eyes/legs skeleton, keyed by section `id`. |
+| `Footer.astro` | Closes every page: bio / contact / "let's talk", then a meta line with a live clock, then the wordmark. Ink band, in `Base.astro` below `<main>`. |
 
 `CursorTrail` is a port of the reference site's `cursor-line.js` — a spring
 chain, not a path history: the head eases toward the cursor, each point eases
@@ -144,17 +166,103 @@ palette), and is `display: none` under `prefers-reduced-motion`. Its rAF loop
 parks once the chain settles. **Don't "simplify" the curl or the chain into a
 plain trailing line — that's the whole effect.**
 
+It is on everywhere except `/playground`, which passes `trail={false}` to
+`Base`. That page owns its cursor: the stream is a pannable field wearing the
+grab/grabbing hand, and a line trailing off a hand you are dragging with reads
+as two cursors. Any future page that takes over the cursor opts out the same
+way — don't add a second suppression mechanism.
+
+The playground's two axes come from the moodboard on
+`meagandurlak.com/case-studies` (`case-studies/js/moodboard.js`), read the same
+way `cursor-line.js` was. Vertical is the document's own scroll, so the closing
+band and the footer stay reachable. Horizontal is a pan: every row renders its
+column set twice — the twin is `aria-hidden` — and the pan wraps on the exact
+distance between the two, measured at runtime. The seam is invisible because
+the gap between the sets is the same clamp as the gap between columns inside
+one; **if you change one, change the other.** The field must also stay
+full-bleed (`.playstream__shell` in `playground.astro`) — inside a 1200px
+column the wrap has less width than the viewport and the seam lands on screen.
+**The two axes are separate gestures.** A wheel goes to whichever axis
+dominates it: mostly sideways pans the field, anything else falls through to
+the document untouched, because native vertical scrolling feels better than
+anything hand-rolled and it is what keeps the closing band and the footer
+reachable. Arrow keys pan left/right. Columns drift straight up and down, not
+on a slant. A **diagonal was built and then taken back out** — it worked, but
+owning both halves of a wheel gesture means owning the vertical scroll, and
+that trade wasn't worth it on this page. Don't reintroduce it casually.
+
+A drag is the one exception: direct manipulation has to follow the hand, so it
+pans and scrolls at once. Two things keep it honest. **The vertical half is
+queued (`pendingY`), never scrolled from the event handler** — the sideways
+half is a transform and can only land in a frame, so scrolling at the event
+puts the two a frame apart and the drag shears. **The frame reads every row
+before it writes any** — a rect read after a transform write forces a style
+recalc, and interleaving costs one per row.
+
+Release inertia and the drift both switch off under `prefers-reduced-motion`;
+drag, wheel and keys don't, because those are the visitor's own hand.
+
 ## Current state
 
-Built and working: token/theme system, all 7 components above, home page (five
-acts), build passing.
+Built and working: token/theme system, every component above, home page (five
+acts), `/work`, `/about`, `/playground`, build passing.
 
-Not built yet: case study layout + content collection (`src/content/work/`),
-`/approach`, `/profile`, `/work` index. The home page links to `/work/...` and
-`/approach` — **those routes 404 right now.** Building them is the next task.
+The nav carries three links — Work, About me, Playground. `/approach` and
+`/profile` were never built and are no longer linked; "How I work" on the home
+page points at `/about#approach` instead.
+
+Case studies are built. `/work/okta-iam`, `/work/paypal-privacy` and
+`/work/walmart-scan-go` all render from `src/pages/work/[slug].astro`, and the
+layout follows `rachelchen.tech/projects/openai` — banner (eyebrow, title,
+full-width image, meta row), then a two-column body with a sticky section rail,
+then the next project.
+
+The banner is **`bone` on every case study**, not the project's palette. A
+full-bleed saturated ground behind display type reads as a poster and fights
+the reading page under it. The project's hue lives on its `/work` tile and on
+the closing "next case study" band. Each body section opens with a small
+hand-drawn creature from `CaseDoodle.astro`, keyed by section `id` — the same
+seven across all three cases, so "the hard call" is the same character every
+time. They are **characters, not icons**: every one is a body, two ring eyes
+and two thin legs with kicked-out feet, on a shared skeleton, and only the
+body and one prop change. Keep that skeleton if you add one — an abstract
+mark drawn to the same brief will read as a stray icon next to the rest. They
+are margin notes; don't scale them up or draw a set per case.
+
+Content lives in **`src/data/cases.ts`**, not in a content collection. These
+pages aren't prose — each section is a composition of small typed blocks
+(`prose`, `points`, `rows`, `figure`, `quote`, `metrics`), and Markdown would
+have meant either adding MDX or writing raw HTML in `.md`. The typed union is
+also the guardrail for rule 3: the section order (situation → my scope → the
+hard call → how the team worked → the craft → impact → what I'd do differently)
+is declared per case, and a missing section is visible in one file.
+`src/content/work/` is now an empty leftover — delete it or leave it, but don't
+build a second content path.
+
+**The prose in `cases.ts` is a structural draft, not confirmed fact.** It is
+written from what CLAUDE.md and `work.ts` already record about each project.
+Every number is still a `[X]` placeholder, and the specifics — squad counts,
+who Anupama reported to, the exact tradeoffs — need her to confirm or replace
+them before this ships.
+
+Two Astro/CSS gotchas, learned the hard way. First: `body { overflow-x: hidden }`
+forces `overflow-y` to `auto`, which makes `<body>` a scroll container and
+silently breaks every `position: sticky` inside it — the case-study rail just
+stops sticking. `global.css` uses `overflow-x: clip` instead; it trims the
+bleeding display type identically without creating a scroll container. Don't
+change it back.
+
+Second: a `class` passed to `<Section>` does
+**not** carry this page's scope hash, so a rule targeting the band itself
+(`.playhead`, `.abouthead`, …) must be wrapped in `:global()`. Rules targeting
+elements written in the page file scope normally.
 
 Images in `public/images/` are placeholder SVGs. Real imagery is pending an NDA
 check on the Okta IAM console work.
+
+The footer clock runs off `location` and `timezone` in `data/site.ts`. Both are
+placeholders — `location` reads `[City]` on purpose, same bracket convention as
+the unconfirmed numbers, so it stays visible until she says where she's based.
 
 ## Commands
 

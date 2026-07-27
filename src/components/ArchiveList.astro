@@ -1,0 +1,252 @@
+---
+/* ArchiveList.astro — the archive tier on /work. Earlier projects as text
+   rows rather than tiles, each with a preview image that appears on hover.
+
+   Based on the reference's archive list (allierho.com/projects-grid, the
+   block under ARCHIVE), with one deliberate difference:
+
+   1. The preview FLOATS OVER the list. It does not sit inside the row and it
+      does not push the type sideways — the rows never move.
+   2. It FOLLOWS THE CURSOR, easing toward the pointer rather than snapping.
+      This is the departure: the reference pins its preview to the centre of
+      the list. Anupama asked for cursor-following, so the position comes from
+      the pointer, which is the one thing here that needs script.
+   3. The link label is hidden until hover (as the reference does, at
+      opacity 0), so the right-hand column stays quiet.
+
+   The follow is a hand-rolled rAF that parks the moment the chase settles —
+   same shape as CursorTrail, and the reason no animation library is needed.
+   Two details keep it honest:
+   - The chase is SEEDED on entry (`seeded`), so the preview appears where the
+     pointer already is. Without that, moving from the first row to the last
+     makes it swoop down the page on every re-entry.
+   - Under prefers-reduced-motion the easing drops to 1 — the preview still
+     tracks the pointer, because that is the visitor's own hand, but nothing
+     moves on its own. Same call the playground makes for drag.
+
+   `pointer-events: none` is load-bearing: the preview sits under the cursor
+   by definition, and without it the image would swallow the hover that
+   summons it and the whole thing would flicker.
+
+   Keyboard gets the reveal via :focus-visible; with no pointer to follow it
+   parks over the focused row. Hover-capable pointers only
+   (@media (hover: hover)), and only above 900px where there is room. */
+interface ArchiveItem {
+  name: string; tag: string; year: string;
+  href?: string; image?: string;
+}
+interface Props { items: readonly ArchiveItem[] }
+const { items } = Astro.props;
+---
+<ul class="arch" data-arch>
+  {items.map((a) => {
+    const Row = a.href ? 'a' : 'div';
+    /* These point at /work/<slug> now. Only an off-site href gets a new tab
+       (and the rel that makes one safe) — forcing one for our own pages
+       would strand the visitor in a second window. */
+    const external = !!a.href && /^https?:/.test(a.href);
+    const linkAttrs = a.href
+      ? { href: a.href, ...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {}) }
+      : {};
+    return (
+      <li class="arch__item">
+        <Row class="arch__row" {...linkAttrs}>
+          {a.image && (
+            /* aria-hidden: the row already says the project's name, so the
+               preview is decoration and would only double the announcement. */
+            <span class="arch__preview" aria-hidden="true">
+              <img src={a.image} alt="" loading="lazy" decoding="async" width="760" height="460" />
+            </span>
+          )}
+          <span class="arch__name u-accent">{a.name}</span>
+          {/* One cell, not two: "Website design, 2021" reads as a single
+              caption the way the reference sets it. */}
+          <span class="arch__meta u-label">{a.tag}, {a.year}</span>
+          {a.href && <span class="arch__cta u-label">View<span class="arch__sr"> {a.name}</span> &rarr;</span>}
+        </Row>
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  .arch {
+    /* ~26% of the viewport on the reference, at the previews' own 760×460. */
+    --preview-w: clamp(15rem, 26vw, 22rem);
+    position: relative;   /* the previews position against this, and only this */
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .arch__item { border-top: 1px solid var(--rule); }
+  .arch__item:last-child { border-bottom: 1px solid var(--rule); }
+
+  .arch__row {
+    display: flex;
+    align-items: center;
+    gap: var(--gutter);
+    padding-block: 1.15rem;
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  /* Hover-capable pointers only — see the header note. */
+  .arch__preview { display: none; }
+  @media (hover: hover) {
+    .arch__preview {
+      display: block;
+      /* Absolute against the list, NOT fixed. `position: fixed` resolves
+         against the nearest transformed ancestor, and this list sits inside
+         a <Reveal> that holds a translate until it lands — so a fixed
+         preview lands hundreds of pixels off for the 900ms the reveal is
+         running. --px/--py are therefore list-local, converted from the
+         pointer in the script below. */
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: var(--preview-w);
+      aspect-ratio: 760 / 460;
+      overflow: hidden;
+      /* Under the nav (50), so a preview chased up the page never covers it. */
+      z-index: 20;
+      /* The preview lives under the cursor — without this it would swallow
+         the hover that summons it. */
+      pointer-events: none;
+      opacity: 0;
+      /* Sits above and centred on the pointer, so the cursor stays on the row
+         it is previewing rather than behind the image. Positional only —
+         nothing transitions here, or the entrance would fight the follow. */
+      transform: translate3d(
+        calc(var(--px, 0px) - 50%),
+        calc(var(--py, 0px) - 100% - 1.25rem),
+        0
+      );
+      transition: opacity var(--dur-hover) var(--ease-out);
+    }
+    .arch__row:hover .arch__preview,
+    .arch__row:focus-visible .arch__preview { opacity: 1; }
+  }
+  /* max-width: none is load-bearing — Tailwind's preflight sets
+     `img { max-width: 100% }`, which fights the fixed width above. */
+  .arch__preview img {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Family, italic and weight come from the global .u-accent role on the
+     span — only the size and the flex behaviour belong to this component.
+     Nudged up from --step-h3: Instrument Serif runs optically smaller than
+     General Sans, so matching sizes would leave the names reading lighter
+     than the row they title. */
+  .arch__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: calc(var(--step-h3) * 1.15);
+    line-height: 1.1;
+  }
+  .arch__meta { flex: 0 0 16rem; color: var(--fg-dim); }
+  .arch__cta { flex: 0 0 auto; color: var(--accent-text); }
+  .arch__row:hover .arch__cta { text-decoration: underline; text-underline-offset: 4px; }
+
+  /* The reference keeps the link column quiet until you are on the row. Only
+     where there is a hover to reveal it — on touch it must stay visible, or
+     it would never appear at all. */
+  @media (hover: hover) {
+    .arch__cta {
+      opacity: 0;
+      transition: opacity var(--dur-hover) var(--ease-out);
+    }
+    .arch__row:hover .arch__cta,
+    .arch__row:focus-visible .arch__cta { opacity: 1; }
+  }
+
+  /* "View" alone repeats nine times in a screen-reader's link list; the
+     project name rides along for it and stays off-screen visually. */
+  .arch__sr {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 900px) {
+    /* Needs a hover pointer AND room. A narrow desktop window has the first
+       but not the second: the rows wrap there, and a preview wider than the
+       row it floats over stops reading as a preview. */
+    .arch__preview { display: none !important; }
+    .arch__cta { opacity: 1; }
+    .arch__row {
+      flex-wrap: wrap;
+      gap: 0.35rem 1rem;
+      min-height: 0;
+      padding-block: 1.15rem;
+    }
+    .arch__name { flex: 1 1 100%; }
+    .arch__meta { flex: 0 0 auto; }
+    .arch__cta { flex: 0 0 auto; margin-left: auto; }
+  }
+</style>
+
+<script>
+  /* Eases the preview toward the pointer. See the header comment for why this
+     is hand-rolled rather than a library, and why it seeds on entry. */
+  document.querySelectorAll<HTMLElement>('[data-arch]').forEach((list) => {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    // Chased in viewport coordinates — stable while the page scrolls — and
+    // converted to list-local only at the moment of writing.
+    let tx = 0, ty = 0, cx = 0, cy = 0;
+    let raf = 0, seeded = false, inside = false;
+
+    const frame = () => {
+      raf = 0;
+      // 1 under reduced motion: the preview still tracks the pointer (that is
+      // the visitor's own hand) but never travels on its own.
+      const k = reduce.matches ? 1 : 0.18;
+      cx += (tx - cx) * k;
+      cy += (ty - cy) * k;
+      const box = list.getBoundingClientRect();
+      list.style.setProperty('--px', `${(cx - box.left).toFixed(1)}px`);
+      list.style.setProperty('--py', `${(cy - box.top).toFixed(1)}px`);
+      // Park once the chase has caught up; the next move restarts it.
+      if (Math.abs(tx - cx) > 0.5 || Math.abs(ty - cy) > 0.5) {
+        raf = requestAnimationFrame(frame);
+      }
+    };
+
+    const queue = () => { if (!raf) raf = requestAnimationFrame(frame); };
+
+    list.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;   // touch and pen never hover
+      inside = true;
+      tx = e.clientX;
+      ty = e.clientY;
+      // First move after entering: start AT the pointer, so re-entering the
+      // list lower down doesn't drag the preview across the page.
+      if (!seeded) { cx = tx; cy = ty; seeded = true; }
+      queue();
+    }, { passive: true });
+
+    list.addEventListener('pointerleave', () => { seeded = false; inside = false; });
+
+    // Scrolling with the pointer parked moves the list under a stationary
+    // cursor, so the local offset changes even though nothing was moved.
+    addEventListener('scroll', () => { if (inside) queue(); }, { passive: true });
+
+    // Keyboard has no pointer to chase, so focus parks the preview over the
+    // row itself rather than wherever the mouse was last left.
+    list.addEventListener('focusin', (e) => {
+      const row = (e.target as HTMLElement).closest<HTMLElement>('.arch__row');
+      if (!row) return;
+      const r = row.getBoundingClientRect();
+      tx = cx = r.left + r.width / 2;
+      ty = cy = r.top;
+      seeded = true;
+      queue();
+    });
+  });
+</script>

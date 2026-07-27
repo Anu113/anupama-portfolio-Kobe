@@ -7,7 +7,7 @@
   /* --- TYPE FAMILIES ------------------------------------ */
   --font-display: 'General Sans', ui-sans-serif, system-ui, sans-serif;
   --font-accent: 'Instrument Serif', Georgia, serif;   /* the italic word */
-  --font-body: 'General Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Crimson Pro', Georgia, serif;
 
   /* --- TYPE SCALE ---------------------------------------
      Display sizes use vw so type overflows the viewport
@@ -18,6 +18,10 @@
   --step-h2: clamp(1.75rem, 3.6vw, 3rem);
   --step-h3: clamp(1.25rem, 2vw, 1.75rem);
   --step-body: clamp(1rem, 1.15vw, 1.1875rem);
+  --step-small: 0.9375rem;   /* captions, metric labels — copy meant to be
+                                read, one notch under body. --step-label is
+                                for uppercase eyebrows only; at 0.72rem it's
+                                too small for a sentence. */
   --step-label: 0.72rem;
 
   --tracking-label: 0.14em;
@@ -31,12 +35,34 @@
   --gutter: clamp(1.25rem, 4vw, 4rem);
   --measure: 62ch;
 
+  /* Case-study page. --nav-h is the fixed nav's own height (1.5rem padding
+     top and bottom around a 2.5rem toggle); the sticky rail and every
+     scroll-margin on the page are measured off it, so a change to the nav's
+     padding only needs editing here. */
+  --nav-h: 5.5rem;
+  --rail-width: clamp(9rem, 13vw, 12rem);
+  --space-case: clamp(3.5rem, 7vw, 6rem);   /* between case-study sections */
+  /* CaseRail's cursor-proximity shimmer (ported from a React Bits component,
+     see the header comment in CaseRail.astro). Read by the rail's script via
+     getComputedStyle, so a retune only needs editing here. */
+  --rail-proximity: 90px;   /* vertical reach of the cursor before a link stops reacting */
+  --rail-shift: 0.65rem;    /* how far a label slides at full proximity */
+
   /* --- MOTION ------------------------------------------- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-reveal: 900ms;
   --dur-hover: 320ms;
 
   --radius: 0px;   /* reference is hard-edged. Raise for softer cards. */
+
+  /* IndexRotator is fixed chrome that floats over every band on the page
+     at once (it isn't nested inside a [data-theme] block the way CaseRail
+     is, so it can't reach --shell/--fg-dim/--rule/--accent — those only
+     cascade inside a themed Section). These two are its whole palette:
+     always this dark chip, always this light text, in every theme, day or
+     night — the same reasoning that keeps --shell near-black everywhere. */
+  --chip-bg: #17120f;
+  --chip-fg: #f4ece1;
 }
 
 /* ============================================================
@@ -78,15 +104,32 @@
   --accent-text: #a83a19;
 }
 
+/* Clay was a warm brown; it is now an oxblood ground under the coral-red
+   type from the reference poster. Same name, because clay is a fairer
+   description of a brick red than it was of the brown, and renaming it would
+   churn five bands, three type unions and the docs for nothing.
+
+   On WHY THE GROUND IS DARKER THAN THE REFERENCE: the reference sets that
+   coral straight onto a mid brick (#9b2524). That is 2.28:1 — fine for a
+   poster where the type is 200px, but this palette carries 11px meta rows in
+   the /work archive and testimonial attributions on the home page. Dropping
+   the ground to oxblood puts the SAME coral at 4.72:1, which clears AA at
+   every size, so nothing here needs a "display type only" caveat the way
+   sand does. It also lands within a shade of the brown it replaces, so every
+   band keeps the light/dark rhythm it had.
+
+   --fg-dim is brighter than --fg in luminance but far less saturated, so it
+   still recedes. On a dark ground quiet has to come from saturation, not
+   from dimming — dimming here would drop it under 4.5:1. */
 [data-theme='clay'] {
-  --bg: #4a2620;
-  --fg: #f4ece1;
-  --fg-dim: #c3a99f;
-  --accent: #e3caa5;
-  --rule: #6b3d34;
-  --shell: #17120f;
-  --screen: #3b1d18;
-  --accent-text: #e3caa5;
+  --bg: #420d0c;          /* oxblood */
+  --fg: #fa4a3c;          /* the reference coral — 4.72:1, all sizes */
+  --fg-dim: #c9a8a2;      /* dusty rose — 7.4:1 */
+  --accent: #fa4a3c;      /* 4.72:1, so focus rings clear the 3:1 for UI */
+  --rule: #6e1a18;
+  --shell: #1e0605;
+  --screen: #5c1312;
+  --accent-text: #ffb3a5; /* 9.5:1 */
 }
 
 /* --- The chapter-card palettes ---------------------------
@@ -131,11 +174,51 @@
 }
 
 /* ============================================================
+   TILE TINTS — the grounds the playground artwork is mounted on.
+   Declared at :root, not inside the [data-theme] blocks: a theme
+   only publishes its --bg to its own subtree, so a tile inside the
+   bone band has no way to reach sage's. These can be read anywhere.
+
+   MUTED RELATIVES of the palette hues, not copies of the grounds.
+   The band colours were tried here first and were wrong for the job:
+   coral and lilac are display colours that shouted over the artwork,
+   and ink and clay are near-blacks that turned each tile into a
+   heavy slab. A mount is meant to sit under the work, so these are
+   the same hues held to low chroma and a light-to-mid tone — close
+   enough to the bone band to stay quiet, far enough to read as a
+   mount. If you add one, match that register; a saturated tint will
+   pull the eye off the drawing it is supposed to be carrying.
+   Assigned per tile in InfiniteStream.astro, not here.
+   ============================================================ */
+:root {
+  --tint-sage:  #d3dfd1;   /* eucalyptus, greyed */
+  --tint-oat:   #e2d2b6;   /* sand, softened */
+  --tint-clay:  #d8c1b6;   /* terracotta, dusty */
+  --tint-mauve: #d5cbe0;   /* lilac, greyed right down */
+  --tint-stone: #cdc6ba;   /* warm neutral */
+  --tint-shell: #dfd0bd;   /* the palest — greige */
+}
+
+/* ============================================================
    NIGHT MODE — a second dimension on top of the palettes above.
    `data-mode="night"` on <html> (set by the nav toggle) restates
    each one after dark. Every palette needs a block here, or it will
    sit unchanged while the bands around it turn.
    ============================================================ */
+
+/* The tints after dark. Same restraint, inverted: each one is its
+   own hue taken to a near-black that still keeps a trace of the
+   colour. All six sit LIGHTER than the night bone band (#1b1512) on
+   purpose — a mount has to separate from what's behind it, and at
+   these tones that's the only thing distinguishing them. */
+[data-mode='night'] {
+  --tint-sage:  #1e2a20;
+  --tint-oat:   #2b2519;
+  --tint-clay:  #33221c;
+  --tint-mauve: #262133;
+  --tint-stone: #272420;
+  --tint-shell: #2f2820;
+}
 
 /* Ink is the hero band (and the work head + mosaic — they share the
    theme, so all three turn together). By day it's a warm near-black;
@@ -174,6 +257,22 @@
   --shell: #0e0b09;
   --screen: #1b291f;
   --accent-text: #a9dfb9;
+}
+
+/* Clay is already a dark ground by day, so night deepens the oxblood rather
+   than inverting it — the same move coral makes. The coral itself is held,
+   because it is the thing that identifies this band; only the ground moves.
+   Without this block the clay bands (/work archive, /about footer, the home
+   page testimonials) sit unchanged while every band around them turns. */
+[data-mode='night'] [data-theme='clay'] {
+  --bg: #2a0908;
+  --fg: #fa4a3c;            /* 5.35:1 */
+  --fg-dim: #c9a8a2;        /* 8.4:1 */
+  --accent: #fa4a3c;
+  --rule: #4d100f;
+  --shell: #140403;
+  --screen: #3a0b0a;
+  --accent-text: #ffb3a5;   /* 10.7:1 */
 }
 
 /* The chapter-card palettes after dark. Each keeps its hue and drops

@@ -2,8 +2,17 @@
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import CursorTrail from '../components/CursorTrail.astro';
-interface Props { title: string; description?: string; }
-const { title, description = 'Anupama Mishra — design leader. Design Manager & Lead UX Designer.' } = Astro.props;
+import Footer from '../components/Footer.astro';
+/* `trail` is the cursor line. It is on everywhere except pages that own the
+   cursor themselves — /playground puts a grab hand on its pannable field,
+   and a line trailing off a hand you are dragging with reads as two
+   cursors. Opt out there rather than fighting it. */
+interface Props { title: string; description?: string; trail?: boolean; }
+const {
+  title,
+  description = 'Anupama Mishra — Staff Product Designer. Identity, access and the enterprise systems underneath them.',
+  trail = true,
+} = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
@@ -30,20 +39,32 @@ const { title, description = 'Anupama Mishra — design leader. Design Manager &
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <!-- `@1` is Fontshare's VARIABLE cut of General Sans: one file covering
+         the whole 200–700 weight axis instead of three static masters. The
+         footer wordmark animates that axis under the cursor, which a static
+         face cannot do. Weights 400/500/600 used everywhere else render the
+         same. Don't swap this back to `@400,500,600`. -->
     <link
       rel="stylesheet"
-      href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap"
+      href="https://api.fontshare.com/v2/css?f[]=general-sans@1&display=swap"
     />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap"
+    />
+    <!-- Body copy. 400/500 covers regular paragraphs and the heavier .u-label
+         weight; italic comes along for any <em> that lands in body text. -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap"
     />
   </head>
   <body>
     <a href="#main" class="skip">Skip to content</a>
     <Nav />
     <main id="main"><slot /></main>
-    <CursorTrail />
+    <Footer />
+    {trail && <CursorTrail />}
     <style>
       .skip {
         position: absolute; left: -9999px;

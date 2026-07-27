@@ -1,0 +1,185 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Reveal from '../components/Reveal.astro';
+import PageHeader from '../components/PageHeader.astro';
+import ArchiveList from '../components/ArchiveList.astro';
+import LockIcon from '../components/LockIcon.astro';
+import { work, archive } from '../data/work';
+import { cases } from '../data/cases';
+
+/* Cross-referenced by href rather than duplicating a `locked` flag in
+   work.ts — cases.ts is the one place a case's gate state is declared, so
+   there's nothing to keep in sync by hand. */
+const lockedSlugs = new Set(cases.filter((c) => c.locked).map((c) => c.slug));
+const isLocked = (href: string) => lockedSlugs.has(href.replace('/work/', ''));
+
+/* Where each tile sits. Presentation only, so it lives here rather than in
+   work.ts — that file stays about content. Columns are on the 12-track grid
+   below; `top` is a rem offset that pushes a tile down out of line with its
+   neighbour, and `ratio` varies the media height. Together they make the
+   staggered field from the reference (allierho.com) instead of a card wall.
+   A sixth project needs a sixth entry — the grid falls back to a full-width
+   16/10 tile if one is missing.
+   Rows 1 and 3 pair two tiles; row 2 is the single wide one. The last pair is
+   the deck-linked work, so it sits below the three full case studies. */
+const layout = [
+  { col: '1 / 9',  ratio: '16 / 10', top: 0 },
+  { col: '9 / 13', ratio: '4 / 5',   top: 7 },
+  { col: '4 / 12', ratio: '16 / 9',  top: 0 },
+  { col: '1 / 6',  ratio: '4 / 5',   top: 0 },
+  { col: '7 / 13', ratio: '16 / 10', top: 6 },
+];
+const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
+---
+<Base
+  title="Work — Anupama Mishra"
+  description="Selected work: Okta IAM and developer tools, PayPal privacy, Walmart Scan & Go, data access automation and Chase Pay. Scope, the hard calls and outcomes for each."
+>
+  <Section theme="bone" class="workindex">
+    <div class="workindex__head">
+      <PageHeader label="Selected work">
+        Five projects, and <em>what I owned</em> in each.
+        <Fragment slot="intro">
+          <p>
+            Every case study runs the same way: the business situation, my scope,
+            the hardest call I made, how the work actually got made, and then the
+            craft and the numbers.
+          </p>
+        </Fragment>
+      </PageHeader>
+    </div>
+
+    <div class="grid">
+      {work.map((w, i) => {
+        const l = layout[i] ?? fallback;
+        return (
+          <div class="cell" style={`--col: ${l.col}; --top: ${l.top}rem;`}>
+          <Reveal delay={i * 90}>
+            <a class="tile" href={w.href}>
+              <div class="tile__media" data-theme={w.theme} style={`--ratio: ${l.ratio};`}>
+                <img src={w.image} alt={w.alt} loading="lazy" decoding="async" />
+              </div>
+              <p class="tile__co u-label">{w.company}</p>
+              <h2 class="tile__title">
+                {w.title}
+                {isLocked(w.href) && <LockIcon class="tile__lock" size="0.6em" />}
+              </h2>
+              <p class="tile__role u-label">{w.role}</p>
+              <p class="tile__impact">{w.impact}</p>
+              <span class="tile__cta u-label">View case study &rarr;</span>
+            </a>
+          </Reveal>
+          </div>
+        );
+      })}
+    </div>
+  </Section>
+
+  <Section theme="clay">
+    <Reveal>
+      <h2 class="arch__head u-label">Archive</h2>
+    </Reveal>
+    <Reveal delay={120}>
+      <ArchiveList items={archive} />
+    </Reveal>
+  </Section>
+
+</Base>
+
+<style>
+  /* The header and the grid share one bone band. They used to be two
+     adjacent <Section>s, but once the header went light they wore the same
+     ground — and two Sections in one palette stack their padding into a
+     ~280px dead gap at a seam nobody can see. One band, one gap.
+     :global because the band is rendered by Section.astro, so it doesn't
+     carry this page's scope hash. Named .workindex rather than .workhead:
+     index.astro already owns that class for its "Selected work" label row. */
+  :global(.workindex) { padding-top: 0; }
+
+  /* Carries the band height the header used to get from the Section, so
+     /work's header still measures the same as /about's. */
+  .workindex__head {
+    min-height: 72svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  /* --space-band-tight, not --space-section: the header is 72svh with its
+     type centred, so it already leaves a half-band of air below the intro.
+     A full section space on top of that reads as a hole. */
+  .grid { margin-top: var(--space-band-tight); }
+
+  /* --- The staggered grid --------------------------------------------
+     12 tracks. Each cell picks its span and its drop from the `layout`
+     array above; auto-placement handles which row it lands on. */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--gutter);
+    row-gap: clamp(4rem, 9vw, 8rem);
+  }
+  .cell {
+    grid-column: var(--col);
+    margin-block-start: var(--top);
+  }
+
+  .tile { display: block; text-decoration: none; color: var(--fg); }
+  .tile__media {
+    background: var(--bg);       /* the project's own hue, from data-theme */
+    aspect-ratio: var(--ratio);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .tile__media img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: transform 600ms var(--ease-out);
+  }
+  .tile:hover .tile__media img,
+  .tile:focus-visible .tile__media img { transform: scale(1.04); }
+
+  .tile__co { color: var(--fg-dim); margin: 0 0 0.5rem; }
+  .tile__title {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-weight: 500;
+    margin: 0 0 0.85rem;
+    max-width: 24ch;
+    text-wrap: balance;
+  }
+  .tile__lock { margin-left: 0.4em; color: var(--fg-dim); vertical-align: middle; }
+  /* Scope and metric stay on the tile face — a recruiter skimming for team
+     size shouldn't have to open the case study to find it. */
+  .tile__role { color: var(--fg-dim); margin: 0 0 1rem; }
+  .tile__impact {
+    font-size: var(--step-body);
+    margin: 0 0 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    max-width: 30ch;
+    text-wrap: pretty;
+  }
+  .tile__cta { color: var(--accent-text); display: inline-block; }
+  .tile:hover .tile__cta { text-decoration: underline; text-underline-offset: 4px; }
+
+  /* --- Archive -------------------------------------------------------
+     The rows themselves are ArchiveList.astro; only the heading is here. */
+  .arch__head { margin: 0 0 2rem; color: var(--fg-dim); }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; row-gap: clamp(3.5rem, 10vw, 5rem); }
+    .cell { grid-column: 1 / -1; margin-block-start: 0; }
+    .tile__media { aspect-ratio: 16 / 10; }
+    .arch__row { grid-template-columns: minmax(0, 1fr) 5rem; }
+    .arch__tag { grid-column: 1; }
+    .arch__year { grid-column: 2; grid-row: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tile:hover .tile__media img,
+    .tile:focus-visible .tile__media img { transform: none; }
+  }
+</style>

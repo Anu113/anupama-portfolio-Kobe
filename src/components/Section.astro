@@ -4,19 +4,63 @@
    Themes available (defined in tokens.css):
      ink | sand | bone | clay      — the editorial four
      sage | lilac | coral          — the saturated chapter-card grounds
-   Each also has a night variant; the nav toggle switches between them. */
+   Each also has a night variant; the nav toggle switches between them.
+
+   `index` is optional — pass a section's number ("00", "01", …) to print a
+   huge, near-invisible outlined numeral behind the band's content, the way
+   ozgur.design marks each section of its single-page layout. It's purely
+   decorative (aria-hidden) and is only meant to pair with IndexRotator.astro,
+   which lists the same numbers on the page's right edge — see about.astro for
+   the pairing. Omit it and a band renders exactly as before; this never
+   applies unless a page opts in. */
 interface Props {
   theme?: 'ink' | 'sand' | 'bone' | 'clay' | 'sage' | 'lilac' | 'coral';
-  full?: boolean; id?: string; class?: string;
+  full?: boolean; id?: string; class?: string; index?: string;
 }
-const { theme = 'ink', full = false, id, class: cls = '' } = Astro.props;
+const { theme = 'ink', full = false, id, class: cls = '', index } = Astro.props;
 ---
 <section
   data-theme={theme}
   data-themeband
   id={id}
-  class={`u-section ${full ? '' : 'u-shell'} ${cls}`}
+  class={`u-section ${full ? '' : 'u-shell'} ${index ? 'u-indexed' : ''} ${cls}`}
   style="background: var(--bg); color: var(--fg);"
 >
+  {index && <span class="u-section-index" aria-hidden="true">{index}</span>}
   <slot />
 </section>
+
+<style>
+  /* Scoped to this component, so it only ever applies to a band that passed
+     `index` — every other <Section> on the site (case studies, the home
+     page's acts, /work) keeps the plain overflow-visible box it always had. */
+  .u-indexed { position: relative; overflow: clip; }
+  .u-section-index {
+    position: absolute;
+    top: 50%;
+    right: 4vw;
+    transform: translateY(-50%);
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 0.8;
+    letter-spacing: var(--tracking-display);
+    font-size: clamp(8rem, 26vw, 24rem);
+    color: transparent;
+    -webkit-text-stroke: 1px currentColor;
+    /* currentColor resolves to the band's --fg via the inline `color` set
+       above, so the numeral always matches the palette it sits in. */
+    opacity: 0.07;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+  }
+  /* Slotted content needs to sit above the watermark rather than behind it —
+     mirrors ozgur.design's own `.section-indexed > :not(.section-index)`. */
+  .u-indexed > :global(:not(.u-section-index)) { position: relative; z-index: 1; }
+
+  @media (max-width: 860px) {
+    /* At phone widths the numeral would sit directly under short copy
+       instead of behind a whole band's worth of it — quieter to drop it. */
+    .u-section-index { display: none; }
+  }
+</style>
