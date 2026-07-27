@@ -89,10 +89,52 @@
   --accent-text: #e3caa5;
 }
 
+/* --- The chapter-card palettes ---------------------------
+   Three saturated grounds under near-black type, one hue per band.
+   Unlike the four above, these carry no contrast between display and
+   body colour — the reference sets everything in flat black, and the
+   ground does the work. `--accent-text` is the one exception: links
+   need a deeper tint of the ground to clear 4.5:1 against it.       */
+
+[data-theme='sage'] {
+  --bg: #d7e3d7;          /* pale eucalyptus */
+  --fg: #0d0f0d;
+  --fg-dim: #33403a;      /* 8.2:1 */
+  --accent: #a83a19;      /* deeper than the flat orange, which would put the
+                             focus ring at 2.6:1 on this pale ground */
+  --rule: #a8b8a8;
+  --shell: #0d0f0d;
+  --screen: #c6d4c6;
+  --accent-text: #a83a19; /* 4.8:1 — the flat orange fails here */
+}
+
+[data-theme='lilac'] {
+  --bg: #cba6fc;          /* light violet */
+  --fg: #100d18;
+  --fg-dim: #2b2340;      /* 7.3:1 */
+  --accent: #17120f;
+  --rule: #a483d1;
+  --shell: #17122b;
+  --screen: #bd93f5;
+  --accent-text: #3b1d5e; /* 6.8:1 */
+}
+
+[data-theme='coral'] {
+  --bg: #f96f43;          /* the loud one */
+  --fg: #14100e;
+  --fg-dim: #2e211c;      /* 5.5:1 */
+  --accent: #17120f;
+  --rule: #c9552f;
+  --shell: #14100e;
+  --screen: #e8613c;
+  --accent-text: #14100e; /* 6.5:1 — nothing lighter clears AA on coral */
+}
+
 /* ============================================================
-   NIGHT MODE — a second dimension on top of the four themes.
+   NIGHT MODE — a second dimension on top of the palettes above.
    `data-mode="night"` on <html> (set by the nav toggle) restates
-   each palette after dark. Still the same four themes, not new ones.
+   each one after dark. Every palette needs a block here, or it will
+   sit unchanged while the bands around it turn.
    ============================================================ */
 
 /* Ink is the hero band (and the work head + mosaic — they share the
@@ -132,4 +174,43 @@
   --shell: #0e0b09;
   --screen: #1b291f;
   --accent-text: #a9dfb9;
+}
+
+/* The chapter-card palettes after dark. Each keeps its hue and drops
+   the ground below the type instead of above it, so the three bands
+   stay distinguishable from each other and from ink. */
+
+[data-mode='night'] [data-theme='sage'] {
+  --bg: #131a15;
+  --fg: #dde8dd;            /* 14:1 */
+  --fg-dim: #a3b3a5;        /* 8:1 */
+  --accent: #e8613c;
+  --rule: #253026;
+  --shell: #0a0e0b;
+  --screen: #1b241d;
+  --accent-text: #e8613c;   /* 5.2:1 */
+}
+
+[data-mode='night'] [data-theme='lilac'] {
+  --bg: #17122b;
+  --fg: #e6ddf7;            /* 13.9:1 */
+  --fg-dim: #a79cc4;        /* 7.1:1 */
+  --accent: #cba6fc;
+  --rule: #2b2447;
+  --shell: #0c0918;
+  --screen: #1f1938;
+  --accent-text: #cba6fc;   /* 9:1 */
+}
+
+/* Coral is a mid-tone by day, so night takes it down to burnt rather
+   than trying to darken the same orange. */
+[data-mode='night'] [data-theme='coral'] {
+  --bg: #7a2d18;
+  --fg: #ffe9e0;            /* 8.1:1 */
+  --fg-dim: #e0b6a6;        /* 5.2:1 */
+  --accent: #f96f43;
+  --rule: #98422a;
+  --shell: #2a0f08;
+  --screen: #8f3a22;
+  --accent-text: #f9a488;   /* 4.8:1 */
 }

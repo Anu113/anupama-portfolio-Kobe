@@ -30,7 +30,9 @@ metric behind an interaction, flag it.
 
 Astro 5, static output. Tailwind 4 present but **most styling is plain CSS using
 custom properties**, scoped inside each `.astro` component. No animation
-library — motion is IntersectionObserver + CSS transitions.
+library — motion is IntersectionObserver, CSS transitions, and one hand-rolled
+rAF loop (`CursorTrail`). Still no React: components ported from React sources
+are rewritten as plain `.astro`.
 
 ```
 src/
@@ -55,10 +57,16 @@ Hardcoded colours break the theme system — a section will stop recolouring.
 
 **2. Themes are how palettes work.**
 Palettes are declared as `[data-theme='name']` blocks in `tokens.css` and applied
-via `<Section theme="sand">`. Available: `ink`, `sand`, `bone`, `clay`. The nav
-watches which themed band is behind it and adopts that palette automatically
-(`Nav.astro`, bottom script). Add a palette by copying a block — don't invent a
-parallel mechanism.
+via `<Section theme="sand">`. Available: `ink`, `sand`, `bone`, `clay` (the
+editorial four) plus `sage`, `lilac`, `coral` (saturated grounds under near-black
+type, from the chapter-card reference). The nav watches which themed band is
+behind it and adopts that palette automatically (`Nav.astro`, bottom script). Add
+a palette by copying a block — don't invent a parallel mechanism.
+
+Every palette also has a `[data-mode='night']` variant. The nav's day/night
+toggle sets `data-mode` on `<html>`; the mode is resolved by an inline script in
+`Base.astro` before first paint. **A new palette needs a night block too**, or
+that band will sit unchanged while everything around it turns.
 
 **3. Case studies are leadership-first.**
 This matters more than anything else in the repo. The standard portfolio
@@ -109,7 +117,8 @@ must change.
   genuinely needs one, make the case first.
 - A CMS, React, or a component library. Markdown and `.astro` are enough.
 - Analytics or tracking scripts.
-- More than the four themes, unless there's a real fifth band.
+- More palettes than there are bands to wear them. Seven exist and all seven
+  are in use; an eighth needs a real eighth band.
 
 ## Components
 
@@ -122,6 +131,18 @@ must change.
 | `Mosaic.astro` | Edge-cropped asymmetric image grid + parallax. |
 | `CaseCard.astro` | A work tile. Carries scope and metric — keep both. |
 | `OneWord.astro` | Interactive headline; visitor types a word into it. |
+| `CursorTrail.astro` | A 12-point spring chain following the pointer. Hover devices only. |
+
+`CursorTrail` is a port of the reference site's `cursor-line.js` — a spring
+chain, not a path history: the head eases toward the cursor, each point eases
+toward the one ahead, and a speed-driven perpendicular curl makes the tail
+hook. Constant 6.5px stroke; it retracts by collapsing onto the cursor, and
+fades via an `is-visible` class (350ms opacity). It lives in `Base.astro`, takes
+no pointer events, never replaces the native cursor, draws in the `--fg` of the
+band under the pointer (the one change from the reference, which has a single
+palette), and is `display: none` under `prefers-reduced-motion`. Its rAF loop
+parks once the chain settles. **Don't "simplify" the curl or the chain into a
+plain trailing line — that's the whole effect.**
 
 ## Current state
 

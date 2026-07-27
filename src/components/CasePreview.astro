@@ -2,19 +2,22 @@
 /* CasePreview.astro — one project as a full-bleed band on the home page.
    Replaces the DragRail + CaseCard row in ACT 2. Each band carries its own
    palette via the `theme` prop (same [data-theme] mechanism as Section.astro),
-   so the work section alternates dark / bone as you scroll.
+   so each project owns a hue as you scroll — coral, lilac, sage — the way
+   the reference gives each chapter its own ground. `data-themeband` puts the
+   band in the set the nav watches, so the nav recolours over it too; without
+   it the nav keeps the previous band's colours and can drop below AA.
    `flip` puts content left, mockup right. `device` picks the frame.
    No motion by design — this band is deliberately still. */
 interface Props {
   company: string; title: string; summary: string; role: string;
   impact: string; href: string; image?: string; alt?: string;
-  theme?: 'ink' | 'bone' | 'sand' | 'clay';
+  theme?: 'ink' | 'bone' | 'sand' | 'clay' | 'sage' | 'lilac' | 'coral';
   flip?: boolean; device?: 'desktop' | 'phone';
 }
 const { company, title, summary, role, impact, href, image, alt = '',
         theme = 'ink', flip = false, device = 'desktop' } = Astro.props;
 ---
-<article class:list={['band', flip && 'band--flip']} data-theme={theme}>
+<article class:list={['band', flip && 'band--flip']} data-theme={theme} data-themeband>
   <div class="band__media">
     {device === 'phone' ? (
       <div class="phone">

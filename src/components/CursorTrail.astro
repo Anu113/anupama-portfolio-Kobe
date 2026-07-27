@@ -1,0 +1,229 @@
+---
+/* CursorTrail.astro — the gentle cursor line from the reference site.
+   Ported from meagandurlak.com/landing/js/cursor-line.js, whose technique
+   I read directly rather than guessing from frames. Same model, same
+   constants; the only change is that colour is read per band because this
+   site has seven palettes where the reference has one.
+
+   The model is a SPRING CHAIN, not a path history. Twelve points: the
+   head eases toward the cursor, and each point eases toward the one ahead
+   of it. That is what produces the long graceful hooks — and what makes
+   it retract: stop moving and the whole chain collapses onto the cursor,
+   so the line shrinks to nothing instead of being trimmed or faded.
+
+   Two details that are easy to miss and both matter to the feel:
+
+   1. CURL. While moving, each point's target is nudged PERPENDICULAR to
+      its segment, by CURL * (speed/16)^1.5 * (i / count). This sideways
+      bend is what makes the tail arc and hook rather than trailing
+      straight behind. Without it the line is limp.
+   2. The width is CONSTANT — 6.5px, round caps. It does not taper and it
+      does not vary with speed. (Frames of the recording suggested a
+      speed-varying width to me; reading the source showed that was wrong.
+      The apparent thinning was the chain collapsing, plus camera blur.)
+
+   Show and hide is CSS, not canvas: an `is-visible` class toggles opacity
+   over 350ms. The canvas starts at opacity 0 and fades out on mouseleave.
+
+   The native cursor stays visible — this draws alongside it, never
+   replaces it. Takes no pointer events. Deliberately off, not just
+   invisible, when it shouldn't run:
+     - prefers-reduced-motion
+     - devices without hover (touch), where there is no cursor to trace */
+interface Props {
+  /** Points in the chain. */
+  segments?: number;
+  /** Stroke weight in px — constant along the whole line. */
+  lineWidth?: number;
+}
+const { segments = 12, lineWidth = 6.5 } = Astro.props;
+---
+<canvas
+  class="trail"
+  id="cursor-trail"
+  aria-hidden="true"
+  data-segments={String(segments)}
+  data-linewidth={String(lineWidth)}
+></canvas>
+
+<style>
+  .trail {
+    position: fixed; inset: 0;
+    /* Above the nav, as on the reference — the line draws over everything.
+       Harmless: the canvas takes no pointer events. */
+    z-index: 10000;
+    display: block;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 350ms;
+  }
+  .trail.is-visible { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) { .trail { display: none; } }
+  @media (hover: none) { .trail { display: none; } }
+</style>
+
+<script>
+  (() => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (matchMedia('(hover: none)').matches) return;
+
+    const canvas = document.getElementById('cursor-trail');
+    if (!canvas) return;
+
+    const SEGMENTS = Number(canvas.dataset.segments);
+    const LINE_WIDTH = Number(canvas.dataset.linewidth);
+    const HEAD_LERP = 0.16;    // head chase toward the cursor
+    const TAIL_LERP = 0.28;    // chase toward the point ahead, minus a ramp
+    const CURL = 4;            // sideways bend at full speed
+    const SETTLE_EPS = 0.35;   // collapsed enough to stop drawing
+    const IDLE_SPEED = 0.4;    // below this, no curl
+
+    const ctx = canvas.getContext('2d');
+    const bands = [...document.querySelectorAll('[data-themeband]')];
+    const points = Array.from({ length: SEGMENTS }, () => ({ x: 0, y: 0 }));
+
+    let mouse = { x: 0, y: 0 };
+    let speed = 0;
+    let visible = false;
+    let seeded = false;
+    let looping = false;
+    let colour = '#f4ece1';
+
+    const resize = () => {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = innerWidth * dpr;
+      canvas.height = innerHeight * dpr;
+      canvas.style.width = `${innerWidth}px`;
+      canvas.style.height = `${innerHeight}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    // The reference reads --fg off the root because it has one palette.
+    // Here the line wears the display colour of the band it's over, so it
+    // stays legible across all seven.
+    const recolour = (y) => {
+      for (const b of bands) {
+        const r = b.getBoundingClientRect();
+        if (r.top <= y && r.bottom > y) {
+          const v = getComputedStyle(b).getPropertyValue('--fg').trim();
+          if (v) colour = v;
+          return;
+        }
+      }
+      const root = getComputedStyle(document.documentElement)
+        .getPropertyValue('--fg').trim();
+      if (root) colour = root;
+    };
+
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    const isSettled = () => {
+      for (let i = 1; i < points.length; i++) {
+        const prev = points[i - 1];
+        const p = points[i];
+        if (Math.hypot(prev.x - p.x, prev.y - p.y) > SETTLE_EPS) return false;
+      }
+      return Math.hypot(mouse.x - points[0].x, mouse.y - points[0].y) <= SETTLE_EPS;
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      if (!visible) return;
+
+      const last = points.length - 1;
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < last - 1; i++) {
+        const xc = (points[i].x + points[i + 1].x) / 2;
+        const yc = (points[i].y + points[i + 1].y) / 2;
+        ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+      }
+      ctx.quadraticCurveTo(
+        points[last - 1].x, points[last - 1].y,
+        points[last].x, points[last].y
+      );
+
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = LINE_WIDTH;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.globalAlpha = 1;
+      ctx.stroke();
+    };
+
+    const tick = () => {
+      speed *= 0.9;
+
+      points[0].x = lerp(points[0].x, mouse.x, HEAD_LERP);
+      points[0].y = lerp(points[0].y, mouse.y, HEAD_LERP);
+
+      const moving = speed > IDLE_SPEED;
+      const curl = moving ? CURL * Math.min(speed / 16, 1) ** 1.5 : 0;
+
+      for (let i = 1; i < points.length; i++) {
+        const t = TAIL_LERP - (i / points.length) * 0.06;
+        const prev = points[i - 1];
+        let targetX = prev.x;
+        let targetY = prev.y;
+
+        // Push the target sideways so the tail arcs instead of following
+        // straight behind. This is the shape of the whole effect.
+        if (curl > 0) {
+          const dx = prev.x - points[i].x;
+          const dy = prev.y - points[i].y;
+          const len = Math.hypot(dx, dy) || 1;
+          const bend = curl * (i / points.length);
+          targetX += (-dy / len) * bend;
+          targetY += (dx / len) * bend;
+        }
+
+        points[i].x = lerp(points[i].x, targetX, t);
+        points[i].y = lerp(points[i].y, targetY, t);
+      }
+
+      if (visible) draw();
+
+      if (visible && (moving || !isSettled())) {
+        requestAnimationFrame(tick);
+      } else {
+        looping = false;
+      }
+    };
+
+    const startLoop = () => {
+      if (looping) return;
+      looping = true;
+      requestAnimationFrame(tick);
+    };
+
+    const onMove = (e) => {
+      if (!seeded) {
+        // Drop the whole chain on the cursor so it doesn't whip in from
+        // the corner on first sighting.
+        for (const p of points) { p.x = e.clientX; p.y = e.clientY; }
+        seeded = true;
+      }
+      speed = Math.hypot(e.clientX - mouse.x, e.clientY - mouse.y);
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      visible = true;
+      canvas.classList.add('is-visible');
+      recolour(e.clientY);
+      startLoop();
+    };
+
+    const onLeave = () => {
+      visible = false;
+      canvas.classList.remove('is-visible');   // CSS fades it out
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+    };
+
+    resize();
+    addEventListener('resize', resize);
+    addEventListener('mousemove', onMove, { passive: true });
+    document.documentElement.addEventListener('mouseleave', onLeave);
+    // A scroll moves the bands under a stationary cursor.
+    addEventListener('scroll', () => recolour(mouse.y), { passive: true });
+  })();
+</script>

@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
+import CursorTrail from '../components/CursorTrail.astro';
 interface Props { title: string; description?: string; }
 const { title, description = 'Anupama Mishra — design leader. Design Manager & Lead UX Designer.' } = Astro.props;
 ---
@@ -42,6 +43,7 @@ const { title, description = 'Anupama Mishra — design leader. Design Manager &
     <a href="#main" class="skip">Skip to content</a>
     <Nav />
     <main id="main"><slot /></main>
+    <CursorTrail />
     <style>
       .skip {
         position: absolute; left: -9999px;
