@@ -1,0 +1,165 @@
+---
+/* CaseDoodle.astro — one small hand-drawn creature per case-study section.
+   Sits above the section eyebrow in the body column.
+
+   These are characters, not icons. Every one is built from the same parts:
+   a body around (32,26), two big ring eyes, and two thin legs with feet
+   that kick outward. Only the body and one prop change per section. That
+   shared skeleton is what makes them read as one hand rather than as a
+   picked-up icon set — if you add an eighth, copy the <Legs>/<Eyes> geometry
+   exactly and change the body.
+
+   Layout budget, so they all stand on the same ground:
+     y 2–12   above the head (sparks, arcs)
+     y 12–38  body
+     y 38–53  legs and feet
+     y 54–62  ground (footprints, a forking path)
+
+   Colour: every stroke is `currentColor`, so a creature recolours with its
+   band and works in night mode without a second set. The one exception is
+   the whites of the eyes, which are `var(--bg)` — they knock out whatever
+   line passes behind them, which is what keeps the eyes readable on the
+   tangle. Both are tokens; there is no hardcoded colour here.
+
+   Purely decorative: aria-hidden, contributing nothing to the section's
+   accessible name. Keyed by the section's `id` in data/cases.ts, so the
+   same seven creatures recur across all three case studies — "the hard
+   call" should be the same character every time. An id with no entry
+   renders nothing; a missing creature is invisible, a wrong one is noise. */
+interface Props { name: string; }
+const { name } = Astro.props;
+
+/* The shared skeleton. Kept as markup strings rather than sub-components so
+   the whole family is legible in one file. */
+const legs = 'M27 38v12l-4 3M37 38v12l4 3';
+const blob = 'M17 26c0-8 7-14 15-14s15 6 15 14-7 12-15 12-15-4-15-12z';
+---
+{name === 'situation' && (
+  /* Tangled. Peering out of its own knot. */
+  <svg class="doodle" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <ellipse cx="32" cy="25" rx="14" ry="8" transform="rotate(-28 32 25)" />
+    <ellipse cx="32" cy="25" rx="14" ry="8" transform="rotate(22 32 25)" />
+    <ellipse cx="32" cy="25" rx="14" ry="8" transform="rotate(78 32 25)" />
+    <path d={legs} />
+    <circle class="eye" cx="27" cy="25" r="4" />
+    <circle class="eye" cx="37" cy="25" r="4" />
+    <circle class="pupil" cx="27" cy="25" r="1.7" />
+    <circle class="pupil" cx="37" cy="25" r="1.7" />
+  </svg>
+)}
+
+{name === 'scope' && (
+  /* Boxed in on purpose. One thing left deliberately outside. */
+  <svg class="doodle" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <rect x="17" y="13" width="30" height="25" rx="6" />
+    <path d={legs} />
+    <circle class="eye" cx="27" cy="25" r="4" />
+    <circle class="eye" cx="37" cy="25" r="4" />
+    <circle class="pupil" cx="27" cy="25" r="1.7" />
+    <circle class="pupil" cx="37" cy="25" r="1.7" />
+    <circle class="pupil" cx="55" cy="45" r="2" />
+  </svg>
+)}
+
+{name === 'hard-call' && (
+  /* Standing where the ground forks. The dashed way is the one not taken. */
+  <svg class="doodle" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <path d={blob} />
+    <path d={legs} />
+    <path d="M30 55c-4 3-9 5-14 6" />
+    <path d="M35 55c4 3 9 5 14 6" stroke-dasharray="3 4" />
+    <circle class="eye" cx="27" cy="25" r="4" />
+    <circle class="eye" cx="37" cy="25" r="4" />
+    <circle class="pupil" cx="25.9" cy="25" r="1.7" />
+    <circle class="pupil" cx="35.9" cy="25" r="1.7" />
+  </svg>
+)}
+
+{name === 'team' && (
+  /* Two behind, one in front. The body knocks out the pair so they read
+     as standing behind rather than tangled with it. */
+  <svg class="doodle" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <circle cx="13" cy="19" r="7" />
+    <circle cx="51" cy="19" r="7" />
+    <circle class="pupil" cx="10.5" cy="18" r="1.3" />
+    <circle class="pupil" cx="15.5" cy="18" r="1.3" />
+    <circle class="pupil" cx="48.5" cy="18" r="1.3" />
+    <circle class="pupil" cx="53.5" cy="18" r="1.3" />
+    <path class="knockout" d={blob} />
+    <path d={legs} />
+    <circle class="eye" cx="27" cy="25" r="4" />
+    <circle class="eye" cx="37" cy="25" r="4" />
+    <circle class="pupil" cx="27" cy="25" r="1.7" />
+    <circle class="pupil" cx="37" cy="25" r="1.7" />
+  </svg>
+)}
+
+{name === 'craft' && (
+  /* Holding the pencil. */
+  <svg class="doodle" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <path d={blob} />
+    <path d={legs} />
+    <path d="M45 30c2 1 3 2 4 4" />
+    <path d="M49 35l8-12 5 3-8 12z" />
+    <path d="M49 35l5 3-7 4z" />
+    <path d="M53 29l5 3" />
+    <circle class="eye" cx="27" cy="25" r="4" />
+    <circle class="eye" cx="37" cy="25" r="4" />
+    <circle class="pupil" cx="27" cy="25" r="1.7" />
+    <circle class="pupil" cx="37" cy="25" r="1.7" />
+  </svg>
+)}
+
+{name === 'impact' && (
+  /* Arms up. */
+  <svg class="doodle" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <path d={blob} />
+    <path d={legs} />
+    <path d="M19 21l-8-7" />
+    <path d="M45 21l8-7" />
+    <path d="M32 10V3" />
+    <path d="M28.5 6.5L32 3l3.5 3.5" />
+    <circle class="eye" cx="27" cy="25" r="4" />
+    <circle class="eye" cx="37" cy="25" r="4" />
+    <circle class="pupil" cx="27" cy="25" r="1.7" />
+    <circle class="pupil" cx="37" cy="25" r="1.7" />
+  </svg>
+)}
+
+{name === 'reflection' && (
+  /* Looking back at its own footprints. */
+  <svg class="doodle" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <path d={blob} />
+    <path d={legs} />
+    <circle class="pupil" cx="49" cy="57" r="1.8" />
+    <circle class="pupil" cx="56" cy="53" r="1.5" />
+    <circle class="pupil" cx="61" cy="58" r="1.2" />
+    <circle class="eye" cx="27" cy="25" r="4" />
+    <circle class="eye" cx="37" cy="25" r="4" />
+    <circle class="pupil" cx="28.1" cy="25" r="1.7" />
+    <circle class="pupil" cx="38.1" cy="25" r="1.7" />
+  </svg>
+)}
+
+<style>
+  .doodle {
+    display: block;
+    /* Bigger than the icon set it replaced — a character with legs needs
+       the height to stand up in. Still a margin note: it must never rival
+       the section heading beneath it. */
+    width: clamp(3rem, 4.5vw, 4rem);
+    height: auto;
+    margin-bottom: 1.25rem;
+    color: var(--fg-dim);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* Eye whites and the body-over-body knockout take the band's own ground,
+     so a line passing behind them is cut rather than crossing them. */
+  .doodle .eye,
+  .doodle .knockout { fill: var(--bg); }
+  .doodle .pupil { fill: currentColor; stroke: none; }
+</style>

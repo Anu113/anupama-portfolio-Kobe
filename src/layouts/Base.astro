@@ -2,8 +2,17 @@
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import CursorTrail from '../components/CursorTrail.astro';
-interface Props { title: string; description?: string; }
-const { title, description = 'Anupama Mishra — design leader. Design Manager & Lead UX Designer.' } = Astro.props;
+import Footer from '../components/Footer.astro';
+/* `trail` is the cursor line. It is on everywhere except pages that own the
+   cursor themselves — /playground puts a grab hand on its pannable field,
+   and a line trailing off a hand you are dragging with reads as two
+   cursors. Opt out there rather than fighting it. */
+interface Props { title: string; description?: string; trail?: boolean; }
+const {
+  title,
+  description = 'Anupama Mishra — Staff Product Designer. Identity, access and the enterprise systems underneath them.',
+  trail = true,
+} = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
@@ -43,7 +52,8 @@ const { title, description = 'Anupama Mishra — design leader. Design Manager &
     <a href="#main" class="skip">Skip to content</a>
     <Nav />
     <main id="main"><slot /></main>
-    <CursorTrail />
+    <Footer />
+    {trail && <CursorTrail />}
     <style>
       .skip {
         position: absolute; left: -9999px;

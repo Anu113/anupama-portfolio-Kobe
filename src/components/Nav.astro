@@ -7,12 +7,12 @@
    is remembered in localStorage. First visit follows the OS setting. */
 const links = [
   { label: 'Work', href: '/work' },
-  { label: 'Approach', href: '/approach' },
-  { label: 'Profile', href: '/profile' },
+  { label: 'About me', href: '/about' },
+  { label: 'Playground', href: '/playground' },
 ];
 ---
 <header class="nav" data-theme="ink" id="site-nav">
-  <a class="nav__mark" href="/">A.</a>
+  <a class="nav__mark" href="/">Anupama Mishra</a>
   <div class="nav__right">
     <nav aria-label="Primary">
       <ul>
@@ -74,9 +74,16 @@ const links = [
     display: flex; align-items: center;
     gap: clamp(1.25rem, 3vw, 2.75rem);
   }
+  /* The full name, set to match the link row rather than shout over it —
+     same size and tracking as the links, heavier weight to hold the corner. */
   .nav__mark {
-    font-family: var(--font-display); font-size: 1.1rem; font-weight: 600;
+    font-family: var(--font-display);
+    font-size: var(--step-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    font-weight: 600;
     text-decoration: none; color: inherit;
+    white-space: nowrap;
   }
   .nav ul {
     display: flex; gap: clamp(1.25rem, 3vw, 2.75rem);

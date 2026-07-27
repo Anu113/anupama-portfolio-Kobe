@@ -1,0 +1,217 @@
+---
+/* CaseBlocks.astro — renders the body of one case-study section.
+   Takes the `blocks` array from a section in data/cases.ts and lays each
+   kind out. Six kinds, deliberately: prose, points, rows, figure, quote,
+   metrics. That set covers the reference layout
+   (rachelchen.tech/projects/openai), which alternates statement copy with
+   small titled grids and captioned figures.
+
+   Adding a seventh kind means adding it to CaseBlock in data/cases.ts
+   first — the union is what keeps these pages from drifting into whatever
+   HTML a given case study felt like.
+
+   Every block stays inside the body column. The sticky rail owns the
+   column to its left for the whole band, so nothing here may use a
+   negative inline margin to reach into it — it collides with the rail.
+   `figure` with `wide: true` gets a more panoramic frame, not more width. */
+import type { CaseBlock } from '../data/cases';
+import Reveal from './Reveal.astro';
+
+interface Props { blocks: CaseBlock[] }
+const { blocks } = Astro.props;
+---
+{blocks.map((block, i) => (
+  <Reveal delay={Math.min(i, 3) * 80}>
+    {block.kind === 'prose' && (
+      <div class="prose">
+        {block.text.map((p) => <p>{p}</p>)}
+      </div>
+    )}
+
+    {block.kind === 'points' && (
+      <div class="group">
+        {block.label && <p class="u-label group__label">{block.label}</p>}
+        <ul class="points" style={`--cols: ${Math.min(block.items.length, 3)};`}>
+          {block.items.map((it) => (
+            <li class="point">
+              <h3 class="point__title">{it.title}</h3>
+              <p class="point__body">{it.body}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {block.kind === 'rows' && (
+      <div class="group">
+        {block.label && <p class="u-label group__label">{block.label}</p>}
+        <dl class="rows">
+          {block.items.map((it) => (
+            <div class="row">
+              <dt class="row__term">{it.term}</dt>
+              <dd class="row__detail">{it.detail}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    )}
+
+    {block.kind === 'figure' && (
+      <figure class:list={['fig', block.wide && 'fig--wide']}>
+        <div class="fig__frame">
+          <img src={block.src} alt={block.alt} loading="lazy" decoding="async" />
+        </div>
+        {block.caption && <figcaption class="fig__cap">{block.caption}</figcaption>}
+      </figure>
+    )}
+
+    {block.kind === 'quote' && (
+      <blockquote class="quote">
+        <p>{block.text}</p>
+        {block.cite && <cite class="u-label">{block.cite}</cite>}
+      </blockquote>
+    )}
+
+    {block.kind === 'metrics' && (
+      <div class="group">
+        {block.label && <p class="u-label group__label">{block.label}</p>}
+        <dl class="metrics" style={`--cols: ${Math.min(block.items.length, 3)};`}>
+          {block.items.map((it) => (
+            <div class="metric">
+              <dt class="metric__value">{it.value}</dt>
+              <dd class="metric__label">{it.label}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    )}
+  </Reveal>
+))}
+
+<style>
+  /* Every block sits in the same rhythm; the section owns the gap between
+     them via `gap` on its own container, so nothing here sets a top margin. */
+  .prose p {
+    max-width: var(--measure);
+    margin: 0 0 1.15em;
+    color: var(--fg-dim);
+    text-wrap: pretty;
+  }
+  .prose p:last-child { margin-bottom: 0; }
+
+  .group__label { margin: 0 0 1.25rem; }
+
+  /* --- points: 2–3 titled blurbs side by side ------------------------- */
+  .points {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+    gap: 2rem var(--gutter);
+  }
+  .point__title {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0 0 0.6rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    text-wrap: balance;
+  }
+  .point__body { margin: 0; color: var(--fg-dim); text-wrap: pretty; }
+
+  /* --- rows: the scope table ------------------------------------------
+     Read as a table on purpose. This is the block a recruiter stops on. */
+  .rows { margin: 0; }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+    gap: 0.5rem var(--gutter);
+    padding-block: 1.35rem;
+    border-top: 1px solid var(--rule);
+  }
+  .row:last-child { border-bottom: 1px solid var(--rule); }
+  .row__term {
+    font-weight: 600;
+    font-size: var(--step-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    line-height: 1.5;
+    padding-top: 0.2em;
+  }
+  .row__detail { margin: 0; color: var(--fg-dim); text-wrap: pretty; }
+
+  /* --- figure ---------------------------------------------------------- */
+  .fig { margin: 0; }
+  .fig__frame {
+    background: var(--screen);
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+  .fig__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* `wide` is a shape, not a breakout. An earlier version pulled these
+     figures back across the rail column with a negative inline margin —
+     which collides with the rail, because the rail is sticky and sits in
+     that column for the whole band. Nothing in the body may enter the rail
+     track. Every figure stays inside the body column; `wide` just gets a
+     more panoramic frame so a section's lead image still reads as one. */
+  .fig--wide .fig__frame { aspect-ratio: 16 / 7.5; }
+  .fig__cap {
+    margin-top: 1rem;
+    max-width: var(--measure);
+    font-size: var(--step-small);
+    line-height: 1.6;
+    color: var(--fg-dim);
+  }
+
+  /* --- quote ------------------------------------------------------------ */
+  .quote {
+    margin: 0;
+    border-inline-start: 2px solid var(--accent);
+    padding-inline-start: clamp(1.25rem, 3vw, 2.5rem);
+  }
+  .quote p {
+    font-family: var(--font-accent);
+    font-style: italic;
+    font-size: var(--step-h2);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 0;
+    max-width: 24ch;
+    color: var(--fg);
+    text-wrap: balance;
+  }
+  .quote cite { display: block; margin-top: 1rem; font-style: normal; }
+
+  /* --- metrics ---------------------------------------------------------- */
+  .metrics {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+    gap: 2rem var(--gutter);
+  }
+  .metric { border-top: 1px solid var(--rule); padding-top: 1rem; }
+  .metric__value {
+    font-family: var(--font-display);
+    font-size: var(--step-h1);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    line-height: 1;
+  }
+  .metric__label {
+    margin: 0.75rem 0 0;
+    color: var(--fg-dim);
+    font-size: var(--step-small);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 820px) {
+    .points, .metrics { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 1fr; }
+    .quote p { max-width: none; }
+  }
+</style>

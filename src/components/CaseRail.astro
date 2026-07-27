@@ -1,0 +1,168 @@
+---
+/* CaseRail.astro — the sticky left rail on a case study page.
+   A back link, then one row per section, highlighting whichever section is
+   currently under the nav. Ported from the rachelchen.tech/projects layout,
+   which puts navigation in a fixed left column and gives the body the rest.
+
+   It sticks inside its band, not the viewport, so it scrolls away when the
+   body ends — same as the reference. `top` clears the fixed nav via
+   --nav-h (tokens.css); if the nav's padding changes, change that token.
+
+   The spy is an IntersectionObserver with a top-of-viewport rootMargin, not
+   a scroll handler — same approach as Reveal.astro. It degrades to a plain
+   anchor list without JS, and the anchors work regardless.
+
+   Below 1080px the rail stops being a column and becomes a horizontal
+   scroller pinned under the nav — a 9-item vertical list above the content
+   would push the case study a screen and a half down on a phone. */
+interface Props {
+  sections: { id: string; nav: string }[];
+  backHref?: string;
+  backLabel?: string;
+}
+const { sections, backHref = '/work', backLabel = 'All work' } = Astro.props;
+---
+<nav class="rail" aria-label="Case study sections">
+  <a class="rail__back u-label" href={backHref}>
+    <span aria-hidden="true">&larr;</span> {backLabel}
+  </a>
+  <ol class="rail__list">
+    {sections.map((s) => (
+      <li>
+        <a class="rail__link" href={`#${s.id}`} data-rail-link={s.id}>{s.nav}</a>
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .rail {
+    position: sticky;
+    top: calc(var(--nav-h) + 1.5rem);
+    align-self: start;
+  }
+  .rail__back {
+    display: inline-block;
+    color: var(--fg);
+    text-decoration: none;
+    margin-bottom: 2.5rem;
+  }
+  .rail__back:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  .rail__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    counter-reset: rail;
+  }
+  .rail__link {
+    display: block;
+    font-size: var(--step-small);
+    line-height: 1.35;
+    color: var(--fg-dim);
+    text-decoration: none;
+    padding-inline-start: 1.35rem;
+    position: relative;
+    transition: color var(--dur-hover) var(--ease-out);
+  }
+  /* The marker is a dash that fills out to a rule on the active row —
+     the reference's own device for "you are here", and it survives being
+     the only signal for anyone who can't distinguish the two greys. */
+  .rail__link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 0.6rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.45;
+    transition: width var(--dur-hover) var(--ease-out),
+                opacity var(--dur-hover) var(--ease-out);
+  }
+  .rail__link:hover { color: var(--fg); }
+  .rail__link[aria-current='true'] { color: var(--fg); font-weight: 600; }
+  .rail__link[aria-current='true']::before { width: 1rem; opacity: 1; }
+
+  /* --- Under 1080px: a horizontal strip, pinned under the nav --------- */
+  @media (max-width: 1080px) {
+    .rail {
+      top: var(--nav-h);
+      z-index: 20;
+      background: var(--bg);
+      margin-inline: calc(var(--gutter) * -1);
+      padding: 0.85rem var(--gutter);
+      border-bottom: 1px solid var(--rule);
+    }
+    .rail__back { margin-bottom: 0.85rem; }
+    .rail__list {
+      flex-direction: row;
+      gap: 1.35rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      /* The strip is a scroll container, so it needs to be reachable and
+         scrollable from the keyboard. */
+      scroll-snap-type: x proximity;
+    }
+    .rail__list::-webkit-scrollbar { display: none; }
+    .rail__list li { flex: 0 0 auto; scroll-snap-align: start; }
+    .rail__link {
+      padding-inline-start: 0;
+      padding-bottom: 0.35rem;
+      white-space: nowrap;
+    }
+    .rail__link::before {
+      left: 0;
+      top: auto;
+      bottom: 0;
+      width: 100%;
+      opacity: 0;
+    }
+    .rail__link[aria-current='true']::before { width: 100%; opacity: 1; }
+  }
+</style>
+
+<script>
+  // Highlights the section currently under the nav. rootMargin pushes the
+  // detection line down past the fixed nav and up from the bottom, so the
+  // "current" section is the one occupying the top of the reading area
+  // rather than whichever one happens to be largest on screen.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-rail-link]')];
+  const targets = links
+    .map((l) => document.getElementById(l.dataset.railLink!))
+    .filter((el): el is HTMLElement => Boolean(el));
+
+  if (links.length && targets.length) {
+    const visible = new Set<string>();
+
+    const paint = () => {
+      // Document order wins, so scrolling up and down lands on the same
+      // section at the same scroll position.
+      const current = targets.find((t) => visible.has(t.id))?.id;
+      for (const l of links) {
+        if (l.dataset.railLink === current) l.setAttribute('aria-current', 'true');
+        else l.removeAttribute('aria-current');
+      }
+      // Keep the active chip in view in the horizontal (narrow) rail.
+      if (current && matchMedia('(max-width: 1080px)').matches) {
+        const active = links.find((l) => l.dataset.railLink === current);
+        active?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+    };
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) visible.add(e.target.id);
+          else visible.delete(e.target.id);
+        }
+        paint();
+      },
+      { rootMargin: '-25% 0px -60% 0px', threshold: 0 }
+    );
+    targets.forEach((t) => io.observe(t));
+  }
+</script>
