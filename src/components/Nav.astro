@@ -64,8 +64,15 @@ const links = [
     display: flex; align-items: center; justify-content: space-between;
     padding: 1.5rem var(--gutter);
     color: var(--fg);
+    /* Solid, not translucent — the site is deliberately hard-edged (see
+       tokens.css, --radius) and a glass/blur nav would be the one soft
+       surface on the page. Without a background here at all, tall content
+       (the home hero's display type especially) scrolls straight through
+       the nav's own band and collides with the wordmark and links. */
+    background: var(--bg);
     mix-blend-mode: normal;
-    transition: color var(--dur-hover) var(--ease-out);
+    transition: color var(--dur-hover) var(--ease-out),
+                background var(--dur-hover) var(--ease-out);
     pointer-events: none;
   }
   .nav a,

@@ -32,16 +32,20 @@ const { slug, caseTitle, password, backHref = '/work', targetId } = Astro.props;
 const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
 ---
 <div class="locked" data-theme="ink" data-themeband data-gate data-slug={slug} data-password={password} data-target={targetId}>
-  <div class="locked__shell u-shell">
-    <a class="locked__back u-label" href={backHref}>
-      <span aria-hidden="true">&larr;</span> All work
-    </a>
+  {/* Left-aligned to the page, outside the centred shell below — a "back"
+      control reads as navigation, not as part of the centred message, so it
+      keeps the page's normal left edge rather than following the headline
+      to the middle. */}
+  <a class="locked__back u-label" href={backHref}>
+    <span aria-hidden="true">&larr;</span> All work
+  </a>
 
+  <div class="locked__shell u-shell">
     <p class="u-label locked__eyebrow">
       <LockIcon size="0.8em" />
       Locked
     </p>
-    <h1 class="locked__head">This case study needs<br />a password to open.</h1>
+    <h1 class="locked__head">This case study needs a password to open.</h1>
     <p class="locked__body">
       How it got made, the craft and the numbers sit behind it — same reason
       as the rest of what's under NDA: I'd rather walk you through the
@@ -83,7 +87,8 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
 
 <style>
   .locked {
-    min-height: 100svh;
+    /* No forced viewport height — the section is exactly as tall as its
+       content plus the padding below, not a full screen every time. */
     background: var(--bg);
     color: var(--fg);
     display: flex;
@@ -93,7 +98,14 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     padding-block: calc(var(--nav-h) + var(--space-band-tight)) var(--space-band-tight);
   }
   .locked__shell {
-    max-width: 40rem;
+    /* Wider than before on purpose: at 40rem the headline was breaking to
+       four visual lines off one manual <br>, and the body paragraph to
+       five. 62rem is the narrowest width that lands the headline on
+       exactly two lines at --step-h1 (checked directly, not estimated —
+       60rem was the tipping point, this keeps a small margin above it);
+       the body paragraph wraps to three well under that, governed by its
+       own --measure cap rather than the shell's width. */
+    max-width: 62rem;
     margin: auto;
     /* Everything below shares this one centred column, including the form —
        centre-aligned text with a left-aligned form under it reads as a
@@ -103,8 +115,15 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     flex-direction: column;
     align-items: center;
   }
+  /* Outside .locked__shell now — a "back" control is navigation, not part
+     of the centred message, so it keeps the page's own left gutter instead
+     of centring with the headline. align-self pins it to the start of
+     .locked's cross axis; padding-inline gives it the same edge distance
+     u-shell gives everything else, since it's no longer inside one. */
   .locked__back {
     display: inline-block;
+    align-self: flex-start;
+    padding-inline: var(--gutter);
     color: var(--fg);
     text-decoration: none;
     margin-bottom: clamp(3rem, 8vw, 5rem);
@@ -125,9 +144,15 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     letter-spacing: var(--tracking-display);
     font-weight: 500;
     margin: 0 0 1.5rem;
+    /* Balances across whatever line count the width naturally produces —
+       two, at .locked__shell's new max-width, rather than the hand-placed
+       <br> this used to need. */
     text-wrap: balance;
   }
-  .locked__body { margin: 0 0 2.5rem; max-width: 46ch; color: var(--fg-dim); text-wrap: pretty; }
+  /* Widened alongside the shell, from 46ch — that cap alone would have kept
+     the paragraph at five lines regardless of how much room .locked__shell
+     gained. --measure (62ch) is the site's own long-form reading width. */
+  .locked__body { margin: 0 0 2.5rem; max-width: var(--measure); color: var(--fg-dim); text-wrap: pretty; }
 
   .locked__form {
     display: flex;
@@ -146,7 +171,10 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     font-size: var(--step-body);
     color: var(--fg);
     background: var(--screen);
-    border: 1px solid var(--rule);
+    /* --fg-dim, not --rule — --rule is a quiet hairline-divider token
+       (tokens.css) and falls under the 3:1 WCAG needs for a control's own
+       boundary; --fg-dim already clears AA at body size in every theme. */
+    border: 1px solid var(--fg-dim);
     border-radius: 999px;
     padding: 0.7rem 1.2rem;
   }
@@ -158,7 +186,7 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     width: 2.8rem;
     color: var(--fg-dim);
     background: none;
-    border: 1px solid var(--rule);
+    border: 1px solid var(--fg-dim);
     border-radius: 999px;
     cursor: pointer;
     transition: color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
@@ -181,7 +209,7 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     font-size: var(--step-body);
     color: var(--fg);
     background: none;
-    border: 1px solid var(--rule);
+    border: 1px solid var(--fg-dim);
     border-radius: 999px;
     padding: 0.7rem 1.5rem;
     cursor: pointer;

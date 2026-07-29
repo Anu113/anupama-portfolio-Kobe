@@ -269,7 +269,9 @@ const pageId = `${study.slug}-page-content`;
     white-space: nowrap;
     text-decoration: none;
     color: var(--fg);
-    border: 1px solid var(--rule);
+    /* --fg-dim, not --rule — --rule is tuned as a quiet hairline divider
+       and falls under the 3:1 WCAG needs for a control's own boundary. */
+    border: 1px solid var(--fg-dim);
     border-radius: 999px;
     padding: 0.65rem 1.15rem;
     transition: background var(--dur-hover) var(--ease-out),

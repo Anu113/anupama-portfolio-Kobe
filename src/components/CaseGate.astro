@@ -114,7 +114,9 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     font-size: var(--step-body);
     color: var(--fg);
     background: var(--bg);
-    border: 1px solid var(--rule);
+    /* --fg-dim, not --rule — see LockedGate.astro's own note. --rule falls
+       under the 3:1 WCAG needs for a control's own boundary. */
+    border: 1px solid var(--fg-dim);
     border-radius: 999px;
     padding: 0.6rem 1.1rem;
   }
@@ -126,7 +128,7 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     width: 2.6rem;
     color: var(--fg-dim);
     background: none;
-    border: 1px solid var(--rule);
+    border: 1px solid var(--fg-dim);
     border-radius: 999px;
     cursor: pointer;
     transition: color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
@@ -147,7 +149,7 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     font-size: var(--step-body);
     color: var(--fg);
     background: none;
-    border: 1px solid var(--rule);
+    border: 1px solid var(--fg-dim);
     border-radius: 999px;
     padding: 0.65rem 1.4rem;
     cursor: pointer;
