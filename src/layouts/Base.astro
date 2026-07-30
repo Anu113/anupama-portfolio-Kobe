@@ -39,13 +39,24 @@ const {
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <!-- `@1` is Fontshare's VARIABLE cut of General Sans: one file covering
+         the whole 200–700 weight axis instead of three static masters. The
+         footer wordmark animates that axis under the cursor, which a static
+         face cannot do. Weights 400/500/600 used everywhere else render the
+         same. Don't swap this back to `@400,500,600`. -->
     <link
       rel="stylesheet"
-      href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap"
+      href="https://api.fontshare.com/v2/css?f[]=general-sans@1&display=swap"
     />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap"
+    />
+    <!-- Body copy. 400/500 covers regular paragraphs and the heavier .u-label
+         weight; italic comes along for any <em> that lands in body text. -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap"
     />
   </head>
   <body>

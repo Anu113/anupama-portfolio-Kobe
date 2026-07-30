@@ -1,10 +1,10 @@
 @import 'tailwindcss';
 @import './tokens.css';
 
-@font-face {
-  font-family: 'General Sans';
-  src: url('https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap');
-}
+/* No @font-face here on purpose. General Sans is loaded by the <link> in
+   Base.astro, which is what serves the real .woff2. A second @font-face
+   pointing at that stylesheet URL was never a valid src, and once the
+   variable cut landed it also claimed weight 400 for the whole site. */
 
 * { box-sizing: border-box; }
 
@@ -51,6 +51,10 @@ body {
   letter-spacing: -0.01em;
 }
 .u-label {
+  /* Explicit, not inherited: --font-body is now Crimson Pro. Uppercase
+     captions/eyebrows/labels are a different register from reading copy and
+     keep the original sans rather than following body type. */
+  font-family: var(--font-display);
   font-size: var(--step-label);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;

@@ -1,0 +1,229 @@
+---
+/* CaseGate.astro — the password / reach-out panel that stands in for the
+   sections a locked case study holds back. Sits in the section flow between
+   the last preview section and the hidden remainder, so it reads as the
+   next thing in the page rather than a popup or a separate route.
+
+   The PATTERN — a password field plus a "get in touch instead" way out — is
+   drawn from two references: allierho.com/projects/pst2024's gate (an input
+   with a show/hide toggle, a pill button) and ozgur.design/unlock's copy
+   shape (a short label, a two-line headline, one sentence explaining why,
+   then the field). Neither is reproduced here — the wording below is
+   Anupama's own, reusing the NDA phrasing already in this page's closing
+   band, and the visual treatment is this site's own: left-aligned like
+   every other section rather than a centred card, the same border-pill
+   button `.lede__cta` and the archive list already use, General Sans and
+   Instrument Serif rather than a font this component would need to load.
+   "Stay consistent" meant consistent with THIS site, not with the two it
+   was studied from.
+
+   THE SECURITY MODEL — read the `locked` field's comment in cases.ts before
+   pointing this at anything sensitive. This is static output with no
+   server: the gated sections are already in the page's HTML, only hidden
+   with the `hidden` attribute until the password matches client-side. It
+   deters a casual click, the same as both references; it does not protect
+   anything a determined visitor couldn't read from view-source. */
+import { site } from '../data/site';
+import LockIcon from './LockIcon.astro';
+
+interface Props {
+  slug: string;
+  caseTitle: string;
+  password: string;
+  /** id of the hidden container this panel unlocks. */
+  targetId: string;
+}
+const { slug, caseTitle, password, targetId } = Astro.props;
+const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
+---
+<div class="gate" data-gate data-slug={slug} data-password={password} data-target={targetId}>
+  <p class="u-label gate__eyebrow">
+    <LockIcon size="0.8em" />
+    Locked
+  </p>
+  <h2 class="gate__head">The rest of this one needs a password.</h2>
+  <p class="gate__body">
+    How it got made, the craft and the numbers sit behind it — same reason as
+    the rest of what's under NDA: I'd rather walk you through the specifics
+    live than post them for anyone to screenshot. If you don't have a
+    password, asking for one is faster than it sounds.
+  </p>
+
+  <form class="gate__form" data-gate-form autocomplete="off">
+    <label class="u-label gate__label" for={`gate-pw-${slug}`}>Password</label>
+    <div class="gate__field">
+      <input
+        class="gate__input"
+        id={`gate-pw-${slug}`}
+        name="password"
+        type="password"
+        autocomplete="off"
+        aria-describedby={`gate-err-${slug}`}
+      />
+      <button class="gate__peek" type="button" data-gate-peek aria-label="Show password" aria-pressed="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path data-eye-open d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+          <circle data-eye-open cx="12" cy="12" r="3" />
+          <path data-eye-closed d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.88 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a17.6 17.6 0 0 1-3.06 4.06M6.1 6.1A17.4 17.4 0 0 0 1 12s4 8 11 8a10.6 10.6 0 0 0 4.9-1.2" style="display:none" />
+        </svg>
+      </button>
+    </div>
+    <p class="gate__err" id={`gate-err-${slug}`} role="alert" data-gate-err hidden>
+      That's not it — try again, or reach out below.
+    </p>
+    <div class="gate__actions">
+      <button class="gate__submit" type="submit">Unlock</button>
+      <a class="gate__reach u-label" href={`mailto:${site.email}?subject=${mailSubject}`}>
+        Reach out instead
+      </a>
+    </div>
+  </form>
+</div>
+
+<style>
+  .gate {
+    max-width: 46ch;
+    padding: clamp(1.75rem, 3vw, 2.25rem);
+    border: 1px solid var(--rule);
+  }
+  .gate__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1rem;
+  }
+  .gate__head {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    letter-spacing: var(--tracking-display);
+    font-weight: 500;
+    line-height: 1.2;
+    margin: 0 0 0.85rem;
+    max-width: 22ch;
+    text-wrap: balance;
+  }
+  .gate__body { margin: 0 0 1.75rem; color: var(--fg-dim); text-wrap: pretty; }
+
+  .gate__form { display: flex; flex-direction: column; gap: 0.6rem; max-width: 24rem; }
+  .gate__label { margin: 0; }
+  .gate__field { display: flex; align-items: stretch; gap: 0.5rem; }
+  .gate__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    font: inherit;
+    font-size: var(--step-body);
+    color: var(--fg);
+    background: var(--bg);
+    /* --fg-dim, not --rule — see LockedGate.astro's own note. --rule falls
+       under the 3:1 WCAG needs for a control's own boundary. */
+    border: 1px solid var(--fg-dim);
+    border-radius: 999px;
+    padding: 0.6rem 1.1rem;
+  }
+  .gate__input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .gate__peek {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    color: var(--fg-dim);
+    background: none;
+    border: 1px solid var(--fg-dim);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+  }
+  .gate__peek:hover { color: var(--fg); border-color: var(--fg-dim); }
+
+  .gate__err {
+    margin: 0;
+    font-size: var(--step-small);
+    color: var(--accent-text);
+  }
+
+  .gate__actions { display: flex; align-items: center; gap: 1.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+  /* Same pill as .lede__cta on the banner and .arch__cta on the archive —
+     one control style across the site, not a second one for this feature. */
+  .gate__submit {
+    font: inherit;
+    font-size: var(--step-body);
+    color: var(--fg);
+    background: none;
+    border: 1px solid var(--fg-dim);
+    border-radius: 999px;
+    padding: 0.65rem 1.4rem;
+    cursor: pointer;
+    transition: background var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+  }
+  .gate__submit:hover { background: var(--screen); border-color: var(--fg-dim); }
+  .gate__reach { color: var(--accent-text); text-decoration: none; }
+  .gate__reach:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  /* A one-line, no-drama acknowledgement once unlocked — replaces the form,
+     doesn't animate past what prefers-reduced-motion already governs
+     globally (the swap is instant either way, so there's nothing to gate). */
+  .gate__unlocked { color: var(--fg-dim); margin: 0; }
+</style>
+
+<script>
+  // Compares to the plaintext `data-password` on the panel itself — see the
+  // security note in cases.ts and this file's header comment. Remembers a
+  // correct unlock in sessionStorage so a reload or an in-page anchor jump
+  // during the same visit doesn't re-hide content already earned.
+  document.querySelectorAll<HTMLElement>('[data-gate]').forEach((gate) => {
+    const slug = gate.dataset.slug!;
+    const password = gate.dataset.password ?? '';
+    const target = document.getElementById(gate.dataset.target!);
+    const form = gate.querySelector<HTMLFormElement>('[data-gate-form]');
+    const input = gate.querySelector<HTMLInputElement>('.gate__input');
+    const err = gate.querySelector<HTMLElement>('[data-gate-err]');
+    const peek = gate.querySelector<HTMLButtonElement>('[data-gate-peek]');
+    if (!target || !form || !input) return;
+
+    const storeKey = `case-unlocked:${slug}`;
+
+    const reveal = () => {
+      target.hidden = false;
+      form.replaceWith(
+        Object.assign(document.createElement('p'), {
+          className: 'gate__unlocked',
+          textContent: 'Unlocked for this visit — the rest is below.',
+        })
+      );
+    };
+
+    try {
+      if (sessionStorage.getItem(storeKey) === '1') reveal();
+    } catch {
+      /* Storage can be unavailable (private browsing, some embeds) — the
+         form still works, it just won't remember across a reload. */
+    }
+
+    peek?.addEventListener('click', () => {
+      const showing = peek.getAttribute('aria-pressed') === 'true';
+      input.type = showing ? 'password' : 'text';
+      peek.setAttribute('aria-pressed', String(!showing));
+      peek.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      peek.querySelectorAll<SVGElement>('[data-eye-open]').forEach((p) => {
+        p.style.display = showing ? '' : 'none';
+      });
+      peek.querySelectorAll<SVGElement>('[data-eye-closed]').forEach((p) => {
+        p.style.display = showing ? 'none' : '';
+      });
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ok = input.value.trim().toLowerCase() === password.trim().toLowerCase();
+      if (!ok) {
+        err?.removeAttribute('hidden');
+        input.setAttribute('aria-invalid', 'true');
+        return;
+      }
+      err?.setAttribute('hidden', '');
+      input.removeAttribute('aria-invalid');
+      try { sessionStorage.setItem(storeKey, '1'); } catch { /* see above */ }
+      reveal();
+    });
+  });
+</script>

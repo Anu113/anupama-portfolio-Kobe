@@ -28,7 +28,7 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
     </Reveal>
     <Reveal delay={120}>
       <h1 class="u-display hero__line">
-        I design the <em>systems</em><br />enterprises run on.
+        Designer<br />refining the<br />interplay between<br />tools, interfaces<br />&amp; experience<span class="hero__dot">.</span>
       </h1>
     </Reveal>
     <Reveal delay={260}>
@@ -131,8 +131,26 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
 
 <style>
   .hero { min-height: 92svh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
-  .hero__line { max-width: 18ch; }
+  /* The five lines are broken by hand. The measure is set to roughly the
+     longest of them so a narrow screen re-wraps close to the same shape
+     instead of fighting the <br>s. */
+  .hero__line { max-width: 20ch; }
   .hero__body { color: var(--fg-dim); }
+
+  /* The full stop blinks like a terminal caret — steps(), not a fade, so it
+     snaps rather than pulses. It stays inside the sentence rather than being
+     aria-hidden, so the line still ends in a full stop when read aloud. */
+  .hero__dot { animation: hero-blink 1.15s steps(1, end) infinite; }
+  @keyframes hero-blink {
+    0%, 60%   { opacity: 1; }
+    61%, 100% { opacity: 0; }
+  }
+  /* The global reduced-motion block only collapses the duration, which on an
+     infinite animation leaves the dot resting in an arbitrary state. Park it
+     visible instead. */
+  @media (prefers-reduced-motion: reduce) {
+    .hero__dot { animation: none; opacity: 1; }
+  }
 
   .railhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 2.5rem; }
   .railhead__hint { margin: 0; }
@@ -151,6 +169,7 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
 
   .playpeek__head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: clamp(1rem, 2vw, 1.5rem); }
   .playpeek__link {
+    font-family: var(--font-display);
     font-size: var(--step-label); letter-spacing: var(--tracking-label);
     text-transform: uppercase; font-weight: 600;
     color: var(--accent-text); text-decoration: none;

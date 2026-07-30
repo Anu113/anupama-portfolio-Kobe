@@ -91,7 +91,7 @@ const { company, title, summary, role, impact, href, image, alt = '',
   .role { margin: 0 0 2rem; }
   .role b { font-weight: 600; color: var(--fg); }
   .impact { font-family: var(--font-display); font-size: var(--step-h3); font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; margin: 0; max-width: 22ch; border-top: 1px solid var(--rule); padding-top: 1.25rem; }
-  .cta { display: inline-block; margin-top: 2rem; color: var(--accent-text); font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; font-weight: 600; text-decoration: none; }
+  .cta { display: inline-block; margin-top: 2rem; color: var(--accent-text); font-family: var(--font-display); font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; font-weight: 600; text-decoration: none; }
 
   /* Device frames. --shell / --screen come from tokens.css (see note below). */
   .phone { width: min(300px, 80%); aspect-ratio: 9 / 19.5; background: var(--shell); border-radius: 38px; padding: 10px; box-shadow: 0 40px 80px -40px rgba(0,0,0,0.55); }
@@ -107,7 +107,7 @@ const { company, title, summary, role, impact, href, image, alt = '',
      stuck on the mockup. */
   .phone__toggle {
     display: block; margin: 1rem auto 0;
-    font-family: inherit; font-size: var(--step-label);
+    font-family: var(--font-display); font-size: var(--step-label);
     letter-spacing: var(--tracking-label); text-transform: uppercase;
     font-weight: 600; color: var(--fg-dim);
     background: none; border: 0; padding: 0.5rem;

@@ -1,0 +1,275 @@
+---
+/* IndexRotator.astro — the fixed right-edge section nav, ported from
+   ozgur.design's "wayfinding" rail (read via computed styles and the
+   site's own stylesheet, since it ships no public source). Pairs with the
+   `index` prop on Section.astro, which prints the same numbers as a giant
+   watermark behind each band.
+
+   THE ROTATOR. The list doesn't just highlight the current link in place —
+   it slides vertically so the active link always lands at the nav's own
+   fixed centre (top: 50%), the same way the reference's list carries a
+   `translateY` that recomputes on every section change. Inactive links
+   drift up or down past it like a slot-machine reel. With few sections the
+   throw is small, but the mechanic is the same: `shift = (mid - activeIndex)
+   * itemHeight`, where `mid` is the middle index of the list — the resting
+   position when the middle section is active.
+
+   LABELS ARE HIDDEN BY DEFAULT. Only a short tick
+   mark (a dash) shows per link at rest; the current section's name is
+   surfaced once, in a small persistent pill (`data-active-label`), so the
+   page always says where you are without needing a pointer. Hovering (or
+   focusing) *anywhere* in the list reveals every label at once — a
+   `:has()` rule scoped to the whole nav, not the single hovered link,
+   exactly like the reference — because the rotator's whole idea is a
+   glanceable index, not a menu you inspect one row at a time.
+
+   The active pill's text and the per-link `aria-current` are driven by the
+   same IntersectionObserver scroll-spy CaseRail already uses. Nothing here
+   is hidden from assistive tech: the tick is aria-hidden, but each link's
+   label span is real text with only `opacity: 0` at rest (revealed on
+   hover/focus, or always on for reduced motion / no-hover — see below), so
+   a screen reader still announces "Intro, link" etc. regardless of the
+   pointer.
+
+   Gated off below 1080px (matching CaseRail's own breakpoint) — a page
+   this short doesn't need a second nav competing with the horizontal case
+   rail pattern on a narrow screen, and there's no natural mobile shape for
+   a reel that only makes sense pinned to a tall viewport's centre. */
+interface Props {
+  sections: { id: string; label: string }[];
+}
+const { sections } = Astro.props;
+---
+<nav class="indexrotator" aria-label="Page sections" data-indexrotator>
+  <span class="indexrotator__active" aria-hidden="true" data-active-label></span>
+  <ul class="indexrotator__list" data-list>
+    {sections.map((s, i) => (
+      <li>
+        <a
+          href={`#${s.id}`}
+          class="indexrotator__link"
+          data-section={s.id}
+          data-index={i}
+        >
+          <span class="indexrotator__label">{s.label}</span>
+          <span class="indexrotator__tick" aria-hidden="true"></span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .indexrotator {
+    display: none;
+  }
+
+  @media (min-width: 1081px) {
+    .indexrotator {
+      display: block;
+      position: fixed;
+      top: 50%;
+      right: clamp(1rem, 2.2vw, 2rem);
+      transform: translateY(-50%);
+      z-index: 40;
+      pointer-events: none;
+    }
+    .indexrotator a { pointer-events: auto; }
+  }
+
+  /* The persistent "you are here" pill — always on, independent of hover,
+     positioned at the same spot a link's own label would occupy. Fixed
+     chip colours throughout this component (see the --chip-bg/--chip-fg
+     comment in tokens.css): this nav floats over every band on the page
+     as you scroll, never inside just one, so it can't read --shell,
+     --fg-dim, --rule or --accent the way a themed Section's own children
+     can — it carries its own always-dark, always-legible palette instead. */
+  .indexrotator__active {
+    position: absolute;
+    top: 50%;
+    right: calc(1.1rem + 0.6rem);
+    transform: translateY(-50%);
+    white-space: nowrap;
+    background: var(--chip-bg);
+    color: var(--chip-fg);
+    border-radius: 3px;
+    padding: 0.2rem 0.6rem;
+    font-family: var(--font-display);
+    font-size: var(--step-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .indexrotator__list {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* Every row is the same height on purpose — the rotator's shift math
+       (in the script below) assumes a fixed --item-h per row. */
+    --item-h: 2.15rem;
+    transition: transform var(--dur-reveal) var(--ease-out);
+  }
+  /* A narrow rounded "track" behind just the ticks, not the whole 9.5rem
+     row — the reference's plain 1px spine can't guarantee contrast here
+     (this rail sits over light bands too), but a block the full width of
+     each link read as a slab. This is the compromise: only as wide as the
+     ticks actually need. */
+  .indexrotator__list::before {
+    content: '';
+    position: absolute;
+    top: -0.5rem;
+    bottom: -0.5rem;
+    right: -0.6rem;
+    width: 2.3rem;
+    background: color-mix(in srgb, var(--chip-bg) 55%, transparent);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+
+  .indexrotator__link {
+    position: relative;
+    display: block;
+    height: var(--item-h);
+    width: 9.5rem;
+    color: var(--chip-fg);
+    text-decoration: none;
+  }
+  /* Opacity lives on the tick, not on the link itself — the link's own
+     opacity would multiply into the label's, which needs to reach a full,
+     undimmed 1 when hover reveals it (see .indexrotator__label below). */
+  .indexrotator__link:focus-visible {
+    outline: 2px solid var(--chip-fg);
+    outline-offset: 3px;
+  }
+
+  .indexrotator__label {
+    position: absolute;
+    top: 50%;
+    right: calc(1.1rem + 0.6rem);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    background: var(--chip-bg);
+    color: var(--chip-fg);
+    border-radius: 3px;
+    padding: 0.2rem 0.6rem;
+    font-family: var(--font-display);
+    font-size: var(--step-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity var(--dur-hover) var(--ease-out) 80ms,
+                transform var(--dur-hover) var(--ease-out) 80ms;
+  }
+
+  .indexrotator__tick {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: 0.65rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.6;
+    transition: width var(--dur-hover) var(--ease-out),
+                opacity var(--dur-hover) var(--ease-out);
+  }
+  .indexrotator__link[aria-current='true'] .indexrotator__tick {
+    width: 1.15rem;
+    opacity: 1;
+  }
+  /* A slow pulse marks the current tick — gated to exactly the conditions
+     under which the site allows any decorative-only looping animation
+     (hover-capable, motion allowed); reduced motion turns it off globally
+     via the site-wide rule in global.css. */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .indexrotator__link[aria-current='true'] .indexrotator__tick {
+      animation: indexrotator-pulse 2.6s ease-in-out infinite;
+    }
+  }
+  @keyframes indexrotator-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  /* Reveal every label at once when the pointer is anywhere in the list —
+     not per-row — same as the reference. Hover-only: a touch device (were
+     this ever shown at its width) has no equivalent gesture, so it falls
+     back to the always-on active pill plus bare ticks. */
+  @media (hover: hover) {
+    .indexrotator:has(.indexrotator__link:hover) .indexrotator__label,
+    .indexrotator:has(.indexrotator__link:focus-visible) .indexrotator__label {
+      opacity: 1;
+      transform: translate(0, -50%);
+    }
+    .indexrotator:has(.indexrotator__link:hover) .indexrotator__active,
+    .indexrotator:has(.indexrotator__link:focus-visible) .indexrotator__active {
+      opacity: 0;
+    }
+  }
+  /* No hover support: labels stay legible all the time instead of being
+     permanently unreachable text (still real, non-decorative content). */
+  @media (hover: none) {
+    .indexrotator__label { opacity: 1; transform: translate(0, -50%); }
+  }
+</style>
+
+<script>
+  // Scroll-spy: identical shape to CaseRail's — IntersectionObserver with a
+  // top-of-viewport rootMargin, document order wins ties. Drives three
+  // things per change: aria-current on the matching link, the active pill's
+  // text, and the rotator's own translateY.
+  const rotators = document.querySelectorAll<HTMLElement>('[data-indexrotator]');
+
+  rotators.forEach((rotator) => {
+    const list = rotator.querySelector<HTMLElement>('[data-list]');
+    const activeLabel = rotator.querySelector<HTMLElement>('[data-active-label]');
+    const links = [...rotator.querySelectorAll<HTMLAnchorElement>('[data-section]')];
+    const targets = links
+      .map((l) => document.getElementById(l.dataset.section!))
+      .filter((el): el is HTMLElement => Boolean(el));
+    if (!list || !links.length || !targets.length) return;
+
+    const mid = Math.floor((links.length - 1) / 2);
+    const itemH = () =>
+      parseFloat(getComputedStyle(list).getPropertyValue('--item-h')) *
+      parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+    const visible = new Set<string>();
+
+    const paint = () => {
+      const current = targets.find((t) => visible.has(t.id))?.id;
+      if (!current) return;
+      const link = links.find((l) => l.dataset.section === current);
+      const idx = link ? Number(link.dataset.index) : 0;
+
+      for (const l of links) {
+        if (l.dataset.section === current) l.setAttribute('aria-current', 'true');
+        else l.removeAttribute('aria-current');
+      }
+      if (activeLabel && link) {
+        activeLabel.textContent =
+          link.querySelector('.indexrotator__label')?.textContent ?? '';
+      }
+      list.style.transform = `translateY(${(mid - idx) * itemH()}px)`;
+    };
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) visible.add(e.target.id);
+          else visible.delete(e.target.id);
+        }
+        paint();
+      },
+      { rootMargin: '-25% 0px -60% 0px', threshold: 0 }
+    );
+    targets.forEach((t) => io.observe(t));
+  });
+</script>

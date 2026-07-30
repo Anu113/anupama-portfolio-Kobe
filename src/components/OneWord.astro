@@ -82,10 +82,13 @@ const {
   .oneword__prompt { margin: 0; }
   .oneword__chips { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
   .oneword__chips button {
-    font: inherit; font-size: var(--step-label);
+    font: inherit; font-family: var(--font-display); font-size: var(--step-label);
     letter-spacing: var(--tracking-label); text-transform: uppercase;
     background: transparent; color: var(--fg-dim);
-    border: 1px solid var(--rule); border-radius: 999px;
+    /* --fg-dim, not --rule — measured contrast on the sand theme's --rule
+       against its own --bg is ~1.4:1, well under the 3:1 WCAG needs for a
+       control's own boundary. --fg-dim is already AA-checked per theme. */
+    border: 1px solid var(--fg-dim); border-radius: 999px;
     padding: 0.3rem 0.7rem; cursor: pointer;
     transition: color var(--dur-hover) var(--ease-out),
                 border-color var(--dur-hover) var(--ease-out);

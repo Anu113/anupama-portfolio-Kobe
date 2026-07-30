@@ -9,9 +9,12 @@
    It is a themed band (data-themeband) so the nav recolours over it, and it
    wears `ink` on every page so the site always closes on the same note.
 
-   The wordmark is SVG with textLength set to the viewBox width: it spans the
-   page exactly at any width, and it can't wrap or overflow if General Sans
-   fails to load — the fallback face just gets tracked to fit instead. */
+   The wordmark is her name, one <span> per letter, spread across the line
+   with flex. A rAF loop sets each letter's own weight from its distance to
+   the cursor — TextPressure from React Bits, rewritten as plain DOM (see
+   the long note in the script below, including why only the weight axis
+   moves). The letters are sized to fill the line exactly by measurement,
+   not by a formula, so the mark still spans the page at any width. */
 import { site } from '../data/site';
 
 const year = new Date().getFullYear();
@@ -59,23 +62,13 @@ const year = new Date().getFullYear();
   </div>
 
   <div class="foot__mark" aria-hidden="true">
-    <svg viewBox="0 0 1700 250" role="presentation" focusable="false">
-      <defs>
-        <!-- currentColor at two opacities, so the mark recolours with the
-             band instead of carrying a hex of its own. -->
-        <linearGradient id="footmark" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0" stop-color="currentColor" stop-opacity="0.26" />
-          <stop offset="1" stop-color="currentColor" stop-opacity="0.09" />
-        </linearGradient>
-      </defs>
-      <text
-        x="0"
-        y="200"
-        textLength="1700"
-        lengthAdjust="spacing"
-        fill="url(#footmark)"
-      >{site.name.toUpperCase()}</text>
-    </svg>
+    <div class="mark" id="foot-mark">
+      {site.name.toUpperCase().split('').map((ch) => (
+        ch === ' '
+          ? <span class="mark__ch mark__ch--gap">&nbsp;</span>
+          : <span class="mark__ch">{ch}</span>
+      ))}
+    </div>
   </div>
 </footer>
 
@@ -110,6 +103,7 @@ const year = new Date().getFullYear();
 
   .foot__links { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
   .foot__links a {
+    font-family: var(--font-display);
     font-size: var(--step-label);
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
@@ -180,13 +174,37 @@ const year = new Date().getFullYear();
   }
 
   /* --- Row 3: the wordmark ------------------------------------------- */
-  .foot__mark { padding-inline: var(--gutter); }
-  .foot__mark svg { display: block; width: 100%; height: auto; }
-  .foot__mark text {
+  /* clip, not hidden — a letter widening under the cursor must never be
+     able to add a scrollbar. Same reasoning as global.css on <body>. */
+  .foot__mark { padding-inline: var(--gutter); overflow: clip; }
+
+  .mark {
+    display: flex;
+    justify-content: space-between;
+    white-space: nowrap;
     font-family: var(--font-display);
-    font-size: 200px;   /* SVG user units, not screen px — the viewBox scales it */
-    font-weight: 600;
+    text-transform: uppercase;
+    line-height: 0.86;
+    letter-spacing: 0;
+    user-select: none;
+    color: var(--fg);
+    /* A pre-JS size that fills the line without overflowing it. The script
+       measures the letters and replaces this with an exact fit; if the
+       script never runs, this is what stands. */
+    font-size: 10vw;
   }
+  .mark__ch {
+    display: block;
+    /* The base instance. The rAF loop writes this per letter. */
+    font-variation-settings: 'wght' 300;
+    /* The resting mark is quiet — it's a signature, not a headline. The
+       loop lifts letters toward 0.56 as the cursor nears them, and this
+       value is also the whole static state under reduced motion. */
+    opacity: 0.2;
+  }
+  /* The word gap. Without it, space-between spreads every gap equally and
+     "ANUPAMA MISHRA" reads as one word. */
+  .mark__ch--gap { flex: 0 0 0.28em; }
 
   @media (max-width: 900px) {
     .foot__top { grid-template-columns: 1fr; gap: 2.5rem; }
@@ -197,6 +215,131 @@ const year = new Date().getFullYear();
 </style>
 
 <script>
+  /* ── The wordmark ──────────────────────────────────────────────────────
+     TextPressure (React Bits), rewritten as plain DOM — same rule as
+     CaseRail's shimmer and CursorTrail: ported, not installed. The idea is
+     the original's: each letter reads its distance to an eased pointer and
+     sets its own variable-font instance, so the name thickens under the
+     cursor and thins away from it.
+
+     Three deliberate departures from the source:
+
+     1. ONE AXIS. Fontshare's General Sans variable cut carries `wght`
+        (200–700) and nothing else, so the `wdth` and `ital` axes the
+        original animates are dropped rather than faked. Asking for an axis
+        a font doesn't have does nothing; tilting the wordmark into a
+        different typeface to get one would cost more than it buys.
+     2. FIT, NOT FORMULA. The original guesses a size from the character
+        count. This measures the letters and solves for the size that makes
+        them span the line exactly — the property the SVG wordmark it
+        replaces had for free.
+     3. IT PARKS. The original's rAF runs forever. This one stops when the
+        pointer has caught up, and when the footer is off screen, which on
+        a long page is most of the time.
+
+     Off entirely without a hover pointer or under prefers-reduced-motion:
+     the CSS resting state is the whole design in that case.             */
+  const mark = document.getElementById('foot-mark');
+  if (mark) {
+    const chars = [...mark.querySelectorAll<HTMLElement>('.mark__ch')];
+
+    // Solve for the font size whose letters exactly fill the line. Measured
+    // at a known size and scaled, so it holds for any name length.
+    const PROBE = 100;
+    const fit = () => {
+      const line = mark.getBoundingClientRect().width;
+      if (!line) return;
+      mark.style.fontSize = `${PROBE}px`;
+      const ink = chars.reduce((sum, c) => sum + c.getBoundingClientRect().width, 0);
+      if (ink > 0) mark.style.fontSize = `${(PROBE * line * 0.995) / ink}px`;
+    };
+
+    // Fonts change the measurement, so fit again once the real face lands.
+    fit();
+    document.fonts?.ready.then(fit);
+
+    let resizeT: number;
+    addEventListener('resize', () => {
+      clearTimeout(resizeT);
+      resizeT = setTimeout(fit, 120);
+    });
+
+    // The gate is the pointer itself, not a `hover: hover` query read once at
+    // load: a mouse plugged in later, or a laptop that also has a touchscreen,
+    // both answer that query wrong. A finger never sends pointerType 'mouse',
+    // so touch simply never presses.
+    const stillness = matchMedia('(prefers-reduced-motion: reduce)');
+
+    {
+      const WGHT_MIN = 200, WGHT_SPAN = 500;   // the axis, 200–700
+      const FADE_MIN = 0.2, FADE_SPAN = 0.36;  // matches the CSS resting state
+
+      // maxVal - |maxVal * d / maxDist| + minVal, floored at minVal — the
+      // original's falloff, kept as-is.
+      const attr = (d: number, maxDist: number, min: number, span: number) =>
+        Math.max(min, span - Math.abs((span * d) / maxDist) + min);
+
+      const cursor = { x: 0, y: 0 };
+      const eased = { x: 0, y: 0 };
+      let seen = false;   // no pointer yet — leave the mark at rest
+      let onScreen = false;
+      let raf = 0;
+
+      const frame = () => {
+        raf = 0;
+        eased.x += (cursor.x - eased.x) / 15;
+        eased.y += (cursor.y - eased.y) / 15;
+
+        const line = mark.getBoundingClientRect();
+        const maxDist = line.width / 2;
+
+        // Read every letter before writing any: a write between two reads
+        // forces a layout per letter.
+        const boxes = chars.map((c) => c.getBoundingClientRect());
+        boxes.forEach((r, i) => {
+          const dx = r.x + r.width / 2 - eased.x;
+          const dy = r.y + r.height / 2 - eased.y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          const wght = Math.round(attr(d, maxDist, WGHT_MIN, WGHT_SPAN));
+          chars[i].style.fontVariationSettings = `'wght' ${wght}`;
+          chars[i].style.opacity = attr(d, maxDist, FADE_MIN, FADE_SPAN).toFixed(2);
+        });
+
+        // Park once the pointer has been caught. A mousemove wakes it.
+        const settled =
+          Math.abs(cursor.x - eased.x) < 0.5 && Math.abs(cursor.y - eased.y) < 0.5;
+        if (!settled && onScreen) raf = requestAnimationFrame(frame);
+      };
+
+      const wake = () => {
+        if (!raf && onScreen && seen) raf = requestAnimationFrame(frame);
+      };
+
+      addEventListener(
+        'pointermove',
+        (e) => {
+          if (e.pointerType !== 'mouse' || stillness.matches) return;
+          cursor.x = e.clientX;
+          cursor.y = e.clientY;
+          if (!seen) { eased.x = cursor.x; eased.y = cursor.y; seen = true; }
+          wake();
+        },
+        { passive: true },
+      );
+
+      // Nothing runs while the footer is off screen, which is most of a
+      // long page.
+      new IntersectionObserver(
+        ([entry]) => {
+          onScreen = entry.isIntersecting;
+          if (onScreen) wake();
+          else if (raf) { cancelAnimationFrame(raf); raf = 0; }
+        },
+        { rootMargin: '120px' },
+      ).observe(mark);
+    }
+  }
+
   // The clock reads in her timezone, not the visitor's — that's the point of
   // putting a city next to it. A bad zone string throws in the constructor;
   // if that happens the dashes stay rather than the page breaking.

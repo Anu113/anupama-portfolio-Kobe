@@ -58,7 +58,7 @@ const { blocks } = Astro.props;
 
     {block.kind === 'figure' && (
       <figure class:list={['fig', block.wide && 'fig--wide']}>
-        <div class="fig__frame">
+        <div class="fig__frame" style={block.ratio ? `--fig-ratio: ${block.ratio};` : undefined}>
           <img src={block.src} alt={block.alt} loading="lazy" decoding="async" />
         </div>
         {block.caption && <figcaption class="fig__cap">{block.caption}</figcaption>}
@@ -114,7 +114,7 @@ const { blocks } = Astro.props;
     font-family: var(--font-display);
     font-size: var(--step-h3);
     font-weight: 500;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking-tight);
     line-height: 1.2;
     margin: 0 0 0.6rem;
     padding-top: 1rem;
@@ -135,6 +135,7 @@ const { blocks } = Astro.props;
   }
   .row:last-child { border-bottom: 1px solid var(--rule); }
   .row__term {
+    font-family: var(--font-display);
     font-weight: 600;
     font-size: var(--step-label);
     letter-spacing: var(--tracking-label);
@@ -146,9 +147,12 @@ const { blocks } = Astro.props;
 
   /* --- figure ---------------------------------------------------------- */
   .fig { margin: 0; }
+  /* --fig-ratio, when a block supplies one, is the image's own aspect, so
+     `cover` has nothing to crop. Without it the frame forces 16/10 and eats
+     the top and bottom of every portrait screen and long page mockup. */
   .fig__frame {
     background: var(--screen);
-    aspect-ratio: 16 / 10;
+    aspect-ratio: var(--fig-ratio, 16 / 10);
     overflow: hidden;
   }
   .fig__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -158,7 +162,9 @@ const { blocks } = Astro.props;
      that column for the whole band. Nothing in the body may enter the rail
      track. Every figure stays inside the body column; `wide` just gets a
      more panoramic frame so a section's lead image still reads as one. */
-  .fig--wide .fig__frame { aspect-ratio: 16 / 7.5; }
+  /* Same fallback pattern as above — a supplied ratio has to beat `wide`,
+     which is the more specific selector and would otherwise re-crop. */
+  .fig--wide .fig__frame { aspect-ratio: var(--fig-ratio, 16 / 7.5); }
   .fig__cap {
     margin-top: 1rem;
     max-width: var(--measure);

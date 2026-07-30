@@ -1,9 +1,99 @@
 ---
 import Base from '../layouts/Base.astro';
 import Section from '../components/Section.astro';
-import Reveal from '../components/Reveal.astro';
-import PageHeader from '../components/PageHeader.astro';
 import { site } from '../data/site';
+
+/* Pinned rail + rolling title, structured like /work/[slug]'s own
+   rail-plus-body layout (CaseRail.astro + [slug].astro) rather than a
+   bespoke mechanism — same ONE Section, ONE constrained-width grid, sticky
+   left column pattern, just with a rolling title instead of a nav list.
+
+   ONE THEME, ONE BACKGROUND. allierho.com/about never changes background
+   as you scroll — one dark ground for the whole page — and case studies on
+   this site already make the same call (`<Section theme="bone">`, see
+   [slug].astro's own comment on why: a colour change behind reading copy
+   competes with it). Earlier drafts of this page swapped bone/sand/clay
+   per stage; that meant either resetting the sticky rail at each boundary
+   (so "About me" re-pinned four times instead of staying put — the exact
+   bug this rewrite was asked to fix) or an absolutely-positioned overlay
+   rail with its own colour-sync script to stay legible over a changing
+   ground. Once the whole page is one palette, neither problem exists: the
+   rail is an ordinary sticky grid column, Section.astro's own
+   [data-themeband] already tells Nav.astro what to show, and ~40 lines of
+   colour-matching script disappear.
+
+   THE RAIL. `.body` is `.body__col`'s sibling in a two-column CSS grid
+   exactly like [slug].astro's `.body` (max-width, centred, `--gutter`
+   column gap) — see that file for why this shape and not full-bleed.
+   `.rail` is a normal grid item, `position: sticky`, so it releases on its
+   own the instant `.body__col` (the taller column) ends, same technique
+   CaseRail.astro already uses. "About me" never moves; only the masked
+   title stack inside it does, via a scroll-linked transform.
+
+   THE ROLL. Which of the six stages is "current" is answered by
+   IntersectionObserver, not a scroll-position probe — the same call
+   CaseRail.astro's own section-spy already makes, same rootMargin (a band
+   a quarter down from the nav to 60% up from the bottom counts as
+   "current"). On a change, the stack translates by one title's own
+   measured height. Re-measured after document.fonts.ready, not just once
+   at parse time — the mask is sized to whatever General Sans reports for
+   line height, and the fallback system font that's on screen before the
+   webfont swaps in reports a shorter one; sizing the mask against that
+   first measurement is what made "How I work" peek in under "Intro" with
+   no scroll at all.
+
+   ACCESSIBILITY. No prefers-reduced-motion branch needed — sticky isn't
+   animation, and the roll's transition duration is squashed by the
+   sitewide reduced-motion rule in global.css, same as Reveal.astro. The
+   rail is `aria-hidden` (it's a visual echo of whichever heading is
+   current, not itself content); each stage keeps a real, visually-hidden
+   `<h2>` so a screen-reader user still gets all six section headings in
+   document order. Below 900px the rail is dropped entirely and that
+   visually-hidden heading becomes a plain, visible one instead — a sticky
+   title rail next to single-column stacked content doesn't hold together
+   on a phone, and the reference site doesn't attempt it either. */
+
+const stages = [
+  { id: 'intro', num: '00', label: 'It’s me' },
+  { id: 'approach', num: '01', label: 'My approach' },
+  { id: 'worked', num: '02', label: 'Work experience' },
+  { id: 'stack', num: '03', label: 'Tech stack' },
+  { id: 'writing', num: '04', label: 'My writing' },
+  { id: 'contact', num: '05', label: 'Connect' },
+] as const;
+
+// Same bracket convention as the timeline below — categories and the one
+// confirmed talk are real, specific tool names and venues aren't.
+const stack = [
+  { group: 'Design & prototyping', items: '[Figma], [Figma prototyping], [ProtoPie]' },
+  { group: 'Systems', items: 'Design tokens, component libraries, [Storybook]' },
+  { group: 'Research', items: '[Dovetail], [UserTesting]' },
+  { group: 'Collaboration', items: '[Jira], [Notion], [FigJam]' },
+];
+
+// The contact form's two custom dropdowns — each option carries a swatch
+// key (src/styles/tokens.css, "OPTION SWATCHES") so the open popup reads
+// as the moodboard reference, one colour per row.
+const orgTypeOptions = [
+  { value: 'Startup', swatch: 'sand' },
+  { value: 'Enterprise', swatch: 'clay' },
+  { value: 'Agency', swatch: 'sage' },
+  { value: 'Non-profit', swatch: 'lilac' },
+  { value: 'Other', swatch: 'coral' },
+] as const;
+const needOptions = [
+  { value: 'a Staff Product Designer', swatch: 'coral' },
+  { value: 'design leadership', swatch: 'lilac' },
+  { value: 'a project consult', swatch: 'sage' },
+  { value: 'something else', swatch: 'clay' },
+] as const;
+
+const writing = [
+  { title: 'The Saga of Accessibility', meta: 'Talk — [conference], [year]',
+    note: 'Why accessibility has to be built in from the start, not retrofitted after a compliance review.' },
+  { title: '[Essay title]', meta: '[Publication], [year]',
+    note: '[One line on what it argues.]' },
+];
 
 // Bracketed values are still to be confirmed — same convention as the
 // case-study impact lines in src/data/work.ts.
@@ -24,178 +114,706 @@ const timeline = [
   title="About me — Anupama Mishra"
   description="Staff product designer, ten years across identity, fintech and enterprise software. Led a team of six at Okta. Looking for a Staff Product Designer role, remote."
 >
-  <Section theme="bone" class="abouthead">
-    <PageHeader label="About me">
-      Staff product designer in <em>enterprise</em> software.
-      <Fragment slot="intro">
-        <p>
-          Ten years of it. Most recently Staff Product Designer at Okta, on
-          Identity &amp; Access Management — the console enterprises use to run
-          identity for thousands of employees — where I also led a team of six.
-          Before that: PayPal, Walmart Labs, Deloitte Digital and Zomato.
-        </p>
-        <p>
-          I took a career break in [year] and I'm returning to a {site.ask}. What
-          I want next is a hard problem with real constraints, and my hands on
-          the work.
-        </p>
-      </Fragment>
-    </PageHeader>
-  </Section>
+  <Section theme="bone" class="aboutpage">
+    <div class="body" data-aboutstory>
+      <div class="rail" data-rail aria-hidden="true">
+        <p class="u-label">About me</p>
+        <div class="rail__mask" data-mask>
+          <div class="rail__stack" data-stack>
+            {stages.map((s) => <h2 class="rail__title">{s.label}</h2>)}
+          </div>
+        </div>
+      </div>
 
-  <!-- The home page links here: "How I work →" -->
-  <Section theme="sand" id="approach" class="approach">
-    <Reveal>
-      <h2 class="approach__title">How I work</h2>
-    </Reveal>
-    <Reveal delay={120}>
-      <ol class="approach__list">
-        <li>
-          <h3>Decision rights before process</h3>
-          <p>
-            Most design work isn't slow because it lacks a process — it's slow
-            because nobody knows who decides. I write down who owns which call,
-            and I take the unpopular ones to a decision instead of letting them
-            sit.
-          </p>
-        </li>
-        <li>
-          <h3>A design system people actually want to use</h3>
-          <p>
-            A system earns adoption by being faster than the workaround. I argue
-            for it as product work, with an owner and a roadmap, not as a side
-            project between deadlines.
-          </p>
-        </li>
-        <li>
-          <h3>Critique that is kind and specific</h3>
-          <p>
-            Named work, named problems, no ambushes. Designers bring the
-            decision they're stuck on rather than a finished screen, which is
-            the only version of critique that changes an outcome.
-          </p>
-        </li>
-        <li>
-          <h3>Accessibility as a default, not a pass</h3>
-          <p>
-            I gave a talk called <em>The Saga of Accessibility</em> for a
-            reason: retrofitting it costs more than building it in, every time.
-            WCAG AA is the floor I ship against.
-          </p>
-        </li>
-      </ol>
-    </Reveal>
-  </Section>
+      <div class="body__col">
+        {stages.map((s, i) => (
+          <div class="stage" id={s.id} data-stage>
+            <span class="stage__num" aria-hidden="true">{s.num}</span>
+            <div class="stage__mobilehead">
+              <p class="u-label">About me</p>
+              <h2 class="stage__mobiletitle">{s.label}</h2>
+            </div>
+            <div class="stage__body">
+              {i === 0 && (
+                <div class="stage__intro">
+                  <figure class="stage__portrait">
+                    <img
+                      src="/images/about/anupama-portrait.png"
+                      width="1254"
+                      height="1254"
+                      alt="Portrait of Anupama Mishra"
+                      loading="eager"
+                    />
+                  </figure>
+                  <p>
+                    Staff product designer in <em>enterprise</em> software.
+                    Ten years of it. Most recently Staff Product Designer at
+                    Okta, on Identity &amp; Access Management — the console
+                    enterprises use to run identity for thousands of
+                    employees — where I also led a team of six. Before that:
+                    PayPal, Walmart Labs, Deloitte Digital and Zomato.
+                  </p>
+                  <p>
+                    I took a career break in [year] and I'm returning to a
+                    {' '}{site.ask}. What I want next is a hard problem with
+                    real constraints, and my hands on the work.
+                  </p>
+                </div>
+              )}
+              {i === 1 && (
+                <ol class="approach__list">
+                  <li>
+                    <h3>Decision rights before process</h3>
+                    <p>
+                      Most design work isn't slow because it lacks a process
+                      — it's slow because nobody knows who decides. I write
+                      down who owns which call, and I take the unpopular
+                      ones to a decision instead of letting them sit.
+                    </p>
+                  </li>
+                  <li>
+                    <h3>A design system people actually want to use</h3>
+                    <p>
+                      A system earns adoption by being faster than the
+                      workaround. I argue for it as product work, with an
+                      owner and a roadmap, not as a side project between
+                      deadlines.
+                    </p>
+                  </li>
+                  <li>
+                    <h3>Critique that is kind and specific</h3>
+                    <p>
+                      Named work, named problems, no ambushes. Designers
+                      bring the decision they're stuck on rather than a
+                      finished screen, which is the only version of
+                      critique that changes an outcome.
+                    </p>
+                  </li>
+                  <li>
+                    <h3>Accessibility as a default, not a pass</h3>
+                    <p>
+                      I gave a talk called <em>The Saga of Accessibility</em>
+                      {' '}for a reason: retrofitting it costs more than
+                      building it in, every time. WCAG AA is the floor I
+                      ship against.
+                    </p>
+                  </li>
+                </ol>
+              )}
+              {i === 2 && (
+                <ul class="path__list">
+                  {timeline.map((t) => (
+                    <li class="path__row">
+                      <span class="u-label path__years">{t.years}</span>
+                      <span class="path__org">{t.org}</span>
+                      <span class="path__role">{t.role}</span>
+                      <p class="path__note">{t.note}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {i === 3 && (
+                <div class="stack__list">
+                  {stack.map((s) => (
+                    <div class="stack__row">
+                      <h3>{s.group}</h3>
+                      <p>{s.items}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {i === 4 && (
+                <ul class="writing__list">
+                  {writing.map((w) => (
+                    <li class="writing__row">
+                      <h3>{w.title}</h3>
+                      <p class="u-label writing__meta">{w.meta}</p>
+                      <p class="writing__note">{w.note}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {i === 5 && (
+                <>
+                  <p class="u-measure aboutfoot__body">
+                    {site.ask}. The fastest way to find out if it fits is a
+                    conversation.
+                  </p>
+                  {/* Sentence-form contact, same shape as september.works's
+                      own "Connect" section (referenced by name for this
+                      build) — kept on this page's bone palette rather than
+                      its dark ground; see the header comment on why the
+                      whole page stays one background. Static site, no
+                      server: submitting builds a mailto: to site.email
+                      instead of posting anywhere, same pattern LockedGate
+                      and CaseGate already use for their own contact links.
 
-  <Section theme="bone" class="path">
-    <Reveal>
-      <h2 class="path__title">Where I've worked</h2>
-    </Reveal>
-    <Reveal delay={120}>
-      <ul class="path__list">
-        {timeline.map((t) => (
-          <li class="path__row">
-            <span class="u-label path__years">{t.years}</span>
-            <span class="path__org">{t.org}</span>
-            <span class="path__role">{t.role}</span>
-            <p class="path__note">{t.note}</p>
-          </li>
+                      The two "select one" fields are a hand-built listbox
+                      (button + popup, ARIA "select-only combobox" pattern),
+                      not a native <select> — a native option can't carry a
+                      background colour, and the popup is meant to read as
+                      the moodboard reference: one saturated swatch per row
+                      (src/styles/tokens.css, "OPTION SWATCHES"). Each field
+                      keeps a real hidden input for its FormData value; a
+                      hidden input is barred from constraint validation, so
+                      "required" is enforced by hand in the submit script
+                      below rather than by the browser. */}
+                  <form class="connect" data-connect-form data-to={site.email}>
+                    <p class="connect__line">
+                      Hello,<br />
+                      My name is{' '}
+                      <input class="connect__field connect__field--name" type="text" name="name" required aria-label="Your name" />
+                      {' '}. I work for a/an{' '}
+                      <span class="dselect" data-dselect data-field="orgType">
+                        <button type="button" class="connect__field dselect__trigger" id="orgType-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="orgType-list" aria-label="Type of organisation" data-dselect-trigger>
+                          <span data-dselect-value>select one</span>
+                        </button>
+                        <span class="dselect__popup" id="orgType-list" role="listbox" tabindex="-1" aria-labelledby="orgType-trigger" data-dselect-list hidden>
+                          {orgTypeOptions.map((o, i) => (
+                            <span role="option" id={`orgType-opt-${i}`} class={`dselect__option dselect__option--${o.swatch}`} data-value={o.value} aria-selected="false">{o.value}</span>
+                          ))}
+                        </span>
+                        <input type="hidden" name="orgType" data-dselect-input />
+                      </span>
+                      {' '}&amp; need help with{' '}
+                      <span class="dselect" data-dselect data-field="need">
+                        <button type="button" class="connect__field dselect__trigger dselect__trigger--wide" id="need-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="need-list" aria-label="What you need help with" data-dselect-trigger>
+                          <span data-dselect-value>select one</span>
+                        </button>
+                        <span class="dselect__popup" id="need-list" role="listbox" tabindex="-1" aria-labelledby="need-trigger" data-dselect-list hidden>
+                          {needOptions.map((o, i) => (
+                            <span role="option" id={`need-opt-${i}`} class={`dselect__option dselect__option--${o.swatch}`} data-value={o.value} aria-selected="false">{o.value}</span>
+                          ))}
+                        </span>
+                        <input type="hidden" name="need" data-dselect-input />
+                      </span>
+                      {' '}. You can email me at{' '}
+                      <input class="connect__field connect__field--email" type="email" name="email" required aria-label="Your email" />
+                      {' '}.
+                    </p>
+                    <button class="connect__submit" type="submit">Submit</button>
+                  </form>
+                  {/* "Submit" builds a mailto: and navigates to it — there's no
+                      server behind this static site. That fails silently on
+                      any machine with no default mail client configured
+                      (common on managed corporate laptops, or anyone living
+                      in Gmail-in-browser), and this stage had no plain way
+                      out if it does. A direct address is the fallback. */}
+                  <p class="connect__alt">
+                    Prefer email? <a href={`mailto:${site.email}`}>{site.email}</a>
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
         ))}
-      </ul>
-    </Reveal>
-  </Section>
-
-  <Section theme="clay" class="aboutfoot">
-    <Reveal>
-      <h2 class="aboutfoot__title">Open to work.</h2>
-      <p class="u-measure aboutfoot__body">
-        {site.ask}. The fastest way to find out if it fits is a conversation.
-      </p>
-      <p class="aboutfoot__links">
-        <a href={`mailto:${site.email}`}>{site.email}</a>
-        <a href={site.linkedin}>LinkedIn</a>
-        <a href="/work">Selected work</a>
-      </p>
-    </Reveal>
+      </div>
+    </div>
   </Section>
 </Base>
 
 <style>
-  /* :global — the band is rendered by Section.astro, so it doesn't carry
-     this page's scope. */
-  /* Type comes from PageHeader; this only sets the band height.
-     Keep in step with .workindex-head. */
-  :global(.abouthead) {
-    min-height: 72svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  /* :global — this band is rendered by Section.astro, so a class passed
+     through `class` doesn't carry this page's scope hash (see [slug].astro
+     for the same note against .casepage). */
+  :global(.aboutpage) {
+    padding-block-start: calc(var(--nav-h) + var(--space-band-tight));
+    padding-block-end: var(--space-section);
   }
 
-  .approach__title,
-  .path__title,
-  .aboutfoot__title {
+  /* Both columns are bounded (rail by minmax, content by its own
+     max-width below), so `.body` sizes to fit them — `width: fit-content`,
+     not a fixed max-width — and `margin-inline: auto` centres that tight
+     box, giving genuinely equal left/right padding instead of a wide box
+     with the rail hugging its left edge and the content column's own
+     unused width padding out the right. */
+  .body {
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: minmax(14rem, 18rem) minmax(0, 32rem);
+    column-gap: clamp(1.5rem, 3vw, 2.5rem);
+    align-items: start;
+  }
+  .body__col { min-width: 0; }
+
+  /* Sticky at a fixed distance from the nav rather than a 100svh box
+     centred with flex — a box that tall reserves a full viewport of
+     "release zone" at the bottom of `.body__col`, so the rail visibly
+     unpins and slides away while the visitor is still reading the last
+     stage (Get in touch). Sizing the box to its own content instead
+     means it only releases in the last few dozen px of the column, and
+     `top` alone controls how high it sits — no flex centring needed. */
+  .rail {
+    position: sticky;
+    top: 32vh;
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+  }
+  .rail p:first-child { margin-top: 0; }
+
+  /* A hair taller than the title's own line-height: General Sans's
+     rendered glyphs (rounded overshoot on "n"/"o", ascenders on "I"/"t")
+     exceed a 1.15 line box at this weight, so the mask — sized in JS from
+     that same line box — clipped the top or bottom of every title, even
+     at rest. 1.4 gives the glyphs room without changing the measured
+     height enough to be visible as extra gap. */
+  .rail__mask { overflow: hidden; }
+  .rail__stack {
+    display: flex;
+    flex-direction: column;
+    transition: transform 520ms var(--ease-out);
+  }
+  .rail__title {
     font-family: var(--font-display);
-    font-size: var(--step-h2);
+    /* Sized to fit "Where I've worked" — the longest title — on one line
+       inside the narrower rail column above; --step-h2 (up to 3rem)
+       wrapped or got clipped by the mask at this width. */
+    font-size: clamp(1.15rem, 1.7vw, 1.5rem);
     letter-spacing: var(--tracking-display);
     font-weight: 500;
-    margin: 0 0 2.5rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    margin: 0.5rem 0 0;
   }
-  .approach__list {
-    list-style: none;
-    counter-reset: step;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(2rem, 4vw, 3.5rem);
+
+  .stage {
+    position: relative;
+    scroll-margin-top: calc(var(--nav-h) + 1rem);
   }
-  .approach__list li { counter-increment: step; }
+  /* +80%, then +200% more on top of that (5.4x the case-study spacing
+     token this was borrowing) — allierho.com/about gives each numbered
+     section this much room before the next one starts; the stages here
+     read as standalone chapters, not the tighter run of sections a
+     case study's rail scrolls through. */
+  .stage + .stage { margin-block-start: calc(var(--space-case) * 5.4); }
+  .stage__num {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translateY(-38%);
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 0.8;
+    letter-spacing: var(--tracking-display);
+    font-size: clamp(5rem, 12vw, 9rem);
+    color: transparent;
+    -webkit-text-stroke: 1px currentColor;
+    opacity: 0.07;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .stage__mobilehead {
+    /* Visually hidden, not display:none — the rolling rail is aria-hidden,
+       so this stays the one real, accessible heading for the stage on
+       every viewport. The 900px query below swaps it back to a normal
+       visible block once the rail itself is dropped. */
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .stage__body { position: relative; color: var(--fg-dim); max-width: 32rem; }
+  .stage__body em {
+    font-family: var(--font-accent);
+    font-style: italic;
+    color: var(--fg);
+  }
+  .stage__body p { margin: 0 0 1.25rem; max-width: var(--measure); }
+  .stage__body p:last-child { margin-bottom: 0; }
+
+  /* One width value drives both the portrait and the paragraphs under it,
+     so the copy wraps to the same right edge the photo ends on instead of
+     running out wider under `.stage__body p`'s own var(--measure). */
+  .stage__intro { --intro-w: 30.4rem; }
+  .stage__intro .stage__portrait { width: min(var(--intro-w), 100%); }
+  .stage__intro p { max-width: min(var(--intro-w), 100%); }
+
+  .stage__portrait { margin: 0 0 1.5rem; }
+  .stage__portrait img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+  }
+
+  .approach__list { list-style: none; counter-reset: step; margin: 0; padding: 0; }
+  .approach__list li { counter-increment: step; margin-bottom: 1.75rem; }
+  .approach__list li:last-child { margin-bottom: 0; }
   .approach__list h3 {
     font-family: var(--font-display);
     font-size: var(--step-h3);
     font-weight: 600;
-    letter-spacing: -0.02em;
-    margin: 0 0 0.75rem;
-    border-top: 1px solid var(--rule);
-    padding-top: 1rem;
+    letter-spacing: var(--tracking-tight);
+    color: var(--fg);
+    margin: 0 0 0.4rem;
   }
   .approach__list h3::before {
-    content: counter(step, decimal-leading-zero);
-    display: block;
-    font-size: var(--step-label);
-    letter-spacing: var(--tracking-label);
+    content: counter(step, decimal-leading-zero) ' — ';
     color: var(--fg-dim);
-    margin-bottom: 0.5rem;
+    font-weight: 500;
   }
-  .approach__list p { margin: 0; color: var(--fg-dim); max-width: 44ch; }
-  .approach__list em { font-family: var(--font-accent); font-style: italic; }
+  .approach__list p { margin: 0; }
 
   .path__list { list-style: none; margin: 0; padding: 0; }
   .path__row {
-    display: grid;
-    grid-template-columns: 10rem 12rem 1fr;
-    gap: 0.5rem 1.5rem;
-    padding: 1.5rem 0;
+    padding: 1.1rem 0;
     border-top: 1px solid var(--rule);
-    align-items: baseline;
   }
-  .path__years { color: var(--fg-dim); }
+  .path__row:first-child { border-top: none; padding-top: 0; }
+  .path__years { display: block; margin-bottom: 0.25rem; }
   .path__org {
+    display: block;
     font-family: var(--font-display);
     font-size: var(--step-h3);
     font-weight: 600;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking-tight);
+    color: var(--fg);
   }
-  .path__role { color: var(--fg-dim); }
-  .path__note { grid-column: 2 / -1; margin: 0; color: var(--fg-dim); max-width: 58ch; }
+  .path__role { display: block; margin-bottom: 0.35rem; }
+  .path__note { margin: 0; max-width: 42ch; }
 
-  .aboutfoot__body { color: var(--fg-dim); }
-  .aboutfoot__links { display: flex; flex-wrap: wrap; gap: 1.5rem; padding-top: 1.5rem; }
+  .stack__list { display: flex; flex-direction: column; gap: 1.25rem; }
+  .stack__row h3 {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
+    color: var(--fg);
+    margin: 0 0 0.35rem;
+  }
+  .stack__row p { margin: 0; }
 
-  @media (max-width: 860px) {
-    .approach__list { grid-template-columns: 1fr; }
-    .path__row { grid-template-columns: 1fr; }
-    .path__note { grid-column: 1 / -1; }
+  .writing__list { list-style: none; margin: 0; padding: 0; }
+  .writing__row { padding: 1.1rem 0; border-top: 1px solid var(--rule); }
+  .writing__row:first-child { border-top: none; padding-top: 0; }
+  .writing__row h3 {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
+    color: var(--fg);
+    margin: 0 0 0.3rem;
+  }
+  .writing__meta { margin: 0 0 0.5rem; }
+  .writing__note { margin: 0; max-width: 42ch; }
+
+  /* The mad-lib sentence form from september.works's own "Connect" section
+     — same copy shape, kept on this page's bone palette (see the header
+     comment on why the page never changes ground). Set in the display
+     font at reading size so the inputs read as part of the sentence
+     rather than a form dropped into it. */
+  .connect { margin-top: 1.75rem; }
+  .connect__line {
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+    line-height: 1.65;
+    letter-spacing: var(--tracking-display);
+    color: var(--fg);
+    margin: 0;
+    max-width: none;
+  }
+  .connect__field {
+    font: inherit;
+    font-size: 0.85em;
+    color: var(--fg);
+    background: var(--screen);
+    border: none;
+    /* --fg-dim, not --rule — --rule is tuned as a quiet hairline divider
+       (see tokens.css) and falls well under the 3:1 WCAG requires for an
+       interactive control's own boundary. --fg-dim already clears AA at
+       body text size in every theme, so it clears 3:1 by a wide margin. */
+    border-bottom: 2px solid var(--fg-dim);
+    border-radius: 0;
+    padding: 0.1em 0.5em;
+    margin: 0 0.1em;
+  }
+  .connect__field:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .connect__field--name { width: 9em; }
+  .connect__field--email { width: 15em; }
+
+  /* Custom dropdown — a button standing in for the old <select>, plus an
+     absolutely-positioned listbox popup. See the template comment above
+     the form for why this replaces the native control. */
+  .dselect { position: relative; display: inline-block; }
+  .dselect__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    cursor: pointer;
+    width: 9em;
+    text-align: left;
+  }
+  .dselect__trigger--wide { width: 12.5em; }
+  /* A plain CSS triangle, not a webfont glyph or an SVG asset — one shape,
+     no extra request, and it inherits currentColor so it repaints with the
+     theme for free. */
+  .dselect__trigger::after {
+    content: '';
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 0.55em;
+    height: 0.55em;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-15%) rotate(45deg);
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .dselect__trigger[aria-expanded='true']::after { transform: translateY(15%) rotate(-135deg); }
+  .dselect__trigger[aria-invalid='true'] { border-bottom-color: var(--accent); }
+
+  /* `<span>`, not `<ul>` — the popup sits inside `.connect__line`, a <p>,
+     and <p> only permits phrasing content. A <ul> there gets silently
+     un-nested by the browser's own HTML parser (a <p> auto-closes in
+     front of it), which breaks the positioning/ARIA relationship this
+     popup depends on. role="listbox"/"option" carries the semantics a
+     real list would, so nothing is lost. */
+  .dselect__popup {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    margin: 0;
+    padding: 0;
+    width: max(100%, 16rem);
+    /* --fg-dim, not --rule — same 3:1 control-boundary reasoning as
+       .connect__field above; this popup is itself a UI component. */
+    border: 1px solid var(--fg-dim);
+    background: var(--bg);
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.18);
+  }
+  .dselect__popup:focus { outline: none; }
+
+  /* One saturated swatch per row (--swatch-* in tokens.css), near-black
+     text on all five — the moodboard treatment from the reference. */
+  .dselect__option {
+    display: block;
+    padding: 0.65em 0.9em;
+    font-size: 0.85em;
+    line-height: 1.3;
+    color: var(--swatch-ink);
+    cursor: pointer;
+  }
+  .dselect__option + .dselect__option { border-top: 1px solid rgba(20, 16, 14, 0.12); }
+  .dselect__option--sand  { background: var(--swatch-sand); }
+  .dselect__option--sage  { background: var(--swatch-sage); }
+  .dselect__option--lilac { background: var(--swatch-lilac); }
+  .dselect__option--coral { background: var(--swatch-coral); }
+  .dselect__option--clay  { background: var(--swatch-clay); }
+  .dselect__option.is-active,
+  .dselect__option[aria-selected='true'] { outline: 2px solid var(--swatch-ink); outline-offset: -2px; }
+
+  .connect__submit {
+    font: inherit;
+    font-size: var(--step-body);
+    color: var(--fg);
+    background: none;
+    /* --fg-dim, not --rule — see .connect__field above. A CTA whose only
+       edge is a sub-3:1 border is close to invisible until hovered, which
+       a touch or keyboard visitor never gets. */
+    border: 1px solid var(--fg-dim);
+    border-radius: 999px;
+    padding: 0.7rem 1.5rem;
+    margin-top: 1.5rem;
+    cursor: pointer;
+    transition: background var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+  }
+  .connect__submit:hover { background: var(--screen); border-color: var(--fg-dim); }
+
+  .connect__alt {
+    margin: 1.25rem 0 0;
+    color: var(--fg-dim);
+    font-size: var(--step-small);
+  }
+  .connect__alt a { color: var(--fg); }
+
+  .aboutfoot__body { margin-bottom: 1.5rem; }
+
+  @media (max-width: 900px) {
+    .body { width: auto; grid-template-columns: 1fr; row-gap: clamp(2rem, 5vw, 3rem); }
+    .stage__body { max-width: none; }
+    .rail { display: none; }
+    .stage__mobilehead {
+      position: static;
+      width: auto; height: auto;
+      margin: 0 0 1.5rem; padding: 0;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+    }
+    .stage__mobiletitle {
+      font-family: var(--font-display);
+      font-size: var(--step-h1);
+      letter-spacing: var(--tracking-display);
+      font-weight: 500;
+      margin: 0.5rem 0 0;
+    }
+    .stage__num { display: none; }
   }
 </style>
+
+<script>
+  // Which stage is "current" comes from IntersectionObserver, the same
+  // question and the same rootMargin CaseRail.astro's own section-spy
+  // already asks — see the header comment for why this isn't a
+  // scroll-position probe.
+  const wrap = document.querySelector<HTMLElement>('[data-aboutstory]');
+
+  if (wrap) {
+    const mask = wrap.querySelector<HTMLElement>('[data-mask]')!;
+    const stack = wrap.querySelector<HTMLElement>('[data-stack]')!;
+    const titles = [...stack.children] as HTMLElement[];
+    const stages = [...wrap.querySelectorAll<HTMLElement>('[data-stage]')];
+    const visible = new Set<string>();
+
+    const sizeMask = () => {
+      mask.style.height = `${titles[0].getBoundingClientRect().height}px`;
+    };
+
+    const roll = () => {
+      const currentId = stages.find((s) => visible.has(s.id))?.id;
+      const idx = Math.max(0, stages.findIndex((s) => s.id === currentId));
+      stack.style.transform = `translateY(-${idx * titles[0].getBoundingClientRect().height}px)`;
+    };
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) visible.add(e.target.id);
+          else visible.delete(e.target.id);
+        }
+        roll();
+      },
+      { rootMargin: '-25% 0px -60% 0px', threshold: 0 }
+    );
+
+    sizeMask();
+    stages.forEach((s) => io.observe(s));
+    addEventListener('resize', () => { sizeMask(); roll(); });
+    // The mask is sized against the fallback system font at parse time;
+    // General Sans swapping in afterward can change that measurement,
+    // which is what let the next title peek in under the current one with
+    // no scroll at all. Re-measure once the real font is ready.
+    document.fonts?.ready.then(() => { sizeMask(); roll(); });
+  }
+</script>
+
+<script>
+  // Custom dropdown — button + popup listbox standing in for the old
+  // native <select> (see the template comment above the form for why).
+  // ARIA "select-only combobox": the button opens the popup, the popup
+  // itself takes DOM focus and owns arrow/Home/End/Enter/Escape, and a
+  // hidden input carries the chosen value into the form's FormData.
+  function initDSelect(root: HTMLElement) {
+    const trigger = root.querySelector<HTMLButtonElement>('[data-dselect-trigger]');
+    const valueEl = root.querySelector<HTMLElement>('[data-dselect-value]');
+    const list = root.querySelector<HTMLUListElement>('[data-dselect-list]');
+    const input = root.querySelector<HTMLInputElement>('[data-dselect-input]');
+    if (!trigger || !valueEl || !list || !input) return;
+    const options = [...list.querySelectorAll<HTMLLIElement>('[role="option"]')];
+    let activeIndex = 0;
+
+    const setActive = (i: number) => {
+      activeIndex = Math.max(0, Math.min(i, options.length - 1));
+      options.forEach((o, idx) => o.classList.toggle('is-active', idx === activeIndex));
+      list.setAttribute('aria-activedescendant', options[activeIndex].id);
+      options[activeIndex].scrollIntoView({ block: 'nearest' });
+    };
+
+    const close = () => {
+      list.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+    };
+
+    const open = () => {
+      const selected = options.findIndex((o) => o.getAttribute('aria-selected') === 'true');
+      list.hidden = false;
+      trigger.setAttribute('aria-expanded', 'true');
+      setActive(selected >= 0 ? selected : 0);
+      list.focus();
+    };
+
+    const choose = (i: number) => {
+      options.forEach((o) => o.setAttribute('aria-selected', 'false'));
+      options[i].setAttribute('aria-selected', 'true');
+      valueEl.textContent = options[i].dataset.value ?? '';
+      input.value = options[i].dataset.value ?? '';
+      trigger.setAttribute('aria-invalid', 'false');
+      close();
+      trigger.focus();
+    };
+
+    trigger.addEventListener('click', () => (list.hidden ? open() : close()));
+
+    list.addEventListener('keydown', (e) => {
+      switch (e.key) {
+        case 'ArrowDown': e.preventDefault(); setActive(activeIndex + 1); break;
+        case 'ArrowUp': e.preventDefault(); setActive(activeIndex - 1); break;
+        case 'Home': e.preventDefault(); setActive(0); break;
+        case 'End': e.preventDefault(); setActive(options.length - 1); break;
+        case 'Enter':
+        case ' ': e.preventDefault(); choose(activeIndex); break;
+        case 'Escape': e.preventDefault(); close(); trigger.focus(); break;
+        case 'Tab': close(); break;
+      }
+    });
+
+    options.forEach((o, i) => {
+      o.addEventListener('click', () => choose(i));
+      o.addEventListener('mouseenter', () => setActive(i));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!list.hidden && !root.contains(e.target as Node)) close();
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-dselect]').forEach(initDSelect);
+</script>
+
+<script>
+  // The mad-lib form has nowhere to submit to — static site, no server —
+  // so "Submit" builds a mailto: from the three fields instead, same move
+  // LockedGate.astro's own contact link already makes.
+  const connectForm = document.querySelector<HTMLFormElement>('[data-connect-form]');
+
+  connectForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(connectForm);
+    const name = String(data.get('name') ?? '').trim();
+    const orgType = String(data.get('orgType') ?? '');
+    const need = String(data.get('need') ?? '');
+    const email = String(data.get('email') ?? '').trim();
+    const to = connectForm.dataset.to ?? '';
+
+    // orgType/need live in hidden inputs behind the custom dropdown, which
+    // the browser's own "required" can't validate (a hidden input is
+    // barred from constraint validation) — so check them by hand and hold
+    // the mailto redirect until both are set.
+    let firstInvalid: HTMLButtonElement | null = null;
+    for (const [value, field] of [[orgType, 'orgType'], [need, 'need']] as const) {
+      const dselect = connectForm.querySelector<HTMLElement>(`[data-dselect][data-field="${field}"]`);
+      const trigger = dselect?.querySelector<HTMLButtonElement>('[data-dselect-trigger]');
+      trigger?.setAttribute('aria-invalid', String(!value));
+      if (!value && !firstInvalid) firstInvalid = trigger ?? null;
+    }
+    if (firstInvalid) { firstInvalid.focus(); return; }
+
+    const subject = `Hello from ${name || 'a visitor'}`;
+    const body = [
+      `${name || 'Someone'} here, from a/an ${orgType || '[org type]'}.`,
+      `Need help with: ${need || '[what they need]'}.`,
+      '',
+      `Reach me at ${email || '[email]'}.`,
+    ].join('\n');
+
+    window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  });
+</script>

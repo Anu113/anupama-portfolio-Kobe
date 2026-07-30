@@ -7,7 +7,7 @@
   /* --- TYPE FAMILIES ------------------------------------ */
   --font-display: 'General Sans', ui-sans-serif, system-ui, sans-serif;
   --font-accent: 'Instrument Serif', Georgia, serif;   /* the italic word */
-  --font-body: 'General Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Crimson Pro', Georgia, serif;
 
   /* --- TYPE SCALE ---------------------------------------
      Display sizes use vw so type overflows the viewport
@@ -26,6 +26,10 @@
 
   --tracking-label: 0.14em;
   --tracking-display: -0.035em;
+  /* h3-scale display headings (case tiles, points, timeline entries) had
+     drifted into -0.01em/-0.015em/-0.02em as separate hardcoded values
+     across components — one token for the one job. */
+  --tracking-tight: -0.02em;
   --leading-display: 0.85;
   --leading-body: 1.6;
 
@@ -42,6 +46,11 @@
   --nav-h: 5.5rem;
   --rail-width: clamp(9rem, 13vw, 12rem);
   --space-case: clamp(3.5rem, 7vw, 6rem);   /* between case-study sections */
+  /* CaseRail's cursor-proximity shimmer (ported from a React Bits component,
+     see the header comment in CaseRail.astro). Read by the rail's script via
+     getComputedStyle, so a retune only needs editing here. */
+  --rail-proximity: 90px;   /* vertical reach of the cursor before a link stops reacting */
+  --rail-shift: 0.65rem;    /* how far a label slides at full proximity */
 
   /* --- MOTION ------------------------------------------- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -49,6 +58,15 @@
   --dur-hover: 320ms;
 
   --radius: 0px;   /* reference is hard-edged. Raise for softer cards. */
+
+  /* IndexRotator is fixed chrome that floats over every band on the page
+     at once (it isn't nested inside a [data-theme] block the way CaseRail
+     is, so it can't reach --shell/--fg-dim/--rule/--accent — those only
+     cascade inside a themed Section). These two are its whole palette:
+     always this dark chip, always this light text, in every theme, day or
+     night — the same reasoning that keeps --shell near-black everywhere. */
+  --chip-bg: #17120f;
+  --chip-fg: #f4ece1;
 }
 
 /* ============================================================
@@ -183,6 +201,29 @@
   --tint-mauve: #d5cbe0;   /* lilac, greyed right down */
   --tint-stone: #cdc6ba;   /* warm neutral */
   --tint-shell: #dfd0bd;   /* the palest — greige */
+}
+
+/* ============================================================
+   OPTION SWATCHES — one saturated chip per dropdown option, the
+   moodboard treatment from the chapter-card reference (the "our
+   moodboard" colours the /about contact form's custom dropdowns are
+   built from). Declared at :root for the same reason as --tint-*:
+   the dropdown popup floats outside any single [data-theme] block,
+   so it can't reach sage/lilac/coral's own scoped custom properties
+   and needs its own copies. Full-saturation bg, one shared near-black
+   ink (--swatch-ink) across all five — every pairing clears 4.5:1 at
+   the option row's text size, checked the same way each [data-theme]
+   block documents its own contrast. Held constant across day/night,
+   same call as --chip-bg/--chip-fg for IndexRotator: a small fixed
+   chip, not a page ground, has no reason to invert after dark.
+   ============================================================ */
+:root {
+  --swatch-sand:  #e3caa5;   /* sand theme's own ground */
+  --swatch-sage:  #d7e3d7;   /* sage theme's own ground */
+  --swatch-lilac: #cba6fc;   /* lilac theme's own ground */
+  --swatch-coral: #f96f43;   /* coral theme's own ground */
+  --swatch-clay:  #fa4a3c;   /* clay theme's own fg — the reference coral-red, used as a bright block here rather than clay's dark ground */
+  --swatch-ink:   #14100e;   /* text over every swatch above — ≥5.4:1 on the darkest of them (clay) */
 }
 
 /* ============================================================

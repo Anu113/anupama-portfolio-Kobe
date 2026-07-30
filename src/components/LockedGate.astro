@@ -1,0 +1,283 @@
+---
+/* LockedGate.astro — the full-page state a FULLY locked case study shows
+   instead of the case itself. Distinct from CaseGate.astro, which is the
+   compact inline panel a PARTIALLY gated case shows part-way down its own
+   page (see the `locked` field's comment in cases.ts for which is which).
+
+   Pattern drawn from two references: allierho.com/projects/pst2024's own
+   gate page (a password field with a show/hide toggle, a pill button, a way
+   back) and ozgur.design/unlock's copy shape (a locked-state label, a bold
+   two-line headline, one sentence explaining why, then the field). Neither
+   is reproduced — the wording below is Anupama's own, reusing the same NDA
+   phrasing CaseGate and the closing band already use, so the two gates read
+   as one system rather than two different voices.
+
+   Ink, not bone: this is the whole page's content while locked, not a panel
+   inside a reading column, so it wears the site's dark hero/chapter palette
+   instead of the editorial ground the case itself would use.
+
+   Same security model as CaseGate — static site, no server, so this is a
+   soft deterrent, not confidentiality. See cases.ts. */
+import { site } from '../data/site';
+import LockIcon from './LockIcon.astro';
+
+interface Props {
+  slug: string;
+  caseTitle: string;
+  password: string;
+  backHref?: string;
+  targetId: string;
+}
+const { slug, caseTitle, password, backHref = '/work', targetId } = Astro.props;
+const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
+---
+<div class="locked" data-theme="ink" data-themeband data-gate data-slug={slug} data-password={password} data-target={targetId}>
+  {/* Left-aligned to the page, outside the centred shell below — a "back"
+      control reads as navigation, not as part of the centred message, so it
+      keeps the page's normal left edge rather than following the headline
+      to the middle. */}
+  <a class="locked__back u-label" href={backHref}>
+    <span aria-hidden="true">&larr;</span> All work
+  </a>
+
+  <div class="locked__shell u-shell">
+    <p class="u-label locked__eyebrow">
+      <LockIcon size="0.8em" />
+      Locked
+    </p>
+    <h1 class="locked__head">This case study needs a password to open.</h1>
+    <p class="locked__body">
+      How it got made, the craft and the numbers sit behind it — same reason
+      as the rest of what's under NDA: I'd rather walk you through the
+      specifics live than post them for anyone to screenshot. If you don't
+      have a password, reaching out is faster than it sounds.
+    </p>
+
+    <form class="locked__form" data-gate-form autocomplete="off">
+      <label class="u-label locked__label" for={`locked-pw-${slug}`}>Password</label>
+      <div class="locked__field">
+        <input
+          class="locked__input"
+          id={`locked-pw-${slug}`}
+          name="password"
+          type="password"
+          autocomplete="off"
+          aria-describedby={`locked-err-${slug}`}
+        />
+        <button class="locked__peek" type="button" data-gate-peek aria-label="Show password" aria-pressed="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path data-eye-open d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+            <circle data-eye-open cx="12" cy="12" r="3" />
+            <path data-eye-closed d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.88 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a17.6 17.6 0 0 1-3.06 4.06M6.1 6.1A17.4 17.4 0 0 0 1 12s4 8 11 8a10.6 10.6 0 0 0 4.9-1.2" style="display:none" />
+          </svg>
+        </button>
+      </div>
+      <p class="locked__err" id={`locked-err-${slug}`} role="alert" data-gate-err hidden>
+        That's not it — try again, or reach out below.
+      </p>
+      <div class="locked__actions">
+        <button class="locked__submit" type="submit">Unlock</button>
+        <a class="locked__reach u-label" href={`mailto:${site.email}?subject=${mailSubject}`}>
+          Reach out instead
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .locked {
+    /* No forced viewport height — the section is exactly as tall as its
+       content plus the padding below, not a full screen every time. */
+    background: var(--bg);
+    color: var(--fg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-block: calc(var(--nav-h) + var(--space-band-tight)) var(--space-band-tight);
+  }
+  .locked__shell {
+    /* Wider than before on purpose: at 40rem the headline was breaking to
+       four visual lines off one manual <br>, and the body paragraph to
+       five. 62rem is the narrowest width that lands the headline on
+       exactly two lines at --step-h1 (checked directly, not estimated —
+       60rem was the tipping point, this keeps a small margin above it);
+       the body paragraph wraps to three well under that, governed by its
+       own --measure cap rather than the shell's width. */
+    max-width: 62rem;
+    margin: auto;
+    /* Everything below shares this one centred column, including the form —
+       centre-aligned text with a left-aligned form under it reads as a
+       layout mistake, so the field and its label centre too (see
+       .locked__form, .locked__field, .locked__actions below). */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  /* Outside .locked__shell now — a "back" control is navigation, not part
+     of the centred message, so it keeps the page's own left gutter instead
+     of centring with the headline. align-self pins it to the start of
+     .locked's cross axis; padding-inline gives it the same edge distance
+     u-shell gives everything else, since it's no longer inside one. */
+  .locked__back {
+    display: inline-block;
+    align-self: flex-start;
+    padding-inline: var(--gutter);
+    color: var(--fg);
+    text-decoration: none;
+    margin-bottom: clamp(3rem, 8vw, 5rem);
+  }
+  .locked__back:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  .locked__eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0 0 1.25rem;
+  }
+  .locked__head {
+    font-family: var(--font-display);
+    font-size: var(--step-h1);
+    line-height: 1.02;
+    letter-spacing: var(--tracking-display);
+    font-weight: 500;
+    margin: 0 0 1.5rem;
+    /* Balances across whatever line count the width naturally produces —
+       two, at .locked__shell's new max-width, rather than the hand-placed
+       <br> this used to need. */
+    text-wrap: balance;
+  }
+  /* Widened alongside the shell, from 46ch — that cap alone would have kept
+     the paragraph at five lines regardless of how much room .locked__shell
+     gained. --measure (62ch) is the site's own long-form reading width. */
+  .locked__body { margin: 0 0 2.5rem; max-width: var(--measure); color: var(--fg-dim); text-wrap: pretty; }
+
+  .locked__form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    max-width: 26rem;
+  }
+  .locked__label { margin: 0; }
+  .locked__field { display: flex; align-items: stretch; gap: 0.5rem; width: 100%; }
+  .locked__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    font: inherit;
+    font-size: var(--step-body);
+    color: var(--fg);
+    background: var(--screen);
+    /* --fg-dim, not --rule — --rule is a quiet hairline-divider token
+       (tokens.css) and falls under the 3:1 WCAG needs for a control's own
+       boundary; --fg-dim already clears AA at body size in every theme. */
+    border: 1px solid var(--fg-dim);
+    border-radius: 999px;
+    padding: 0.7rem 1.2rem;
+  }
+  .locked__input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .locked__peek {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 2.8rem;
+    color: var(--fg-dim);
+    background: none;
+    border: 1px solid var(--fg-dim);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+  }
+  .locked__peek:hover { color: var(--fg); border-color: var(--fg-dim); }
+
+  .locked__err { margin: 0; font-size: var(--step-small); color: var(--accent-text); }
+
+  .locked__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+  }
+  /* Same pill shape as CaseGate's — one control style across both gates. */
+  .locked__submit {
+    font: inherit;
+    font-size: var(--step-body);
+    color: var(--fg);
+    background: none;
+    border: 1px solid var(--fg-dim);
+    border-radius: 999px;
+    padding: 0.7rem 1.5rem;
+    cursor: pointer;
+    transition: background var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+  }
+  .locked__submit:hover { background: var(--screen); border-color: var(--fg-dim); }
+  .locked__reach { color: var(--accent-text); text-decoration: none; }
+  .locked__reach:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  .locked__unlocked { color: var(--fg-dim); margin: 0; }
+</style>
+
+<script>
+  // Identical logic to CaseGate.astro's script, duplicated rather than
+  // shared — every other component here owns its own inline script, and a
+  // ~30-line compare/reveal routine isn't worth a shared module for two
+  // call sites. Reveals the whole page (the caller wraps it in one hidden
+  // container) rather than one trailing section.
+  document.querySelectorAll<HTMLElement>('.locked[data-gate]').forEach((gate) => {
+    const slug = gate.dataset.slug!;
+    const password = gate.dataset.password ?? '';
+    const target = document.getElementById(gate.dataset.target!);
+    const form = gate.querySelector<HTMLFormElement>('[data-gate-form]');
+    const input = gate.querySelector<HTMLInputElement>('.locked__input');
+    const err = gate.querySelector<HTMLElement>('[data-gate-err]');
+    const peek = gate.querySelector<HTMLButtonElement>('[data-gate-peek]');
+    if (!target || !form || !input) return;
+
+    const storeKey = `case-unlocked:${slug}`;
+
+    const reveal = () => {
+      target.hidden = false;
+      gate.hidden = true;
+      gate.setAttribute('aria-hidden', 'true');
+    };
+
+    try {
+      if (sessionStorage.getItem(storeKey) === '1') reveal();
+    } catch {
+      /* Storage can be unavailable — the form still works, it just won't
+         remember across a reload. */
+    }
+
+    peek?.addEventListener('click', () => {
+      const showing = peek.getAttribute('aria-pressed') === 'true';
+      input.type = showing ? 'password' : 'text';
+      peek.setAttribute('aria-pressed', String(!showing));
+      peek.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      peek.querySelectorAll<SVGElement>('[data-eye-open]').forEach((p) => {
+        p.style.display = showing ? '' : 'none';
+      });
+      peek.querySelectorAll<SVGElement>('[data-eye-closed]').forEach((p) => {
+        p.style.display = showing ? 'none' : '';
+      });
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ok = input.value.trim().toLowerCase() === password.trim().toLowerCase();
+      if (!ok) {
+        err?.removeAttribute('hidden');
+        input.setAttribute('aria-invalid', 'true');
+        return;
+      }
+      err?.setAttribute('hidden', '');
+      input.removeAttribute('aria-invalid');
+      try { sessionStorage.setItem(storeKey, '1'); } catch { /* see above */ }
+      reveal();
+    });
+  });
+</script>

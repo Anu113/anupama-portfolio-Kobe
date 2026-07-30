@@ -41,9 +41,12 @@ const { items } = Astro.props;
 <ul class="arch" data-arch>
   {items.map((a) => {
     const Row = a.href ? 'a' : 'div';
-    /* Off-site (the Wix pages) — new tab, and rel guards the opener. */
+    /* These point at /work/<slug> now. Only an off-site href gets a new tab
+       (and the rel that makes one safe) — forcing one for our own pages
+       would strand the visitor in a second window. */
+    const external = !!a.href && /^https?:/.test(a.href);
     const linkAttrs = a.href
-      ? { href: a.href, target: '_blank', rel: 'noopener noreferrer' }
+      ? { href: a.href, ...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {}) }
       : {};
     return (
       <li class="arch__item">

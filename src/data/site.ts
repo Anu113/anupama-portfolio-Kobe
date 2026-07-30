@@ -16,9 +16,7 @@ export const site = {
 
   // The footer's location line and its live clock. `timezone` is an IANA
   // zone — the clock reads in her time, not the visitor's, which is the
-  // point of it. Both are placeholders until she confirms where she's
-  // based; the bracket is the same convention as the [X] numbers in
-  // data/cases.ts, so it's visible on the page until it's answered.
-  location: '[City]',
+  // point of it. Confirmed: she's in Bangalore, IST.
+  location: 'Bangalore',
   timezone: 'Asia/Kolkata',
 };

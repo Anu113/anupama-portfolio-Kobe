@@ -26,8 +26,13 @@ export type CaseBlock =
       is most likely to stop on, so it reads as a table, not a paragraph. */
   | { kind: 'rows'; label?: string; items: { term: string; detail: string }[] }
   /** A screen or artefact. `wide` gives it a panoramic frame — it does not
-      make it wider. Nothing may reach into the sticky rail's column. */
-  | { kind: 'figure'; src: string; alt: string; caption?: string; wide?: boolean }
+      make it wider. Nothing may reach into the sticky rail's column.
+      `ratio` sets the frame's aspect to the image's own (e.g. '1400 / 1820').
+      The frame otherwise forces 16/10 and crops with object-fit: cover, which
+      is right for a photo and destroys a portrait screen or a long page
+      mockup — half the archive artefacts are one of those two. Give it the
+      asset's real dimensions and nothing is cropped. */
+  | { kind: 'figure'; src: string; alt: string; caption?: string; wide?: boolean; ratio?: string }
   /** The pull quote. One per section at most, or it stops being a pull. */
   | { kind: 'quote'; text: string; cite?: string }
   /** The numbers. Business, team, and craft — in that order. */
@@ -56,10 +61,45 @@ export interface CaseStudy {
   eyebrow: string;
   title: string;
   hero: { src: string; alt: string };
-  /** The hero meta row. Role and scope sit here on purpose: it is the only
-      thing in the banner besides the title, so a recruiter skimming for 60
-      seconds should not have to scroll to find the level she worked at. */
+  /** The hero meta row — everything EXCEPT role, which is lifted out and set
+      beside the banner lede (see below). Scope and partners still live here
+      on purpose: a recruiter skimming for 60 seconds should not have to
+      scroll to find the level she worked at. */
   meta: { label: string; value: string }[];
+  /** Set beside the lede at the top of the banner, opposite the intro —
+      the reference (allierho.com/projects/pst2024) puts ROLE there rather
+      than in a row under the image, and it is the first thing worth reading
+      after the title. */
+  role: string;
+  /** Optional CTA pill in the banner, top right. ONLY for a URL that leads
+      to the actual shipped thing — not a company homepage, not an archived
+      portfolio page. A dead or off-target "Live site" is worse than none,
+      so leave it unset unless the link has been checked. */
+  live?: { href: string; label: string };
+  /** Marks this case as gated. Two shapes, chosen by `preview`:
+        preview: 0    — FULLY locked. [slug].astro renders LockedGate.astro
+                        full-page instead of the case (see that file) —
+                        nothing about the case is visible until the
+                        password matches. Matches allierho.com's and
+                        ozgur.design's own gate pages, which don't show a
+                        preview at all.
+        preview: N>0  — PARTIALLY gated. The first N sections render in
+                        full; the rest sit behind CaseGate.astro, inline,
+                        further down the same page.
+      Okta uses preview: 0 — a demonstration of the full lock, since every
+      section here is still bracket placeholders.
+
+      READ THIS BEFORE SETTING IT ON A REAL CASE: this site is static output
+      with no server (Astro, `output: 'static'`). There is nowhere to check a
+      password except in the browser — whichever shape above is used, the
+      real markup ships in the page's HTML regardless, only hidden with the
+      `hidden` attribute until the password matches client-side. Anyone who
+      opens dev tools or views source can read it without ever unlocking
+      anything. That is the same limit both reference sites accept — a soft,
+      deter-casual-browsing gate, not confidentiality. Genuinely NDA'd
+      specifics belong in the "reach out, I'll walk you through it live"
+      pattern already in the closing band below, never in `password`. */
+  locked?: { password: string; preview: number };
   sections: CaseSection[];
   /** Slug of the next case study, for the footer link. */
   next: string;
@@ -78,11 +118,17 @@ export const cases: CaseStudy[] = [
     description:
       'Okta IAM and developer tools: rebuilding the enterprise admin console underneath live tenants — entitlements, role management, OIN publishing and developer onboarding, and the six-designer team working to it.',
     meta: [
-      { label: 'Role', value: 'Staff Product Designer, IAM + Developer Tools' },
       { label: 'Team', value: '6 designers across 4 squads' },
-      { label: 'Reported to', value: 'Director of Design' },
       { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
     ],
+    role: 'Staff Product Designer, IAM + Developer Tools',
+    /* Demonstration case for the FULL gate — see the `locked` field's own
+       comment on CaseStudy above before adding this to a case with real
+       specifics. preview: 0 renders LockedGate.astro in place of the whole
+       page; nothing about this case is visible until the password matches.
+       [Placeholder password — replace before sharing this link with
+       anyone.] */
+    locked: { password: 'okta2026', preview: 0 },
     sections: [
       {
         id: 'situation',
@@ -319,11 +365,11 @@ export const cases: CaseStudy[] = [
     // Role, team and dates come from the live site's own privacy page —
     // the only numbers on this site that are confirmed rather than bracketed.
     meta: [
-      { label: 'Role', value: 'Lead product designer' },
       { label: 'Team', value: '4 designers, 3 PMs, 15+ engineers' },
       { label: 'Partners', value: 'Legal, Privacy Engineering' },
       { label: 'Timeline', value: 'March 2021 – Jan 2023' },
     ],
+    role: 'Lead product designer',
     sections: [
       {
         id: 'situation',
@@ -521,11 +567,11 @@ export const cases: CaseStudy[] = [
     description:
       'Walmart Scan & Go: six weeks of store-floor ethnography that reset the scope of a checkout-replacement bet, end to end to a shipped pilot.',
     meta: [
-      { label: 'Role', value: 'End-to-end designer' },
       { label: 'Scope', value: 'Research, product definition, shipped UI' },
       { label: 'Partners', value: 'Store operations, loss prevention' },
       { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
     ],
+    role: 'End-to-end designer',
     sections: [
       {
         id: 'situation',
@@ -749,11 +795,11 @@ export const cases: CaseStudy[] = [
     description:
       'PayPal data access: turning an internal request thread and a spreadsheet into a system — who can ask for what, what is granted automatically, and where a human still has to look.',
     meta: [
-      { label: 'Role', value: 'Product strategy, end-to-end design' },
       { label: 'Scope', value: 'Data classification, request and approval flow' },
       { label: 'Partners', value: '[Privacy, security, data platform]' },
       { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
     ],
+    role: 'Product strategy, end-to-end design',
     sections: [
       {
         id: 'situation',
@@ -941,11 +987,11 @@ export const cases: CaseStudy[] = [
     description:
       'Walmart Pay: adding Chase Pay to the wallet after Savings Catcher retired. A partner integration that arrived as a finished formula, taken to a store test that broke it.',
     meta: [
-      { label: 'Role', value: 'Product designer, Walmart Pay' },
       { label: 'Team', value: '1 design manager, 1 researcher, 1 PM, 10+ engineers' },
       { label: 'Partners', value: '5 stakeholders, JPMorgan Chase' },
       { label: 'Timeline', value: 'June 2019 – April 2020' },
     ],
+    role: 'Product designer, Walmart Pay',
     sections: [
       {
         id: 'situation',
@@ -1244,6 +1290,1447 @@ export const cases: CaseStudy[] = [
       },
     ],
     next: 'okta-iam',
+  },
+
+  // ============================================================
+  // THE ARCHIVE TIER — the nine projects that used to link off to
+  // the Wix site. Same structure as the five above, because that is
+  // the structure; but note two things before editing them.
+  //
+  // 1. THEY CHAIN AMONG THEMSELVES. `next` runs wal-e → … → mera-data
+  //    → wal-e and never crosses into the five selected cases. The two
+  //    tiers are a hierarchy and the closing band should not flatten it.
+  // 2. THE SOURCE WAS THIN, AND IT VARIES A LOT. Agreement Management
+  //    arrived with real numbers (NPS 67, launch date, user count);
+  //    Lender's App arrived with three sentences. Every bracket below is
+  //    a real gap in what the live site says, not a stylistic tic. The
+  //    prose outside brackets is hers, restructured — not invented.
+  // ============================================================
+
+  // ==========================================================
+  {
+    slug: 'wal-e-design-system',
+    company: 'Walmart Labs',
+    theme: 'sand',
+    eyebrow: 'Walmart Labs · Enterprise design system · [20XX–20XX]',
+    title: 'Wal-E, a design system for enterprise',
+    hero: { src: '/images/wal-e-design-system/01.jpg', alt: 'Wal-E design system components in the console' },
+    description:
+      'Wal-E: the Walmart enterprise design system — one source of truth for the components behind data-heavy internal products, built for form-dense screens and shared-floor touch devices.',
+    meta: [
+      { label: 'Scope', value: 'Research, component design, usage guidelines, integration' },
+      { label: 'Partners', value: '[Front-end engineering, other product teams]' },
+      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+    ],
+    role: 'Product Designer · Components and accessibility',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'Walmart already had design systems. None of them were built for this kind of screen.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The goal of Wal-E was to be the single source of truth for the library of UI components used to build Walmart product — usage and implementation guidelines included. That part is the same ambition every design system has.',
+              'What made it a separate system was the surface. These were enterprise applications: data-heavy, dense with forms and fields, and used on a range of touch devices by associates working in very different environments. A component set tuned for a consumer storefront does not survive a screen that is mostly input fields.',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'Why a system at all',
+            items: [
+              { title: 'Consistency', body: 'One answer to a component question instead of one per team.' },
+              { title: 'Higher quality', body: 'The accessible, tested version is the default version.' },
+              { title: 'Faster handoff', body: 'Better communication with engineering, and a faster design process.' },
+              { title: 'Focus', body: 'More attention on UX, less spent re-deciding visuals.' },
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/wal-e-design-system/02.jpg',
+            alt: 'The device classes Wal-E components had to work on',
+            caption: 'The devices the components had to survive — the reason this could not be the consumer system.',
+            ratio: '1400 / 483',
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: 'I researched the surface, drew the components, and tested them for accessibility.',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              {
+                term: 'What I owned',
+                detail:
+                  'Research into the existing products and the devices they ran on, to establish what the components actually had to survive. Then designing the elements themselves and testing their accessibility.',
+              },
+              {
+                term: 'The contribution loop',
+                detail:
+                  'Create — identify the need for a component, add it to Wal-E, and write its usage guidelines. Style — build it to the design specs in Wal-E so it functions correctly and matches those guidelines. Integrate — get the documented component into the product.',
+              },
+              {
+                term: 'Who else was on it',
+                detail:
+                  '[The live site describes the system but not the team. How many designers contributed, who owned the code side, and what was your call versus the group’s?]',
+              },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              'Accessibility was written into the system rather than bolted to it: Walmart’s position was that everyone should be able to contribute, which meant designing and coding adaptively regardless of ability. That is the same argument Anupama makes in her talk, applied to a component library.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: 'Building a second system rather than bending the one that existed.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The defensible reading of the material is that the call was to treat enterprise as its own problem — a separate system with its own component set — instead of extending Walmart’s existing systems to cover it. That is a real cost: another library to maintain, another thing for teams to learn.',
+              '[This is the section the live site does not cover, and it is the one a hiring manager will look for. What was the argument against a separate system, who made it, and what evidence settled it? If the call was actually a different one — a component you refused to ship, a guideline you overruled — replace this.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'process',
+        nav: 'How it got made',
+        label: 'How the work got made',
+        heading: 'Every component shipped with three documents, not one drawing.',
+        blocks: [
+          {
+            kind: 'points',
+            label: 'What a finished component included',
+            items: [
+              { title: 'Interaction', body: 'How it works.' },
+              { title: 'Visual', body: 'How it looks.' },
+              { title: 'Usage', body: 'How you should use it — and when you should not.' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              'Around the components sat the rest of the system: the design philosophy the team worked to, contribution guidelines so anyone could raise an issue or submit documentation, page layout and grid options, content guidelines covering voice and tone, accessibility guidelines, and resources on both sides of the handoff — live code snippets for engineers, a Sketch pattern library for designers.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'The decisions that show: colour, a 4px baseline, and the input field.',
+        blocks: [
+          {
+            kind: 'points',
+            label: 'Foundations',
+            items: [
+              {
+                title: 'Colour',
+                body: 'A palette of nine core colours, built on the system’s principles, for the digital products associates use.',
+              },
+              {
+                title: 'Typography',
+                body: 'Bogle, Walmart’s official typeface. A 16px base produces an 8px x-height, halved to a 4px baseline; all text flows along it, so line height and margins share one rhythm across every screen.',
+              },
+              {
+                title: 'Grids and spacing',
+                body: 'Type scales crafted against the same 4px baseline grid.',
+              },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              'The input field got its own guideline, which is the right instinct for a system serving form-dense screens — applications here always require input, one-off or repeated, in a single session. The guidance drew on the Baymard Institute’s usability work, Material’s research, and current practice at Medium, Quora, Amazon, Airbnb and Atlassian.',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'What an input field has to get right',
+            items: [
+              { title: 'Visibility', body: 'High visibility of both field and label — an accessibility question before an aesthetic one.' },
+              { title: 'Structure', body: 'The appearance of the field itself.' },
+              { title: 'Behaviour', body: 'How it responds as it is used.' },
+              { title: 'The label', body: 'Meaningful text for the field it names — UX writing, not decoration.' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              'The second documented area was system status: indicators, validations, notifications and dialogue boxes. Keeping the state of the system visible is one of the ten usability heuristics, and the framing Anupama used for it was flow — people are at their happiest absorbed in the task at hand, so status has to inform without pulling them out of it. Which pattern to reach for came down to the priority of the message, the type of information, whether it was global or contextual, and whether a user action or a system event had triggered it.',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/wal-e-design-system/04.jpg',
+            alt: 'The Wal-E primary colour palette with usage notes',
+            caption: 'Primary colours, documented with the rules for using them. Secondary, tertiary and grey ramps follow the same sheet.',
+            ratio: '1400 / 552',
+          },
+          {
+            kind: 'figure',
+            src: '/images/wal-e-design-system/13.jpg',
+            alt: 'Bogle type specimen',
+            caption: 'Bogle, Walmart’s official typeface — the specimen the type scale was cut from.',
+            ratio: '1119 / 632',
+          },
+          {
+            kind: 'figure',
+            src: '/images/wal-e-design-system/15.jpg',
+            alt: 'The Wal-E type scale, sizes and line heights',
+            caption: 'The type scale against the 4px baseline: every size, its line height, and where it is used.',
+            ratio: '1400 / 1214',
+          },
+          {
+            kind: 'figure',
+            src: '/images/wal-e-design-system/21.jpg',
+            alt: 'Input field specification — anatomy, states and spacing',
+            caption: 'The input field guideline. On screens that are mostly fields, this is the component that decides whether the product is usable.',
+            ratio: '1400 / 1408',
+          },
+          {
+            kind: 'figure',
+            src: '/images/wal-e-design-system/23.jpg',
+            alt: 'System status components — alerts, validations and notifications',
+            caption: 'System status: which pattern to reach for, by priority of the message and whether a user or the system triggered it.',
+            ratio: '1400 / 1284',
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: 'Adoption is the only number that matters for a design system.',
+        blocks: [
+          {
+            kind: 'metrics',
+            items: [
+              { value: '9', label: 'Core colours in the palette' },
+              { value: '[X]', label: 'Products that adopted Wal-E' },
+              { value: '[X]', label: 'Components documented' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              '[The live site documents the system thoroughly and its reception not at all — which is the gap here. How many teams adopted it, how much design time did it save, and did the accessibility work change any measurable outcome? A design system with no adoption number reads as a side project rather than infrastructure.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: 'What I’d do differently',
+        label: 'What I’d do differently',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              '[One honest paragraph. For a design system the usual candidates are governance — who gets to add a component — and the gap between documented and actually used. Which one bit?]',
+            ],
+          },
+        ],
+      },
+    ],
+    next: 'walmart-agreement-management',
+  },
+
+  // ==========================================================
+  {
+    slug: 'walmart-agreement-management',
+    company: 'Walmart Labs',
+    theme: 'sage',
+    eyebrow: 'Walmart Labs · Supplier agreements · 2019–2020',
+    title: 'Agreement Management, end to end',
+    hero: { src: '/images/walmart-agreement-management/02.jpg', alt: 'The Agreement Management Application' },
+    description:
+      'Walmart Agreement Management: the lifecycle of supplier agreements — onboarding, contracts, renewals — rebuilt from beta after six phases of research, and launched to 5,000 users at NPS 67.',
+    meta: [
+      { label: 'Scope', value: '15 user types, 8 connected applications' },
+      { label: 'Partners', value: '[Finance, legal, procurement, engineering]' },
+      { label: 'Timeline', value: 'January 2019 – launch 8 October 2020' },
+    ],
+    role: 'Product Designer · Research through testing',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'A beta was live, and nobody knew which of its problems were the expensive ones.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The Agreement Management Application manages the lifecycle of agreements between Walmart and its suppliers: searching and onboarding existing suppliers, inviting new ones, retrieving supplier contracts, creating and renewing agreements, and holding the contextual conversations an agreement needs with everyone attached to it — finance and legal included.',
+              'Anupama joined in January 2019 against a specific brief: identify the usability problems in the beta release, and determine which features were critical enough to prioritise for the next iteration. The work was triage before it was design.',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'What made it hard',
+            items: [
+              { title: 'Ambiguity', body: 'Users could not tell what state an agreement was in, or what was expected of them next.' },
+              { title: 'Slow processes', body: 'Steps that should have been minutes ran to days.' },
+              { title: 'No traceability', body: 'No reliable way to see what had happened to an agreement, or who had touched it.' },
+              { title: 'Complexity', body: 'Information arrived in volumes that overwhelmed rather than informed.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: 'Research, interaction, visual, prototyping and testing — on a system wired to eight others.',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              {
+                term: 'What I owned',
+                detail:
+                  'User research, interaction design, visual design, prototyping and testing. The whole arc, on one product.',
+              },
+              {
+                term: 'The surface area',
+                detail:
+                  'AMA serves 15 distinct user types and talks to 8 different applications. Every flow had to hold for a supplier onboarding themselves, a buyer chasing progress, and the finance and legal functions attached to the agreement.',
+              },
+              {
+                term: 'Who else was on it',
+                detail:
+                  '[Engineering, product and the business stakeholders you interviewed. Name the counterpart who had to be convinced, and of what.]',
+              },
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/walmart-agreement-management/09.jpg',
+            alt: 'System diagram of the applications AMA connects to',
+            caption: 'The eight applications AMA talks to. The integration map is the scope statement — every one of these is a place a flow could break.',
+            ratio: '1400 / 633',
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: 'Four personas across two sides of the same transaction.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The research produced four primary personas, and they do not want the same things. Amanda, a supplier, needed faster onboarding, status tracking, and the ability to delegate to a proxy user. Carol, a buyer, wanted the process automated, visibility into how far a supplier had got, and clarity on the procedure itself. Michael, a buyer assistant, needed registration centralised, notifications, and clearer communication. John, another supplier, needed transparency and a documentation cycle that did not loop.',
+              'Supplier-side and buyer-side pull in opposite directions: what a buyer experiences as useful automation, a supplier experiences as a form appearing without explanation.',
+              '[Which way did you resolve it, and what did you give up? This is the strongest available candidate for the hard call, but the decision itself is not on the live site — confirm it, or replace it with the tradeoff you actually remember.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'process',
+        nav: 'How it got made',
+        label: 'How the work got made',
+        heading: 'Six phases of research before a single screen.',
+        blocks: [
+          {
+            kind: 'points',
+            label: 'The research',
+            items: [
+              { title: 'Kickoff and literature', body: 'Kickoff meetings, then a literature review of the domain.' },
+              { title: 'Product audits', body: 'An audit of what already existed and where it failed.' },
+              { title: 'Interviews', body: 'Stakeholder interviews, then subject-matter expert interviews.' },
+              { title: 'Observation', body: 'Watching users work — the phase that separates a persona from a guess.' },
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/walmart-agreement-management/03.jpg',
+            alt: 'The six research phases',
+            caption: 'The six phases, in order: kickoff, literature review, product audits, stakeholder interviews, SME interviews, user observation.',
+            ratio: '1400 / 617',
+          },
+          {
+            kind: 'prose',
+            text: [
+              'From there the method was goal-directed design: sketching, wireframing and scenario development, with the personas carrying the goals through each scenario rather than sitting in a deck.',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/walmart-agreement-management/05.jpg',
+            alt: 'Supplier onboarding experience, current state',
+            caption: 'The current-state map of supplier onboarding — where the ambiguity and the waiting actually sat before anything was redrawn.',
+            ratio: '1400 / 853',
+          },
+          {
+            kind: 'figure',
+            src: '/images/walmart-agreement-management/10.jpg',
+            alt: 'Task flow worked out on sticky notes',
+            caption: 'The flow before the wireframes.',
+            ratio: '1112 / 2404',
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'What the application actually lets people do.',
+        blocks: [
+          {
+            kind: 'points',
+            label: 'The shipped surfaces',
+            items: [
+              { title: 'Onboarding', body: 'Search and onboard existing suppliers; invite new suppliers to onboard.' },
+              { title: 'Contracts', body: 'Retrieve supplier contracts; create and renew agreements.' },
+              { title: 'Conversation', body: 'Contextual conversations with every party attached to an agreement, finance and legal included.' },
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/walmart-agreement-management/16.jpg',
+            alt: 'Annotated wireframe of the supplier management screen',
+            caption: 'The supplier screen, annotated. Fifteen user types meet on surfaces like this one.',
+            ratio: '1400 / 1469',
+          },
+          {
+            kind: 'figure',
+            src: '/images/archive/agreement-management.jpg',
+            alt: 'Supplier information and invitation steps in the shipped product',
+            caption: 'Supplier information and invitation steps from the shipped application.',
+            ratio: '760 / 460',
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: 'It launched on 8 October 2020 and was measured.',
+        blocks: [
+          {
+            kind: 'metrics',
+            items: [
+              { value: '67', label: 'NPS' },
+              { value: '6.2/7', label: 'Ease of use' },
+              { value: '6.3/7', label: 'Average satisfaction' },
+              { value: '5,000', label: 'Users at launch' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              'These are the only hard numbers to survive from the archive tier, and they came from usability testing on the work. [Worth confirming whether the scores are pre- or post-launch, and whether the beta was measured the same way — a before-and-after would be stronger than a single reading.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: 'What I’d do differently',
+        label: 'What I’d do differently',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              '[One honest paragraph. Six research phases before design is a large investment — did it pay, or would you now cut it to reach a testable build sooner?]',
+            ],
+          },
+        ],
+      },
+    ],
+    next: 'bot-spark',
+  },
+
+  // ==========================================================
+  {
+    slug: 'bot-spark',
+    company: '[Company]',
+    theme: 'lilac',
+    eyebrow: '[Company] · Chatbot operations · [20XX]',
+    title: 'Bot Spark, a console for training chatbots',
+    hero: { src: '/images/bot-spark/01.jpg', alt: 'Bot Spark' },
+    description:
+      'Bot Spark: the admin console behind a chatbot — finding the questions it failed to answer, getting answers out of the business, and training them back in.',
+    meta: [
+      { label: 'Scope', value: 'Three user types — admin, developer, business' },
+      { label: 'Partners', value: '[Engineering, the business owners of the bot]' },
+      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+    ],
+    role: 'Product Designer · End-to-end flows',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'A chatbot is only as good as the loop that fixes it.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Bot Spark is the tool used to manage chatbots — the surface where a chatbot’s administrators do their work. The interesting part is not the bot; it is that a deployed bot fails constantly in small ways, and someone has to notice, find the answer, and feed it back.',
+              '[Two sentences on the business stakes. Whose bot, serving whom, and what did an unanswered question cost — a support ticket, an abandoned session, a call to a human?]',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'The problems it had to solve',
+            items: [
+              { title: 'Find the gaps', body: 'Surface the questions the bot could not answer.' },
+              { title: 'Source the answers', body: 'Collect answers from the business users who actually hold them.' },
+              { title: 'Train', body: 'Train the bot on those unanswered questions, and on new ones.' },
+              { title: 'Do not regress', body: 'Regression testing for the bot’s existing knowledge.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: 'Three user types, one console, end to end.',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              {
+                term: 'What I owned',
+                detail:
+                  'High-fidelity end-to-end flows for all three users — admin, developer and business — and testing the designs against the brand guideline.',
+              },
+              {
+                term: 'Why three is the hard part',
+                detail:
+                  'An admin, an engineer and a business owner want different things from the same knowledge base. The business user has the answer but no interest in the tool; the developer has the tool but not the answer. The console had to make the handoff between them cheap.',
+              },
+              {
+                term: 'Who else was on it',
+                detail: '[Team, engineering counterpart, and who set the brand guideline you tested against.]',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              '[Not recorded on the live site. The likely candidate: how much of the training loop to expose to a non-technical business user versus keeping it behind the developer. Where did you draw that line, and what broke when you first drew it elsewhere?]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'process',
+        nav: 'How it got made',
+        label: 'How the work got made',
+        heading: 'Identity first, then wireframes, then the states that actually get hit.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The work ran from logo design and early exploration through wireframes to the final screens — and, unusually for a portfolio piece, the error screens were treated as part of the deliverable rather than an afterthought. For a tool whose entire job is handling the cases where something failed, that is the correct emphasis.',
+              '[Add the process detail: how many rounds, who reviewed, and what changed between the wireframes and the final flows.]',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/bot-spark/04.jpg',
+            alt: 'Early logo exploration for Bot Spark',
+            caption: 'Early exploration — the mark worked out in grey before any colour was committed.',
+            ratio: '1400 / 869',
+          },
+          {
+            kind: 'figure',
+            src: '/images/bot-spark/05.jpg',
+            alt: 'Bot character variants',
+            caption: 'Character variants. A tool for training a bot gets a bot for a mascot.',
+            ratio: '1400 / 869',
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'The console, and the states around it.',
+        blocks: [
+          {
+            kind: 'figure',
+            src: '/images/bot-spark/06.jpg',
+            alt: 'The final Bot Spark identity',
+            caption: 'The resolved mark and wordmark.',
+            ratio: '1400 / 869',
+          },
+          {
+            kind: 'figure',
+            src: '/images/bot-spark/03.jpg',
+            alt: 'Bot Spark logo design documentation',
+            caption: 'The identity documented for handoff.',
+            ratio: '1400 / 869',
+          },
+          {
+            kind: 'prose',
+            text: [
+              '[The exported assets are almost entirely identity work. The admin, developer and business flows — and the error screens — are the part that would make this a product case rather than a branding one, and they are the thing to dig out of the original files.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'metrics',
+            items: [
+              { value: '3', label: 'User types served' },
+              { value: '[X]', label: 'Unanswered questions resolved per week' },
+              { value: '[X]', label: 'Change in bot answer rate' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              '[No outcome is recorded. The bot’s answer rate before and after the console existed would be the number that makes this case — if it was ever measured, it is worth chasing.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: 'What I’d do differently',
+        label: 'What I’d do differently',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[One honest paragraph.]'] },
+        ],
+      },
+    ],
+    next: 'mint-credit-score',
+  },
+
+  // ==========================================================
+  {
+    slug: 'mint-credit-score',
+    company: 'Mint',
+    theme: 'bone',
+    eyebrow: 'Mint · Credit score experience · [20XX]',
+    title: 'Making a credit score actionable',
+    hero: { src: '/images/mint-credit-score/01.jpg', alt: 'The Mint credit score experience' },
+    description:
+      'Mint: turning a credit score from a number you are shown into a set of recommendations you can act on, built out of the tools Mint already had.',
+    meta: [
+      { label: 'Scope', value: 'Credit score experience and recommendations' },
+      { label: 'Partners', value: '[Confirm]' },
+      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+    ],
+    role: '[Product Designer — confirm whether client work or concept]',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'Tens of millions of people have a bad score and no idea what to do about it.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Lack of financial knowledge, poor habits and life events combine to produce poor credit scores for tens of millions of Americans. Many turn to services like Mint to understand what their score is, why it is what it is, and what they should do to improve it.',
+              'The first two of those Mint already answered. The third — what should I do — is the one that turns a dashboard into a product someone comes back to.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: 'Re-imagine the credit score experience, and make the report produce recommendations.',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              {
+                term: 'The brief',
+                detail:
+                  'Re-imagine the Mint credit score experience and use the information in the credit report to make actionable recommendations to a customer trying to improve their score.',
+              },
+              {
+                term: 'The constraint',
+                detail:
+                  'Recommendations had to be built from Mint’s existing tools — bill tracking, budgets, credit card offers, goals — so that improving a score and increasing monthly engagement with Mint were the same motion rather than two competing goals.',
+              },
+              {
+                term: 'What I owned',
+                detail:
+                  '[The live site does not say whether this was client work, a concept, or an exercise. That changes how a hiring manager reads it, so it is worth being explicit either way — a well-run concept piece is not a weakness, but an unlabelled one invites the wrong assumption.]',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: 'Recommendations that serve the score and the business at once.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The brief contains a genuine tension worth naming: the recommendations were to be assembled from Mint’s own tools, including credit card offers, and were also meant to increase monthly engagement. Advice that improves a score and advice that increases engagement are not automatically the same advice, and credit card offers sit precisely on that seam.',
+              '[How did you handle it? A rule about when an offer could appear, an ordering principle, something you declined to recommend? This is the judgement the case turns on.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'process',
+        nav: 'How it got made',
+        label: 'How the work got made',
+        heading: 'Moodboard, wireframes, then a deliberate flattening of the visual language.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The work ran through a moodboard and wireframing stage before the visual design. The visual direction was a clean, flat treatment chosen to reduce clutter and give a more streamlined experience — a reasonable call on a surface whose core problem is that people find it overwhelming.',
+              '[Add what testing there was, if any, and what changed because of it.]',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/mint-credit-score/02.jpg',
+            alt: 'The design process and wireframes',
+            caption: 'Wireframes for the score, the reasons behind it, and the recommendations.',
+            ratio: '1400 / 1081',
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'The score, the reasons, and what to do next.',
+        blocks: [
+          {
+            kind: 'points',
+            label: 'What Mint offers, and what the work had to connect',
+            items: [
+              { title: 'Budgets', body: 'Budgets that make sense today and set you up for success tomorrow.' },
+              { title: 'Bills and money together', body: 'What is due, when it is due, and what you can pay.' },
+              { title: 'Alerts', body: 'Unusual account charges, plus tips for reducing fees and saving.' },
+              { title: 'The score itself', body: 'A free credit score, and how to improve it to get the things you want later.' },
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/mint-credit-score/03.jpg',
+            alt: 'Mint credit score screens and wireframe grid',
+            caption: 'The screens against the wireframes they came from.',
+            ratio: '1400 / 1081',
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              '[No outcome recorded. If this shipped, the numbers to find are score movement and repeat visits. If it did not ship, say so plainly and let the reasoning carry the case — an unshipped concept presented honestly reads better than one left ambiguous.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: 'What I’d do differently',
+        label: 'What I’d do differently',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[One honest paragraph.]'] },
+        ],
+      },
+    ],
+    next: 'ratanindia-lenders-app',
+  },
+
+  // ==========================================================
+  {
+    slug: 'ratanindia-lenders-app',
+    company: 'RatanIndia',
+    theme: 'coral',
+    eyebrow: 'RatanIndia · Consumer lending · [20XX]',
+    title: 'A personal loan in three steps',
+    hero: { src: '/images/ratanindia-lenders-app/01.jpg', alt: "RatanIndia's Lender's App" },
+    description:
+      "RatanIndia's Lender's App: a personal loan reduced to Aadhaar verification, an amount, and money in the account within minutes.",
+    meta: [
+      { label: 'Scope', value: 'Loan application flow' },
+      { label: 'Partners', value: '[Confirm]' },
+      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+    ],
+    role: '[Product Designer — confirm]',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'Personal lending, compressed into minutes.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              "RatanIndia's Lender's App is a personal loan product built to make financing simpler than it had been — getting a personal loan made simple and fast.",
+              '[This is the thinnest source in the archive: three sentences and a step list. Two sentences on the business stakes would carry it — who was the borrower, what did the old process take, and why was speed the thing worth competing on?]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              { term: 'What I owned', detail: '[Which surfaces, and end-to-end or a slice?]' },
+              { term: 'Who I worked with', detail: '[Team, engineering, and the compliance function — identity verification always has one.]' },
+              { term: 'What I influenced', detail: '[Anything beyond the screens: the step count itself, the eligibility rules, the copy?]' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: 'Three steps is a claim, not a layout.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Compressing a regulated lending flow into three steps means everything that did not make the three — disclosures, eligibility, repayment terms — went somewhere else. That placement is the design decision.',
+              '[Where did it go, and who had to agree? If the step count was handed to you rather than chosen, say that; inheriting a constraint and making it work is its own kind of judgement.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'process',
+        nav: 'How it got made',
+        label: 'How the work got made',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[The live site shows a process section but no description of it. What were the stages, who reviewed, and what changed?]'] },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'The whole product, in three screens.',
+        blocks: [
+          {
+            kind: 'points',
+            label: 'The flow',
+            items: [
+              { title: 'Step I', body: 'Enter your Aadhaar card number and verify yourself.' },
+              { title: 'Step II', body: 'Enter your desired loan amount.' },
+              { title: 'Step III', body: 'Receive the loan in your bank account within minutes.' },
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/ratanindia-lenders-app/02.jpg',
+            alt: "The Lender's App onboarding screen",
+            caption: 'The entry point. An illustration doing the reassurance work that a lending product needs before it asks for an Aadhaar number.',
+            ratio: '750 / 1334',
+          },
+          {
+            kind: 'figure',
+            src: '/images/ratanindia-lenders-app/04.jpg',
+            alt: 'Loan application form',
+            caption: 'The form behind the three steps.',
+            ratio: '750 / 1616',
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[No outcome recorded — completion rate through the three steps would be the number.]'] },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: 'What I’d do differently',
+        label: 'What I’d do differently',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[One honest paragraph.]'] },
+        ],
+      },
+    ],
+    next: 'qplum-qfolio',
+  },
+
+  // ==========================================================
+  {
+    slug: 'qplum-qfolio',
+    company: 'qplum',
+    theme: 'clay',
+    eyebrow: 'qplum · Investment onboarding · [20XX]',
+    title: 'Onboarding into an algorithmic portfolio',
+    hero: { src: '/images/qplum-qfolio/01.jpg', alt: 'The qfolio investment app' },
+    description:
+      'qplum qfolio: onboarding into AI-driven investment portfolios — a chatbot that produces a financial plan, and the regulated account opening behind it.',
+    meta: [
+      { label: 'Scope', value: 'Onboarding, QBot, portfolio tracking' },
+      { label: 'Partners', value: '[Confirm — compliance is certain to have been one]' },
+      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+    ],
+    role: '[Product Designer — confirm]',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'Investing as a utility, sold to people who have never opened a brokerage account.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'qplum is an online investment advisory firm offering portfolios driven by AI and machine learning — retirement planning, IRA accounts, 401k rollovers and personal investing accounts. Its positioning was investing as a utility.',
+              'That positioning sets the design problem. A utility is something you set up once without thinking hard about it; a regulated brokerage account is the opposite, and the onboarding has to absorb that difference.',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'What the app had to let someone do',
+            items: [
+              { title: 'Get a plan', body: 'Talk to an AI-powered chatbot and get a free financial plan.' },
+              { title: 'Invest', body: 'Invest in a blend of qplum’s top portfolios.' },
+              { title: 'Open accounts', body: 'Open Traditional, ROTH and SEP IRA accounts; roll over an existing IRA or 401k.' },
+              { title: 'Track', body: 'Follow the performance of an ETF portfolio.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              { term: 'What I owned', detail: '[The archive tile calls this "Investment Portfolio onboarding" — confirm whether you owned onboarding only, or QBot and tracking too.]' },
+              { term: 'Who I worked with', detail: '[Engineering, and whoever owned the regulatory copy.]' },
+              { term: 'What I influenced', detail: '[Confirm.]' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: 'A chatbot giving financial advice sits inside a regulated perimeter.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'qplum is registered with the SEC as an Investment Advisor and with the NFA as a Commodity Trading Advisor. Brokerage and clearing ran through Apex Clearing and Interactive Brokers, both FINRA/SIPC members, with accounts SIPC-protected up to $500,000 including $250,000 for cash.',
+              'None of that is decoration — it dictates what a conversational interface is allowed to say. A chatbot that produces a "free financial plan" has to be helpful without straying into advice the firm cannot give in that format.',
+              '[How did that constrain QBot, and what did you have to take out of it? If the harder call was elsewhere, replace this — but the compliance seam is the most likely place a real tradeoff lived.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'process',
+        nav: 'How it got made',
+        label: 'How the work got made',
+        heading: 'QBot, and the version of QBot that shipped.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The live site carries the process in stages — process, QBot, QBot final, outcome — which implies the conversational piece went through at least one substantial revision.',
+              '[What was wrong with the first QBot, and what changed? A first-and-final pair with the reasoning between them is the most valuable thing this case could carry.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'The conversation, and the account behind it.',
+        blocks: [
+          {
+            kind: 'figure',
+            src: '/images/qplum-qfolio/03.jpg',
+            alt: 'The QBot conversation',
+            caption: 'QBot. The conversation that produces a financial plan — and the surface the regulatory perimeter constrains hardest.',
+            ratio: '375 / 667',
+          },
+          {
+            kind: 'figure',
+            src: '/images/qplum-qfolio/08.jpg',
+            alt: 'Account verification step',
+            caption: 'Verification. The point where "investing as a utility" meets what a regulated brokerage account actually requires.',
+            ratio: '375 / 667',
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[No outcome recorded. Completion rate into a funded account is the number that matters for onboarding.]'] },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: 'What I’d do differently',
+        label: 'What I’d do differently',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[One honest paragraph.]'] },
+        ],
+      },
+    ],
+    next: 'dialog-quick-loan',
+  },
+
+  // ==========================================================
+  {
+    slug: 'dialog-quick-loan',
+    company: 'Dialog Axiata',
+    theme: 'sand',
+    eyebrow: 'Dialog Axiata · Sri Lanka · [20XX]',
+    title: 'Credit for people who have run out of credit',
+    hero: { src: '/images/dialog-quick-loan/01.jpg', alt: 'Dialog quick loan' },
+    description:
+      'Dialog Axiata quick loan: a reload loan for pre-paid mobile customers at the moment their balance hits zero, on a network carrying 12.8 million subscribers.',
+    meta: [
+      { label: 'Scope', value: 'Loan flow, brand guideline, mobile site' },
+      { label: 'Partners', value: '[Confirm]' },
+      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+    ],
+    role: '[Product Designer — confirm]',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'Half of Sri Lanka’s mobile market, and a customer whose balance just hit zero.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Dialog Axiata PLC is one of Sri Lanka’s largest telecommunications providers and the country’s largest mobile network operator, with 12.8 million subscribers and roughly 50% of the Sri Lankan mobile market.',
+              'The product is a reload loan: pre-paid customers can borrow from Dialog the moment they run out of credit. The design problem is the moment itself — the customer is mid-call or mid-session, has just lost service, and is not in a mood to read.',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'How the loan works',
+            items: [
+              { title: 'Automatic', body: 'Register free of charge and the loan is granted automatically whenever the balance reaches zero — no manual request.' },
+              { title: 'Mid-session', body: 'The loan value applies even during a call or data session, so service does not drop.' },
+              { title: 'On request', body: 'Dial 356 or #356#, choose a language, and ask for a loan.' },
+              { title: 'The charge', body: 'The standard Rs. 2.00 service charge is waived if the loan value is recharged within 24 hours.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              { term: 'What I owned', detail: '[The live site shows process, outcome, brand guideline and mobile site — confirm which of those were yours.]' },
+              { term: 'Who I worked with', detail: '[Team and client-side counterparts.]' },
+              { term: 'What I influenced', detail: '[Did the brand guideline come from you, or were you working to one?]' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: 'A lending product that has to work over USSD as well as a screen.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The loan is reachable by dialling 356 or #356# — a menu on a feature phone — as well as through the mobile site. Two entry points with completely different capabilities, serving the same customers, for a product with a fee attached.',
+              '[Which one led the design, and what had to be true in both? Designing for the lower-capability channel first is a defensible call and a demonstrable one — if that is what happened, it is the strongest thing in this case.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'process',
+        nav: 'How it got made',
+        label: 'How the work got made',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[The live site shows a process section without describing it. What were the stages and what changed between them?]'] },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'The flow, the brand guideline, and the mobile site.',
+        blocks: [
+          {
+            kind: 'figure',
+            src: '/images/dialog-quick-loan/04.jpg',
+            alt: 'The Dialog quick loan request screen',
+            caption: 'Asking for the loan. The whole interaction happens at the moment service has just stopped.',
+            ratio: '720 / 2056',
+          },
+          {
+            kind: 'figure',
+            src: '/images/dialog-quick-loan/02.jpg',
+            alt: 'The full quick loan flow',
+            caption: 'The flow end to end, with the mobile site it had to match.',
+            ratio: '1400 / 3031',
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: 'The reach is documented. The result is not.',
+        blocks: [
+          {
+            kind: 'metrics',
+            items: [
+              { value: '12.8M', label: 'Dialog subscribers' },
+              { value: '~50%', label: 'Share of the Sri Lankan mobile market' },
+              { value: '[X]', label: 'Loans taken after launch' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              'The first two numbers describe the network, not the work — worth being careful with them, because a metric that is really the client’s scale reads as borrowed if it is presented as an outcome. [Take-up of the loan product is the number that would belong to this case.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: 'What I’d do differently',
+        label: 'What I’d do differently',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[One honest paragraph.]'] },
+        ],
+      },
+    ],
+    next: 'dreamgains-finance',
+  },
+
+  // ==========================================================
+  {
+    slug: 'dreamgains-finance',
+    company: 'DreamGains',
+    theme: 'lilac',
+    eyebrow: 'DreamGains · Financial advisory · [20XX]',
+    title: 'Rebuilding a financial advisory website',
+    hero: { src: '/images/archive/dream-gains.jpg', alt: 'DreamGains' },
+    description:
+      'DreamGains: an end-to-end website revamp for an Indian financial advisory firm, run alongside UX researchers.',
+    meta: [
+      { label: 'Scope', value: '[Confirm — full site or key templates?]' },
+      { label: 'Partners', value: 'UX researchers' },
+      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+    ],
+    role: 'Designer · End-to-end website revamp',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'A well-known advisory firm with a site that was not carrying it.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'DreamGains is a well-regarded business firm in India providing financial advisory services — share market tips, day trading tips, forex tips and more.',
+              '[Two sentences on why the revamp happened. What was the site failing to do — convert, explain the products, hold up on mobile — and who decided it needed rebuilding?]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: 'End to end, with researchers alongside.',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              {
+                term: 'What I owned',
+                detail:
+                  'The revamp end to end, in collaboration with UX researchers — one of the few archive projects where the live site names a research partnership.',
+              },
+              {
+                term: 'What the researchers brought',
+                detail:
+                  '[What did they find, and what did you change because of it? A collaboration is only evidence if it changed something.]',
+              },
+              { term: 'Who else was on it', detail: '[Engineering, content, client-side stakeholders.]' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              '[Not recorded. For a financial advisory site the usual candidate is how much to promise on the marketing surface versus what compliance and honesty allow — "share market tips" is a category where that tension is real.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'process',
+        nav: 'How it got made',
+        label: 'How the work got made',
+        heading: 'Wireframes, then visuals.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The live site records two stages: wireframe, then visuals. [Add what sat between them — reviews, research input, iterations.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'The rebuilt site.',
+        blocks: [
+          {
+            kind: 'figure',
+            src: '/images/dreamgains-finance/01.jpg',
+            alt: 'DreamGains site wireframe, full page',
+            caption: 'The wireframe for the full page.',
+            ratio: '1400 / 3919',
+          },
+          {
+            kind: 'figure',
+            src: '/images/dreamgains-finance/03.jpg',
+            alt: 'DreamGains site visual design, full page',
+            caption: 'The same page resolved.',
+            ratio: '1400 / 2898',
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[No outcome recorded. For a site revamp: enquiries, sign-ups, or bounce rate before and after.]'] },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: 'What I’d do differently',
+        label: 'What I’d do differently',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[One honest paragraph.]'] },
+        ],
+      },
+    ],
+    next: 'mera-data',
+  },
+
+  // ==========================================================
+  {
+    slug: 'mera-data',
+    company: 'Mera Data',
+    theme: 'sage',
+    eyebrow: 'Mera Data · Online tool, IT and services · [20XX]',
+    title: 'Every cloud drive behind one login',
+    hero: { src: '/images/archive/mera-data.jpg', alt: 'Mera Data' },
+    description:
+      'Mera Data: one interface across Google Drive, OneDrive, Box, Dropbox, Flickr and more — built to cut the toggling between them.',
+    meta: [
+      { label: 'Scope', value: 'Discover, define, design' },
+      { label: 'Partners', value: '[Confirm]' },
+      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+    ],
+    role: '[Product Designer — confirm]',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'People’s files live in six places and none of them talk.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Mera Data lets someone reach Google Drive, OneDrive, Box, Dropbox, Flickr and other cloud and social platforms through a single login.',
+              'The value proposition is straightforward; the design problem is that each of those services has its own model of what a file is and what you can do with it, and one interface has to sit over all of them without lying about any.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              { term: 'What I owned', detail: '[Confirm which of discover, define and design were yours, and whether you were the only designer.]' },
+              { term: 'Who I worked with', detail: '[The live site says "the team" without naming it.]' },
+              { term: 'What I influenced', detail: '[Confirm.]' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: 'Rows with functions built in, to stop the toggling.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The clearest decision recorded is in the define stage: rather than sending people between screens for each action, functions were built into the rows themselves and integrated so that screen toggling dropped. That is a real tradeoff — denser rows, fewer trips — and it is the kind of call worth stating outright.',
+              '[What did the density cost, and did anything have to be dropped from a row to keep it usable?]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'process',
+        nav: 'How it got made',
+        label: 'How the work got made',
+        heading: 'Discover, define, design.',
+        blocks: [
+          {
+            kind: 'points',
+            label: 'The three stages',
+            items: [
+              { title: '01 Discover', body: 'Researching user workflows and identifying the product’s unique value proposition.' },
+              { title: '02 Define', body: 'A sitemap, and the design considerations — rows with built-in functions, integrated to reduce screen toggling.' },
+              { title: '03 Design', body: 'Simplicity first, with clear differentiation between panels.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'Depth from thin lines rather than colour.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The visual approach was restrained on purpose: limited colour, and depth built from minimal elements — thin lines and forms — so that panels stayed distinguishable without the interface becoming loud. On a tool aggregating six services, each with its own brand colour, holding colour back is the decision that keeps it readable.',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/mera-data/01.jpg',
+            alt: 'The Mera Data interface, full page',
+            caption: 'The interface end to end — rows carrying their own functions, and the restraint that keeps six services’ worth of branding from fighting.',
+            ratio: '1400 / 5004',
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[No outcome recorded. Connected accounts per user, or time-to-file, would be the numbers.]'] },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: 'What I’d do differently',
+        label: 'What I’d do differently',
+        heading: '[To be written.]',
+        blocks: [
+          { kind: 'prose', text: ['[One honest paragraph.]'] },
+        ],
+      },
+    ],
+    next: 'wal-e-design-system',
   },
 ];
 

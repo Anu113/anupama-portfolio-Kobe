@@ -70,40 +70,46 @@ export const work = [
 // static.wixstatic.com would break the day that site is switched off, which
 // is the whole point of this repo.
 //
-// TWO THINGS STILL NEED HER:
-//   1. `tag` and `year` are bracket placeholders. /allworks shows neither —
-//      it is a bare image grid — so there was nothing to carry across. Same
-//      convention as the [X] metrics: visible until she fills them in.
-//   2. `href` points back at the Wix site, so these rows die when it is
-//      retired. Fine while both are up; decide before the switch whether
-//      each project earns a page here or the link simply goes.
+// Every row now links to a case study on this site — `/work/<slug>`, built
+// from the same cases.ts the five selected projects use. Nothing here points
+// at the Wix site any more, so the archive survives that site being retired.
+//
+// `tag` is read off what each project actually is (a design system is a
+// design system) — not invented. `year` is bracketed everywhere except
+// Agreement Management, which is the one project whose dates the live site
+// states: started January 2019, launched 8 October 2020.
+//
+// STILL NEEDS HER: the years, and the gaps inside each case study. The
+// source pages varied enormously — Agreement Management came with NPS and a
+// launch date, Lender's App with three sentences — so the thin ones carry a
+// lot of brackets. See the header note above the archive tier in cases.ts.
 // `href` is optional — a row without one renders as text, no link.
 export const archive = [
-  { name: 'Wal-E Design System', tag: '[Category]', year: '[20XX]',
-    href: 'https://www.anupama.design/s-projects-side-by-side',
+  { name: 'Wal-E Design System', tag: 'Design system', year: '[20XX]',
+    href: '/work/wal-e-design-system',
     image: '/images/archive/wal-e-design-system.jpg' },
-  { name: 'Agreement Management Application', tag: '[Category]', year: '[20XX]',
-    href: 'https://www.anupama.design/copy-of-design-system',
+  { name: 'Agreement Management Application', tag: 'Enterprise application', year: '2020',
+    href: '/work/walmart-agreement-management',
     image: '/images/archive/agreement-management.jpg' },
-  { name: 'Bot Spark Banner', tag: '[Category]', year: '[20XX]',
-    href: 'https://www.anupama.design/copy-of-ama',
+  { name: 'Bot Spark', tag: 'Internal tool', year: '[20XX]',
+    href: '/work/bot-spark',
     image: '/images/archive/bot-spark-banner.jpg' },
-  { name: 'Mint app', tag: '[Category]', year: '[20XX]',
-    href: 'https://www.anupama.design/copy-of-sunpharama-dashboard',
+  { name: 'Mint app', tag: 'Product concept', year: '[20XX]',
+    href: '/work/mint-credit-score',
     image: '/images/archive/mint-app.jpg' },
-  { name: "Lender's app", tag: '[Category]', year: '[20XX]',
-    href: 'https://www.anupama.design/copy-of-bot-spark',
+  { name: "Lender's app", tag: 'Mobile app', year: '[20XX]',
+    href: '/work/ratanindia-lenders-app',
     image: '/images/archive/lenders-app.jpg' },
-  { name: 'Investment Portfolio onboarding', tag: '[Category]', year: '[20XX]',
-    href: 'https://www.anupama.design/copy-of-dreamgains',
+  { name: 'Investment Portfolio onboarding', tag: 'Mobile app', year: '[20XX]',
+    href: '/work/qplum-qfolio',
     image: '/images/archive/investment-onboarding.jpg' },
-  { name: 'Dialog quick loan', tag: '[Category]', year: '[20XX]',
-    href: 'https://www.anupama.design/copy-of-ratan-india-lender-s-app',
+  { name: 'Dialog quick loan', tag: 'Mobile app', year: '[20XX]',
+    href: '/work/dialog-quick-loan',
     image: '/images/archive/dialog-quick-loan.jpg' },
-  { name: 'Dream gains finance', tag: '[Category]', year: '[20XX]',
-    href: 'https://www.anupama.design/copy-of-mera-data',
+  { name: 'Dream gains finance', tag: 'Website design', year: '[20XX]',
+    href: '/work/dreamgains-finance',
     image: '/images/archive/dream-gains.jpg' },
-  { name: 'Mera Data', tag: '[Category]', year: '[20XX]',
-    href: 'https://www.anupama.design/copy-of-dialog-app',
+  { name: 'Mera Data', tag: 'Web app', year: '[20XX]',
+    href: '/work/mera-data',
     image: '/images/archive/mera-data.jpg' },
 ] as const;

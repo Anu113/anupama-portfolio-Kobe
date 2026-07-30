@@ -9,7 +9,11 @@ years' experience returning to work after a career break. Most recently Staff
 Product Designer at Okta on Identity & Access Management, where she also led a
 team of six. Earlier: PayPal, Walmart Labs, Deloitte Digital, Zomato.
 
+<<<<<<< HEAD
 **The site has one job: land a Staff Product Designer role (remote).** Every
+=======
+**The site has one job: land a Staff Product Designer/Lead Product Designer role.** Every
+>>>>>>> origin/work-bands-and-spacing
 decision serves that. When a change would make the site prettier but less
 effective at that job, say so.
 
@@ -47,7 +51,11 @@ src/
 │  ├─ tokens.css     ← every colour, type size, space value, easing. THE file.
 │  └─ global.css     ← type roles (.u-display, .u-label), a11y baseline
 ├─ layouts/Base.astro
+<<<<<<< HEAD
 ├─ components/       ← 18 components, each with a header comment
+=======
+├─ components/       ← 11 components, each with a header comment
+>>>>>>> origin/work-bands-and-spacing
 ├─ data/site.ts      ← email, links, one-liners
 └─ pages/
 public/
@@ -150,10 +158,16 @@ must change.
 | `Marquee.astro` | A row that scrolls itself. `kind="logo"` for the company strip, `kind="card"` for the playground preview. |
 | `Testimonials.astro` | Three quotes across. Content in `data/home.ts` is **placeholder — not real quotes**. |
 | `PageHeader.astro` | The standing header for every interior page. Centred eyebrow + display title + optional intro. |
+<<<<<<< HEAD
 | `ArchiveList.astro` | The archive tier on `/work`. Text rows; each hides a preview that opens from zero width on hover. Hover-capable, wide screens only. |
 | `CaseRail.astro` | The sticky section rail on a case study. Scroll-spy; becomes a horizontal strip under 1080px. |
 | `CaseBlocks.astro` | Renders one case-study section's body from the `CaseBlock` union in `data/cases.ts`. |
 | `CaseDoodle.astro` | Seven hand-drawn creatures, one per case-study section. **Built but not wired in** — see below. |
+=======
+| `CaseRail.astro` | The sticky section rail on a case study. Scroll-spy; becomes a horizontal strip under 1080px. |
+| `CaseBlocks.astro` | Renders one case-study section's body from the `CaseBlock` union in `data/cases.ts`. |
+| `CaseDoodle.astro` | Seven hand-drawn creatures, one per case-study section. Shared body/eyes/legs skeleton, keyed by section `id`. |
+>>>>>>> origin/work-bands-and-spacing
 | `Footer.astro` | Closes every page: bio / contact / "let's talk", then a meta line with a live clock, then the wordmark. Ink band, in `Base.astro` below `<main>`. |
 
 `CursorTrail` is a port of the reference site's `cursor-line.js` — a spring
@@ -221,6 +235,7 @@ then the next project.
 The banner is **`bone` on every case study**, not the project's palette. A
 full-bleed saturated ground behind display type reads as a poster and fights
 the reading page under it. The project's hue lives on its `/work` tile and on
+<<<<<<< HEAD
 the closing "next case study" band.
 
 `CaseDoodle.astro` holds seven hand-drawn creatures, one per section, keyed by
@@ -231,6 +246,16 @@ eyebrow. If you extend the set: they are **characters, not icons** — every one
 is a body, two ring eyes and two thin legs with kicked-out feet on a shared
 skeleton, and only the body and one prop change. An abstract mark drawn to the
 same brief reads as a stray icon next to the rest.
+=======
+the closing "next case study" band. Each body section opens with a small
+hand-drawn creature from `CaseDoodle.astro`, keyed by section `id` — the same
+seven across all three cases, so "the hard call" is the same character every
+time. They are **characters, not icons**: every one is a body, two ring eyes
+and two thin legs with kicked-out feet, on a shared skeleton, and only the
+body and one prop change. Keep that skeleton if you add one — an abstract
+mark drawn to the same brief will read as a stray icon next to the rest. They
+are margin notes; don't scale them up or draw a set per case.
+>>>>>>> origin/work-bands-and-spacing
 
 Content lives in **`src/data/cases.ts`**, not in a content collection. These
 pages aren't prose — each section is a composition of small typed blocks
