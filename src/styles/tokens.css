@@ -8,6 +8,7 @@
   --font-display: 'General Sans', ui-sans-serif, system-ui, sans-serif;
   --font-accent: 'Instrument Serif', Georgia, serif;   /* the italic word */
   --font-body: 'Crimson Pro', Georgia, serif;
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;   /* the playground's print-label captions, nowhere else */
 
   /* --- TYPE SCALE ---------------------------------------
      Display sizes use vw so type overflows the viewport
@@ -23,8 +24,19 @@
                                 for uppercase eyebrows only; at 0.72rem it's
                                 too small for a sentence. */
   --step-label: 0.72rem;
+  /* The playground print-label caption. Sized to land where the reference
+     (tympanus.net/Tutorials/InfiniteLayersGrid/) actually renders, not at
+     its literal `12rem` — that site scales its own root font-size down to
+     ~0.9px via script so a caption authored at 12rem lands near 11px; our
+     root is the normal 16px, so the same 12rem would print at 192px and
+     blow out every tile. This is the equivalent size in an unscaled root. */
+  --step-caption: 0.7rem;
 
   --tracking-label: 0.14em;
+  /* Roboto Mono is already evenly spaced; this is the extra kerning on top,
+     for the playground caption only. Don't reuse --tracking-label's value
+     here on purpose — this one's allowed to move independently. */
+  --tracking-caption: 0.08em;
   --tracking-display: -0.035em;
   /* h3-scale display headings (case tiles, points, timeline entries) had
      drifted into -0.01em/-0.015em/-0.02em as separate hardcoded values
@@ -175,6 +187,23 @@
   --shell: #14100e;
   --screen: #e8613c;
   --accent-text: #14100e; /* 6.5:1 — nothing lighter clears AA on coral */
+}
+
+/* Iris — the hero band only, nowhere else. Cream-and-navy by day, an
+   indigo ground with a periwinkle headline at night: the pairing from
+   meagandurlak.com's "dreaming of radical futures" opener, not a
+   restatement of any editorial or chapter-card palette already here.
+   --fg is display-only (like sand's two greens) — --fg-dim carries the
+   body paragraph at a contrast --fg doesn't clear. */
+[data-theme='iris'] {
+  --bg: #ece5d4;          /* cream */
+  --fg: #2e2860;          /* navy-violet, display only — 10.5:1 */
+  --fg-dim: #4d4690;      /* lighter, still 6.4:1 at body size */
+  --accent: #2e2860;
+  --rule: #d8cdb4;
+  --shell: #2e2860;
+  --screen: #e2d9c2;
+  --accent-text: #2e2860;
 }
 
 /* ============================================================
@@ -339,4 +368,18 @@
   --shell: #2a0f08;
   --screen: #8f3a22;
   --accent-text: #f9a488;   /* 4.8:1 */
+}
+
+/* Iris after dark — indigo ground, periwinkle headline. --fg stays
+   display-only (4.7:1, clears the 3:1 large-text floor); --fg-dim is
+   the lighter tint that carries the body paragraph at 6.1:1. */
+[data-mode='night'] [data-theme='iris'] {
+  --bg: #2b2a54;
+  --fg: #7b93f0;            /* 4.7:1 */
+  --fg-dim: #98abf7;        /* 6.1:1 */
+  --accent: #7b93f0;
+  --rule: #403e78;
+  --shell: #1c1b3a;
+  --screen: #38366a;
+  --accent-text: #98abf7;   /* 6.1:1 */
 }
