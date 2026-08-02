@@ -31,12 +31,36 @@
 
    Motion is a single rAF-throttled handler. Under prefers-reduced-motion
    the drift and the release inertia both switch off; drag, wheel and arrow
-   keys still pan, because those are the visitor's own hand, not motion. */
+   keys still pan, because those are the visitor's own hand, not motion.
+
+   Every tile also carries a three-line caption — name, description, year —
+   set in Roboto Mono as a small, kerned print label, and the tile itself
+   dims when it isn't the one on screen. Both are driven by one thing: a
+   per-tile IntersectionObserver toggles `.in-view` as a tile crosses the
+   edge of the viewport, EACH WAY — not a one-time reveal, so a tile that
+   scrolls back off screen dims and re-masks its caption, and gets both back
+   the next time it scrolls into view. Ported off the reference
+   (tympanus.net/Tutorials/InfiniteLayersGrid/,
+   codrops/2025/06/11/building-an-infinite-parallax-grid...), which does the
+   same visibility check the same way, though it reaches for GSAP's SplitText
+   to build the caption's per-line masks where this just writes the two spans
+   by hand — one fewer dependency for the same effect. Each caption line sits
+   inside a masked wrapper translated out of view, and a second, inner
+   translate on the line itself follows a beat behind, so the mask curtain
+   and the text look like two things settling rather than one; the
+   per-line transition-delay set in the markup is what staggers them, same
+   as the reference's 0.15s-per-line. No tint mount under the art any more:
+   the coloured background + padding that used to sit under every tile is
+   gone, so tiles sit straight on the page ground the way the reference's
+   do. */
 /* `w` / `h` are the image's own pixel dimensions. They go straight onto the
    <img> so every tile reserves its space before it loads — without them a
    lazy-loaded tile has zero height, which both shifts the layout and stops
    the sentinel from ever being pushed out of view. */
-interface Item { src: string; alt: string; w: number; h: number }
+interface Item {
+  src: string; alt: string; w: number; h: number;
+  title: string; description: string; year: string;
+}
 interface Props {
   items: Item[];
   /** Distinct rows rendered server-side. These are what JS cycles through. */
@@ -79,24 +103,6 @@ const occupancy = [
 const widths = ['100%', '68%', '86%', '55%', '92%', '74%'];
 const aligns = ['flex-start', 'flex-end', 'center', 'flex-end', 'flex-start'];
 const offsets = ['0', '3.5vw', '0', '5.5vw', '1vw', '2vw', '6vw'];
-/* The ground each piece is mounted on, from the six palette tints in
-   tokens.css. Eight entries against widths' six, aligns' five and offsets'
-   seven — four lengths with no common factor, so a tile's colour, size,
-   alignment and offset never come round together and the field reads as
-   scattered rather than patterned. Deliberately not Math.random(): the twin
-   copy of every band has to be identical or the horizontal wrap seams, and a
-   build that reshuffles itself is one a designer can't art-direct. To pin a
-   pairing that clashes, reorder this list. */
-const tints = [
-  'var(--tint-clay)',
-  'var(--tint-sage)',
-  'var(--tint-shell)',
-  'var(--tint-oat)',
-  'var(--tint-stone)',
-  'var(--tint-mauve)',
-  'var(--tint-sage)',
-  'var(--tint-oat)',
-];
 
 let dealt = 0;
 const deck = Array.from({ length: rows }, (_, r) =>
@@ -110,7 +116,6 @@ const deck = Array.from({ length: rows }, (_, r) =>
       span: widths[k % widths.length],
       align: aligns[k % aligns.length],
       off: offsets[k % offsets.length],
-      tint: tints[k % tints.length],
     };
   })
 );
@@ -136,7 +141,7 @@ const deck = Array.from({ length: rows }, (_, r) =>
                 {tile && (
                   <figure
                     class="tile"
-                    style={`--w:${tile.span}; --al:${tile.align}; --off:${tile.off}; --tint:${tile.tint}`}
+                    style={`--w:${tile.span}; --al:${tile.align}; --off:${tile.off}`}
                   >
                     <img
                       src={tile.src}
@@ -147,6 +152,15 @@ const deck = Array.from({ length: rows }, (_, r) =>
                       decoding="async"
                       draggable="false"
                     />
+                    {/* Restates `alt`'s own words, so aria-hidden — a screen
+                        reader already has the description once. */}
+                    <figcaption class="tile__cap" aria-hidden="true">
+                      {[tile.title, tile.description, tile.year].map((line, li) => (
+                        <span class="cap-mask" style={`transition-delay:${li * 0.12}s`}>
+                          <span class="cap-line" style={`transition-delay:${li * 0.12}s`}>{line}</span>
+                        </span>
+                      ))}
+                    </figcaption>
                   </figure>
                 )}
               </div>
@@ -221,20 +235,56 @@ const deck = Array.from({ length: rows }, (_, r) =>
     margin-top: var(--off, 0);
     width: var(--w, 100%);
     align-self: var(--al, flex-start);
-    /* Each piece is mounted on a palette ground rather than floating on the
-       band. The art is trimmed to its own edge (see prepare-play-images.mjs),
-       so this mount is the ONLY border any tile has — even padding, same on
-       all ten, which is what stops it reading as the accidental margins the
-       source files used to carry. */
-    background: var(--tint, transparent);
-    padding: clamp(0.7rem, 1.7vw, 1.35rem);
+    /* Focus: dimmed everywhere except the tiles actually on screen, so the
+       eye lands on whatever's in the viewport rather than the whole
+       loosely-scattered field at once. `.in-view` is set and unset by the
+       IntersectionObserver in the script below — this is the "off" state. */
+    opacity: 0.32;
+    transition: opacity var(--dur-hover) var(--ease-out);
   }
+  .tile.in-view { opacity: 1; }
   .tile img {
     display: block;
     width: 100%;
     height: auto;
     border-radius: var(--radius);
     -webkit-user-drag: none;   /* or a drag starts a native image drag */
+  }
+
+  /* The print label: name, description, year — each its own line, each
+     independently masked. `cap-mask` is the window a line lives behind;
+     `cap-line` is the line itself, held a little further down so it still
+     has distance left to close once the mask has caught up — the two
+     together are what read as a curtain lifting rather than a plain fade.
+     The per-line `transition-delay` set in the markup is what staggers them,
+     same as the reference. Lines stay put (not `display: none`) at rest, so
+     the space is always reserved and a tile never jumps as its caption
+     arrives or leaves. */
+  .tile__cap {
+    margin: clamp(0.6rem, 1.4vw, 0.9rem) 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15em;
+  }
+  .cap-mask,
+  .cap-line {
+    display: block;
+    overflow: clip;
+    transition: transform var(--dur-reveal) var(--ease-out);
+  }
+  .cap-mask { transform: translateY(100%); }
+  .cap-line {
+    transform: translateY(115%);
+    font-family: var(--font-mono);
+    font-size: var(--step-caption);
+    font-weight: 400;
+    line-height: 1.21;
+    letter-spacing: var(--tracking-caption);
+    color: var(--fg-dim);
+  }
+  .tile.in-view .cap-mask,
+  .tile.in-view .cap-line {
+    transform: translateY(0);
   }
   .stream__end { height: 1px; }
 
@@ -262,6 +312,23 @@ const deck = Array.from({ length: rows }, (_, r) =>
 
     const still = matchMedia('(prefers-reduced-motion: reduce)');
 
+    // --- focus: only the tiles actually on screen are "in view" ---
+    // Ported straight off the reference (tympanus.net/Tutorials/InfiniteLayersGrid/,
+    // codrops/2025/06/11/building-an-infinite-parallax-grid...): an
+    // IntersectionObserver toggles one class per tile, on the way in AND the
+    // way out — not the earlier latch-once behaviour, so a tile that scrolls
+    // back off screen dims and re-masks its caption, and gets both back if it
+    // scrolls into view again. Per-tile rather than per-row (unlike the pan
+    // and drift below) because this is a plain visibility boolean with no
+    // shared geometry to read, so the native API is both simpler and cheaper
+    // than adding it to `frame()`'s own read/write pass.
+    const focusIO = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.target.classList.toggle('in-view', e.isIntersecting)),
+    );
+    const observeTiles = (root: ParentNode) =>
+      root.querySelectorAll<HTMLElement>('.tile').forEach((t) => focusIO.observe(t));
+    observeTiles(el);
+
     // --- endless: keep a screenful of rows in hand below the fold ---
     // Deliberately not an IntersectionObserver: the sentinel stays on screen
     // after an append, and an observer only reports transitions, so it would
@@ -283,6 +350,7 @@ const deck = Array.from({ length: rows }, (_, r) =>
         const next = seeds[added % seeds.length].cloneNode(true) as HTMLElement;
         next.setAttribute('aria-hidden', 'true');   // a repeat, not new content
         el.insertBefore(next, sentinel);
+        observeTiles(next);   // a clone's tiles start unobserved — the IO only knows what existed at setup
         added += 1;
         guard += 1;
       }

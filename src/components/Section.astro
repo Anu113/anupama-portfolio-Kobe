@@ -4,6 +4,7 @@
    Themes available (defined in tokens.css):
      ink | sand | bone | clay      — the editorial four
      sage | lilac | coral          — the saturated chapter-card grounds
+     iris                          — hero-only, cream/navy day, indigo/periwinkle night
    Each also has a night variant; the nav toggle switches between them.
 
    `index` is optional — pass a section's number ("00", "01", …) to print a
@@ -14,7 +15,7 @@
    the pairing. Omit it and a band renders exactly as before; this never
    applies unless a page opts in. */
 interface Props {
-  theme?: 'ink' | 'sand' | 'bone' | 'clay' | 'sage' | 'lilac' | 'coral';
+  theme?: 'ink' | 'sand' | 'bone' | 'clay' | 'sage' | 'lilac' | 'coral' | 'iris';
   full?: boolean; id?: string; class?: string; index?: string;
 }
 const { theme = 'ink', full = false, id, class: cls = '', index } = Astro.props;
