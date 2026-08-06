@@ -24,13 +24,10 @@
                                 for uppercase eyebrows only; at 0.72rem it's
                                 too small for a sentence. */
   --step-label: 0.72rem;
-  /* The playground print-label caption. Sized to land where the reference
-     (tympanus.net/Tutorials/InfiniteLayersGrid/) actually renders, not at
-     its literal `12rem` — that site scales its own root font-size down to
-     ~0.9px via script so a caption authored at 12rem lands near 11px; our
-     root is the normal 16px, so the same 12rem would print at 192px and
-     blow out every tile. This is the equivalent size in an unscaled root. */
-  --step-caption: 0.7rem;
+  /* The card hover pill (HoverLabel.astro) — smaller than an eyebrow since
+     it's a floating cursor-follow chip, not copy sitting next to other
+     text that needs to hold its own size. */
+  --step-pill: 0.6rem;
 
   --tracking-label: 0.14em;
   /* Roboto Mono is already evenly spaced; this is the extra kerning on top,
@@ -187,6 +184,43 @@
   --shell: #14100e;
   --screen: #e8613c;
   --accent-text: #14100e; /* 6.5:1 — nothing lighter clears AA on coral */
+}
+
+/* Ember — the eighth palette, on request: a warmer, browner red than
+   coral's bright orange or clay's oxblood, sampled from a set of reference
+   photos (a brick-red sticker collage, a warm cream studio shot lit by an
+   orange practical lamp) rather than picked in the abstract. Wired to the
+   Okta OIN project card, which used to wear `ink` — the same theme as the
+   band it sits in, so the card had no visible boundary against its own
+   page. Ember gives it one and gets a real eighth band in the same move,
+   per this file's own "don't add a palette without a band for it" rule. */
+[data-theme='ember'] {
+  --bg: #a8402a;          /* rust, between the reference's brick red and its warm brown shadow */
+  --fg: #f6ead9;          /* the reference's cream wall — 5.15:1 */
+  --fg-dim: #eedcc8;      /* 4.57:1 */
+  --accent: #f0a868;      /* the reference's lamp-glow orange — decorative/UI only, pairs with accent-text for copy */
+  --rule: #8f3d28;
+  --shell: #2a1710;
+  --screen: #3a2015;
+  --accent-text: #f6ead9; /* = --fg, 5.15:1 — the lamp orange alone doesn't clear body text on this ground */
+}
+
+/* Crimson — the ninth palette, one band: the footer only, which used to
+   close every page on `ink` (near-black), then on a fire-engine red. That
+   red ran too hot for a staff-level close — it read as an alert, not a
+   sign-off — so it's deepened to a wine/oxblood instead: still unmistakably
+   red, still its own note, but quiet enough to hold a "let's talk" line.
+   Same near-white cream as ink's own --fg carries over so the footer's text
+   colour doesn't visibly change, just the ground under it. */
+[data-theme='crimson'] {
+  --bg: #5c1220;
+  --fg: #f4ece1;          /* 11.5:1 */
+  --fg-dim: #ecdfd0;      /* 10.3:1 */
+  --accent: #f0a868;      /* decorative warm gold — pairs with accent-text for copy */
+  --rule: #431019;
+  --shell: #2a0b08;
+  --screen: #3a121a;
+  --accent-text: #f4ece1; /* = --fg — the gold alone doesn't clear body text on this ground */
 }
 
 /* Iris — the hero band only, nowhere else. Cream-and-navy by day, an
@@ -368,6 +402,34 @@
   --shell: #2a0f08;
   --screen: #8f3a22;
   --accent-text: #f9a488;   /* 4.8:1 */
+}
+
+/* Ember after dark — the rust ground drops to a near-black brown; --fg
+   picks up the reference's warm cream, brightened for the darker floor. */
+[data-mode='night'] [data-theme='ember'] {
+  --bg: #2b120c;
+  --fg: #ffd9b8;            /* 13.3:1 */
+  --fg-dim: #e0b294;        /* 9.2:1 */
+  --accent: #f0a868;
+  --rule: #4a2015;
+  --shell: #170a06;
+  --screen: #2e1710;
+  --accent-text: #f0a868;   /* 8.8:1 */
+}
+
+/* Crimson after dark — deepened rather than swapped for a different hue,
+   the same treatment coral gets: the footer stays recognisably wine in
+   both modes ("the same note" its own header comment asks for), just
+   darker at night. */
+[data-mode='night'] [data-theme='crimson'] {
+  --bg: #3a0a12;
+  --fg: #fce7db;            /* 14.3:1 */
+  --fg-dim: #e8c9b8;        /* 10.9:1 */
+  --accent: #f0a868;
+  --rule: #2a0710;
+  --shell: #170504;
+  --screen: #250810;
+  --accent-text: #fce7db;   /* = --fg */
 }
 
 /* Iris after dark — indigo ground, periwinkle headline. --fg stays

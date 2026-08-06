@@ -1289,17 +1289,621 @@ export const cases: CaseStudy[] = [
         ],
       },
     ],
+    next: 'okta-oin',
+  },
+
+  // ==========================================================
+  // The flagship case. Not a UI redesign — a platform/framework story:
+  // one extensible submission framework behind the Okta Integration
+  // Network instead of one bespoke review flow per integration category.
+  // Distinct from 'okta-iam' above (the enterprise admin-console rebuild);
+  // both are Okta, different scope, different team. Numbers are bracketed
+  // for the same reason as every other case here — they come from
+  // Anupama, not invented. Diagrams live in /public/images/okta-oin/,
+  // hand-authored SVGs in the site's own palette rather than a Mermaid
+  // dependency — see the comment on CaseBlock above for why the block
+  // set stays at six kinds.
+  // ==========================================================
+  {
+    slug: 'okta-oin',
+    company: 'Okta',
+    theme: 'ink',
+    eyebrow: 'Okta · Integration Platform + Developer Ecosystem · [20XX–20XX]',
+    title: "Designing the future of Okta's Integration Platform",
+    hero: {
+      src: '/images/placeholder-5.svg',
+      alt: 'The Okta Integration Network submission framework, from manifest to published listing',
+    },
+    description:
+      'Okta Integration Network: replacing a bespoke, one-off review process with a single extensible framework for how ISVs build, submit and publish integrations — one manifest schema, one shared UI kit and one validation engine behind every category.',
+    meta: [
+      { label: 'Team', value: '[X] designers, [X] engineers, 1 PM' },
+      { label: 'Partners', value: 'Partner engineering, developer relations, security review' },
+      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+    ],
+    role: 'Staff Product Designer, Integration Platform + Developer Ecosystem',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'Every new integration category meant building the submission flow again, by hand.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The Okta Integration Network is the catalog of third-party apps and services that plug into Okta — single sign-on, provisioning, workflow automation — and OIN submission is how an ISV gets an integration listed as supported. Getting into that catalog ran through a handful of engineers reading each submission by hand: checking a manifest against a spec that lived in three different documents, testing the integration in a sandbox, then emailing the ISV back with what to fix.',
+              'That worked when submissions were rare and reviewed by someone who had written the spec themselves. It stopped working as the catalog grew and the categories multiplied — SSO looked nothing like SCIM provisioning, which looked nothing like a workflow connector, and every category had picked up its own ad hoc review process, its own inconsistent error messages, and its own tribal knowledge about what actually passed.',
+              'The cost showed up on both sides of the review. ISVs were resubmitting the same integration [X] times on average before something passed, most of it for problems a machine could have caught in seconds. The review team was the bottleneck for every category at once, which meant a growing catalog was making the thing meant to scale it slower, not faster.',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'What was at stake',
+            items: [
+              {
+                title: 'A stalled catalog',
+                body: 'Every quarter the submission backlog grew faster than review capacity, and a thinner catalog is a weaker story against every other identity platform courting the same partners.',
+              },
+              {
+                title: 'ISV goodwill',
+                body: 'A partner with real engineering resources elsewhere would try Okta once, hit an opaque rejection, and quietly deprioritize the integration.',
+              },
+              {
+                title: 'A team stretched flat',
+                body: 'Four categories were each maintaining their own submission tooling, so every improvement had to be built four times or not at all.',
+              },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              'The problem statement I carried into the work: OIN needed one framework that could take on a new integration category without a new team building its own submission flow from scratch — not a better version of the existing review queue.',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'Goals',
+            items: [
+              {
+                title: 'Cut the round trips',
+                body: 'Most resubmissions were for mechanically checkable problems. Catch those before a human ever opens the submission.',
+              },
+              {
+                title: 'Make it self-service',
+                body: 'An ISV should be able to tell, without asking anyone, whether their manifest is valid and where their submission stands.',
+              },
+              {
+                title: 'Build it once, extend it forever',
+                body: 'The framework had to onboard a category Okta hadn’t invented yet without a new design or engineering build.',
+              },
+              {
+                title: 'Keep the judgment calls human',
+                body: 'Security and trust review is not a rule engine. Automating the mechanical checks had to free that time, not remove it.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: "I owned the framework's model; four category teams owned what they built on it.",
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              {
+                term: 'What I owned',
+                detail:
+                  'The framework’s information model — what a manifest is, how a submission moves through states, what "valid" means before a human ever looks at it — plus the shared component set every category’s submission flow is built from, and the case for funding it as a platform investment rather than a queue-management fix.',
+              },
+              {
+                term: 'What I delegated',
+                detail:
+                  'Each integration category (SSO, provisioning, workflow, and the newest, event hooks) had its own category-specific fields and validation rules, owned by that category’s design and engineering pair. I reviewed only where a category’s needs would have forced a change to the shared model.',
+              },
+              {
+                term: 'The team',
+                detail:
+                  '[X] designers — one on the framework and shared components, one embedded with partner engineering on the manifest schema, one on the developer portal’s documentation and onboarding — plus [X] engineers and one PM.',
+              },
+              {
+                term: 'Who I reported to',
+                detail:
+                  'The Director of Design for Developer Experience, with a standing weekly alongside the partner engineering lead who owned the review pipeline’s backend.',
+              },
+              {
+                term: 'How I was measured',
+                detail:
+                  'Submissions resolved without a human touching them, time from first submission to published, and whether a new integration category could launch on the framework without a design or engineering rebuild.',
+              },
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'Stakeholders',
+            items: [
+              {
+                title: 'Partner engineering',
+                body: 'Owned the validation engine and the review pipeline’s backend. The manifest schema was a joint document — neither of us could change it unilaterally once ISVs were building against it.',
+              },
+              {
+                title: 'Developer relations',
+                body: 'Owned the public docs and the direct relationship with ISVs — my clearest signal for what was actually confusing developers, ahead of any usability session.',
+              },
+              {
+                title: 'Security & trust review',
+                body: 'The team whose judgment the automated checks existed to protect, not replace. I brought them into the model work early so "what can safely be automated" was their call, not mine.',
+              },
+              {
+                title: 'ISV partners',
+                body: 'Not in the building, but in every round of validation — real manifests from partner ISVs across all four categories tested the framework before it shipped.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: 'I argued for one extensible framework over four faster category fixes.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The fast option was in front of us: each category team fixes its own worst friction points independently. SSO ships better error messages, provisioning ships a status tracker, and everyone ships something in a quarter instead of nothing for two.',
+              'I argued against it, because that path was the one that had produced the problem in the first place — four teams solving the same underlying issue four different ways, with four different vocabularies for the same concepts. A faster version of that is still four things to maintain, and the fifth category still starts from zero.',
+              'The alternative was slower and riskier: one manifest schema, one validation engine, and one shared UI kit that every category’s submission flow is built from, with category-specific rules layered on top rather than the whole flow rebuilt underneath. That meant no category team shipped anything in the first quarter — the framework had to exist before anyone’s friction actually improved, which is a hard thing to defend in a review with four impatient teams watching each other wait.',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'Technical constraints',
+            items: [
+              {
+                title: 'No enforced schema to start from',
+                body: 'The "manifest spec" that existed was three overlapping documents, none machine-readable. The framework couldn’t validate anything until partner engineering and I agreed on one schema that was actually a contract, not a description.',
+              },
+              {
+                title: 'Live ISVs mid-submission',
+                body: 'Submissions already in flight when a category cut over couldn’t be silently invalidated — the framework had to accept both the old and new manifest shapes for a transition window.',
+              },
+              {
+                title: 'Review capacity, not headcount',
+                body: 'We couldn’t add reviewers. Whatever the framework didn’t catch automatically stayed exactly as slow as it already was.',
+              },
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'Trade-offs',
+            items: [
+              {
+                title: 'Generality over a perfect first category',
+                body: 'SSO’s flow is less tailored to SSO specifically than it could be if built for SSO alone — the cost of keeping the model honest for provisioning and workflow, which came later.',
+              },
+              {
+                title: 'A schema strict enough to validate, loose enough to extend',
+                body: 'A stricter schema catches more automatically; a looser one lets a category we haven’t invented yet fit without a schema change. We erred toward extensible and left some checks a category team wanted as manual for the first release.',
+              },
+            ],
+          },
+          {
+            kind: 'quote',
+            text: 'A framework that only works for the category you designed it against is a rebuild waiting for the next one, wearing a different name.',
+          },
+        ],
+      },
+      {
+        id: 'team',
+        nav: 'How the work got made',
+        label: 'How the work got made',
+        heading: 'An audit, a journey map, and a blueprint before a single shared component got drawn.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'We started by mapping what already existed rather than what should exist. The existing-experience audit walked every category’s submission flow, every review-team runbook, and every rejection-email template we could find, and it surfaced the same finding from three directions: nothing about the process was visible to the person waiting on it. An ISV who submitted a manifest had no way to know if it was in a queue, being reviewed, or stuck on a question nobody had asked them yet.',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/okta-oin/developer-journey.svg',
+            alt: 'Developer journey map from discovering OIN through submission, review and publishing, with friction points marked at the manifest spec and the fix-and-resubmit stage',
+            caption:
+              'The journey, mapped end to end. The two friction points — reading the spec, and the fix-and-resubmit loop — accounted for most of the time between an ISV’s first interest and a published listing.',
+            wide: true,
+          },
+          {
+            kind: 'figure',
+            src: '/images/okta-oin/service-blueprint.svg',
+            alt: 'Service blueprint of the OIN submission journey across developer actions, the portal frontstage, backstage review systems and Okta support teams',
+            caption:
+              'The same journey as a service blueprint. Laying frontstage against backstage is what made the case for the framework legible to engineering — the highlighted backstage cells had never had a system behind them, only a person.',
+            wide: true,
+          },
+          {
+            kind: 'points',
+            label: 'Design principles',
+            items: [
+              {
+                title: 'State is not optional',
+                body: 'Every submission has a visible status, everywhere it appears — console, manifest editor, docs. If an ISV has to ask what’s happening, that’s a defect in the surface, not a support ticket.',
+              },
+              {
+                title: 'Fail at the field, not at the end',
+                body: 'Validation runs against the manifest as it’s written, not as a rejection after a full review cycle. An error names the field and the fix, not just the rule that broke.',
+              },
+              {
+                title: 'One schema, no synonyms',
+                body: 'A concept has one name across every category’s docs, error copy and UI. The old system had three names for a redirect URI depending on which category’s docs you read.',
+              },
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'Engineering collaboration',
+            items: [
+              {
+                title: 'The schema was reviewed like code',
+                body: 'Manifest schema changes went through the same pull-request review as the validation engine, with partner engineering and me as required reviewers on both sides — reviewing a schema change as only an engineering decision was how the old spec drifted into three documents in the first place.',
+              },
+              {
+                title: 'Error copy was written with the rule, not after it',
+                body: 'I sat with the engineers writing validation rules so the message a rule produced was drafted alongside the rule itself, not bolted on once a category team complained the existing one was unreadable.',
+              },
+              {
+                title: 'Every category tested against real ISV manifests before launch',
+                body: 'We ran actual submissions from partner ISVs through the framework in staging before any category cut over, rather than testing against manifests we’d written ourselves to pass.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'The framework, the components it’s built from, and the portal an ISV actually uses.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The craft here is mostly structural — an information architecture and a component set an ISV moves through, not a single hero screen. What follows is what an ISV actually touches, from the manifest to the published listing.',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/okta-oin/framework-architecture.svg',
+            alt: 'Framework architecture diagram: a central submission framework connecting a manifest schema, validation engine, shared UI kit, review console, publishing pipeline and partner portal, between ISV codebases and Okta platform services',
+            caption:
+              'The framework sits between an ISV’s codebase and Okta’s platform services. One manifest schema and one validation engine behind every category, rather than a schema and an engine per category.',
+            wide: true,
+          },
+          {
+            kind: 'figure',
+            src: '/images/okta-oin/ia-map.svg',
+            alt: 'Information architecture of the OIN developer portal: the portal root branching into documentation, submission console, manifest editor, review status, component library and partner directory',
+            caption:
+              'The developer portal’s information architecture. Manifest Editor and Review Status didn’t exist as their own surfaces before this — they were email threads and a spreadsheet.',
+            ratio: '1450 / 900',
+          },
+          {
+            kind: 'points',
+            label: 'Reusable components',
+            items: [
+              {
+                title: 'Manifest editor',
+                body: 'Validates against the schema as the ISV types, with inline errors at the field. It replaced a text upload that failed silently until a human read it.',
+              },
+              {
+                title: 'Status timeline',
+                body: 'One component, shared across the console and the docs, rendering wherever a submission’s state needs to show — the same component the review team’s internal tools use, so what the ISV sees and what’s actually true can’t drift apart.',
+              },
+              {
+                title: 'Category field sets',
+                body: 'The piece that lets a new integration category plug in its own fields and validation rules without touching the shared schema or the editor itself — what made "extensible" a real property rather than a claim.',
+              },
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/placeholder-6.svg',
+            alt: 'The submission console showing manifest validation status and a review timeline',
+            caption: 'The submission console. Placeholder — real screens pending clearance.',
+          },
+          {
+            kind: 'prose',
+            text: [
+              'Every shared component meets WCAG 2.1 AA on its own — keyboard-operable end to end, validation errors announced to assistive tech at the field rather than only summarized at the top of the form, and focus management that survives an inline error appearing without a page reload. An ISV’s own engineering team includes people who rely on this, and a submission tool that fails for them is a partner Okta loses before the first review.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: 'What changed, and how we knew.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'We validated in two passes: structured usability sessions with ISV engineers working through real manifests before launch, then instrumentation on the shipped framework once the first two categories had cut over, so the before/after wasn’t only what the audit had found.',
+            ],
+          },
+          {
+            kind: 'metrics',
+            label: 'Business',
+            items: [
+              { value: '[X]%', label: 'Submissions resolved without a human review, first pass' },
+              { value: '[X]%', label: 'Time from first submission to published, down from [X]' },
+              { value: '2 of 4', label: 'Integration categories on the framework at launch; the rest followed without a rebuild' },
+            ],
+          },
+          {
+            kind: 'metrics',
+            label: 'Team and craft',
+            items: [
+              { value: '[X]', label: 'Shared components adopted across every category' },
+              { value: '[X]', label: 'ISVs whose real manifests validated the framework before launch' },
+              { value: 'AA', label: 'WCAG 2.1 conformance across the shared component set' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              'The number I’d point to first is "2 of 4, and the rest followed without a rebuild." That was the actual bet — not that the first category would be smoother, but that the third and fourth would cost nothing extra to onboard.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: "What I'd do differently",
+        label: "What I'd do differently",
+        heading: 'Two places I moved slower than the work needed.',
+        blocks: [
+          {
+            kind: 'points',
+            items: [
+              {
+                title: 'I under-invested in the schema’s documentation',
+                body: 'The schema was reviewed as carefully as code, but I treated explaining it to ISVs as a developer-relations problem instead of a design one. The manifest editor’s inline validation covered for that gap more than it should have had to — a developer reading the docs cold still hit the same confusion the audit had already found once.',
+              },
+              {
+                title: 'I let "extensible" stay abstract for too long',
+                body: 'The argument for a general framework is easiest to make with a second category already running on it, and I made the case before we had one — on the strength of the audit and the architecture alone. It was the right call in the end, but I spent more of the review cycle defending an abstraction than I would have if I’d pushed to stand up a rough second category earlier, even an ugly one, just to make the claim concrete.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    next: 'paypal-unified-card-system',
+  },
+
+  // ==========================================================
+  // PayPal's Consumer Financial Services group ran the Unified Card System
+  // as one initiative split across several streams — consumer and merchant
+  // cards, web and mobile, several card products. A collaborator on a
+  // different stream (the mobile PP Cash Card servicing UI — lock card,
+  // copy card number, settings IA) has published his own case study of
+  // the same initiative. That page is NOT a source for what appears below:
+  // his role, team, dates and metrics are his own and do not transfer here.
+  // The situation section states only what is true of the shared company
+  // context (public, factual, not his creative work). Everything specific
+  // to Anupama's own stream — which card/platform, her exact scope, the
+  // call she made, the numbers — is bracketed and waiting on her, same
+  // convention as `paypal-data-access` below. Do not fill these from the
+  // collaborator's page.
+  //
+  // Promoted out of the archive tier into the seven-case main loop — it
+  // renders as a full tile on /work, but `showOnHome: false` in work.ts
+  // keeps it off the home page until it's more than a skeleton.
+  // ==========================================================
+  {
+    slug: 'paypal-unified-card-system',
+    company: 'PayPal',
+    theme: 'clay',
+    eyebrow: 'PayPal · Consumer Financial Services · [20XX–20XX]',
+    title: 'Unifying card management across a fractured product line',
+    hero: {
+      src: '/images/placeholder-7.svg',
+      alt: '[The unified card management surface, once real screens are cleared]',
+    },
+    description:
+      'PayPal Unified Card System: one workstream inside a larger effort to bring PayPal’s card products — consumer and merchant, web and mobile — under a single, consistent management experience.',
+    meta: [
+      { label: 'Scope', value: '[Which card product(s) and platform — confirm]' },
+      { label: 'Partners', value: '[Product, content design, research, engineering]' },
+      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+    ],
+    role: '[Product Designer — confirm title and stream]',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'PayPal’s card products had grown up in isolation, and it showed.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'PayPal’s Consumer Financial Services group builds toward financial access for people underbanking has left out — products like the PayPal Cash Card, a debit card for customers without a traditional bank account, sit at the center of that mission. Trust and clarity in how a card is managed matter more for this group than for a customer with other options.',
+              'The card products themselves had not grown up together. Consumer and merchant accounts, web and mobile, and several card types had each picked up their own patterns for how a customer views, manages and services a card — inconsistent interfaces, duplicated work across teams, and a rising maintenance cost for every one of them. Unifying that servicing experience became a company-wide initiative, run as several parallel streams rather than one team’s single project.',
+              '[Two or three sentences on Anupama’s own stream specifically: which card product(s), which platform, and what made that piece of the fragmentation worth fixing on its own terms.]',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'What was at stake',
+            items: [
+              { title: '[Consistency]', body: '[What broke, specifically, on the stream she owned — not the initiative in general.]' },
+              { title: '[Cost]', body: '[Duplicated engineering work, support volume, or something else her stream carried.]' },
+              { title: '[Trust]', body: '[If her stream also touched the underbanked-customer trust question, say how.]' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: '[To be written.]',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              {
+                term: 'What I owned',
+                detail:
+                  '[Which card product(s), which platform (web, mobile, or both), and end-to-end or a slice of it.]',
+              },
+              {
+                term: 'Where the streams met',
+                detail:
+                  '[This initiative ran as several workstreams in parallel — where did hers share a foundation (research, IA, component patterns) with the others, and where did it diverge? Naming this precisely is what keeps the case honest about scope.]',
+              },
+              {
+                term: 'Who I worked with',
+                detail: '[Product, content design, research, and the engineering counterpart on her stream.]',
+              },
+              {
+                term: 'How I was measured',
+                detail: '[Whichever was actually the measure for her stream — task time, adoption, support volume, something else.]',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: '[The tradeoff, stated as a sentence.]',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              '[This section cannot be written from a collaborator’s published case study of a different stream — it needs to be Anupama’s own call, on her own piece of the initiative. The shape it wants: the option that looked easiest, why she argued against or for it, what it cost, and what the room actually decided.]',
+              '[A likely candidate given the initiative’s shape: how much of the shared pattern (IA, components) her stream adopted as-is versus adapted for its own card product or platform, and what that cost in either consistency or fit. If the real tradeoff was something else entirely, replace this.]',
+            ],
+          },
+          {
+            kind: 'quote',
+            text: '[One sentence she actually said in a room, or would stand behind saying.]',
+          },
+        ],
+      },
+      {
+        id: 'team',
+        nav: 'How the work got made',
+        label: 'How the work got made',
+        heading: '[What she built into the process, not just the screens.]',
+        blocks: [
+          {
+            kind: 'points',
+            items: [
+              { title: '[Research method]', body: '[Card sorting, usability testing, interviews — whichever her stream actually ran, and what it found.]' },
+              { title: '[Cross-stream coordination]', body: '[How her stream stayed aligned with the others working the same initiative, without becoming the same project.]' },
+              { title: '[A practice she introduced]', body: '[A review, a rule, a way decisions got recorded.]' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: '[What the redesigned surface actually does.]',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              '[Two or three sentences on the design problem her specific card product or platform posed, and the shape of the answer.]',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/placeholder-7.svg',
+            alt: '[The card management surface she designed]',
+            caption: '[What this screen is, and the one decision it exists to support. Placeholder — replace once real work is cleared.]',
+            wide: true,
+          },
+          {
+            kind: 'points',
+            items: [
+              { title: '[Principle one]', body: '[A specific call in the interface, and the observed behaviour behind it.]' },
+              { title: '[Principle two]', body: '[Another.]' },
+              { title: '[Principle three]', body: '[Another.]' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: '[The outcome, in one line.]',
+        blocks: [
+          {
+            kind: 'metrics',
+            label: 'Business',
+            items: [
+              { value: '[X]%', label: '[The measure her stream was judged on]' },
+              { value: '[X]', label: '[A second number specific to her card product or platform]' },
+            ],
+          },
+          {
+            kind: 'metrics',
+            label: 'Craft and process',
+            items: [
+              { value: '[X]', label: '[Surfaces designed end to end]' },
+              { value: '[X]', label: '[Patterns shared back into the wider initiative]' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              '[Do not reuse the collaborator’s published numbers here — they describe his stream, not hers, even though both sit inside the same initiative.]',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: "What I'd do differently",
+        label: "What I'd do differently",
+        heading: '[Where she was wrong or slow.]',
+        blocks: [
+          {
+            kind: 'points',
+            items: [
+              { title: '[The first thing]', body: '[Specific and self-implicating, the same standard every other case on the site holds to.]' },
+              { title: '[The second thing]', body: '[Another.]' },
+            ],
+          },
+        ],
+      },
+    ],
     next: 'okta-iam',
   },
 
-  // ============================================================
+  // ==========================================================
   // THE ARCHIVE TIER — the nine projects that used to link off to
-  // the Wix site. Same structure as the five above, because that is
+  // the Wix site. Same structure as the cases above, because that is
   // the structure; but note two things before editing them.
   //
   // 1. THEY CHAIN AMONG THEMSELVES. `next` runs wal-e → … → mera-data
-  //    → wal-e and never crosses into the five selected cases. The two
-  //    tiers are a hierarchy and the closing band should not flatten it.
+  //    → wal-e and never crosses into the seven selected cases (the
+  //    original six, plus `paypal-unified-card-system` — promoted out
+  //    of this archive tier into that loop; see its own header comment
+  //    above okta-oin's `next` for why). The two tiers are a hierarchy
+  //    and the closing band should not flatten it.
   // 2. THE SOURCE WAS THIN, AND IT VARIES A LOT. Agreement Management
   //    arrived with real numbers (NPS 67, launch date, user count);
   //    Lender's App arrived with three sentences. Every bracket below is

@@ -5,13 +5,13 @@ import Reveal from '../components/Reveal.astro';
 
 import OneWord from '../components/OneWord.astro';
 import Mosaic from '../components/Mosaic.astro';
-import CasePreview from '../components/CasePreview.astro';
+import ProjectCard from '../components/ProjectCard.astro';
 import Marquee from '../components/Marquee.astro';
 import Testimonials from '../components/Testimonials.astro';
 
 import { site } from '../data/site';
 import { work } from '../data/work';
-import { companies, testimonials } from '../data/home';
+import { testimonials } from '../data/home';
 import { tiles } from '../data/play';
 
 // The preview shows the first six playground tiles — enough to read as a set,
@@ -24,41 +24,78 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
   <!-- ACT 1 — the editorial opening. Its own palette, "iris": cream and
        navy by day, indigo and periwinkle at night — the pairing from
        meagandurlak.com's "dreaming of radical futures" opener. Exclusive
-       to the hero; the logo strip/work-head/mosaic bands right after it
-       stay on ink, unchanged in either mode. -->
+       to the hero; the work-head/mosaic bands right after it stay on ink,
+       unchanged in either mode. -->
   <Section theme="iris" class="hero">
     <Reveal delay={120}>
       <h1 class="u-display hero__line">
         Designing<br />products<br />people<br />trust<span class="hero__dot">.</span>
       </h1>
     </Reveal>
-    <Reveal delay={260}>
-      <p class="u-measure hero__body">
-        Staff Product Designer
-10+ years · Okta · PayPal · Walmart Labs
+  </Section>
+
+  <!-- Intro paragraph — the fuller bio, in prose, right under the headline.
+       Stays on iris: it's still the opening act, just the second beat of it,
+       before the palette switches to ink for the work section. -->
+  <Section theme="iris" class="intro">
+    <Reveal>
+      <p class="u-measure intro__body">
+        I'm a Staff Product Designer with 10+ years of experience designing
+        products across fintech, platform, identity, and enterprise software.
+        At Okta, I led strategic platform initiatives within Identity &amp;
+        Access Management. At PayPal, I shaped global privacy and digital
+        identity experiences. Previously, I designed products 0-1 at Walmart Labs
+        and Deloitte Digital.
+      </p>
+    </Reveal>
+    <Reveal delay={100}>
+      <p class="intro__links">
+        <a class="intro__resume u-label" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
+        <a class="intro__linkedin" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
       </p>
     </Reveal>
   </Section>
 
-  <!-- The logo strip. Directly under the hero on purpose: a recruiter
-       skimming for 60 seconds gets the names before anything else. -->
-  <Section theme="ink" full class="logos-section">
-    <div class="u-shell logos__head">
-      <h2 class="u-label">Where I've worked</h2>
-    </div>
-    <Marquee items={companies} kind="logo" seconds={18} label="Companies I've worked at" />
-  </Section>
-
-  <!-- ACT 2 — selected work, one project per full-bleed band.
-       Five bands: the three finished case studies in the chapter hues, then
-       the two newer ones in the editorial grounds. The palette shift is the
-       hierarchy — see the note in data/work.ts. -->
+  <!-- ACT 2 — selected work, one ProjectCard per project, stacked full-width
+       on a shared ink ground. Filtered to `showOnHome !== false` — /work
+       carries the full seven, but a skeleton case (unconfirmed role, scope,
+       metrics) doesn't get to represent the portfolio on the first thing a
+       recruiter sees. -->
 <Section theme="ink" full id="work" class="workhead-section">
   <div class="u-shell workhead">
     <h2 class="u-label">Selected work</h2>
   </div>
 </Section>
-{work.map((w, i) => <CasePreview {...w} flip={i % 2 === 1} />)}
+<Section theme="ink" class="worklist">
+  {work.filter((w) => w.showOnHome !== false).map((w) => (
+    <ProjectCard
+      company={w.company}
+      title={w.title}
+      tagline={w.tagline}
+      href={w.href}
+      theme={w.theme}
+      hoverState={w.hoverState}
+      image={'video' in w ? undefined : w.image}
+      alt={w.alt}
+      ratio={w.device === 'phone' ? '3 / 4' : '16 / 10'}
+    >
+      {'video' in w && w.video && (
+        <video
+          slot="hero"
+          poster={w.video.poster}
+          aria-label={w.video.alt}
+          muted
+          loop
+          playsinline
+          autoplay
+        >
+          <source src={w.video.webm} type="video/webm" />
+          <source src={w.video.mp4} type="video/mp4" />
+        </video>
+      )}
+    </ProjectCard>
+  ))}
+</Section>
 
   <!-- ACT 3 — palette flips, the interactive moment -->
   <Section theme="sand" id="approach">
@@ -129,12 +166,42 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
 </Base>
 
 <style>
-  .hero { min-height: 92svh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
-  /* The five lines are broken by hand. The measure is set to roughly the
+  /* :global — `class="hero"` is forwarded as a prop into <Section>, so it
+     lands on an element in Section.astro's own scope, not this page's. An
+     unscoped rule here silently never matches (CLAUDE.md's own documented
+     gotcha); without :global() the hero never gets its centring. */
+  :global(.hero) { min-height: 92svh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
+  /* The four lines are broken by hand. The measure is set to roughly the
      longest of them so a narrow screen re-wraps close to the same shape
      instead of fighting the <br>s. */
   .hero__line { max-width: 20ch; }
-  .hero__body { color: var(--fg-dim); font-size: var(--step-h3); }
+
+  /* The bio paragraph after the hero. Tighter than the section default —
+     it's a second beat of the opening act, not a new one, so it shouldn't
+     push the logo strip a full --space-section further down the page. */
+  :global(.intro) { padding-block: 0 clamp(2.5rem, 6vw, 4.5rem); }
+  .intro__body { color: var(--fg-dim); font-size: var(--step-body); }
+
+  .intro__links { display: flex; align-items: center; gap: 1.5rem; padding-top: 1.5rem; margin: 0; }
+  /* The pill — same border-not-fill treatment as .lede__cta on the case
+     study pages, so a control on this page reads as the same control
+     everywhere else on the site. */
+  .intro__resume {
+    display: inline-block;
+    color: var(--fg);
+    text-decoration: none;
+    border: 1px solid var(--fg-dim);
+    border-radius: 999px;
+    padding: 0.65rem 1.15rem;
+    transition: background var(--dur-hover) var(--ease-out),
+                border-color var(--dur-hover) var(--ease-out);
+  }
+  .intro__resume:hover { background: var(--screen); border-color: var(--fg-dim); }
+  .intro__linkedin {
+    color: var(--fg);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+  }
 
   /* The full stop blinks like a terminal caret — steps(), not a fade, so it
      snaps rather than pulses. It stays inside the sentence rather than being
@@ -159,12 +226,6 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
 
   .contact__links { display: flex; gap: 1.5rem; padding-top: 1rem; }
   .contact__links a { color: var(--fg); }
-  
-  /* The strip's head sits tight to the row it labels, and the band itself
-     is short — it's a credential, not an act. :global on the band, since
-     the class rides on Section and doesn't carry this page's scope. */
-  :global(.logos-section) { padding-block: clamp(2.5rem, 6vw, 4.5rem); }
-  .logos__head { padding-bottom: clamp(1rem, 2vw, 1.5rem); }
 
   .playpeek__head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: clamp(1rem, 2vw, 1.5rem); }
   .playpeek__link {
@@ -177,12 +238,16 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
   .workhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: clamp(1rem, 2vw, 1.5rem); }
   .workhead__count { font-family: var(--font-accent); font-style: italic; font-size: var(--step-h3); color: var(--fg-dim); margin: 0; }
 
-  /* The "Selected work" label owns the band right below it, so that pair closes
-     up: no section padding underneath, and the first band drops its own top
-     padding plus the 88svh centring slack that floated it a screen away.
-     Later bands keep both. :global — these two elements are rendered by
-     Section.astro / CasePreview.astro, so they don't carry this page's scope. */
+  /* The "Selected work" label owns the list right below it, so that pair
+     closes up: no section padding underneath, and the list drops its own
+     top padding to match. :global — both are rendered by Section.astro,
+     so they don't carry this page's scope. */
   :global(.workhead-section) { padding-bottom: 0; }
-  :global(.workhead-section + .band) { padding-top: var(--space-band-tight); min-height: auto; }
+  :global(.workhead-section + .worklist) { padding-top: var(--space-band-tight); }
 
+  .worklist {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3rem, 6vw, 5rem);
+  }
 </style>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 656" role="img" aria-label="Framework architecture diagram: a central submission framework connecting a manifest schema, validation engine, shared UI kit, review console, publishing pipeline and partner portal, between ISV codebases and Okta platform services">
+  <rect width="1400" height="656" fill="#f4ece1"/>
+  <text x="30" y="40" font-family="system-ui" font-size="16" font-weight="700" letter-spacing="3" fill="#17120f">FRAMEWORK ARCHITECTURE</text>
+
+  <!-- connecting lines, drawn first so boxes sit on top -->
+  <g stroke="#ddd2c3" stroke-width="2.5">
+    <line x1="145" y1="328" x2="340" y2="328"/>
+    <line x1="530" y1="150" x2="700" y2="290"/>
+    <line x1="870" y1="150" x2="700" y2="290"/>
+    <line x1="340" y1="328" x2="570" y2="328"/>
+    <line x1="1060" y1="328" x2="830" y2="328"/>
+    <line x1="530" y1="506" x2="700" y2="366"/>
+    <line x1="870" y1="506" x2="700" y2="366"/>
+    <line x1="1280" y1="328" x2="1245" y2="328"/>
+    <line x1="530" y1="506" x2="1245" y2="345"/>
+  </g>
+
+  <!-- outer anchor: ISV codebases -->
+  <rect x="15" y="298" width="130" height="60" rx="2" fill="none" stroke="#a2968a" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="80" y="323" font-family="system-ui" font-size="12" fill="#5d534a" text-anchor="middle">ISV</text>
+  <text x="80" y="339" font-family="system-ui" font-size="12" fill="#5d534a" text-anchor="middle">codebases</text>
+
+  <!-- outer anchor: Okta platform services -->
+  <rect x="1245" y="298" width="150" height="60" rx="2" fill="none" stroke="#a2968a" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="1320" y="323" font-family="system-ui" font-size="12" fill="#5d534a" text-anchor="middle">Okta platform</text>
+  <text x="1320" y="339" font-family="system-ui" font-size="12" fill="#5d534a" text-anchor="middle">services</text>
+
+  <!-- modules -->
+  <g font-family="system-ui" font-size="14" font-weight="600" fill="#17120f" text-anchor="middle">
+    <rect x="310" y="110" width="220" height="80" rx="2" fill="#f4ece1" stroke="#17120f" stroke-width="1.5"/>
+    <text x="420" y="155">Manifest schema</text>
+
+    <rect x="870" y="110" width="220" height="80" rx="2" fill="#f4ece1" stroke="#17120f" stroke-width="1.5"/>
+    <text x="980" y="155">Validation engine</text>
+
+    <rect x="120" y="288" width="220" height="80" rx="2" fill="#f4ece1" stroke="#17120f" stroke-width="1.5"/>
+    <text x="230" y="333">Shared UI kit</text>
+
+    <rect x="1060" y="288" width="220" height="80" rx="2" fill="#f4ece1" stroke="#17120f" stroke-width="1.5"/>
+    <text x="1170" y="333">Review console</text>
+
+    <rect x="310" y="466" width="220" height="80" rx="2" fill="#f4ece1" stroke="#17120f" stroke-width="1.5"/>
+    <text x="420" y="511">Publishing pipeline</text>
+
+    <rect x="870" y="466" width="220" height="80" rx="2" fill="#f4ece1" stroke="#17120f" stroke-width="1.5"/>
+    <text x="980" y="511">Partner portal</text>
+  </g>
+
+  <!-- hub -->
+  <rect x="570" y="273" width="260" height="110" rx="2" fill="#17120f"/>
+  <text x="700" y="322" font-family="system-ui" font-size="16" font-weight="700" fill="#f4ece1" text-anchor="middle">Submission</text>
+  <text x="700" y="346" font-family="system-ui" font-size="16" font-weight="700" fill="#f4ece1" text-anchor="middle">framework</text>
+
+  <text x="700" y="625" font-family="system-ui" font-size="12" fill="#5d534a" text-anchor="middle">one manifest schema and one validation engine behind every category — SSO, provisioning, workflow — instead of one build per category</text>
+</svg>

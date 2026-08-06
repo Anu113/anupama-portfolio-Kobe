@@ -54,6 +54,21 @@ const openSections = study.sections.slice(0, previewCount);
 const gatedSections = study.sections.slice(previewCount);
 const gateId = `${study.slug}-gate-content`;
 const pageId = `${study.slug}-page-content`;
+
+/* PROTOTYPE — scoped to one case study for review (blingbling.studio/
+   work/alfafrens's visual structure: sidebar meta beside the intro,
+   numbered section headers, a top impact band). Once approved, drop the
+   slug check so every case gets it. Content order is untouched — CLAUDE.md
+   rule 3 governs that, not this. */
+const useRefLayout = study.slug === 'paypal-privacy';
+/* The top-of-page impact band — pulled from the case's own Impact section
+   rather than authored twice. Only reads from `openSections`: if a case
+   partially gates its sections and Impact lands behind the gate, this stays
+   silent instead of leaking gated numbers above the lock. */
+const impactSection = openSections.find((s) => s.id === 'impact');
+const topImpact = useRefLayout
+  ? impactSection?.blocks.find((b) => b.kind === 'metrics')
+  : undefined;
 ---
 <Base title={`${study.title} — ${study.company} — Anupama Mishra`} description={study.description}>
   {fullyLocked && (
@@ -91,25 +106,58 @@ const pageId = `${study.slug}-page-content`;
         <Reveal>
           <p class="u-label hero__eyebrow">{study.eyebrow}</p>
         </Reveal>
-        {/* Title and the lede paragraph share column 1 so they read as one
-            column; the optional CTA sits beside the lede, on its row. Role
-            no longer lives here — it's a meta-row cell below, alongside
-            Timeline/Team/Partners, the way the reference sets it.
+        {useRefLayout ? (
+          /* PROTOTYPE banner — blingbling.studio/work/alfafrens: title and
+             intro on the left, Role/Team/Partners/Timeline stacked as a
+             sidebar on the right instead of a row under the image. ONE
+             Reveal for the same reason as the row version below: Reveal
+             emits a wrapper div, and a Reveal per grid item would make the
+             wrappers the grid cells instead of the content. */
+          <Reveal delay={100}>
+            <div class="banner">
+              <div class:list={['lede', !study.live && 'lede--nocta']}>
+                <h1 class="hero__title">{study.title}</h1>
+                <p class="lede__text">{study.description}</p>
+                {study.live && (
+                  <a class="lede__cta u-label" href={study.live.href}
+                     target="_blank" rel="noopener noreferrer">{study.live.label}</a>
+                )}
+              </div>
+              <dl class="meta meta--sidebar">
+                <div class="meta__cell">
+                  <dt class="u-label meta__label">Role</dt>
+                  <dd class="meta__value">{study.role}</dd>
+                </div>
+                {study.meta.map((m) => (
+                  <div class="meta__cell">
+                    <dt class="u-label meta__label">{m.label}</dt>
+                    <dd class="meta__value">{m.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </Reveal>
+        ) : (
+          /* Title and the lede paragraph share column 1 so they read as one
+              column; the optional CTA sits beside the lede, on its row. Role
+              no longer lives here — it's a meta-row cell below, alongside
+              Timeline/Team/Partners, the way the reference sets it.
 
-            ONE Reveal wraps title+lede+cta on purpose: Reveal emits a
-            wrapper div, so a Reveal per element would make those wrappers
-            the grid items instead of the h1/p/a, and the columns would
-            collapse. */}
-        <Reveal delay={100}>
-          <div class:list={['lede', !study.live && 'lede--nocta']}>
-            <h1 class="hero__title">{study.title}</h1>
-            <p class="lede__text">{study.description}</p>
-            {study.live && (
-              <a class="lede__cta u-label" href={study.live.href}
-                 target="_blank" rel="noopener noreferrer">{study.live.label}</a>
-            )}
-          </div>
-        </Reveal>
+              ONE Reveal wraps title+lede+cta on purpose: Reveal emits a
+              wrapper div, so a Reveal per element would make those wrappers
+              the grid items instead of the h1/p/a, and the columns would
+              collapse. */
+          <Reveal delay={100}>
+            <div class:list={['lede', !study.live && 'lede--nocta']}>
+              <h1 class="hero__title">{study.title}</h1>
+              <p class="lede__text">{study.description}</p>
+              {study.live && (
+                <a class="lede__cta u-label" href={study.live.href}
+                   target="_blank" rel="noopener noreferrer">{study.live.label}</a>
+              )}
+            </div>
+          </Reveal>
+        )}
         <Reveal delay={240}>
           <div class="hero__frame">
             <img src={study.hero.src} alt={study.hero.alt} decoding="async" />
@@ -120,26 +168,60 @@ const pageId = `${study.slug}-page-content`;
             reference's Role / Timeline / Team / Skills line under the
             image. Role stays a separate field on `study` rather than
             folding back into `meta` — nothing else about it changed, only
-            where it renders. */}
-        <Reveal delay={260}>
-          <dl class="meta">
-            <div class="meta__cell">
-              <dt class="u-label meta__label">Role</dt>
-              <dd class="meta__value">{study.role}</dd>
-            </div>
-            {study.meta.map((m) => (
+            where it renders. Skipped under the prototype layout — Role and
+            the rest already sit in the banner sidebar above. */}
+        {!useRefLayout && (
+          <Reveal delay={260}>
+            <dl class="meta">
               <div class="meta__cell">
-                <dt class="u-label meta__label">{m.label}</dt>
-                <dd class="meta__value">{m.value}</dd>
+                <dt class="u-label meta__label">Role</dt>
+                <dd class="meta__value">{study.role}</dd>
               </div>
-            ))}
-          </dl>
-        </Reveal>
+              {study.meta.map((m) => (
+                <div class="meta__cell">
+                  <dt class="u-label meta__label">{m.label}</dt>
+                  <dd class="meta__value">{m.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+        )}
 
-        {openSections.map((s) => (
+        {/* Top impact band — duplicates the case's headline numbers up
+            here for the 60-second skim, same rationale as Role/Team living
+            in the meta row above rather than only in the scope section.
+            The full Impact section still runs in its rule-3 position near
+            the end; this is a summary, not a replacement. */}
+        {topImpact && (
+          <Reveal delay={280}>
+            <div class="impact-band">
+              <p class="u-label impact-band__label">Impact</p>
+              <dl class="impact-band__stats" style={`--cols: ${Math.min(topImpact.items.length, 4)};`}>
+                {topImpact.items.map((it) => (
+                  <div class="impact-band__stat">
+                    <dt class="impact-band__value">{it.value}</dt>
+                    <dd class="impact-band__desc">{it.label}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </Reveal>
+        )}
+
+        {openSections.map((s, i) => (
           <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
             <Reveal>
-              <p class="u-label cs__label">{s.label}</p>
+              {/* Numbered eyebrow — blingbling.studio's "01 / MY ROLE"
+                  treatment. Number is decorative (aria-hidden); the label
+                  underneath still reads as the section name to a screen
+                  reader. Content order is the untouched rule-3 order —
+                  this only changes how each heading is dressed. */}
+              <p class:list={['u-label cs__label', useRefLayout && 'cs__label--numbered']}>
+                {useRefLayout && (
+                  <span class="cs__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                )}
+                {s.label}
+              </p>
               <h2 class="cs__head" id={`${s.id}-h`}>{s.heading}</h2>
             </Reveal>
             <div class="cs__blocks">
@@ -293,7 +375,15 @@ const pageId = `${study.slug}-page-content`;
      the image above and the whitespace here already separate it from what
      comes next; a rule on top of that read as one line too many. */
   .meta {
-    margin: 2.5rem 0 0;
+    /* Bottom margin carries the gap to the first section itself, rather
+       than a `.meta + .cs` sibling rule — Reveal wraps `.meta` in its own
+       div (see Reveal.astro), so `.cs` is a sibling of THAT wrapper, never
+       of `.meta`. A `.meta + .cs` selector compiles fine and matches
+       nothing: the first section sat flush against the meta row with a
+       literal 0px gap, confirmed by direct measurement, until this changed.
+       `.impact-band` already dodges the same trap by giving itself margin
+       on both sides instead of leaning on a sibling combinator. */
+    margin: 2.5rem 0 var(--space-case);
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1.75rem var(--gutter);
@@ -301,6 +391,57 @@ const pageId = `${study.slug}-page-content`;
   .meta__cell { min-width: 0; }
   .meta__label { margin: 0 0 0.5rem; }
   .meta__value { margin: 0; font-weight: 500; text-wrap: pretty; }
+
+  /* --- PROTOTYPE banner: sidebar meta -----------------------------------
+     blingbling.studio/work/alfafrens puts Role/Team/Partners/Timeline in a
+     narrow right-hand column beside the title and intro, instead of a row
+     under the image. `.lede` inside `.banner` keeps its own two-column
+     [title+description | CTA] shape; `.banner` just adds the sidebar as a
+     third track alongside it. */
+  .banner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16rem;
+    column-gap: var(--gutter);
+    align-items: start;
+  }
+  .banner .lede { margin-top: 0; }
+  .meta--sidebar {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  /* --- Top impact band -------------------------------------------------
+     Same visual vocabulary as CaseBlocks' own `.metrics` block (hard-edged
+     rule dividers, not cards — tokens.css sets --radius: 0px on purpose),
+     duplicated here rather than imported because this is the hero's own
+     summary, not one of the section's blocks. */
+  .impact-band {
+    margin-block: var(--space-case);
+  }
+  .impact-band__label { margin: 0 0 1.5rem; }
+  .impact-band__stats {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+    gap: 2rem var(--gutter);
+  }
+  .impact-band__stat { border-top: 1px solid var(--rule); padding-top: 1rem; }
+  .impact-band__value {
+    font-family: var(--font-display);
+    font-size: var(--step-h1);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    line-height: 1;
+  }
+  .impact-band__desc {
+    margin: 0.75rem 0 0;
+    color: var(--fg-dim);
+    font-size: var(--step-small);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
 
   /* --- Body: rail + content ------------------------------------------ */
   .body {
@@ -318,11 +459,18 @@ const pageId = `${study.slug}-page-content`;
     scroll-margin-top: calc(var(--nav-h) + 1rem);
   }
   .cs + .cs { margin-block-start: var(--space-case); }
-  /* The first section used to open a fresh Section band with its own top
-     padding; now it follows the meta row directly in the same column, so
-     it needs that gap stated explicitly instead of inheriting it. */
-  .meta + .cs { margin-block-start: var(--space-case); }
   .cs__label { margin: 0 0 0.85rem; }
+  /* PROTOTYPE numbering — blingbling.studio's "01 / MY ROLE" eyebrow.
+     Stacked above the label rather than inline: the reference sets the
+     number on its own line, larger and bolder than the label under it. */
+  .cs__label--numbered { display: flex; flex-direction: column; gap: 0.5rem; }
+  .cs__num {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    font-weight: 500;
+    letter-spacing: var(--tracking-display);
+    color: var(--fg-dim);
+  }
   .cs__head {
     font-family: var(--font-display);
     font-size: var(--step-h2);
@@ -355,6 +503,8 @@ const pageId = `${study.slug}-page-content`;
     align-items: baseline;
     gap: 0.5rem;
     text-decoration: none;
+    /* Its own pill is the cursor here too — see CaseCard.astro's note. */
+    cursor: none;
     color: var(--fg);
     margin-top: 0.75rem;
     max-width: 28ch;
@@ -367,11 +517,14 @@ const pageId = `${study.slug}-page-content`;
   .next__lock { flex: 0 0 auto; }
 
   /* The hover cue: a pill that follows the cursor instead of an underline —
-     see the header comment by the markup. Positioned by the script below,
-     which writes --peek-x/--peek-y in pixels local to .next; this only
-     supplies the offset that centres the pill ON that point rather than
-     tucking its corner under it. Hidden until the script has a position to
-     give it, so it never flashes at (0,0) before the first pointermove. */
+     see the header comment by the markup. This is the style HoverLabel.astro
+     now reuses on every project card too, so the site has one cursor-follow
+     pill instead of two different treatments. Positioned by the script
+     below, which writes --peek-x/--peek-y in pixels local to .next; this
+     only supplies the offset that centres the pill ON that point rather
+     than tucking its corner under it. Hidden until the script has a
+     position to give it, so it never flashes at (0,0) before the first
+     pointermove. */
   .next__peek {
     position: absolute;
     left: 0;
@@ -380,8 +533,10 @@ const pageId = `${study.slug}-page-content`;
     transform: translate(calc(var(--peek-x, 0px) - 50%), calc(var(--peek-y, 0px) - 50%));
     background: var(--fg);
     color: var(--bg);
+    font-size: var(--step-pill);
+    font-weight: 600;
     white-space: nowrap;
-    padding: 0.55rem 1.1rem;
+    padding: 0.4rem 0.85rem;
     border-radius: 999px;
     opacity: 0;
     pointer-events: none;
@@ -405,8 +560,16 @@ const pageId = `${study.slug}-page-content`;
        need to clear both. */
     .cs { scroll-margin-top: calc(var(--nav-h) + 5rem); }
   }
+  @media (max-width: 960px) {
+    /* The 16rem sidebar gets cramped against the title before the lede's
+       own CTA breakpoint kicks in — stack it above the intro instead. */
+    .banner { grid-template-columns: 1fr; row-gap: 2rem; }
+    .meta--sidebar { flex-direction: row; flex-wrap: wrap; gap: 1.75rem var(--gutter); }
+    .meta--sidebar .meta__cell { flex: 1 1 10rem; }
+  }
   @media (max-width: 820px) {
     .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .impact-band__stats { grid-template-columns: 1fr; }
     /* A 16/7 letterbox is too thin to read on a phone. */
     .hero__frame { aspect-ratio: 16 / 10; }
     /* A CTA beside the description gets cramped at this width — stack it

@@ -45,7 +45,63 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
       <LockIcon size="0.8em" />
       Locked
     </p>
-    <h1 class="locked__head">This case study needs a password to open.</h1>
+    <!-- impeccable-variants-start 01ec264d -->
+    <div data-impeccable-variants="01ec264d" data-impeccable-variant-count="3" style="display: contents">
+      <!-- Original -->
+      <div data-impeccable-variant="original">
+        <h1 class="locked__head">This case study needs a password to open.</h1>
+      </div>
+      <style is:inline data-impeccable-css="01ec264d">
+        /* Variant 1 — rhythm: the eyebrow above sits 1.25rem off the
+           headline while the headline itself only left 1.5rem before the
+           body below it — barely distinguishable, so the block reads flat
+           rather than as "eyebrow, then headline, then body." Opening the
+           line-height a touch and widening the gap below restores more
+           space above the body than above the headline, matching the
+           craft floor's own rhythm rule. */
+        [data-impeccable-variant="1"] .locked__head {
+          line-height: 1.1;
+          margin: 0 0 1.85rem;
+        }
+        /* Variant 2 — hierarchy: two clauses, two weights. "This case
+           study" is context; "needs a password to open." is the actual
+           instruction. Splitting them onto the fg/fg-dim pair already used
+           for exactly this contextual-vs-primary distinction elsewhere on
+           the site (hero__body, sand__body) reads the instruction first
+           without adding a new colour or a shadow. */
+        [data-impeccable-variant="2"] .locked__head-quiet {
+          color: var(--fg-dim);
+          font-weight: 500;
+        }
+        [data-impeccable-variant="2"] .locked__head-strong {
+          color: var(--fg);
+          font-weight: 600;
+        }
+        /* Variant 3 — micro-details: at 6rem the shared -0.035em display
+           tracking sits open; -0.025em (still inside the -0.02..-0.03em
+           the craft floor calls out as usually reading better) closes it
+           slightly for this one headline without touching the global
+           token every other display use shares. text-wrap: pretty trades
+           balance's even line lengths for a plainer rag now that the
+           tighter tracking shifts where the line naturally breaks. */
+        [data-impeccable-variant="3"] .locked__head {
+          letter-spacing: -0.025em;
+          line-height: 0.98;
+          text-wrap: pretty;
+        }
+      </style>
+      <!-- Variants: insert below this line -->
+      <div data-impeccable-variant="1" style="display: none">
+        <h1 class="locked__head">This case study needs a password to open.</h1>
+      </div>
+      <div data-impeccable-variant="2" style="display: none">
+        <h1 class="locked__head"><span class="locked__head-quiet">This case study</span> <span class="locked__head-strong">needs a password to open.</span></h1>
+      </div>
+      <div data-impeccable-variant="3" style="display: none">
+        <h1 class="locked__head">This case study needs a password to open.</h1>
+      </div>
+    </div>
+    <!-- impeccable-variants-end 01ec264d -->
     <p class="locked__body">
       How it got made, the craft and the numbers sit behind it — same reason
       as the rest of what's under NDA: I'd rather walk you through the

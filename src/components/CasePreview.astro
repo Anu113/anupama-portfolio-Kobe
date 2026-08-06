@@ -1,13 +1,28 @@
 ---
 /* CasePreview.astro — one project as a full-bleed band on the home page.
-   Replaces the DragRail + CaseCard row in ACT 2. Each band carries its own
-   palette via the `theme` prop (same [data-theme] mechanism as Section.astro),
-   so each project owns a hue as you scroll — coral, lilac, sage — the way
-   the reference gives each chapter its own ground. `data-themeband` puts the
-   band in the set the nav watches, so the nav recolours over it too; without
-   it the nav keeps the previous band's colours and can drop below AA.
+   The home page is a trailer, not the case study: the visual leads, the copy
+   is a single line, and everything that isn't essential to "should I click"
+   (role, platforms, timelines) stays on the case-study page and on /work's
+   CaseCard instead. Each band carries its own palette via the `theme` prop
+   (same [data-theme] mechanism as Section.astro), so each project owns a hue
+   as you scroll — coral, lilac, sage — the way the reference gives each
+   chapter its own ground. `data-themeband` puts the band in the set the nav
+   watches, so the nav recolours over it too; without it the nav keeps the
+   previous band's colours and can drop below AA.
    `flip` puts content left, mockup right. `device` picks the frame.
-   Still by default — the band carries no scroll motion of its own.
+   Still by default — the band carries no scroll motion of its own beyond the
+   media-then-copy stagger below.
+
+   Media and copy are two separate <Reveal>s, not one wrapping the whole
+   band: the image settles in first, the text follows a beat later, so the
+   visual gets a moment alone before anyone starts reading — the whole point
+   of leading with imagery instead of a wall of text.
+
+   `mediaRatio` now also shapes the desktop frame, not just the phone: each
+   project can hold its own crop instead of every band repeating the same
+   16/10 window, which is where the between-bands rhythm mostly comes from
+   now that every band shares one column split. Omit it and the desktop
+   frame keeps 16/10.
 
    `video` is the one exception: a phone can hold a screen recording of the
    real prototype instead of a still. It came from a GIF; it is served as
@@ -18,12 +33,14 @@
      · no autoplay under prefers-reduced-motion, where it holds the poster
        until the visitor asks for it;
      · playback only while the band is on screen.
-   `mediaRatio` lets the frame take the recording's own aspect instead of the
-   default 9/19.5 — the alternative is cropping 9% off each side of a real
-   screen recording, which eats the UI. A recording also brings its own
-   status bar, so the frame drops the notch. */
+   `mediaRatio` on a phone lets the frame take the recording's own aspect
+   instead of the default 9/19.5 — the alternative is cropping 9% off each
+   side of a real screen recording, which eats the UI. A recording also
+   brings its own status bar, so the frame drops the notch. */
+import Reveal from './Reveal.astro';
+
 interface Props {
-  company: string; title: string; summary: string; role: string;
+  company: string; title: string; tagline: string;
   impact: string; href: string; image?: string; alt?: string;
   theme?: 'ink' | 'bone' | 'sand' | 'clay' | 'sage' | 'lilac' | 'coral';
   flip?: boolean; device?: 'desktop' | 'phone';
@@ -32,12 +49,12 @@ interface Props {
   video?: { mp4: string; webm?: string; poster: string; alt?: string };
   mediaRatio?: string;
 }
-const { company, title, summary, role, impact, href, image, alt = '',
+const { company, title, tagline, impact, href, image, alt = '',
         theme = 'ink', flip = false, device = 'desktop',
         video, mediaRatio } = Astro.props;
 ---
 <article class:list={['band', flip && 'band--flip']} data-theme={theme} data-themeband>
-  <div class="band__media">
+  <Reveal class="band__media" y={20}>
     {device === 'phone' ? (
       <div class:list={['phone', mediaRatio && 'phone--auto']}
            style={mediaRatio ? `--screen-ratio: ${mediaRatio};` : undefined}>
@@ -60,41 +77,67 @@ const { company, title, summary, role, impact, href, image, alt = '',
         )}
       </div>
     ) : (
-      <div class="desktop">
+      <div class="desktop" style={mediaRatio ? `--screen-ratio: ${mediaRatio};` : undefined}>
         <div class="desktop__bar"><i></i><i></i><i></i></div>
         <div class="desktop__screen">
           {image && <img src={image} alt={alt} loading="lazy" decoding="async" />}
         </div>
       </div>
     )}
-  </div>
-  <div class="band__body">
-    <h3 class="co">{company}</h3>
-    <p class="title">{title}</p>
-    <p class="sum">{summary}</p>
-    <p class="u-label role"><b>Role:</b> {role}</p>
+  </Reveal>
+  <Reveal class="band__body" delay={160} y={16}>
+    <p class="u-label eyebrow">{company}</p>
+    <h3 class="title">{title}</h3>
+    <p class="tagline">{tagline}</p>
     <p class="impact">{impact}</p>
     <a class="cta" href={href}>View case study &rarr;</a>
-  </div>
+  </Reveal>
 </article>
 
 <style>
-  .band { background: var(--bg); color: var(--fg); padding: clamp(4rem, 9vw, 8rem) var(--gutter); min-height: 88svh; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); align-items: center; }
-  .band__media { grid-column: 2 / 7; display: flex; justify-content: center; }
-  .band__body { grid-column: 8 / 12; }
-  .band--flip .band__media { grid-column: 7 / 12; grid-row: 1; }
-  .band--flip .band__body { grid-column: 2 / 6; grid-row: 1; }
+  .band { background: var(--bg); color: var(--fg); padding: clamp(6rem, 11vw, 10rem) var(--gutter); min-height: 92svh; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); align-items: center; }
 
-  .co { font-family: var(--font-display); font-size: var(--step-h1); font-weight: 600; letter-spacing: var(--tracking-display); line-height: 0.95; margin: 0 0 1.5rem; }
-  .title { font-family: var(--font-accent); font-style: italic; font-size: var(--step-h3); color: var(--fg-dim); margin: -0.75rem 0 1.75rem; }
-  .sum { margin: 0 0 2rem; max-width: 36ch; color: var(--fg-dim); text-wrap: pretty; }
-  .role { margin: 0 0 2rem; }
-  .role b { font-weight: 600; color: var(--fg); }
-  .impact { font-family: var(--font-display); font-size: var(--step-h3); font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; margin: 0; max-width: 22ch; border-top: 1px solid var(--rule); padding-top: 1.25rem; }
-  .cta { display: inline-block; margin-top: 2rem; color: var(--accent-text); font-family: var(--font-display); font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; font-weight: 600; text-decoration: none; }
+  /* Media dominates: seven of twelve tracks, sitting flush against the
+     band's own left edge. The body takes three, with a full track of air
+     on the far side — an asymmetric split reads as an editorial spread,
+     not a card with a caption. */
+  /* :global — the class is passed as a prop into <Reveal>, so it lands on
+     a div owned by Reveal.astro's own scope, not this file's (same gotcha
+     CLAUDE.md documents for a class forwarded through <Section>). Without
+     :global() these never match and the media/body stop being grid items. */
+  :global(.band__media) { grid-column: 1 / 8; display: flex; justify-content: center; }
+  :global(.band__body) { grid-column: 9 / 12; }
+  :global(.band--flip .band__media) { grid-column: 6 / 13; grid-row: 1; }
+  :global(.band--flip .band__body) { grid-column: 2 / 5; grid-row: 1; }
 
-  /* Device frames. --shell / --screen come from tokens.css (see note below). */
-  .phone { width: min(300px, 80%); aspect-ratio: 9 / 19.5; background: var(--shell); border-radius: 38px; padding: 10px; box-shadow: 0 40px 80px -40px rgba(0,0,0,0.55); }
+  /* A little vertical rhythm across an otherwise-identical column split —
+     every third band sits high instead of centred, so the row of bands
+     doesn't read as one template repeated six times. */
+  .band:nth-of-type(3n) { align-items: start; padding-block-start: clamp(8rem, 14vw, 13rem); }
+
+  .eyebrow { color: var(--fg-dim); margin: 0 0 1.25rem; }
+  .title { font-family: var(--font-display); font-size: var(--step-h2); font-weight: 600; letter-spacing: var(--tracking-tight); line-height: 1.05; margin: 0 0 1.25rem; max-width: 16ch; text-wrap: balance; }
+  .tagline { font-family: var(--font-accent); font-style: italic; font-size: var(--step-h3); color: var(--fg-dim); line-height: 1.35; margin: 0 0 2.75rem; max-width: 28ch; text-wrap: pretty; }
+  .impact { font-family: var(--font-display); font-size: var(--step-body); font-weight: 600; letter-spacing: -0.01em; line-height: 1.4; margin: 0 0 2.75rem; max-width: 26ch; border-top: 1px solid var(--rule); padding-top: 1.25rem; text-wrap: pretty; }
+  /* Same bordered-pill control as the hero's resume link — a control
+     reads as the same control everywhere it appears on the site. */
+  .cta {
+    display: inline-block;
+    color: var(--fg);
+    text-decoration: none;
+    border: 1px solid var(--fg-dim);
+    border-radius: 999px;
+    padding: 0.75rem 1.5rem;
+    font-family: var(--font-display); font-size: var(--step-label); letter-spacing: var(--tracking-label);
+    text-transform: uppercase; font-weight: 600;
+    transition: background var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+  }
+  .cta:hover { background: var(--screen); border-color: var(--fg-dim); }
+
+  /* Device frames. --shell / --screen come from tokens.css (see note below).
+     Sized up from a thumbnail to something that carries the band on its
+     own — the visual is the hero here, not a supporting illustration. */
+  .phone { width: min(360px, 90%); aspect-ratio: 9 / 19.5; background: var(--shell); border-radius: 38px; padding: 10px; box-shadow: 0 40px 80px -40px rgba(0,0,0,0.55); }
   .phone__screen { position: relative; width: 100%; height: 100%; border-radius: 29px; overflow: hidden; background: var(--screen); }
 
   /* The frame stops dictating its own height and takes the recording's,
@@ -118,23 +161,24 @@ const { company, title, summary, role, impact, href, image, alt = '',
   .desktop { width: 100%; background: var(--shell); border-radius: 10px; padding: 8px; box-shadow: 0 40px 80px -40px rgba(0,0,0,0.55); }
   .desktop__bar { height: 14px; display: flex; gap: 5px; align-items: center; padding-inline: 6px; }
   .desktop__bar i { width: 7px; height: 7px; border-radius: 50%; background: var(--rule); display: block; }
-  .desktop__screen { aspect-ratio: 16 / 10; border-radius: 5px; overflow: hidden; background: var(--screen); }
+  .desktop__screen { aspect-ratio: var(--screen-ratio, 16 / 10); border-radius: 5px; overflow: hidden; background: var(--screen); }
   .band__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
   @media (max-width: 1024px) {
-    .band__media { grid-column: 1 / 7; }
-    .band__body { grid-column: 7 / 13; }
-    .band--flip .band__media { grid-column: 7 / 13; }
-    .band--flip .band__body { grid-column: 1 / 7; }
-    .sum { max-width: 32ch; }
+    :global(.band__media) { grid-column: 1 / 8; }
+    :global(.band__body) { grid-column: 9 / 13; }
+    :global(.band--flip .band__media) { grid-column: 6 / 13; }
+    :global(.band--flip .band__body) { grid-column: 1 / 5; }
+    .band:nth-of-type(3n) { padding-block-start: clamp(6rem, 11vw, 9rem); }
   }
   @media (max-width: 760px) {
-    .band { grid-template-columns: 1fr; row-gap: 3rem; min-height: 0; padding-block: clamp(4rem, 12vw, 6rem); }
-    .band__media, .band__body,
-    .band--flip .band__media, .band--flip .band__body { grid-column: 1 / -1; grid-row: auto; }
-    .band--flip .band__media { order: -1; }
-    .sum { max-width: none; }
-    .phone { width: min(260px, 72%); }
+    .band { grid-template-columns: 1fr; row-gap: 2.5rem; min-height: 0; padding-block: clamp(4.5rem, 13vw, 7rem); }
+    .band:nth-of-type(3n) { padding-block-start: clamp(4.5rem, 13vw, 7rem); }
+    :global(.band__media), :global(.band__body),
+    :global(.band--flip .band__media), :global(.band--flip .band__body) { grid-column: 1 / -1; grid-row: auto; }
+    :global(.band--flip .band__media) { order: -1; }
+    .title, .tagline, .impact { max-width: none; }
+    .phone { width: min(280px, 78%); }
   }
 </style>
 

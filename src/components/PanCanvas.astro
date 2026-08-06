@@ -1,0 +1,464 @@
+---
+/* PanCanvas.astro — a free, two-axis pannable field.
+
+   Structure and motion follow the reference (emmiwu.com/playground, a Framer
+   site): every tile sits at an explicit position on one large "cell", and
+   the cell is tiled 2x2 so a drag, wheel or arrow key can move the field in
+   ANY direction — including diagonally — and it always wraps back onto
+   itself instead of running out. That is the one thing that sets this apart
+   from InfiniteStream.astro, the OTHER playground's field: InfiniteStream
+   deliberately keeps vertical as the document's own scroll and only pans
+   sideways, because owning a full wheel gesture means giving up native
+   scroll to whatever's below. This component takes that trade on purpose —
+   it owns the wheel outright, on both axes, so there is nothing below it to
+   scroll to (see the page: the real page content sits past a reserved
+   screen, under a higher z-index, reached by continuing to scroll or by
+   tabbing there directly).
+
+   The cell's size is a CSS value (`--cell-w`/`--cell-h` below), not a number
+   in this script — the script MEASURES the rendered cell instead of assuming
+   its size, same call as InfiniteStream's `measure()`. That is what keeps
+   the wrap seamless across breakpoints without the two ever being able to
+   drift apart.
+
+   Four copies are rendered: one real (with alt text, in reading order for a
+   screen reader) and three aria-hidden twins that must be pixel-identical to
+   it, because their only job is to be indistinguishable from it once panned
+   into view.
+
+   Drag pans on release with the same friction-based inertia InfiniteStream
+   uses, and switches off under prefers-reduced-motion for the same reason:
+   inertia is added motion, but the drag/wheel/keys that trigger it are the
+   visitor's own hand and stay live regardless.
+
+   On top of drag/wheel/keys there is a fourth, passive one: resting the
+   pointer anywhere in the field eases every card gently toward it, no press
+   needed, the way the reference keeps drifting under a still mouse. That
+   one IS added motion rather than a direct gesture, so it's the one thing
+   here that turns off under prefers-reduced-motion.
+
+   The reference also doesn't move its cards as one rigid sheet, on EITHER
+   gesture. Two different mechanisms cover the two different inputs, because
+   they have different constraints:
+
+   DRAG/WHEEL/KEYS change your actual position in the field — `panX/panY`,
+   the thing `wrap()` tracks — so cards can't be given a permanent speed
+   multiplier there (a faster card would walk out of period-alignment with
+   its own wrap-twin over a long pan). Measured on the live site: the same
+   drag moves different cards by different amounts (~15-20% apart) WHILE
+   they land back exactly period-aligned once motion stops. So it's a
+   per-card LAG behind the shared pan's VELOCITY, not its position — always
+   relaxes to (0, 0), the card's true spot, a short beat after motion stops.
+
+   HOVER never changes your position at all — nothing here is "where you
+   are," it's cosmetic depth, so a card CAN carry a permanent multiplier on
+   it with no wrap consequence. So hover is simpler: the pointer offset is
+   eased once into a single ambient value (`hoverX/Y`), and every card's
+   own depth just scales THAT directly — no lag, no velocity, no easing
+   per card. Rest the pointer off-centre and the cards sit at genuinely
+   different offsets, not just different offsets in transit.
+
+   Both share one `depth` per tile (`LAG_PRESETS`) — the same card that lags
+   more under a drag also parallaxes more under hover, one property standing
+   for "how close this card feels," not two unrelated tuning knobs.
+
+   A first pass ran the drag-lag as a driven damped SPRING per tile
+   (velocity + a restoring force). It measured fine on paper but looked
+   wrong live: a spring rings on every input, and a drag's frame-to-frame
+   delta is noisy (uneven pointermove sampling, human hand tremor), so a
+   dozen underdamped springs each ringing off their own slightly-different
+   noisy input read as a jiggle, not a depth cue. A plain exponential ease
+   toward a target CANNOT overshoot or ring — it can only approach — so
+   that's what's here now: the pan's velocity is smoothed once
+   (`smoothVX/Y`, one filter, not per-tile) into something non-noisy, each
+   tile's target is that smoothed velocity times its own `depth`, and each
+   tile eases toward its own target at its own `ease` rate. Cards still
+   diverge — a slow-easing card can still be catching up to where a fast
+   one already is, including a moment where they're headed opposite ways
+   after the target's sign flips — just without any card overshooting its
+   own target and springing back past it. All four copies of a given tile
+   share one target/ease (drag) and the one shared `hoverX/Y` (hover), so a
+   seam never shows two copies of the same card sitting at different
+   offsets. Both off under prefers-reduced-motion. */
+interface Tile {
+  label: string; description: string; tint: string;
+  left: number; top: number; width: number; aspect: string;
+}
+interface Props {
+  tiles: Tile[];
+  label?: string;
+}
+const {
+  tiles,
+  label = 'An endless field of sketches — drag, scroll or use the arrow keys to pan',
+} = Astro.props;
+---
+<div class="pancanvas" data-pancanvas tabindex="0" role="region" aria-label={label}>
+  <div class="pancanvas__world" data-world>
+    <div class="pancanvas__grid">
+      {[0, 1].map((cy) => [0, 1].map((cx) => {
+        const real = cx === 0 && cy === 0;
+        return (
+          <div class="pancanvas__cell" data-cell aria-hidden={real ? undefined : 'true'}>
+            {tiles.map((tile, idx) => (
+              <figure
+                class="ptile"
+                data-tile={idx}
+                style={`--tint:${tile.tint}; left:${tile.left}%; top:${tile.top}%; width:${tile.width}%; aspect-ratio:${tile.aspect}`}
+              >
+                <div class="ptile__swatch"></div>
+                <figcaption class="ptile__cap">
+                  <span class="ptile__label">{tile.label}</span>
+                  <span class="ptile__desc">{real ? tile.description : ''}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        );
+      }))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .pancanvas {
+    position: relative;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;   /* both axes are ours */
+  }
+  :global(body.is-panning) .pancanvas { cursor: grabbing; }
+
+  .pancanvas__world { position: absolute; inset: 0; will-change: transform; }
+  .pancanvas__grid {
+    display: grid;
+    grid-template-columns: repeat(2, var(--cell-w, max(1700px, 145vw)));
+    grid-template-rows: repeat(2, var(--cell-h, max(1150px, 145vh)));
+  }
+  .pancanvas__cell { position: relative; }
+
+  .ptile {
+    position: absolute;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.5rem, 1vw, 0.75rem);
+    will-change: transform;   /* the per-tile lag spring writes this every frame */
+  }
+  .ptile__swatch {
+    width: 100%;
+    height: 100%;
+    background: var(--tint);
+    border-radius: var(--radius);
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  /* A small lift on hover — pointer devices only, so a dragged finger never
+     sees a tile jump under it. */
+  @media (hover: hover) {
+    .ptile:hover .ptile__swatch { transform: scale(1.03); }
+  }
+  .ptile__cap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15em;
+    font-family: var(--font-mono);
+  }
+  .ptile__label {
+    font-size: var(--step-caption);
+    letter-spacing: var(--tracking-caption);
+    color: var(--fg);
+  }
+  .ptile__desc {
+    font-size: var(--step-caption);
+    letter-spacing: var(--tracking-caption);
+    color: var(--fg-dim);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ptile__swatch { transition: none; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll('[data-pancanvas]').forEach((canvas) => {
+    const el = canvas as HTMLElement;
+    const world = el.querySelector<HTMLElement>('[data-world]');
+    const cells = [...el.querySelectorAll<HTMLElement>('[data-cell]')];
+    if (!world || cells.length < 2) return;
+
+    const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+    // --- measure the real cell, not the CSS formula that produced it ---
+    let periodX = 0;
+    let periodY = 0;
+    const measure = () => {
+      const a = cells[0].getBoundingClientRect();
+      const b = cells[1].getBoundingClientRect();
+      periodX = Math.abs(b.left - a.left) || a.width;
+      periodY = Math.abs(cells[2]?.getBoundingClientRect().top - a.top) || a.height;
+    };
+
+    // Wrap into (-period, 0], the window where the real cell and its three
+    // twins always cover the viewport between them.
+    const wrap = (v: number, period: number) => {
+      if (!period) return 0;
+      const m = ((v % period) + period) % period;
+      return m === 0 ? 0 : m - period;
+    };
+
+    let panX = 0;
+    let panY = 0;
+
+    const FRICTION = 0.935;
+    const MIN_VELOCITY = 0.05;
+    let velX = 0, velY = 0;
+    let coasting = false;
+    let queued = false;
+
+    // --- ambient hover: one shared value easing toward the pointer, no
+    // press needed. Each tile scales it by its own `depth` in paint() below
+    // — that's what makes resting the pointer off-centre show cards at
+    // genuinely different offsets, not the whole sheet at one offset. Mouse
+    // only (a touch "hover" is just the finger about to drag, and would
+    // double up with the drag itself), and off under prefers-reduced-motion
+    // — this is ambient motion, not a gesture the visitor asked for the way
+    // drag/wheel/keys are. Eased rather than applied directly, so it reads
+    // as a settle, not a jump. */
+    const HOVER_RANGE = 70;     // px of offset at the pointer's furthest reach, before depth scaling
+    const HOVER_EASE = 0.07;
+    const HOVER_SETTLE = 0.05;  // close enough that finishing the ease is pointless
+    let hoverX = 0, hoverY = 0;
+    let hoverTargetX = 0, hoverTargetY = 0;
+
+    // --- per-tile lag: see the header comment. `depth` scales how far a
+    // tile's target trails the pan's velocity; `ease` is how fast that
+    // tile chases its own target. Both only ever produce a plain
+    // exponential approach — never an overshoot — so there's nothing here
+    // that can ring. */
+    const LAG_PRESETS = [
+      { depth: 1.3, ease: 0.18 },
+      { depth: 0.7, ease: 0.07 },
+      { depth: 1.1, ease: 0.12 },
+      { depth: 0.9, ease: 0.09 },
+      { depth: 1.0, ease: 0.14 },
+      { depth: 0.6, ease: 0.06 },
+    ];
+    const VEL_EASE = 0.2;       // smooths the raw per-frame delta into a velocity
+    const LAG_SETTLE = 0.05;
+    // No access to the Astro `tiles` prop here — this is a plain browser
+    // script — so the count comes off the DOM: one cell carries every
+    // logical tile exactly once.
+    const tileCount = cells[0].querySelectorAll('[data-tile]').length;
+    const tileGroups = Array.from({ length: tileCount }, (_, k) =>
+      [...el.querySelectorAll<HTMLElement>(`[data-tile="${k}"]`)]
+    );
+    const lag = tileGroups.map((_, k) => ({
+      x: 0, y: 0,
+      ...LAG_PRESETS[k % LAG_PRESETS.length],
+    }));
+    let rawXPrev = 0, rawYPrev = 0;
+    let smoothVX = 0, smoothVY = 0;
+
+    const paint = () => {
+      // Hover deliberately does NOT feed into panX/wrap — see the header
+      // comment. Only drag/wheel/keys move where you actually are.
+      const x = wrap(panX, periodX);
+      const y = wrap(panY, periodY);
+      world.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+      tileGroups.forEach((group, k) => {
+        const l = lag[k];
+        const tx = l.x + hoverX * l.depth;
+        const ty = l.y + hoverY * l.depth;
+        const t = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0)`;
+        group.forEach((tile) => { tile.style.transform = t; });
+      });
+    };
+
+    const frame = () => {
+      queued = false;
+      if (coasting) {
+        panX += velX;
+        panY += velY;
+        velX *= FRICTION;
+        velY *= FRICTION;
+        if (Math.abs(velX) < MIN_VELOCITY && Math.abs(velY) < MIN_VELOCITY) {
+          velX = velY = 0;
+          coasting = false;
+        }
+      }
+      let hoverActive = false;
+      if (!still.matches) {
+        hoverX += (hoverTargetX - hoverX) * HOVER_EASE;
+        hoverY += (hoverTargetY - hoverY) * HOVER_EASE;
+        hoverActive =
+          Math.abs(hoverTargetX - hoverX) > HOVER_SETTLE ||
+          Math.abs(hoverTargetY - hoverY) > HOVER_SETTLE;
+      }
+
+      // Velocity for the drag-lag comes from panX alone — hover isn't a
+      // position change, it drives the tiles directly in paint() instead.
+      let lagActive = false;
+      const dxFrame = panX - rawXPrev;
+      const dyFrame = panY - rawYPrev;
+      rawXPrev = panX;
+      rawYPrev = panY;
+      if (still.matches) {
+        lag.forEach((l) => { l.x = l.y = 0; });
+        smoothVX = smoothVY = 0;
+      } else {
+        // One shared smoothing pass, not per-tile — a per-frame pointer
+        // delta is noisy (uneven pointermove sampling, hand tremor), and
+        // twelve tiles each chasing that raw noise independently is exactly
+        // what read as a jiggle. Smoothed once, every tile chases the same
+        // calm signal instead.
+        smoothVX += (dxFrame - smoothVX) * VEL_EASE;
+        smoothVY += (dyFrame - smoothVY) * VEL_EASE;
+        lag.forEach((l) => {
+          const targetX = smoothVX * l.depth;
+          const targetY = smoothVY * l.depth;
+          l.x += (targetX - l.x) * l.ease;
+          l.y += (targetY - l.y) * l.ease;
+          if (Math.abs(l.x) > LAG_SETTLE || Math.abs(l.y) > LAG_SETTLE) lagActive = true;
+        });
+        if (Math.abs(smoothVX) > LAG_SETTLE || Math.abs(smoothVY) > LAG_SETTLE) lagActive = true;
+      }
+
+      paint();
+      if (coasting || hoverActive || lagActive) schedule();
+    };
+
+    const schedule = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(frame);
+    };
+
+    const stopCoast = () => { coasting = false; velX = velY = 0; };
+    const startCoast = () => {
+      if (still.matches) return;   // a flick shouldn't keep going
+      if (Math.abs(velX) < MIN_VELOCITY && Math.abs(velY) < MIN_VELOCITY) return;
+      coasting = true;
+      schedule();
+    };
+
+    // --- drag: both axes at once, direct manipulation ---
+    let pointerId: number | null = null;
+    let dragging = false;
+    let downX = 0, downY = 0, lastX = 0, lastY = 0, lastT = 0;
+
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      stopCoast();
+      pointerId = e.pointerId;
+      dragging = false;
+      downX = lastX = e.clientX;
+      downY = lastY = e.clientY;
+      lastT = performance.now();
+      el.setPointerCapture(e.pointerId);
+      if (e.pointerType === 'mouse') document.body.classList.add('is-panning');
+    });
+
+    el.addEventListener('pointermove', (e) => {
+      if (pointerId !== e.pointerId) return;
+      if (!dragging) {
+        if (Math.abs(e.clientX - downX) < 4 && Math.abs(e.clientY - downY) < 4) return;
+        dragging = true;
+      }
+      const now = performance.now();
+      const dt = Math.max(now - lastT, 8);
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      lastT = now;
+
+      panX += dx;
+      panY += dy;
+      velX = (dx / dt) * 18;
+      velY = (dy / dt) * 18;
+      schedule();
+    });
+
+    // --- hover: a second, separate pointermove listener, since it has to
+    // keep running while no button is down — the drag listener above exits
+    // immediately in that case. Mouse only; a touch "hover" is the same
+    // finger about to drag and would double the motion once it does.
+    el.addEventListener('pointermove', (e) => {
+      if (pointerId !== null || e.pointerType !== 'mouse' || still.matches) return;
+      const rect = el.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / rect.width - 0.5;    // -0.5 .. 0.5
+      const ny = (e.clientY - rect.top) / rect.height - 0.5;
+      // Pointer toward an edge reveals what's past it, same as an edge-pan —
+      // the field moves opposite the pointer, not with it.
+      hoverTargetX = -nx * HOVER_RANGE * 2;
+      hoverTargetY = -ny * HOVER_RANGE * 2;
+      schedule();
+    });
+    el.addEventListener('pointerleave', () => {
+      if (pointerId !== null) return;
+      hoverTargetX = 0;
+      hoverTargetY = 0;
+      schedule();
+    });
+
+    const endDrag = (e: PointerEvent) => {
+      if (pointerId !== e.pointerId) return;
+      if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+      pointerId = null;
+      document.body.classList.remove('is-panning');
+      if (dragging) startCoast();
+      dragging = false;
+    };
+    el.addEventListener('pointerup', endDrag);
+    el.addEventListener('pointercancel', endDrag);
+
+    // --- wheel / trackpad: both axes, diagonal included ---
+    // Unlike InfiniteStream, this owns the gesture outright — there is
+    // nothing below the field on this page for a vertical wheel to reach.
+    el.addEventListener('wheel', (e) => {
+      if (e.ctrlKey) return;   // pinch zoom
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1;
+      e.preventDefault();
+      stopCoast();
+      panX -= (e.deltaX || (e.shiftKey ? e.deltaY : 0)) * unit;
+      panY -= (e.shiftKey ? 0 : e.deltaY) * unit;
+      schedule();
+    }, { passive: false });
+
+    // --- keyboard: all four directions, this field owns them all ---
+    const STEP = 120;
+    el.addEventListener('keydown', (e) => {
+      const moves: Record<string, [number, number]> = {
+        ArrowLeft: [STEP, 0], ArrowRight: [-STEP, 0],
+        ArrowUp: [0, STEP], ArrowDown: [0, -STEP],
+      };
+      const move = moves[e.key];
+      if (!move) return;
+      e.preventDefault();
+      stopCoast();
+      panX += move[0];
+      panY += move[1];
+      schedule();
+    });
+
+    const onResize = () => { measure(); paint(); };
+
+    measure();
+    paint();
+    addEventListener('resize', onResize);
+    still.addEventListener('change', () => {
+      if (still.matches) {
+        stopCoast();
+        hoverX = hoverY = hoverTargetX = hoverTargetY = 0;
+        lag.forEach((l) => { l.x = l.y = 0; });
+        smoothVX = smoothVY = 0;
+        paint();
+      }
+    });
+  });
+</script>

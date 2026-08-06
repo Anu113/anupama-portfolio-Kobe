@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-03T00:00:00Z",
+  "title": "Design System: Anupama Mishra — Portfolio",
+  "extensions": {
+    "colorMeta": {
+      "ink-bg":       { "role": "neutral", "displayName": "Warm Near-Black", "canonical": "#17120f", "tonalRamp": ["#0e0b09", "#17120f", "#241d18", "#362d27", "#5d534a", "#a2968a", "#d3c8bb", "#f4ece1"] },
+      "ink-accent":   { "role": "primary", "displayName": "Ember", "canonical": "#e8613c", "tonalRamp": ["#4a1e11", "#7a3019", "#a83f22", "#d3502e", "#e8613c", "#f08a6c", "#f6b7a3", "#fbe0d6"] },
+      "sand-bg":      { "role": "neutral", "displayName": "Warm Sand", "canonical": "#e3caa5", "tonalRamp": ["#3a2c17", "#5e4826", "#836337", "#a87f4b", "#c4a06e", "#e3caa5", "#eeddc4", "#f7eee1"] },
+      "sand-fg":      { "role": "primary", "displayName": "Display Green", "canonical": "#2f7d45", "tonalRamp": ["#0d2013", "#153420", "#1e4a2d", "#276237", "#2f7d45", "#4a9c60", "#7fbf94", "#c2e3cd"] },
+      "sand-fg-dim":  { "role": "primary", "displayName": "Body Green (AA)", "canonical": "#276237", "tonalRamp": ["#0a190f", "#123a1e", "#1c522a", "#276237", "#337d47", "#4f9c62", "#87c096", "#cae7d1"] },
+      "clay-bg":      { "role": "neutral", "displayName": "Oxblood", "canonical": "#420d0c", "tonalRamp": ["#1e0605", "#2a0908", "#420d0c", "#5c1312", "#7a1a18", "#a3241f", "#c9403a", "#e88a83"] },
+      "clay-fg":      { "role": "secondary", "displayName": "Reference Coral", "canonical": "#fa4a3c", "tonalRamp": ["#5c110a", "#8a1d12", "#b52c1e", "#d63c2c", "#fa4a3c", "#ff7a6d", "#ffa89d", "#ffd6cf"] },
+      "sage-bg":      { "role": "secondary", "displayName": "Pale Eucalyptus", "canonical": "#d7e3d7", "tonalRamp": ["#131a15", "#253026", "#3f4f41", "#5e785f", "#8ba98b", "#b8d0b8", "#d7e3d7", "#eef4ee"] },
+      "lilac-bg":     { "role": "secondary", "displayName": "Light Violet", "canonical": "#cba6fc", "tonalRamp": ["#17122b", "#2b2447", "#4a3a72", "#6f57a3", "#9878d0", "#cba6fc", "#e0c8fd", "#f2e6ff"] },
+      "coral-bg":     { "role": "secondary", "displayName": "The Loud One", "canonical": "#f96f43", "tonalRamp": ["#2a0f08", "#5a2013", "#8a331f", "#c04a2c", "#f96f43", "#fb9270", "#fdb8a0", "#fedcd0"] },
+      "iris-bg":      { "role": "tertiary", "displayName": "Iris Cream", "canonical": "#ece5d4", "tonalRamp": ["#2b2a54", "#403e78", "#5a5896", "#7b93f0", "#a8b0f5", "#ece5d4", "#f4efe4", "#faf7f0"] },
+      "iris-fg":      { "role": "tertiary", "displayName": "Navy-Violet", "canonical": "#2e2860", "tonalRamp": ["#0f0d20", "#1c1938", "#2e2860", "#4d4690", "#7b93f0", "#a8b8f5", "#cdd6fa", "#e9edfd"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headline only, poster-scale, allowed to overflow the viewport at the low end of its clamp." },
+      "accent":  { "displayName": "Accent Italic", "purpose": "One italic serif word inside a display composition — a hand-annotation, not a body face." },
+      "h1":      { "displayName": "Headline", "purpose": "Page and section titles." },
+      "h2":      { "displayName": "Title", "purpose": "Sub-section headings." },
+      "h3":      { "displayName": "Card Title", "purpose": "Case tiles, points, timeline entries." },
+      "body":    { "displayName": "Body", "purpose": "Reading copy, capped at a 62ch measure." },
+      "label":   { "displayName": "Label", "purpose": "Uppercase eyebrows, metric labels, nav links." },
+      "mono":    { "displayName": "Print Label", "purpose": "The playground's print-label captions only — nowhere else." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Default easing for every transition and reveal in the system." },
+      { "name": "dur-hover", "value": "320ms", "purpose": "Hover/state transitions — colour, border, background." },
+      { "name": "dur-reveal", "value": "900ms", "purpose": "Scroll-triggered fade-and-lift reveals (Reveal.astro)." }
+    ],
+    "breakpoints": [
+      { "name": "mobile-card", "value": "700px" },
+      { "name": "case-rail-collapse", "value": "1080px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Pill CTA Button",
+      "kind": "button",
+      "refersTo": "pill-button",
+      "description": "The system's only button shape — border-only pill, used for every CTA (case lede, archive rows, gate submits).",
+      "html": "<a class=\"ds-btn-pill\" href=\"#\">View case</a>",
+      "css": ".ds-btn-pill { display: inline-block; font-family: 'General Sans', ui-sans-serif, system-ui, sans-serif; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none; color: var(--fg); background: transparent; border: 1px solid var(--fg-dim); border-radius: 999px; padding: 0.65rem 1.15rem; transition: background 320ms cubic-bezier(0.16,1,0.3,1), border-color 320ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-pill:hover { background: var(--screen); border-color: var(--fg-dim); } .ds-btn-pill:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }"
+    },
+    {
+      "name": "Password Input (gate field)",
+      "kind": "input",
+      "refersTo": "gate-input",
+      "description": "Pill-shaped text input paired with the peek/show-password toggle, used by CaseGate and LockedGate.",
+      "html": "<div class=\"ds-field\"><input class=\"ds-input\" type=\"password\" placeholder=\"Password\" /><button class=\"ds-peek\" type=\"button\" aria-label=\"Show password\">👁</button></div>",
+      "css": ".ds-field { display: flex; align-items: stretch; gap: 0.5rem; } .ds-input { flex: 1 1 auto; min-width: 0; font-family: 'Crimson Pro', Georgia, serif; font-size: 1.1875rem; color: var(--fg); background: var(--bg); border: 1px solid var(--fg-dim); border-radius: 999px; padding: 0.6rem 1.1rem; } .ds-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; } .ds-peek { flex: 0 0 auto; display: grid; place-items: center; width: 2.6rem; color: var(--fg-dim); background: none; border: 1px solid var(--fg-dim); border-radius: 999px; cursor: pointer; }"
+    },
+    {
+      "name": "Work Card",
+      "kind": "card",
+      "refersTo": "case-card",
+      "description": "A case-study tile for the drag rail or /work index — square media frame, scale-on-hover image, scope label above title, metric below.",
+      "html": "<a class=\"ds-card\" href=\"#\"><div class=\"ds-card__media\"><img src=\"\" alt=\"\" /></div><div class=\"ds-card__meta\"><p class=\"ds-card__scope\">IAM · Enterprise</p><h3 class=\"ds-card__title\">Rebuilding IAM for enterprise admins</h3><p class=\"ds-card__metric\">Admin task time down [X]%</p></div></a>",
+      "css": ".ds-card { display: block; color: inherit; text-decoration: none; } .ds-card__media { aspect-ratio: 4/3; overflow: hidden; border-radius: 0; background: var(--rule); } .ds-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: scale 320ms cubic-bezier(0.16,1,0.3,1); } .ds-card:hover .ds-card__media img { scale: 1.03; } .ds-card__meta { padding-top: 1rem; display: grid; gap: 0.35rem; } .ds-card__scope { margin: 0; font-family: 'General Sans', sans-serif; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-dim); } .ds-card__title { font-size: 1.75rem; font-weight: 500; margin: 0; letter-spacing: -0.02em; } .ds-card__metric { margin: 0; color: var(--fg-dim); font-size: 0.9rem; }"
+    },
+    {
+      "name": "Fixed Nav",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "Solid (never translucent) fixed top nav that recolours to match whichever themed band is behind it.",
+      "html": "<nav class=\"ds-nav\"><span class=\"ds-nav__mark\">A.</span><div class=\"ds-nav__right\"><a href=\"#\">Work</a><a href=\"#\">About me</a><a href=\"#\">Playground</a></div></nav>",
+      "css": ".ds-nav { position: fixed; inset-inline: 0; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 4vw; color: var(--fg); background: var(--bg); transition: color 320ms cubic-bezier(0.16,1,0.3,1), background 320ms cubic-bezier(0.16,1,0.3,1); } .ds-nav__mark { font-family: 'General Sans', sans-serif; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; } .ds-nav__right { display: flex; align-items: center; gap: 2rem; } .ds-nav__right a { font-family: 'General Sans', sans-serif; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: inherit; text-decoration: none; }"
+    },
+    {
+      "name": "Uppercase Label / Eyebrow",
+      "kind": "chip",
+      "refersTo": "u-label",
+      "description": "The system's one recurring micro-typography role: uppercase, tracked-out General Sans in the dim foreground colour — eyebrows, metric labels, nav links.",
+      "html": "<p class=\"ds-label\">IAM · Enterprise</p>",
+      "css": ".ds-label { font-family: 'General Sans', ui-sans-serif, system-ui, sans-serif; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; color: var(--fg-dim); margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Editorial Broadside",
+    "overview": "The site reads like a designer's own printed broadside, not a SaaS marketing page: hard-edged type blocks blown up to poster scale, saturated flat-colour grounds standing in for pages of a booklet, and a serif italic used the way a hand-annotation would be. Nothing here is soft — no shadows, no blur, no rounded cards — except the one control the visitor actually touches, the pill-shaped CTA, which is deliberately the single curved thing on the page.\n\nDensity is editorial, not app-like: generous section rhythm (up to 11rem), a 62ch reading measure for body copy, and display type sized in vw so headlines are allowed to overflow toward the viewport edge the way a poster's type would. The palette is not a light/dark pair but a sequence of eight named grounds, each a full 'page' of the broadside with its own day and night restatement — the visitor moves through the site the way they'd turn pages in a printed piece, and the fixed nav recolours itself to always match the page currently behind it.",
+    "keyCharacteristics": [
+      "Hard-edged, flat-colour grounds — one full palette per section, not a single site-wide theme",
+      "Poster-scale display type (clamp(3.5rem, 13vw, 15rem)) with tight, near-negative tracking",
+      "A single curved element (the pill CTA) against an otherwise 0-radius system",
+      "Editorial serif italic (Instrument Serif) as the one ornamental typographic gesture",
+      "Every palette exists twice — a day and a night restatement — never a single fixed light/dark pair"
+    ],
+    "rules": [
+      { "name": "The Two Greens Rule", "body": "Never simplify sand's display and body green into a single value; the display tone alone fails body-text contrast on that ground.", "section": "colors" },
+      { "name": "The Bone Banner Rule", "body": "Every case-study banner is bone, never the project's own palette — a full-bleed saturated ground behind display type reads as a poster and fights the reading page beneath it.", "section": "colors" },
+      { "name": "The Radius Exception Rule", "body": "--radius is 0px site-wide; the pill CTA (border-radius: 999px) is the one deliberate exception, and it stays a border-only control, never a filled ground, so it reads as a control rather than a badge.", "section": "shapes" },
+      { "name": "The One Italic Rule", "body": "Instrument Serif appears inside display type only — one italic word per composition, functioning like a hand annotation, never a body-copy typeface.", "section": "typography" },
+      { "name": "The No-Shadow Rule", "body": "No box-shadow exists anywhere in the token system or components; depth is conveyed entirely through flat colour-ground changes between sections.", "section": "elevation" },
+      { "name": "The Clip Not Hidden Rule", "body": "Any future horizontal-overflow fix on <body> must use overflow-x: clip, not hidden — hidden forces overflow-y: auto and silently breaks position: sticky on the page (the case-study rail specifically).", "section": "layout" }
+    ],
+    "dos": [
+      "Do keep every colour, size, and spacing value as a var(--token) reference.",
+      "Do give every new palette a [data-mode='night'] restatement in the same pass it's added.",
+      "Do use the border-pill shape for any new interactive control that needs to read as a 'button.'",
+      "Do route case-study banners through bone regardless of the case's own palette.",
+      "Do respect prefers-reduced-motion on any new motion."
+    ],
+    "donts": [
+      "Don't introduce a shadow, blur, or glass surface anywhere.",
+      "Don't collapse sand's or iris's two-tone (display/body) colour pairs into one value.",
+      "Don't hardcode a hex, px, or ms value in a component — add a token to tokens.css first.",
+      "Don't treat the CaseGate/LockedGate password panels as real security in copy or implementation."
+    ]
+  }
+}
