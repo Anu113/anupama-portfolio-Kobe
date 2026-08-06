@@ -1,0 +1,154 @@
+---
+/* HoverLabel.astro — the one hover affordance every project card uses.
+   Visual style is the pill from the case-study page's own "next case
+   study" cursor-follow cue (work/[slug].astro's `.next__peek`) — reused
+   here rather than reinvented, so the site has one hover-follow pill
+   instead of two different treatments. (A brief detour rewrote this as
+   plain cursor-following text with no button chrome; reverted — the pill
+   is the style to keep, on every card, not just the next-case-study band.)
+
+   `state` is one of the five card states declared in `data/hoverState.ts` —
+   that file is the only place the label text lives, so a new project is
+   never a new string typed by hand here, just a state assigned there.
+
+   Positioning is relative to whichever ancestor carries [data-hover-trigger]
+   itself (the whole card, e.g. CaseCard.astro's own <a>) — that element
+   supplies `position: relative` and the script below tracks the pointer
+   against its full bounding box, inset by the label's own half-width/height
+   plus a fixed pad. Renders as a *sibling* of the card's media/hero, not
+   nested inside it — nested, the pill could never reach the cursor once it
+   left the image for the title or metric text underneath, which is what
+   the previous pass got wrong (the pill only ever roamed the media, not
+   the card it's supposed to cover). Not nesting it also means it's never
+   subject to the media's own `overflow: hidden`.
+
+   Colour is background: var(--fg); color: var(--bg) — but since the label
+   no longer necessarily renders inside its project's [data-theme] scope
+   (CaseCard puts that on the media only, not the card root — see that
+   component's header comment for why), the script copies --fg/--bg off
+   whichever element actually carries data-theme within the trigger, once,
+   onto the label's own inline style. Same effect as inheriting through the
+   cascade — the project's own hue (coral, lilac, sage, …) still carries
+   onto its own card's pill with no hand-wired colour per card — just
+   reached a different way now that the two can't share a scope.
+
+   Hover-capable pointers only get the hidden-until-hover treatment
+   (@media (hover: hover), same convention as ArchiveList.astro's
+   .arch__cta): touch has no hover to reveal it from, so there the pill
+   stays visible (centred, not tracking) by default rather than one nobody
+   ever sees. */
+import { HOVER_LABELS, type HoverState } from '../data/hoverState';
+
+interface Props { state: HoverState }
+const { state } = Astro.props;
+---
+<span class="hover-label" aria-hidden="true">{HOVER_LABELS[state]}</span>
+
+<style>
+  /* aria-hidden above: the card link already names the project and, via
+     this same label text repeated nowhere else, its action — a screen
+     reader has no hover to trigger this on, so it would only double an
+     announcement the link itself already makes. */
+  .hover-label {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    /* Visible, natural size by default — the resting state for touch,
+       which has no hover to reveal from. Hover-capable pointers override
+       this to a hidden/shrunk starting point below. */
+    transform: translate(-50%, -50%) scale(1);
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    background: var(--fg);
+    color: var(--bg);
+    font-family: var(--font-display);
+    font-size: var(--step-pill);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  @media (hover: hover) {
+    .hover-label {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.92);
+      transition: opacity var(--dur-hover) var(--ease-out),
+                  transform var(--dur-hover) var(--ease-out);
+    }
+    /* :global — [data-hover-trigger] lives on the consuming card's own
+       root (a different component's scope), so the rule can't carry this
+       component's scope hash the way CLAUDE.md documents for Section.astro. */
+    :global([data-hover-trigger]:hover) .hover-label,
+    :global([data-hover-trigger]:focus-visible) .hover-label {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hover-label { transform: translate(-50%, -50%) scale(1); }
+  }
+</style>
+
+<script>
+  /* Cursor-following position. A left/top pair set on the element itself
+     (not this component's transform, which stays the reveal scale) so the
+     two never fight over the same property. Only the pointer-tracked axis
+     moves; the reveal above still owns opacity + scale.
+
+     Direct 1:1, not eased — the same "direct manipulation, not ambient
+     motion" call the case-study page's own cursor-follow pill made: the
+     pill only moves because the visitor's own hand did, so it should be
+     the cursor, not a shape chasing it a beat behind. No rAF loop, no
+     reduced-motion gate on this either (only opacity, which fades the pill
+     in and out on enter/leave, is ever transitioned — see the CSS).
+
+     Gate is the pointer type itself, not a `hover: hover` query read once:
+     a mouse plugged in later, or a laptop with a touchscreen too, both
+     answer that query wrong. A finger never sends pointerType 'mouse', so
+     touch never starts tracking — the CSS above already keeps the label
+     centred and visible there instead. */
+
+  // Extra breathing room on top of the label's own half-width/height, so it
+  // stops well short of the card's edge instead of hugging it — without
+  // this, a point tracked right up to the zone's own boundary centres the
+  // label exactly on that edge, and half the text rides outside it.
+  const PAD = 40;
+
+  document.querySelectorAll<HTMLElement>('.hover-label').forEach((label) => {
+    const trigger = label.closest<HTMLElement>('[data-hover-trigger]');
+    if (!trigger) return;
+    const zone = trigger;   // the whole card, not just its media/hero
+
+    // Colour: copy --fg/--bg off whichever element actually carries the
+    // project's theme — itself, if the whole card is themed (ProjectCard),
+    // or a descendant, if only the media is (CaseCard). Runs once; the
+    // label isn't necessarily inside that scope any more, so it can't just
+    // inherit these through the cascade the way it used to.
+    const themed = trigger.hasAttribute('data-theme')
+      ? trigger
+      : trigger.querySelector<HTMLElement>('[data-theme]');
+    if (themed) {
+      const themedStyle = getComputedStyle(themed);
+      label.style.setProperty('--fg', themedStyle.getPropertyValue('--fg'));
+      label.style.setProperty('--bg', themedStyle.getPropertyValue('--bg'));
+    }
+
+    trigger.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      const rect = zone.getBoundingClientRect();
+      const label_ = label.getBoundingClientRect();
+      const insetX = Math.min(rect.width / 2, label_.width / 2 + PAD);
+      const insetY = Math.min(rect.height / 2, label_.height / 2 + PAD);
+      const x = Math.min(rect.width - insetX, Math.max(insetX, e.clientX - rect.left));
+      const y = Math.min(rect.height - insetY, Math.max(insetY, e.clientY - rect.top));
+      label.style.left = `${x}px`;
+      label.style.top = `${y}px`;
+    });
+  });
+</script>

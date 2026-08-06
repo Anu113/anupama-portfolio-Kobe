@@ -1,13 +1,22 @@
 ---
 /* The footer closing every page, in `Base.astro` below <main>.
-   Three rows, top to bottom:
-     1. a hairline rule, then three columns — who she is, how to reach her,
-        and the ask ("Building something complicated? Let's talk.")
-     2. a meta line — her city and a live clock in HER timezone, the credit,
+   Four rows, top to bottom (restructured after emmiwu.com/figma's footer —
+   a short personal sign-off leading, not a bio paragraph, with the contact
+   and site links as two plain columns underneath it):
+     1. the sign-off — one big line carrying the ask ("Let's talk"), reading
+        `site.ask` so it never drifts from the wording every other band uses
+     2. two columns, "Get in touch" and "Site" — how to reach her, where
+        else to go
+     3. a meta line — her city and a live clock in HER timezone, the credit,
         the copyright
-     3. the wordmark, full-bleed across the bottom
-   It is a themed band (data-themeband) so the nav recolours over it, and it
-   wears `ink` on every page so the site always closes on the same note.
+     4. the wordmark, full-bleed across the bottom
+   It is a themed band (data-themeband) so the nav recolours over it. It
+   wore `ink` on every page so the site always closed on the same note;
+   it now wears `crimson` (tokens.css) instead, on request, for the same
+   reason — one colour, every page, so the close still reads as one note,
+   just a wine one instead of a near-black one. Crimson itself was tuned
+   down from a fire-engine red to this deeper oxblood — the brighter red
+   read as an alert rather than a sign-off.
 
    The wordmark is her name, one <span> per letter, spread across the line
    with flex. A rAF loop sets each letter's own weight from its distance to
@@ -20,15 +29,14 @@ import { site } from '../data/site';
 const year = new Date().getFullYear();
 ---
 
-<footer id="site-footer" data-theme="ink" data-themeband class="foot">
+<footer id="site-footer" data-theme="crimson" data-themeband class="foot">
   <div class="foot__top u-shell">
-    <p class="foot__bio">
-      {site.name} is a staff product designer working in identity, access and
-      enterprise software — most recently at Okta, on the console enterprises
-      use to run identity for thousands of employees, where she also led a team
-      of six. Currently looking for a {site.ask}.
+    <p class="foot__signoff">
+      Building something complicated? <em>Let's talk</em> — I'm looking for a {site.ask}.
     </p>
+  </div>
 
+  <div class="foot__cols u-shell">
     <div class="foot__contact">
       <p class="u-label foot__eyebrow">Get in touch</p>
       <ul class="foot__links">
@@ -37,10 +45,15 @@ const year = new Date().getFullYear();
       </ul>
     </div>
 
-    <p class="foot__cta">
-      Building something complicated?<br />
-      <em>Let's talk.</em>
-    </p>
+    <div class="foot__sitenav">
+      <p class="u-label foot__eyebrow">Site</p>
+      <ul class="foot__links">
+        <li><a href="/work">Work</a></li>
+        <li><a href="/about">About me</a></li>
+        <li><a href="/playground">Playground</a></li>
+        <li><a href="/contact">Contact</a></li>
+      </ul>
+    </div>
   </div>
 
   <div class="foot__meta u-shell">
@@ -84,19 +97,23 @@ const year = new Date().getFullYear();
     padding-top: clamp(2.5rem, 5vw, 4rem);
   }
 
-  /* --- Row 1: bio | contact | ask ------------------------------------ */
-  .foot__top {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.8fr) minmax(0, 1.1fr);
-    gap: clamp(2rem, 5vw, 4rem);
-    align-items: start;
-  }
-
-  .foot__bio {
+  /* --- Row 1: the sign-off -------------------------------------------- */
+  .foot__signoff {
     margin: 0;
-    max-width: 46ch;
-    font-size: var(--step-small);
-    color: var(--fg-dim);
+    max-width: 34ch;
+    font-family: var(--font-accent);
+    font-size: clamp(var(--step-h3), 4.2vw, var(--step-h1));
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+  }
+  .foot__signoff em { font-style: italic; }
+
+  /* --- Row 2: get in touch | site -------------------------------------- */
+  .foot__cols {
+    display: flex;
+    gap: clamp(3rem, 8vw, 6rem);
+    padding-top: clamp(2.5rem, 5vw, 4rem);
   }
 
   .foot__eyebrow { margin: 0 0 1rem; }
@@ -118,21 +135,7 @@ const year = new Date().getFullYear();
   }
   .foot__links a:hover { color: var(--accent-text); }
 
-  .foot__cta {
-    margin: 0;
-    justify-self: end;
-    text-align: right;
-    font-family: var(--font-accent);
-    /* Sized off the column, not off the page: at --step-h2 the first line
-       wraps inside a third of the grid, which turns two lines into three. */
-    font-size: clamp(var(--step-h3), 2.6vw, var(--step-h2));
-    line-height: 1.15;
-    letter-spacing: -0.01em;
-    color: var(--fg);
-  }
-  .foot__cta em { font-style: italic; }
-
-  /* --- Row 2: city + clock, credit, copyright ------------------------ */
+  /* --- Row 3: city + clock, credit, copyright ------------------------ */
   .foot__meta {
     display: flex;
     flex-wrap: wrap;
@@ -173,7 +176,7 @@ const year = new Date().getFullYear();
     white-space: nowrap;
   }
 
-  /* --- Row 3: the wordmark ------------------------------------------- */
+  /* --- Row 4: the wordmark ------------------------------------------- */
   /* clip, not hidden — a letter widening under the cursor must never be
      able to add a scrollbar. Same reasoning as global.css on <body>. */
   .foot__mark { padding-inline: var(--gutter); overflow: clip; }
@@ -207,8 +210,8 @@ const year = new Date().getFullYear();
   .mark__ch--gap { flex: 0 0 0.28em; }
 
   @media (max-width: 900px) {
-    .foot__top { grid-template-columns: 1fr; gap: 2.5rem; }
-    .foot__cta { justify-self: start; text-align: left; }
+    .foot__signoff { max-width: none; }
+    .foot__cols { flex-direction: column; gap: 2.5rem; }
     .foot__meta { flex-direction: column; align-items: flex-start; }
     .foot__legal { text-align: left; }
   }

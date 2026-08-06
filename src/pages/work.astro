@@ -4,7 +4,7 @@ import Section from '../components/Section.astro';
 import Reveal from '../components/Reveal.astro';
 import PageHeader from '../components/PageHeader.astro';
 import ArchiveList from '../components/ArchiveList.astro';
-import LockIcon from '../components/LockIcon.astro';
+import CaseCard from '../components/CaseCard.astro';
 import { work, archive } from '../data/work';
 import { cases } from '../data/cases';
 
@@ -20,7 +20,9 @@ const isLocked = (href: string) => lockedSlugs.has(href.replace('/work/', ''));
    neighbour, and `ratio` varies the media height. Together they make the
    staggered field from the reference (allierho.com) instead of a card wall.
    A sixth project needs a sixth entry — the grid falls back to a full-width
-   16/10 tile if one is missing.
+   16/10 tile if one is missing (the sixth and seventh both do, on purpose:
+   the flagship and the still-unconfirmed seventh case each read as an
+   intentional close rather than a squeezed card).
    Rows 1 and 3 pair two tiles; row 2 is the single wide one. The last pair is
    the deck-linked work, so it sits below the three full case studies. */
 const layout = [
@@ -34,12 +36,12 @@ const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
 ---
 <Base
   title="Work — Anupama Mishra"
-  description="Selected work: Okta IAM and developer tools, PayPal privacy, Walmart Scan & Go, data access automation and Chase Pay. Scope, the hard calls and outcomes for each."
+  description="Selected work: Okta's Integration Platform, Okta IAM and developer tools, PayPal privacy, Walmart Scan & Go, data access automation, Chase Pay and PayPal's Unified Card System. Scope, the hard calls and outcomes for each."
 >
   <Section theme="bone" class="workindex">
     <div class="workindex__head">
       <PageHeader label="Selected work">
-        Five projects, and <em>what I owned</em> in each.
+        Seven projects, and <em>what I owned</em> in each.
         <Fragment slot="intro">
           <p>
             Every case study runs the same way: the business situation, my scope,
@@ -56,19 +58,13 @@ const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
         return (
           <div class="cell" style={`--col: ${l.col}; --top: ${l.top}rem;`}>
           <Reveal delay={i * 90}>
-            <a class="tile" href={w.href}>
-              <div class="tile__media" data-theme={w.theme} style={`--ratio: ${l.ratio};`}>
-                <img src={w.image} alt={w.alt} loading="lazy" decoding="async" />
-              </div>
-              <p class="tile__co u-label">{w.company}</p>
-              <h2 class="tile__title">
-                {w.title}
-                {isLocked(w.href) && <LockIcon class="tile__lock" size="0.6em" />}
-              </h2>
-              <p class="tile__role u-label">{w.role}</p>
-              <p class="tile__impact">{w.impact}</p>
-              <span class="tile__cta u-label">View case study &rarr;</span>
-            </a>
+            <CaseCard
+              title={w.title} href={w.href} image={w.image} alt={w.alt}
+              company={w.company} role={w.role} impact={w.impact}
+              theme={w.theme} ratio={l.ratio}
+              locked={isLocked(w.href)}
+              hoverState={w.hoverState}
+            />
           </Reveal>
           </div>
         );
@@ -124,47 +120,6 @@ const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
     margin-block-start: var(--top);
   }
 
-  .tile { display: block; text-decoration: none; color: var(--fg); }
-  .tile__media {
-    background: var(--bg);       /* the project's own hue, from data-theme */
-    aspect-ratio: var(--ratio);
-    overflow: hidden;
-    margin-bottom: 1.5rem;
-  }
-  .tile__media img {
-    width: 100%; height: 100%;
-    object-fit: cover; display: block;
-    transition: transform 600ms var(--ease-out);
-  }
-  .tile:hover .tile__media img,
-  .tile:focus-visible .tile__media img { transform: scale(1.04); }
-
-  .tile__co { color: var(--fg-dim); margin: 0 0 0.5rem; }
-  .tile__title {
-    font-family: var(--font-display);
-    font-size: var(--step-h3);
-    line-height: 1.15;
-    letter-spacing: var(--tracking-tight);
-    font-weight: 500;
-    margin: 0 0 0.85rem;
-    max-width: 24ch;
-    text-wrap: balance;
-  }
-  .tile__lock { margin-left: 0.4em; color: var(--fg-dim); vertical-align: middle; }
-  /* Scope and metric stay on the tile face — a recruiter skimming for team
-     size shouldn't have to open the case study to find it. */
-  .tile__role { color: var(--fg-dim); margin: 0 0 1rem; }
-  .tile__impact {
-    font-size: var(--step-body);
-    margin: 0 0 1.25rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--rule);
-    max-width: 30ch;
-    text-wrap: pretty;
-  }
-  .tile__cta { color: var(--accent-text); display: inline-block; }
-  .tile:hover .tile__cta { text-decoration: underline; text-underline-offset: 4px; }
-
   /* --- Archive -------------------------------------------------------
      The rows themselves are ArchiveList.astro; only the heading is here. */
   .arch__head { margin: 0 0 2rem; color: var(--fg-dim); }
@@ -172,14 +127,8 @@ const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
   @media (max-width: 900px) {
     .grid { grid-template-columns: 1fr; row-gap: clamp(3.5rem, 10vw, 5rem); }
     .cell { grid-column: 1 / -1; margin-block-start: 0; }
-    .tile__media { aspect-ratio: 16 / 10; }
     .arch__row { grid-template-columns: minmax(0, 1fr) 5rem; }
     .arch__tag { grid-column: 1; }
     .arch__year { grid-column: 2; grid-row: 1; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .tile:hover .tile__media img,
-    .tile:focus-visible .tile__media img { transform: none; }
   }
 </style>

@@ -1,37 +1,110 @@
 ---
-/* A work tile for the drag rail or the work index. */
+/* CaseCard.astro — the one project-card component. Used by /work's grid;
+   any future grid of projects (another index, a "more work" rail) should
+   reach for this rather than inlining a card again.
+
+   The hover affordance is HoverLabel.astro, wired through the single
+   `hoverState` prop — one of the five states in `data/hoverState.ts`. That
+   is the whole contract: a new project sets one prop, and the label,
+   positioning and reveal are already handled. `data-hover-trigger` is what
+   HoverLabel listens for; see its own header comment for why that has to
+   be a plain attribute rather than a scoped class.
+
+   `theme` sets data-theme on the media only, not the whole card — the
+   project's hue (coral, lilac, sage, …) belongs to its thumbnail, the way
+   /work's staggered grid already used it, while the meta text underneath
+   stays in the page's own palette. HoverLabel itself renders as a sibling
+   of the media, not nested inside it, so its pill can track the cursor
+   across the *whole* card — including the meta text below the image —
+   rather than stopping dead at the media's own edge; it still gets the
+   project's own colour, just copied off the media element by its own
+   script instead of inherited through the cascade, since it no longer sits
+   inside that scope. See HoverLabel's header comment for why. */
+import HoverLabel from './HoverLabel.astro';
+import LockIcon from './LockIcon.astro';
+import type { HoverState } from '../data/hoverState';
+
 interface Props {
   title: string; href: string; image: string; alt?: string;
-  scope?: string; metric?: string; w?: number; ratio?: string;
+  company?: string; role?: string; impact?: string;
+  theme?: string; ratio?: string;
+  locked?: boolean;
+  hoverState?: HoverState;
 }
-const { title, href, image, alt = '', scope, metric, w = 34, ratio = '4/3' } = Astro.props;
+const {
+  title, href, image, alt = '',
+  company, role, impact,
+  theme, ratio = '4 / 3',
+  locked = false,
+  hoverState = 'case-study',
+} = Astro.props;
 ---
-<a class="card" href={href} style={`--w:${w}vw; --ratio:${ratio};`}>
-  <div class="card__media"><img src={image} alt={alt} loading="lazy" decoding="async" /></div>
-  <div class="card__meta">
-    {scope && <p class="u-label card__scope">{scope}</p>}
-    <h3 class="card__title">{title}</h3>
-    {metric && <p class="card__metric">{metric}</p>}
+<a class="card" href={href} data-hover-trigger>
+  <div class="card__media" data-theme={theme} style={`--ratio: ${ratio};`}>
+    <img src={image} alt={alt} loading="lazy" decoding="async" />
   </div>
+  <HoverLabel state={hoverState} />
+  {company && <p class="card__co u-label">{company}</p>}
+  <h2 class="card__title">
+    {title}
+    {locked && <LockIcon class="card__lock" size="0.6em" />}
+  </h2>
+  {role && <p class="card__role u-label">{role}</p>}
+  {impact && <p class="card__impact">{impact}</p>}
 </a>
 
 <style>
-  .card {
-    display: block; width: var(--w); min-width: 260px;
-    color: inherit; text-decoration: none;
-  }
+  /* cursor: none — HoverLabel's pill is the cursor here (see its header
+     comment); the browser's own hand/pointer icon underneath it would be
+     a second, redundant cursor. */
+  .card { display: block; text-decoration: none; color: var(--fg); position: relative; cursor: none; }
   .card__media {
-    aspect-ratio: var(--ratio); overflow: hidden;
-    border-radius: var(--radius); background: var(--rule);
+    background: var(--bg);   /* the project's own hue, from data-theme */
+    aspect-ratio: var(--ratio);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
   }
   .card__media img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
-    transition: scale var(--dur-hover) var(--ease-out);
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: transform 600ms var(--ease-out);
   }
-  .card:hover .card__media img { scale: 1.03; }
-  .card__meta { padding-top: 1rem; display: grid; gap: 0.35rem; }
-  .card__scope { margin: 0; }
-  .card__title { font-size: var(--step-h3); font-weight: 500; margin: 0; letter-spacing: var(--tracking-tight); }
-  .card__metric { margin: 0; color: var(--fg-dim); font-size: 0.9rem; }
-  @media (max-width: 700px) { .card { width: 78vw; } }
+  .card:hover .card__media img,
+  .card:focus-visible .card__media img { transform: scale(1.04); }
+
+  .card__co { color: var(--fg-dim); margin: 0 0 0.5rem; }
+  .card__title {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    line-height: 1.15;
+    letter-spacing: var(--tracking-tight);
+    font-weight: 500;
+    margin: 0 0 0.85rem;
+    max-width: 24ch;
+    text-wrap: balance;
+  }
+  .card__lock { margin-left: 0.4em; color: var(--fg-dim); vertical-align: middle; }
+  /* Scope and metric stay on the card face — a recruiter skimming for team
+     size shouldn't have to open the case study to find it. */
+  .card__role { color: var(--fg-dim); margin: 0 0 1rem; }
+  .card__impact {
+    font-size: var(--step-body);
+    margin: 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    max-width: 30ch;
+    text-wrap: pretty;
+  }
+
+  /* /work's grid drops to a single column at this width — every card's
+     media matches the same landscape crop there instead of each keeping
+     its own staggered-grid ratio. */
+  @media (max-width: 900px) {
+    .card__media { aspect-ratio: 16 / 10; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card:hover .card__media img,
+    .card:focus-visible .card__media img { transform: none; }
+  }
 </style>

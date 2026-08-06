@@ -11,6 +11,15 @@
    it retract: stop moving and the whole chain collapses onto the cursor,
    so the line shrinks to nothing instead of being trimmed or faded.
 
+   One exception: over a [data-hover-trigger] card, the cursor IS a
+   HoverLabel pill (see that component), so collapsing all the way onto it
+   would draw the trail's tip straight through the pill's own text. The
+   head's target there stops GAP px short of the cursor instead of
+   reaching it — see headTarget() — so the line still comes to rest near
+   the pill, just clear of it, rather than fully hiding on cards the way
+   an earlier pass here tried (reverted: the trail should still read
+   everywhere, just not overlap the label).
+
    Two details that are easy to miss and both matter to the feel:
 
    1. CURL. While moving, each point's target is nudged PERPENDICULAR to
@@ -88,6 +97,7 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
     let visible = false;
     let seeded = false;
     let looping = false;
+    let catchUpTimer = 0;
     let colour = '#f4ece1';
 
     const resize = () => {
@@ -118,13 +128,39 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
 
     const lerp = (a, b, t) => a + (b - a) * t;
 
+    // While a card's hover pill is up, the head's target stops GAP px
+    // short of the cursor at first, instead of converging exactly onto it
+    // — the pill sits centred ON the cursor, so a head that reaches the
+    // cursor reaches the pill too, right through its text. GAP is sized to
+    // clear that pill's own rough half-diagonal at its current (small)
+    // size — see HoverLabel.astro. That stand-off is only for the
+    // approach, though: once the cursor has held still near a card for
+    // HOLD_MS, the gap releases and the head finally closes the rest of
+    // the way, the same full collapse-onto-the-cursor this component does
+    // everywhere else — a visitor who has stopped to read the pill isn't
+    // hurt by the line settling under it a beat later. isSettled() below
+    // reads the same target, so the rAF loop still parks correctly either
+    // way, gapped or caught up.
+    const GAP = 70;
+    const HOLD_MS = 700;
+    let overCard = false;
+    let overCardSince = 0;
+
+    const headTarget = () => {
+      if (!overCard) return mouse;
+      if (performance.now() - overCardSince >= HOLD_MS) return mouse;
+      const dist = Math.hypot(mouse.x - points[0].x, mouse.y - points[0].y);
+      return dist <= GAP ? points[0] : mouse;
+    };
+
     const isSettled = () => {
       for (let i = 1; i < points.length; i++) {
         const prev = points[i - 1];
         const p = points[i];
         if (Math.hypot(prev.x - p.x, prev.y - p.y) > SETTLE_EPS) return false;
       }
-      return Math.hypot(mouse.x - points[0].x, mouse.y - points[0].y) <= SETTLE_EPS;
+      const t = headTarget();
+      return Math.hypot(t.x - points[0].x, t.y - points[0].y) <= SETTLE_EPS;
     };
 
     const draw = () => {
@@ -155,8 +191,9 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
     const tick = () => {
       speed *= 0.9;
 
-      points[0].x = lerp(points[0].x, mouse.x, HEAD_LERP);
-      points[0].y = lerp(points[0].y, mouse.y, HEAD_LERP);
+      const target = headTarget();
+      points[0].x = lerp(points[0].x, target.x, HEAD_LERP);
+      points[0].y = lerp(points[0].y, target.y, HEAD_LERP);
 
       const moving = speed > IDLE_SPEED;
       const curl = moving ? CURL * Math.min(speed / 16, 1) ** 1.5 : 0;
@@ -198,10 +235,29 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
     };
 
     const onMove = (e) => {
+      const wasOverCard = overCard;
+      overCard = e.target instanceof Element && !!e.target.closest('[data-hover-trigger]');
+      if (overCard && !wasOverCard) {
+        overCardSince = performance.now();
+        // The rAF loop parks itself once the chain settles at the gapped
+        // stand-off — with the cursor no longer moving, nothing would
+        // otherwise call startLoop() again to notice HOLD_MS has passed
+        // and let the head finally close the rest of the way. This wakes
+        // it once, right on schedule, whether or not the visitor's hand
+        // moves again in the meantime.
+        clearTimeout(catchUpTimer);
+        catchUpTimer = setTimeout(startLoop, HOLD_MS + 20);
+      } else if (!overCard) {
+        clearTimeout(catchUpTimer);
+      }
+
       if (!seeded) {
         // Drop the whole chain on the cursor so it doesn't whip in from
-        // the corner on first sighting.
-        for (const p of points) { p.x = e.clientX; p.y = e.clientY; }
+        // the corner on first sighting — offset by GAP if that first
+        // sighting already lands on a card, so it doesn't seed itself
+        // straight onto the pill it's meant to clear.
+        const sx = overCard ? e.clientX - GAP : e.clientX;
+        for (const p of points) { p.x = sx; p.y = e.clientY; }
         seeded = true;
       }
       speed = Math.hypot(e.clientX - mouse.x, e.clientY - mouse.y);

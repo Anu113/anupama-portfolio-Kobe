@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 656" role="img" aria-label="Service blueprint of the OIN submission journey, showing developer actions, the portal frontstage, backstage review systems, and Okta support teams across six phases from discover to maintain">
+  <rect width="1400" height="656" fill="#f4ece1"/>
+  <text x="30" y="40" font-family="system-ui" font-size="16" font-weight="700" letter-spacing="3" fill="#17120f">SERVICE BLUEPRINT — OIN SUBMISSION</text>
+
+  <!-- phase headers -->
+  <text x="352" y="78" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="2" fill="#17120f" text-anchor="middle">DISCOVER</text>
+  <text x="535" y="78" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="2" fill="#17120f" text-anchor="middle">BUILD</text>
+  <text x="719" y="78" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="2" fill="#17120f" text-anchor="middle">SUBMIT</text>
+  <text x="902" y="78" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="2" fill="#17120f" text-anchor="middle">REVIEW</text>
+  <text x="1085" y="78" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="2" fill="#17120f" text-anchor="middle">PUBLISH</text>
+  <text x="1269" y="78" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="2" fill="#17120f" text-anchor="middle">MAINTAIN</text>
+
+  <!-- grid -->
+  <g stroke="#ddd2c3" stroke-width="1.5">
+    <line x1="20" y1="90" x2="1360" y2="90"/>
+    <line x1="20" y1="220" x2="1360" y2="220"/>
+    <line x1="20" y1="350" x2="1360" y2="350"/>
+    <line x1="20" y1="480" x2="1360" y2="480"/>
+    <line x1="20" y1="610" x2="1360" y2="610"/>
+    <line x1="260" y1="60" x2="260" y2="610"/>
+    <line x1="443" y1="90" x2="443" y2="610"/>
+    <line x1="627" y1="90" x2="627" y2="610"/>
+    <line x1="810" y1="90" x2="810" y2="610"/>
+    <line x1="993" y1="90" x2="993" y2="610"/>
+    <line x1="1177" y1="90" x2="1177" y2="610"/>
+  </g>
+
+  <!-- row labels -->
+  <text x="230" y="160" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="1" fill="#17120f" text-anchor="end">DEVELOPER</text>
+  <text x="230" y="278" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="1" fill="#17120f" text-anchor="end">FRONTSTAGE</text>
+  <text x="230" y="294" font-family="system-ui" font-size="12" fill="#5d534a" text-anchor="end">the portal</text>
+  <text x="230" y="408" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="1" fill="#17120f" text-anchor="end">BACKSTAGE</text>
+  <text x="230" y="424" font-family="system-ui" font-size="12" fill="#5d534a" text-anchor="end">review systems</text>
+  <text x="230" y="538" font-family="system-ui" font-size="13" font-weight="700" letter-spacing="1" fill="#17120f" text-anchor="end">SUPPORT</text>
+  <text x="230" y="554" font-family="system-ui" font-size="12" fill="#5d534a" text-anchor="end">Okta teams</text>
+
+  <!-- emphasis: the two backstage cells the framework replaced -->
+  <rect x="637" y="360" width="366" height="110" fill="#e8613c" opacity="0.16"/>
+
+  <!-- row: developer -->
+  <g font-family="system-ui" font-size="13" fill="#5d534a" text-anchor="middle">
+    <text x="352" y="158">Hears about it</text>
+    <text x="535" y="158">Writes the connector</text>
+    <text x="719" y="158">Uploads a manifest</text>
+    <text x="902" y="158">Waits, fixes errors</text>
+    <text x="1085" y="158">Sees it listed</text>
+    <text x="1269" y="158">Ships version updates</text>
+  </g>
+
+  <!-- row: frontstage -->
+  <g font-family="system-ui" font-size="13" fill="#5d534a" text-anchor="middle">
+    <text x="352" y="288">Docs site</text>
+    <text x="535" y="288">Sandbox tenant</text>
+    <text x="719" y="288">Submission console</text>
+    <text x="902" y="288">Status tracker</text>
+    <text x="1085" y="288">OIN catalog listing</text>
+    <text x="1269" y="288">Version dashboard</text>
+  </g>
+
+  <!-- row: backstage -->
+  <g font-family="system-ui" font-size="13" fill="#17120f" text-anchor="middle">
+    <text x="352" y="418">—</text>
+    <text x="535" y="418">Manifest schema</text>
+    <text x="719" y="418" font-weight="600">Automated validation</text>
+    <text x="902" y="418" font-weight="600">Security review</text>
+    <text x="1085" y="418">Publishing pipeline</text>
+    <text x="1269" y="418">Regression checks</text>
+  </g>
+
+  <!-- row: support -->
+  <g font-family="system-ui" font-size="13" fill="#5d534a" text-anchor="middle">
+    <text x="352" y="548">Dev relations content</text>
+    <text x="535" y="548">Sample code, forums</text>
+    <text x="719" y="548">—</text>
+    <text x="902" y="548">Review team</text>
+    <text x="1085" y="548">Partner marketing</text>
+    <text x="1269" y="548">Partner engineering</text>
+  </g>
+
+  <text x="1360" y="640" font-family="system-ui" font-size="12" fill="#a83a19" text-anchor="end">highlighted: the two backstage steps the framework made machine-checkable</text>
+</svg>

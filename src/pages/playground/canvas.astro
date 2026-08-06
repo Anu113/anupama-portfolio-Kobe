@@ -1,0 +1,106 @@
+---
+/* /playground/canvas — a second, experimental playground page.
+   Deliberately NOT linked from Nav.astro: it's a motion study, not a
+   confirmed addition to the site's three-link nav. Reachable by URL only.
+
+   Where /playground (InfiniteStream.astro) keeps vertical as the document's
+   own scroll and only pans sideways, this page hands the whole viewport to
+   PanCanvas.astro and lets it own both axes — drag, wheel or arrow keys move
+   the field in any direction, including diagonally, the way
+   emmiwu.com/playground does. That means there is nothing below the field
+   for a wheel to reach; the fixed canvas covers exactly one reserved screen
+   (`.canvasspacer`) and the real page content (nav aside) sits in a band
+   after it at a HIGHER z-index, the same "closing band covers the fixed bed"
+   trick /playground uses for its own coda. Scroll or tab past the canvas to
+   reach it. */
+import Base from '../../layouts/Base.astro';
+import { canvasTiles } from '../../data/pancanvas.ts';
+import PanCanvas from '../../components/PanCanvas.astro';
+---
+<!-- No cursor trail: this field wears the grab/grabbing hand instead,
+     same call as /playground. -->
+<Base
+  title="Playground — free canvas — Anupama Mishra"
+  description="An experimental, freely pannable field of sketches and studies."
+  trail={false}
+>
+  <div class="canvasbed" data-theme="bone">
+    <PanCanvas tiles={canvasTiles} />
+    <p class="canvasbed__hint">
+      <svg class="canvasbed__hint-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v18M3 12h18" />
+          <path d="M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3" />
+        </g>
+      </svg>
+      Scroll, drag, or move to pan
+    </p>
+  </div>
+  <div class="canvasspacer" aria-hidden="true"></div>
+
+  <section class="canvascoda" data-theme="ink">
+    <p class="u-label">End of the field</p>
+    <h2 class="canvascoda__title">A second way of wandering the same sketches.</h2>
+    <p class="u-measure canvascoda__body">
+      The row-and-column version lives on <a href="/playground">the main playground</a>. Selected, outcome-attached work is in <a href="/work">work</a>.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .canvasbed {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: var(--bg);
+  }
+  .canvasbed__hint {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(1.5rem, 5vh, 3rem);
+    transform: translateX(-50%);
+    z-index: 1;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--step-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    pointer-events: none;
+  }
+  .canvasbed__hint-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
+  /* Reserves one screen of document height so the fixed canvas has
+     somewhere to visually sit and a keyboard user has somewhere to land
+     before reaching the coda below. */
+  .canvasspacer { height: 100dvh; }
+
+  /* Same move as /playground's `.playcoda`: a higher z-index than the fixed
+     bed, so it slides up and covers the field instead of sitting under it. */
+  .canvascoda {
+    position: relative;
+    z-index: 1;
+    background: var(--bg);
+    color: var(--fg);
+    padding: var(--space-section) var(--gutter);
+  }
+  .canvascoda__title {
+    font-family: var(--font-display);
+    font-size: var(--step-h2);
+    letter-spacing: var(--tracking-display);
+    font-weight: 500;
+    margin: 0.75rem 0 1rem;
+  }
+  .canvascoda__body { color: var(--fg-dim); }
+
+  /* The site footer closes every page; bump it above the fixed canvas the
+     same way the coda is, or it would sit underneath rather than after. */
+  :global(footer) { position: relative; z-index: 1; }
+</style>

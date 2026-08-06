@@ -1,0 +1,229 @@
+---
+/* /contact — a dedicated, fast path to reach her, for a visitor who
+   followed a single nav link rather than reading the whole /about page
+   (which carries its own fuller "Connect" mad-lib form at #contact).
+
+   Field set and placeholder-as-label voice are inspired by ozgur.design's
+   own #contact form (Name/"What you go by", Email/"Where I should reply
+   to", Company, Reason, a short character-capped Message) — not copied
+   wholesale: this site has no backend, so "Send message" builds a mailto:
+   from the fields instead of posting anywhere, the same move LockedGate.astro
+   and /about's own connect form already make for exactly that reason. */
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Reveal from '../components/Reveal.astro';
+import { site } from '../data/site';
+
+const reasons = ['Hiring', 'Project', 'Networking', 'Other'] as const;
+const MESSAGE_CAP = 280;
+---
+<Base
+  title="Contact — Anupama Mishra"
+  description={`Get in touch with ${site.name}, a staff product designer currently looking for a ${site.ask}.`}
+>
+  <Section theme="bone" class="contactpage">
+    <PageHeader label="Contact">
+      Let's talk about a <em>{site.seeking}</em> role.
+      <Fragment slot="intro">
+        <p>{site.ask}. The form below reaches me directly — I read and reply myself.</p>
+      </Fragment>
+    </PageHeader>
+
+    <Reveal delay={160}>
+      <form class="cform" data-contact-form data-to={site.email}>
+        <div class="cform__row">
+          <div class="cform__field">
+            <label class="u-label" for="cf-name">Name</label>
+            <input id="cf-name" name="name" type="text" placeholder="What you go by" required />
+          </div>
+          <div class="cform__field">
+            <label class="u-label" for="cf-email">Email</label>
+            <input id="cf-email" name="email" type="email" placeholder="Where I should reply to" required />
+          </div>
+        </div>
+
+        <div class="cform__row">
+          <div class="cform__field">
+            <label class="u-label" for="cf-company">Company</label>
+            <input id="cf-company" name="company" type="text" placeholder="Where you're reaching out from" />
+          </div>
+          <div class="cform__field">
+            <label class="u-label" for="cf-reason">Reason</label>
+            <div class="cform__select">
+              <select id="cf-reason" name="reason" required>
+                <option value="" selected disabled>What this message is about</option>
+                {reasons.map((r) => <option value={r}>{r}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="cform__field">
+          <label class="u-label" for="cf-message">Message</label>
+          <textarea
+            id="cf-message"
+            name="message"
+            rows="3"
+            maxlength={MESSAGE_CAP}
+            placeholder="Keep it short — the specifics work best over email anyway."
+            required
+            data-cform-message
+          ></textarea>
+          <p class="u-label cform__count" aria-hidden="true" data-cform-count>0 / {MESSAGE_CAP}</p>
+        </div>
+
+        <button class="cform__submit" type="submit">Send message</button>
+      </form>
+    </Reveal>
+
+    <Reveal delay={280}>
+      <p class="cform__alt">
+        Prefer it plain? <a href={`mailto:${site.email}`}>{site.email}</a> or{' '}
+        <a href={site.linkedin} rel="me">LinkedIn</a>.
+      </p>
+    </Reveal>
+  </Section>
+</Base>
+
+<style>
+  /* :global — this band is rendered by Section.astro, so a class passed
+     through `class` doesn't carry this page's scope hash (see [slug].astro
+     and about.astro for the same note). */
+  :global(.contactpage) {
+    padding-block-start: calc(var(--nav-h) + var(--space-band-tight));
+    padding-block-end: var(--space-section);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2.5rem, 5vw, 3.5rem);
+  }
+
+  .cform {
+    width: 100%;
+    max-width: 34rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .cform__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .cform__field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .cform__field label { color: var(--fg-dim); }
+
+  .cform input,
+  .cform select,
+  .cform textarea {
+    font: inherit;
+    font-size: var(--step-body);
+    color: var(--fg);
+    background: var(--screen);
+    /* --fg-dim, not --rule — --rule is tuned as a quiet hairline divider
+       (tokens.css) and falls under the 3:1 WCAG needs for an interactive
+       control's own boundary; --fg-dim already clears AA at body size in
+       every theme. Same reasoning as about.astro's .connect__field. */
+    border: none;
+    border-bottom: 2px solid var(--fg-dim);
+    border-radius: 0;
+    padding: 0.6em 0.1em;
+    width: 100%;
+  }
+  .cform textarea { resize: vertical; min-height: 4.5em; }
+  .cform input:focus-visible,
+  .cform select:focus-visible,
+  .cform textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cform input::placeholder,
+  .cform textarea::placeholder { color: var(--fg-dim); opacity: 0.7; }
+
+  /* Native <select>, own arrow drawn in CSS so it repaints with the theme —
+     same trick as about.astro's .dselect__trigger::after, without that
+     component's popup machinery: this field sits in an ordinary form grid,
+     not inline in a sentence, so a plain <select> is enough here. */
+  .cform__select { position: relative; }
+  .cform__select select {
+    appearance: none;
+    cursor: pointer;
+  }
+  .cform__select::after {
+    content: '';
+    position: absolute;
+    right: 0.3em;
+    top: 50%;
+    width: 0.5em;
+    height: 0.5em;
+    border-right: 1.5px solid var(--fg-dim);
+    border-bottom: 1.5px solid var(--fg-dim);
+    transform: translateY(-70%) rotate(45deg);
+    pointer-events: none;
+  }
+
+  .cform__count {
+    align-self: flex-end;
+    color: var(--fg-dim);
+    margin: 0;
+  }
+
+  .cform__submit {
+    align-self: flex-start;
+    font: inherit;
+    font-size: var(--step-body);
+    color: var(--fg);
+    background: none;
+    border: 1px solid var(--fg-dim);
+    border-radius: 999px;
+    padding: 0.7rem 1.75rem;
+    cursor: pointer;
+    transition: background var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+  }
+  .cform__submit:hover { background: var(--screen); border-color: var(--fg-dim); }
+
+  .cform__alt { color: var(--fg-dim); margin: 0; text-align: center; }
+  .cform__alt a { color: var(--fg); }
+
+  @media (max-width: 560px) {
+    .cform__row { grid-template-columns: 1fr; gap: 1.5rem; }
+  }
+</style>
+
+<script>
+  // Character counter — purely visual, so it's aria-hidden in the markup;
+  // the field's own required/maxlength carries the real constraint for
+  // assistive tech, same call as about.astro's dropdown validation.
+  const message = document.querySelector<HTMLTextAreaElement>('[data-cform-message]');
+  const count = document.querySelector<HTMLElement>('[data-cform-count]');
+  if (message && count) {
+    const cap = message.maxLength;
+    const update = () => { count.textContent = `${message.value.length} / ${cap}`; };
+    update();
+    message.addEventListener('input', update);
+  }
+
+  // Static site, no server — "Send message" builds a mailto: from the
+  // fields instead of posting anywhere, same move LockedGate.astro and
+  // /about's own connect form already make.
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const name = String(data.get('name') ?? '').trim();
+    const email = String(data.get('email') ?? '').trim();
+    const company = String(data.get('company') ?? '').trim();
+    const reason = String(data.get('reason') ?? '').trim();
+    const msg = String(data.get('message') ?? '').trim();
+    const to = form.dataset.to ?? '';
+
+    const subject = `${reason || 'Hello'} — from ${name || 'a visitor'}`;
+    const body = [
+      `${name || 'Someone'} here${company ? `, from ${company}` : ''}.`,
+      '',
+      msg,
+      '',
+      `Reach me at ${email || '[email]'}.`,
+    ].join('\n');
+
+    window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  });
+</script>
