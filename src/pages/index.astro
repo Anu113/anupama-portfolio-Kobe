@@ -29,21 +29,16 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
   <Section theme="iris" class="hero">
     <Reveal delay={120}>
       <h1 class="u-display hero__line">
-        Designing<br />products<br />people<br />trust<span class="hero__dot">.</span>
+        Staff Product Designer with 10+ years shaping digital products
+        across fintech, consumer, and SaaS<span class="hero__dot">.</span>
       </h1>
     </Reveal>
   </Section>
 
-  <!-- Intro paragraph — the fuller bio, in prose, right under the headline.
-       Stays on iris: it's still the opening act, just the second beat of it,
-       before the palette switches to ink for the work section. -->
+  <!-- Intro paragraph removed: it duplicated the headline above once the
+       headline itself became this sentence. If a second beat is wanted
+       here again, it should say something the headline doesn't. -->
   <Section theme="iris" class="intro">
-    <Reveal>
-      <p class="u-measure intro__body">
-        I'm a Staff Product Designer with 10+ years of experience designing
-        products across fintech, platform, identity, and enterprise software.
-      </p>
-    </Reveal>
     <Reveal delay={100}>
       <p class="intro__links">
         <a class="intro__resume u-label" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
@@ -167,10 +162,13 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
      unscoped rule here silently never matches (CLAUDE.md's own documented
      gotcha); without :global() the hero never gets its centring. */
   :global(.hero) { min-height: 92svh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
-  /* The four lines are broken by hand. The measure is set to roughly the
-     longest of them so a narrow screen re-wraps close to the same shape
-     instead of fighting the <br>s. */
-  .hero__line { max-width: 20ch; }
+  /* The headline is now a full sentence, not four hand-broken words, so
+     it can't wear --step-display (a poster-scale size meant for a
+     handful of words) or the old 20ch measure — together they forced
+     this sentence into an 8-line tower taller than the viewport. Sized
+     down to --step-h1 and widened so it wraps into a few natural lines
+     instead. */
+  .hero__line { font-size: var(--step-h1); max-width: 32ch; }
 
   /* The bio paragraph after the hero. Tighter than the section default —
      it's a second beat of the opening act, not a new one, so it shouldn't
