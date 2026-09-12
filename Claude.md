@@ -81,10 +81,14 @@ band it sat in, and had no visible boundary against it). The nav watches which t
 behind it and adopts that palette automatically (`Nav.astro`, bottom script). Add
 a palette by copying a block — don't invent a parallel mechanism.
 
-Every palette also has a `[data-mode='night']` variant. The nav's day/night
-toggle sets `data-mode` on `<html>`; the mode is resolved by an inline script in
-`Base.astro` before first paint. **A new palette needs a night block too**, or
-that band will sit unchanged while everything around it turns.
+Every palette also has a `[data-mode='night']` variant. `ThemeRail.astro` — a
+fixed Day / Night / Auto control, mounted only on the home page (not in
+`Base.astro`, so it never appears on interior pages) but staying on screen
+for that whole page's scroll, not just the hero — sets `data-mode` on
+`<html>`; the mode is resolved by an inline script in `Base.astro` before
+first paint, sitewide, regardless of which page set it. **A new palette
+needs a night block too**, or that band will sit unchanged while
+everything around it turns.
 
 **3. Case studies lead with scope and judgement, then craft.**
 This matters more than anything else in the repo. The standard portfolio
@@ -136,9 +140,6 @@ must change.
 
 ## Don't add without asking
 
-- An animation library (GSAP, Framer Motion, Lenis). The no-library constraint
-  is deliberate — it keeps the repo legible to a designer. If choreography
-  genuinely needs one, make the case first.
 - A CMS, React, or a component library. Markdown and `.astro` are enough.
 - Analytics or tracking scripts.
 - More palettes than there are bands to wear them. Eight exist and all eight
@@ -149,7 +150,8 @@ must change.
 | Component | What it does |
 |---|---|
 | `Section.astro` | Wraps a band of the page in a palette. `theme` prop. |
-| `Nav.astro` | Fixed nav, recolours to match the band behind it. |
+| `Nav.astro` | Fixed nav, recolours to match the band behind it. Wordmark + links only — the day/night toggle now lives in `ThemeRail.astro`. |
+| `ThemeRail.astro` | The day/night control — a fixed glass capsule (Day / Night / Auto, no tooltips), mounted only on the home page (`index.astro`), not `Base.astro` — every other page has no visible control. Sets `data-mode` on `<html>`, same sitewide mechanism the old nav toggle used, so the mode still carries to interior pages even without a control there. Auto clears any pinned choice and follows `prefers-color-scheme` live. |
 | `Reveal.astro` | Scroll fade-and-lift. `delay`, `y` props. |
 | `DragRail.astro` | Horizontal drag-scroll rail with grab cursor. |
 | `Mosaic.astro` | Edge-cropped asymmetric image grid + parallax. |

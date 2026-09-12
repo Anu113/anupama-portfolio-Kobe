@@ -1,120 +1,212 @@
 ---
-/* ProjectCard.astro — the home page's "Selected work" panel: one project,
-   one full-width row, one unified card. Built after studying
-   tobias-ecsedy.com's project cards — the presentation and interaction
-   only, not its type, colour or branding (explicitly not the brief): a
-   single outer padding wraps both the hero canvas and the text underneath
-   it, so the artwork sits inset from the card's own edge instead of a
-   separate image tile with a caption below. The whole card is one <a>,
-   not an image with a button next to it.
+/* ProjectCard.astro — the home page's "Selected work" row: one project,
+   one full-width rounded card, text on the left and its media on the
+   right. Redesigned from an earlier stacked (hero-on-top) layout after
+   review against a reference row-card pattern: same two-column shape,
+   numbered index, pill role tags and an explicit "View case study"
+   line, kept on this site's own palette and typography rather than the
+   reference's colours.
 
    `theme` is the card's own background — one colour from tokens.css's
-   palette, the same data-theme mechanism as every other themed band on the
+   palette, same data-theme mechanism as every other themed band on the
    site — so each project reads as its own coloured panel against the
-   page's (usually ink) ground. That contrast between panel and page draws
-   the "clearly defined boundary" instead of a literal border, and it's
-   also what makes this a genuinely reusable card: swap the theme and nine
-   more design decisions (--fg, --fg-dim, --screen, --shell, the night
-   variant) come along for free, already tuned for contrast.
+   page's (usually ink) ground, and swapping the theme still carries
+   nine other decisions (--fg, --fg-dim, --screen, --shell, the night
+   variant) for free.
 
-   The hero is a canvas, not an image container — a gallery wall she pins
-   assets to, not a picture frame that gets replaced by one. Its own
-   background is a muted step off the card's `--bg` (`color-mix`, same hue
-   family — a genuinely different colour, the way `--screen` is, reads as
-   the wrong project's palette leaking into this one), and it stays visible
-   behind whatever sits on it: `object-fit: contain` inside a padded flex
-   box, not `cover` filling the box edge-to-edge, because most of what gets
-   pinned here — a browser window, a phone mockup, a floating UI piece —
-   will be a transparent PNG that's meant to float on the wall, not a photo
-   that's meant to fill it. Hero content is a named slot for exactly that
-   reason: pass slot="hero" for anything richer than one asset (a layered
-   composition, a video, several mockups at once) and the card doesn't need
-   a new prop per media type. `image`/`alt`/`ratio` stay as the one-asset
-   shorthand, since that covers most projects today.
+   `--radius` is no longer 0 — see tokens.css's header comment on that
+   token. This card, Marquee, Mosaic, PanCanvas and InfiniteStream all
+   round together now; there's deliberately no separate radius value
+   just for this component.
 
-   The hover label is the same HoverLabel.astro every card uses — a pill
-   that tracks the cursor across the *whole* card, not just the hero canvas,
-   which is why it renders as a sibling of `.pc__hero` and `.pc__body`
-   rather than nested inside the hero: nested, the pill couldn't reach the
-   cursor once it left the canvas for the title/tagline underneath. `theme`
-   is set on `.pc` itself already, so the pill's colour needs no extra
-   wiring here (contrast HoverLabel's note on CaseCard, whose card root
-   isn't themed). An earlier pass here put the label in the text stack
-   instead (a line under the tagline) with a lift-and-shadow on the card
-   itself; both are gone in favour of the one shared hover affordance every
-   card now has. */
+   The hero is a canvas, not a picture frame: its own background is a
+   muted step off the card's `--bg`, and whatever's pinned to it sits
+   inset via `object-fit: contain`, not `cover` — most of what lands
+   here (a browser window, a phone mockup, a floating UI piece) is a
+   transparent PNG meant to float on the wall, not a photo meant to
+   fill it. `image`/`alt`/`ratio` are the one-asset shorthand; pass
+   `slot="hero"` for anything richer (a layered composition, a video,
+   several mockups at once).
+
+   The hover label is the same HoverLabel.astro every card uses,
+   rendered as a sibling of `.pc__hero`/`.pc__body` so its cursor-follow
+   pill can reach the whole card, not just the media half. `index` and
+   `tags` are new: the number is decorative (aria-hidden, the link
+   itself already names the project), the tags are real text — quiet
+   metadata about what she actually did on it, not another loud visual
+   element. */
 import type { HoverState } from '../data/hoverState';
 import HoverLabel from './HoverLabel.astro';
 import LockIcon from './LockIcon.astro';
 
 interface Props {
+  index: number;
   company: string; title: string; tagline: string; href: string;
-  image?: string; alt?: string; ratio?: string;
+  tags?: string[];
+  image?: string; alt?: string;
   theme?: 'ink' | 'bone' | 'sand' | 'clay' | 'sage' | 'lilac' | 'coral' | 'ember';
   hoverState?: HoverState;
   locked?: boolean;
 }
 const {
+  index,
   company, title, tagline, href,
-  image, alt = '', ratio = '2 / 1',
+  tags = [],
+  image, alt = '',
   theme = 'ink',
   hoverState = 'case-study',
   locked = false,
 } = Astro.props;
 const hasHeroSlot = Astro.slots.has('hero');
+const num = String(index).padStart(2, '0');
 ---
 <a class="pc" href={href} data-theme={theme} data-hover-trigger>
-  <div class="pc__hero" style={`--ratio: ${ratio};`}>
-    {hasHeroSlot ? <slot name="hero" /> : (image && <img src={image} alt={alt} loading="lazy" decoding="async" />)}
-  </div>
-  <HoverLabel state={hoverState} />
   <div class="pc__body">
+    <p class="pc__num" aria-hidden="true">{num}</p>
     <p class="pc__co u-label">{company}</p>
     <h2 class="pc__title">
       {title}
       {locked && <LockIcon class="pc__lock" size="0.6em" />}
     </h2>
     <p class="pc__tagline">{tagline}</p>
+    {tags.length > 0 && (
+      <ul class="pc__tags">
+        {tags.map((t) => <li>{t}</li>)}
+      </ul>
+    )}
+    <span class="pc__cta">View case study <span class="pc__arrow" aria-hidden="true">→</span></span>
   </div>
+
+  <div class="pc__hero">
+    {hasHeroSlot ? <slot name="hero" /> : (image && <img src={image} alt={alt} loading="lazy" decoding="async" />)}
+  </div>
+
+  <HoverLabel state={hoverState} />
 </a>
 
 <style>
   .pc {
-    display: block;
-    position: relative;   /* HoverLabel now tracks the whole card, not just the hero */
-    /* HoverLabel's pill is the cursor here — no second, native hand icon. */
-    cursor: none;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    /* minmax(0, 1fr), not the implicit auto row this used to have —
+       an auto row won't shrink below its content's own min-content
+       size even when the container has a definite height (a two-line
+       title makes the whole grid taller than a one-line title's,
+       overriding `height` below). minmax(0, ...) gives the row an
+       explicit floor of 0, so `height` actually wins and the taller
+       content clips via `overflow: hidden` instead. */
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    /* Fixed, not content-driven — every row in the list is this same
+       height regardless of title length or tag count, so the grid
+       reads as evenly composed instead of jumping card to card. Text
+       that doesn't fit clamps (below) rather than growing the row.
+       672px = 420px + 60%. */
+    height: 672px;
+    position: relative;   /* HoverLabel tracks the whole card */
+    cursor: none;         /* HoverLabel's pill is the cursor here */
     text-decoration: none;
     color: var(--fg);
     background: var(--bg);
     border-radius: var(--radius);
-    padding: clamp(1.75rem, 3.5vw, 3rem);
+    padding: clamp(1.75rem, 3vw, 2.75rem);
+    overflow: hidden;
+    transition: transform var(--dur-hover) var(--ease-out);
   }
-  /* No shadow, no lift on hover — the card itself stays still. The hover
-     affordance is HoverLabel tracking the cursor over the canvas below. */
 
-  /* The canvas — a wall, not a picture. Its background is a muted step off
-     the card's own --bg (same hue family, ~5% toward black) rather than
-     --screen, which is tuned as a *contrasting* device-frame tone on
-     purpose elsewhere and reads as a different project's colour leaking in
-     here. object-fit: contain + this padding is what keeps it a wall a PNG
-     gets pinned to: an asset is centred and shown whole, and the canvas
-     colour stays visible around it instead of the asset cropping to cover
-     every corner. */
+  .pc__body { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .pc__num {
+    font-family: var(--font-display);
+    font-size: var(--step-small);
+    color: var(--fg-dim);
+    margin: 0 0 clamp(1rem, 2vw, 1.5rem);
+  }
+  .pc__co { color: var(--fg-dim); margin: 0 0 0.6rem; }
+  .pc__title {
+    font-family: var(--font-display);
+    font-size: var(--step-h2);
+    line-height: 1.15;
+    letter-spacing: var(--tracking-tight);
+    font-weight: 600;
+    margin: 0 0 0.6rem;
+    text-wrap: balance;
+    /* Clamped, not left to grow — a longer title stays the same card
+       height as a short one; see .pc's own comment on why. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .pc__lock { margin-left: 0.4em; color: var(--fg-dim); vertical-align: middle; }
+  .pc__tagline {
+    font-family: var(--font-accent);
+    font-style: italic;
+    font-size: var(--step-body);
+    color: var(--fg-dim);
+    line-height: 1.4;
+    margin: 0 0 1.1rem;
+    max-width: 40ch;
+    text-wrap: pretty;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Role tags — quiet metadata, not another loud element: a hairline
+     outline, no fill, small tracked caps. Height-capped for the same
+     reason the title/tagline clamp — four tags and two tags take the
+     same vertical space. */
+  .pc__tags {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    list-style: none; margin: 0 0 1.4rem; padding: 0;
+    max-height: 4.2rem; overflow: hidden;
+  }
+  .pc__tags li {
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 0.3rem 0.7rem;
+    opacity: 0.85;
+  }
+
+  .pc__cta {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .pc__arrow { transition: transform var(--dur-hover) var(--ease-out); }
+  .pc:hover .pc__arrow { transform: translateX(3px); }
+
+  /* The canvas — a wall, not a picture. Muted step off the card's own
+     --bg (same hue family), object-fit: contain so a pinned asset
+     centres and shows whole instead of cropping to cover every edge. */
   .pc__hero {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     background: color-mix(in srgb, var(--bg) 95%, black 5%);
-    aspect-ratio: var(--ratio);
     border-radius: var(--radius);
     overflow: hidden;
     padding: clamp(1.25rem, 3vw, 2.25rem);
-    margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
+    /* Fills whatever height .pc's own fixed height leaves it via grid
+       stretch — `aspect-ratio` dropped since a fixed-height row can't
+       also honour an aspect ratio without one of the two losing. */
+    height: 100%;
+    min-height: 0;
   }
-  /* :global — hero content is as likely to arrive via the slot (a phone
-     frame, a video, several pinned assets) as via the `image` prop. */
   .pc__hero img,
   .pc__hero :global(img),
   .pc__hero :global(video) {
@@ -126,33 +218,9 @@ const hasHeroSlot = Astro.slots.has('hero');
     display: block;
   }
 
-  .pc__body { max-width: 44ch; }
-  .pc__co { color: var(--fg-dim); margin: 0 0 0.6rem; }
-  .pc__title {
-    font-family: var(--font-display);
-    font-size: var(--step-h2);
-    line-height: 1.1;
-    letter-spacing: var(--tracking-tight);
-    font-weight: 500;
-    margin: 0 0 0.6rem;
-    text-wrap: balance;
-  }
-  .pc__lock { margin-left: 0.4em; color: var(--fg-dim); vertical-align: middle; }
-  /* Small and quiet on purpose — a caption, not a second headline. The
-     first pass sized this at --step-h3 and it competed with the title for
-     the same moment, which is also what was making the card run tall. */
-  .pc__tagline {
-    font-family: var(--font-accent);
-    font-style: italic;
-    font-size: var(--step-body);
-    color: var(--fg-dim);
-    line-height: 1.4;
-    margin: 0;
-    max-width: 42ch;
-    text-wrap: pretty;
-  }
-
-  @media (max-width: 640px) {
-    .pc__body { max-width: none; }
+  @media (max-width: 860px) {
+    .pc { grid-template-columns: 1fr; height: auto; }
+    .pc__hero { order: -1; height: 320px; }
+    .pc__tagline { max-width: none; }
   }
 </style>

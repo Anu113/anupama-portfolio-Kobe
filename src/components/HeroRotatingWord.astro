@@ -1,0 +1,125 @@
+---
+/* HeroRotatingWord.astro — the one changing word in the hero headline
+   ("...across fintech / consumer / SaaS."). Sits inline inside the h1,
+   in the same font as the surrounding sentence, and never causes the
+   sentence around it to reflow: an invisible "ghost" holding the
+   longest word reserves the box's width, and the real word is
+   positioned on top of it.
+
+   A single visible word crossfades-and-slides out, swaps its text,
+   then slides-and-fades back in — never more than one word shown at
+   once, so the surrounding sentence stays the only fixed thing on the
+   page. Pauses while the tab is hidden and disables itself entirely
+   under prefers-reduced-motion, per this site's existing rule in
+   global.css — it just shows the first word and stops there. */
+interface Props {
+  words: string[];
+}
+const { words } = Astro.props;
+const longest = words.reduce((a, b) => (b.length > a.length ? b : a), '');
+---
+<span class="rotate" data-rotate-words={JSON.stringify(words)}>
+  <span class="rotate__ghost" aria-hidden="true">{longest}</span>
+  <span class="rotate__word" data-rotate-word>{words[0]}</span>
+</span>
+
+<style>
+  /* Grid stacking, not absolute positioning: both the ghost and the
+     real word are placed in the same single grid cell, so the word
+     inherits normal text flow inside that cell and lines up with the
+     ghost's baseline exactly. An absolutely positioned word (tried
+     first) doesn't reliably sit on the same baseline as the ghost at
+     this line-height — grid stacking sidesteps that entirely. */
+  .rotate {
+    display: inline-grid;
+    vertical-align: baseline;
+  }
+  .rotate__ghost,
+  .rotate__word {
+    grid-area: 1 / 1;
+  }
+  /* Reserves the width/height of the longest word; never painted. */
+  .rotate__ghost {
+    visibility: hidden;
+  }
+  .rotate__word {
+    white-space: nowrap;
+    transform: translateY(0);
+    opacity: 1;
+    transition: transform 0.55s var(--ease-out), opacity 0.55s var(--ease-out);
+  }
+  .rotate__word.is-out {
+    transform: translateY(-0.45em);
+    opacity: 0;
+  }
+  /* Instant jump to the entry position — applied with transitions off,
+     then removed a frame later so the move back to rest transitions. */
+  .rotate__word.is-in-start {
+    transform: translateY(0.45em);
+    opacity: 0;
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rotate__word { transition: none; }
+  }
+</style>
+
+<script>
+  const HOLD_MS = 2600;
+  const STEP_MS = 550;
+
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-rotate-words]').forEach((root) => {
+    if (reduceMotion) return; // stays on the first word, no timers at all
+
+    let words: string[] = [];
+    try {
+      words = JSON.parse(root.dataset.rotateWords || '[]');
+    } catch {
+      words = [];
+    }
+    const word = root.querySelector<HTMLElement>('[data-rotate-word]');
+    if (!word || words.length < 2) return;
+
+    let index = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const step = () => {
+      word.classList.add('is-out');
+      timer = setTimeout(() => {
+        index = (index + 1) % words.length;
+        word.textContent = words[index];
+        word.classList.remove('is-out');
+        word.classList.add('is-in-start');
+        // force a reflow so the "instant jump" applies before we
+        // transition away from it on the next frame
+        void word.offsetWidth;
+        requestAnimationFrame(() => word.classList.remove('is-in-start'));
+        schedule();
+      }, STEP_MS);
+    };
+
+    const schedule = () => {
+      timer = setTimeout(step, HOLD_MS);
+    };
+
+    const stop = () => {
+      if (timer) clearTimeout(timer);
+      timer = null;
+    };
+
+    const start = () => {
+      if (timer) return;
+      schedule();
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop();
+      else start();
+    });
+
+    start();
+  });
+</script>

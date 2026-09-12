@@ -50,6 +50,7 @@ export const work = [
     role: 'Staff Product Designer · IAM + Developer Tools · Led 6 designers',
     impact: 'Admin task time down [X]% across the four highest-volume flows',
     hoverState: 'case-study',
+    tags: ['Product Strategy', 'UX', 'Design Systems', '0→1'], categories: ['enterprise', '0-1', 'design-systems'],
     href: '/work/okta-iam', image: '/images/placeholder-1.svg', alt: 'Okta IAM admin console' },
   { company: 'PayPal', theme: 'lilac', device: 'phone',
     title: 'Privacy settings people can read',
@@ -58,6 +59,7 @@ export const work = [
     role: 'Design lead · iOS, Android, desktop · Motion and illustration',
     impact: 'Comprehension up [X]% in unmoderated testing',
     hoverState: 'case-study',
+    tags: ['UX', 'UI', 'Design Systems'], categories: ['fintech', 'consumer'],
     href: '/work/paypal-privacy', image: '/images/placeholder-2.svg', alt: 'PayPal privacy settings' },
   { company: 'Walmart Labs', theme: 'sage', device: 'phone',
     title: 'Scan & Go, in-store',
@@ -66,6 +68,7 @@ export const work = [
     role: 'End-to-end designer · Product strategy through interaction design',
     impact: 'Ethnographic research to shipped pilot in [X] stores',
     hoverState: 'case-study',
+    tags: ['Product Strategy', 'UX', '0→1'], categories: ['consumer', '0-1'],
     href: '/work/walmart-scan-go', image: '/images/placeholder-3.svg', alt: 'Scan & Go' },
 
   // TODO: `company` here is an inference, not a fact. The live site's tile for
@@ -80,6 +83,7 @@ export const work = [
     role: 'Product strategy · End-to-end visual and interaction design',
     impact: 'Access request turnaround down from [X] to [X]',
     hoverState: 'case-study',
+    tags: ['Product Strategy', 'UX'], categories: ['fintech', 'enterprise'],
     href: '/work/paypal-data-access', image: '/images/placeholder-4.svg', alt: 'Data access automation' },
   { company: 'Walmart Labs', theme: 'bone', device: 'phone',
     title: 'Chase Pay inside Walmart Pay',
@@ -88,6 +92,7 @@ export const work = [
     role: 'Product designer, Walmart Pay · Sole designer · 5 Chase stakeholders',
     impact: 'Shipped on iOS Feb 2020 and Android Jun 2020',
     hoverState: 'case-study',
+    tags: ['UX', 'UI'], categories: ['fintech', 'consumer'],
     href: '/work/walmart-chase-pay',
     // `image` is the /work tile (a landscape crop). The home-page band puts
     // the actual prototype recording in the phone instead — the GIF from the
@@ -111,6 +116,7 @@ export const work = [
     role: 'Staff Product Designer · Integration Platform + Developer Ecosystem',
     impact: 'Submission cycle time down [X]%, on one framework instead of four',
     hoverState: 'case-study',
+    tags: ['Design Systems', 'Design Engineering', '0→1'], categories: ['enterprise', 'design-systems', '0-1'],
     href: '/work/okta-oin', image: '/images/placeholder-5.svg', alt: 'The Okta Integration Network submission framework' },
 
   // Skeleton case — see the header comment on `paypal-unified-card-system`
@@ -127,6 +133,7 @@ export const work = [
     role: '[Product Designer — confirm title and stream]',
     impact: '[Outcome specific to her stream — confirm]',
     hoverState: 'case-study',
+    tags: ['UX', 'Design Systems'], categories: ['fintech', 'design-systems'],
     href: '/work/paypal-unified-card-system', image: '/images/placeholder-7.svg', alt: 'Unified card management surface' },
 ] as const;
 

@@ -4,6 +4,8 @@ import Section from '../components/Section.astro';
 import Reveal from '../components/Reveal.astro';
 
 import OneWord from '../components/OneWord.astro';
+import HeroRotatingWord from '../components/HeroRotatingWord.astro';
+import ThemeRail from '../components/ThemeRail.astro';
 import Mosaic from '../components/Mosaic.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import Marquee from '../components/Marquee.astro';
@@ -19,8 +21,29 @@ import { tiles } from '../data/play';
 // the order in `play.ts` decides which pieces survive it: the squarer ones
 // lead, the tall portraits sit further down where this slice won't reach.
 const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/playground' }));
+
+// The Selected Work filter tabs — built from whatever categories the
+// home-page projects actually carry, not a hand-typed list that could
+// drift from work.ts. Order is fixed (not alphabetical) so "0-1" reads
+// before the domain tags rather than wherever it happens to sort.
+const homeWork = work.filter((w) => w.showOnHome !== false);
+const CATEGORY_ORDER = ['0-1', 'fintech', 'consumer', 'enterprise', 'design-systems'] as const;
+const CATEGORY_LABEL: Record<string, string> = {
+  '0-1': '0→1', fintech: 'Fintech', consumer: 'Consumer',
+  enterprise: 'Enterprise', 'design-systems': 'Design Systems',
+};
+const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categories?.includes(c)));
 ---
 <Base title={`${site.name} — ${site.seeking}`}>
+  <!-- The sitewide day/night control, but only ever mounted here — home
+       page only, per its own request. `position: fixed` on the
+       component itself means it stays put over the whole page as you
+       scroll past every act, not just the hero, without needing to
+       live in Base.astro. Every other page has no visible theme
+       control at all; the mode set here still carries across via
+       localStorage/data-mode, it just isn't adjustable from there. -->
+  <ThemeRail />
+
   <!-- ACT 1 — the editorial opening. Its own palette, "iris": cream and
        navy by day, indigo and periwinkle at night — the pairing from
        meagandurlak.com's "dreaming of radical futures" opener. Exclusive
@@ -29,8 +52,9 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
   <Section theme="iris" class="hero">
     <Reveal delay={120}>
       <h1 class="u-display hero__line">
-        Staff Product Designer with 10+ years shaping digital products
-        across fintech, consumer, and SaaS<span class="hero__dot">.</span>
+        Staff Product Designer with<br />
+        10+ years shaping digital products<br />
+        across <HeroRotatingWord words={['fintech', 'consumer', 'SaaS']} /><span class="hero__dot">.</span>
       </h1>
     </Reveal>
   </Section>
@@ -55,37 +79,49 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
 <Section theme="ink" full id="work" class="workhead-section">
   <div class="u-shell workhead">
     <h2 class="u-label">Selected work</h2>
+    <a class="workhead__all" href="/work">See all work →</a>
   </div>
 </Section>
 <Section theme="ink" class="worklist">
-  {work.filter((w) => w.showOnHome !== false).map((w) => (
-    <ProjectCard
-      company={w.company}
-      title={w.title}
-      tagline={w.tagline}
-      href={w.href}
-      theme={w.theme}
-      hoverState={w.hoverState}
-      image={'video' in w ? undefined : w.image}
-      alt={w.alt}
-      ratio={w.device === 'phone' ? '3 / 4' : '16 / 10'}
-    >
-      {'video' in w && w.video && (
-        <video
-          slot="hero"
-          poster={w.video.poster}
-          aria-label={w.video.alt}
-          muted
-          loop
-          playsinline
-          autoplay
+  <div class="worklist__filters" data-filters role="tablist" aria-label="Filter selected work by category">
+    <button type="button" class="is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+    {categories.map((c) => (
+      <button type="button" data-filter={c} role="tab" aria-selected="false">{CATEGORY_LABEL[c]}</button>
+    ))}
+  </div>
+  <div class="worklist__grid" data-worklist>
+    {homeWork.map((w, i) => (
+      <div class="worklist__item" data-categories={(w.categories ?? []).join(',')}>
+        <ProjectCard
+          index={i + 1}
+          company={w.company}
+          title={w.title}
+          tagline={w.tagline}
+          href={w.href}
+          theme={w.theme}
+          hoverState={w.hoverState}
+          tags={w.tags}
+          image={'video' in w ? undefined : w.image}
+          alt={w.alt}
         >
-          <source src={w.video.webm} type="video/webm" />
-          <source src={w.video.mp4} type="video/mp4" />
-        </video>
-      )}
-    </ProjectCard>
-  ))}
+          {'video' in w && w.video && (
+            <video
+              slot="hero"
+              poster={w.video.poster}
+              aria-label={w.video.alt}
+              muted
+              loop
+              playsinline
+              autoplay
+            >
+              <source src={w.video.webm} type="video/webm" />
+              <source src={w.video.mp4} type="video/mp4" />
+            </video>
+          )}
+        </ProjectCard>
+      </div>
+    ))}
+  </div>
 </Section>
 
   <!-- ACT 3 — palette flips, the interactive moment -->
@@ -161,14 +197,16 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
      lands on an element in Section.astro's own scope, not this page's. An
      unscoped rule here silently never matches (CLAUDE.md's own documented
      gotcha); without :global() the hero never gets its centring. */
-  :global(.hero) { min-height: 92svh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
-  /* The headline is now a full sentence, not four hand-broken words, so
-     it can't wear --step-display (a poster-scale size meant for a
-     handful of words) or the old 20ch measure — together they forced
-     this sentence into an 8-line tower taller than the viewport. Sized
-     down to --step-h1 and widened so it wraps into a few natural lines
-     instead. */
-  .hero__line { font-size: var(--step-h1); max-width: 32ch; }
+  :global(.hero) { position: relative; min-height: 92svh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
+  /* Still --step-h1, not --step-display — a poster-scale size meant for
+     a handful of words forced this same sentence into an 8-line tower
+     taller than the viewport the last time this wore it. Hand-broken
+     into three lines again (the industry now lives in
+     HeroRotatingWord, one word at a time, so it never has to be the
+     line that decides where the break falls); measure widened enough
+     to hold "10+ years shaping digital products" as a single line at
+     this size without extra wrapping. */
+  .hero__line { font-size: var(--step-h1); max-width: 36ch; }
 
   /* The bio paragraph after the hero. Tighter than the section default —
      it's a second beat of the opening act, not a new one, so it shouldn't
@@ -231,6 +269,14 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
 
   .workhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: clamp(1rem, 2vw, 1.5rem); }
   .workhead__count { font-family: var(--font-accent); font-style: italic; font-size: var(--step-h3); color: var(--fg-dim); margin: 0; }
+  .workhead__all {
+    font-family: var(--font-display); font-size: var(--step-label); font-weight: 600;
+    letter-spacing: var(--tracking-label); text-transform: uppercase;
+    color: var(--accent-text); text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--dur-hover) var(--ease-out);
+  }
+  .workhead__all:hover { border-color: currentColor; }
 
   /* The "Selected work" label owns the list right below it, so that pair
      closes up: no section padding underneath, and the list drops its own
@@ -239,9 +285,62 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
   :global(.workhead-section) { padding-bottom: 0; }
   :global(.workhead-section + .worklist) { padding-top: var(--space-band-tight); }
 
-  .worklist {
+  /* Contained, not full-bleed — the redesign's whole point was to stop
+     the cards spanning almost the entire viewport. Section.astro's own
+     .u-shell already centres this band, but at a width tuned for body
+     copy; this is deliberately narrower again, just for the grid. */
+  .worklist__filters,
+  .worklist__grid { max-width: 74rem; margin-inline: auto; }
+
+  .worklist__filters {
+    display: flex; gap: 0.6rem; flex-wrap: wrap;
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+    border-bottom: 1px solid var(--rule);
+  }
+  .worklist__filters button {
+    all: unset; cursor: pointer;
+    font-family: var(--font-display); font-size: 0.72rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--rule);
+    color: var(--fg-dim);
+    transition: border-color var(--dur-hover) var(--ease-out),
+                color var(--dur-hover) var(--ease-out),
+                background var(--dur-hover) var(--ease-out);
+  }
+  .worklist__filters button:hover { border-color: var(--fg-dim); color: var(--fg); }
+  .worklist__filters button.is-active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+  .worklist__grid {
     display: flex;
     flex-direction: column;
-    gap: clamp(3rem, 6vw, 5rem);
+    gap: clamp(1.75rem, 3vw, 2.5rem);
   }
+  .worklist__item[hidden] { display: none; }
 </style>
+
+<script>
+  // Selected Work filter tabs — plain show/hide by category, no
+  // framework needed. Each row carries its own categories as a
+  // comma-separated data attribute set server-side from work.ts.
+  const filterBar = document.querySelector<HTMLElement>('[data-filters]');
+  const list = document.querySelector<HTMLElement>('[data-worklist]');
+  if (filterBar && list) {
+    const buttons = [...filterBar.querySelectorAll<HTMLButtonElement>('button[data-filter]')];
+    const items = [...list.querySelectorAll<HTMLElement>('[data-categories]')];
+
+    filterBar.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-filter]');
+      if (!btn) return;
+      const filter = btn.dataset.filter!;
+
+      buttons.forEach((b) => {
+        b.classList.toggle('is-active', b === btn);
+        b.setAttribute('aria-selected', String(b === btn));
+      });
+      items.forEach((item) => {
+        const cats = item.dataset.categories?.split(',') ?? [];
+        item.hidden = filter !== 'all' && !cats.includes(filter);
+      });
+    });
+  }
+</script>

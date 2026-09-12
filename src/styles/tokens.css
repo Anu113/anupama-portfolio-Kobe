@@ -66,7 +66,7 @@
   --dur-reveal: 900ms;
   --dur-hover: 320ms;
 
-  --radius: 0px;   /* reference is hard-edged. Raise for softer cards. */
+  --radius: 20px;  /* sitewide — the reference was hard-edged; raised for the Selected Work redesign and now shared by every card/image/button that reads this token. */
 
   /* IndexRotator is fixed chrome that floats over every band on the page
      at once (it isn't nested inside a [data-theme] block the way CaseRail
@@ -281,12 +281,14 @@
    chip, not a page ground, has no reason to invert after dark.
    ============================================================ */
 :root {
-  --swatch-sand:  #e3caa5;   /* sand theme's own ground */
-  --swatch-sage:  #d7e3d7;   /* sage theme's own ground */
-  --swatch-lilac: #cba6fc;   /* lilac theme's own ground */
-  --swatch-coral: #f96f43;   /* coral theme's own ground */
-  --swatch-clay:  #fa4a3c;   /* clay theme's own fg — the reference coral-red, used as a bright block here rather than clay's dark ground */
-  --swatch-ink:   #14100e;   /* text over every swatch above — ≥5.4:1 on the darkest of them (clay) */
+  --swatch-sand:   #e3caa5;   /* sand theme's own ground */
+  --swatch-sage:   #d7e3d7;   /* sage theme's own ground */
+  --swatch-lilac:  #cba6fc;   /* lilac theme's own ground */
+  --swatch-coral:  #f96f43;   /* coral theme's own ground */
+  --swatch-clay:   #fa4a3c;   /* clay theme's own fg — the reference coral-red, used as a bright block here rather than clay's dark ground */
+  --swatch-orange: #e08540;   /* rust/burnt-orange — 7.2:1 with --swatch-ink */
+  --swatch-teal:   #8fd1d3;   /* soft turquoise — 11.5:1 with --swatch-ink */
+  --swatch-ink:    #14100e;   /* text over every swatch above — ≥5.4:1 on the darkest of them (clay) */
 }
 
 /* ============================================================

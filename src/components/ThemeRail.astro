@@ -1,0 +1,303 @@
+---
+/* ThemeRail.astro — the sitewide day/night control. Mounted once in
+   Base.astro (see below), so it's the same fixed element on every page,
+   not scoped to the home hero the way an earlier pass at this had it.
+
+   It replaces the sun/moon button that used to live in Nav.astro: same
+   underlying mechanism (`data-mode` on <html>, remembered in
+   localStorage, resolved before first paint by the inline script in
+   Base.astro so a returning visitor never sees a flash of the wrong
+   palette) — just moved to its own persistent, glass control instead of
+   being one more icon crowded into the nav's own row.
+
+   Four controls, down from an earlier five-icon "hero mood" version:
+   Day, Dusk, Night, and Auto as plain text (no icon) rather than a
+   fifth glyph. Auto isn't a fourth palette — clicking it clears any
+   manual choice and matches the OS's current light/dark preference,
+   then keeps listening for that preference to change while it's the
+   active state (a genuine "auto," not just "whatever the OS said at
+   load"). Dusk is decorative only — the site's real palette system is
+   still binary (day/night); tapping Dusk settles on whichever of the
+   two is the closer real state, same as an icon between two doors.
+
+   No hover tooltip on any of the four — selection reads through the
+   filled circle behind the active control alone, same restraint the
+   home hero's rail explored earlier. No divider before Auto either
+   (an earlier pass had one; removed, it read as a heavier UI element
+   than four small controls needed).
+
+   The moon reuses the exact mask technique the old nav toggle used, so
+   it's pixel-identical to what was there before, just relocated. Dusk
+   is a plain dome-on-a-horizon-line, the same restrained stroke
+   language as the moon and the old sun glyph.
+
+   The tap sound is the exact synthesised tick from the old nav
+   toggle — a ~100ms sine tone, pitch falling as you move toward Night
+   and rising toward Day — carried over here rather than left behind
+   when the toggle moved out of Nav.astro. Dusk resolves its own
+   direction from whichever side of it you're actually coming from.
+
+   Pill fill, icon stroke and the Auto label all recolour to match
+   whichever band is currently behind the rail's own fixed centre —
+   the identical `data-theme` swap Nav.astro already does for itself
+   (same probe-and-swap script, just keyed to this rail's vertical
+   centre instead of the nav's), not a bespoke colour system. Carrying
+   `data-theme` is what lets this element read a real palette's
+   --bg/--fg/--mode cascade from tokens.css at all, the same way Nav's
+   own `data-theme` attribute does — without it there's no themed
+   ancestor to inherit from, since the rail sits outside every
+   <Section>. */
+---
+<div class="theme-rail" id="theme-rail" data-theme="iris">
+  <button type="button" class="theme-rail__btn" id="theme-rail-day" aria-label="Day">
+    <svg viewBox="0 0 24 24" stroke-width="1.9" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="4.4" />
+      <path d="M12,4.2 v-1.4 M12,21.2 v-1.4 M4.2,12 h-1.4 M21.2,12 h-1.4 M6.5,6.5 L5.5,5.5 M18.5,18.5 L17.5,17.5 M17.5,6.5 L18.5,5.5 M5.5,18.5 L6.5,17.5" />
+    </svg>
+  </button>
+  <button type="button" class="theme-rail__btn" id="theme-rail-dusk" aria-label="Dusk">
+    <svg viewBox="0 0 24 24" stroke-width="1.9" aria-hidden="true" focusable="false">
+      <path d="M5,16 h14 M7,16 a5,5 0 0 1 10,0" />
+    </svg>
+  </button>
+  <button type="button" class="theme-rail__btn" id="theme-rail-night" aria-label="Night">
+    <svg viewBox="0 0 24 24" stroke-width="1.9" aria-hidden="true" focusable="false">
+      <mask id="theme-rail-crescent">
+        <rect width="24" height="24" fill="#fff" />
+        <circle cx="14.6" cy="9" r="5" fill="#000" />
+      </mask>
+      <circle cx="11.4" cy="12" r="5.6" fill="currentColor" stroke="none" mask="url(#theme-rail-crescent)" />
+    </svg>
+  </button>
+  <button type="button" class="theme-rail__auto" id="theme-rail-auto" aria-label="Automatic — match system">Auto</button>
+</div>
+
+<style>
+  .theme-rail {
+    position: fixed;
+    top: 50%;
+    right: clamp(1.25rem, 4vw, 3rem);
+    transform: translateY(-50%);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.75rem 0.3rem;
+    border-radius: 999px;
+    color: var(--fg, #17120f);
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+                inset 0 0 14px color-mix(in srgb, currentColor 10%, transparent);
+    transition: color var(--dur-hover) var(--ease-out),
+                box-shadow var(--dur-hover) var(--ease-out);
+  }
+
+  .theme-rail__btn {
+    all: unset;
+    cursor: pointer;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    transition: background var(--dur-hover) var(--ease-out),
+                transform var(--dur-hover) var(--ease-out);
+  }
+  .theme-rail__btn:hover { transform: scale(1.05); }
+  .theme-rail__btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  .theme-rail__btn.active {
+    background: color-mix(in srgb, currentColor 14%, transparent);
+  }
+  .theme-rail__btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    overflow: visible;
+  }
+
+  .theme-rail__auto {
+    all: unset;
+    cursor: pointer;
+    width: 2.1rem;
+    height: 1.45rem;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    padding-inline: 0.3rem;
+    font-family: var(--font-display);
+    font-size: 0.52rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: background var(--dur-hover) var(--ease-out),
+                transform var(--dur-hover) var(--ease-out);
+  }
+  .theme-rail__auto:hover { transform: scale(1.05); }
+  .theme-rail__auto:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  .theme-rail__auto.active {
+    background: color-mix(in srgb, currentColor 14%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-rail__btn, .theme-rail__auto { transition: none; }
+  }
+</style>
+
+<script>
+  // The exact synthesised tick from the old Nav.astro toggle — carried
+  // over rather than left behind when the day/night control moved out
+  // of the nav. Sine tone, ~100ms, pitch falls going darker, rises
+  // going lighter, silenced under prefers-reduced-motion (the closest
+  // signal the platform gives for "less sensory noise, please").
+  let audioCtx: AudioContext | null = null;
+  const tick = (toDarker: boolean) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!Ctx) return;
+    try {
+      audioCtx = audioCtx || new Ctx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(toDarker ? 1046 : 659, t);
+      osc.frequency.exponentialRampToValueAtTime(toDarker ? 523 : 1318, t + 0.07);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.05, t + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.1);
+    } catch (e) { /* audio is a nicety — never let it break the control */ }
+  };
+
+  const dayBtn = document.getElementById('theme-rail-day') as HTMLButtonElement | null;
+  const duskBtn = document.getElementById('theme-rail-dusk') as HTMLButtonElement | null;
+  const nightBtn = document.getElementById('theme-rail-night') as HTMLButtonElement | null;
+  const autoBtn = document.getElementById('theme-rail-auto') as HTMLButtonElement | null;
+  const root = document.documentElement;
+
+  if (dayBtn && duskBtn && nightBtn && autoBtn) {
+    const media = matchMedia('(prefers-color-scheme: dark)');
+    let autoListening = false;
+
+    // Dusk isn't a real third palette — the site's mode is still
+    // binary — but it still has a place on this "how dark" scale, so a
+    // tap direction to/from it sounds right rather than always falling
+    // or always rising. `current` tracks visual position only; it
+    // never drives root.dataset.mode by itself.
+    const RANK: Record<'day' | 'dusk' | 'night', number> = { day: 0, dusk: 1, night: 2 };
+    let current: 'day' | 'dusk' | 'night' =
+      root.dataset.mode === 'night' ? 'night' : 'day';
+
+    const systemMode = () => (media.matches ? 'night' : 'day');
+
+    const syncActive = (visual: 'day' | 'dusk' | 'night' | null) => {
+      const pinned = (() => {
+        try { return localStorage.getItem('mode'); } catch { return null; }
+      })();
+      const active = visual ?? (pinned as 'day' | 'night' | null);
+      dayBtn.classList.toggle('active', active === 'day');
+      duskBtn.classList.toggle('active', active === 'dusk');
+      nightBtn.classList.toggle('active', active === 'night');
+      autoBtn.classList.toggle('active', !pinned && !visual);
+    };
+
+    const onSystemChange = () => {
+      root.dataset.mode = systemMode();
+    };
+
+    const followSystem = () => {
+      if (autoListening) return;
+      autoListening = true;
+      media.addEventListener('change', onSystemChange);
+    };
+
+    const stopFollowing = () => {
+      if (!autoListening) return;
+      autoListening = false;
+      media.removeEventListener('change', onSystemChange);
+    };
+
+    const pin = (mode: 'day' | 'night') => {
+      tick(RANK[mode] > RANK[current]);
+      current = mode;
+      stopFollowing();
+      root.dataset.mode = mode;
+      try { localStorage.setItem('mode', mode); } catch {}
+      syncActive(null);
+    };
+
+    // Dusk settles on whichever real mode it's closer to from the
+    // direction you tapped it from, then behaves exactly like pinning
+    // that mode — it's a resting point on the scale, not a new state.
+    const goDusk = () => {
+      const target: 'day' | 'night' = current === 'night' ? 'day' : 'night';
+      tick(RANK.dusk > RANK[current]);
+      current = 'dusk';
+      stopFollowing();
+      root.dataset.mode = target;
+      try { localStorage.setItem('mode', target); } catch {}
+      syncActive('dusk');
+    };
+
+    const goAuto = () => {
+      const next = systemMode();
+      tick(RANK[next] > RANK[current]);
+      current = next;
+      try { localStorage.removeItem('mode'); } catch {}
+      root.dataset.mode = next;
+      followSystem();
+      syncActive(null);
+    };
+
+    dayBtn.addEventListener('click', () => pin('day'));
+    duskBtn.addEventListener('click', goDusk);
+    nightBtn.addEventListener('click', () => pin('night'));
+    autoBtn.addEventListener('click', goAuto);
+
+    // Initial state: Base.astro's inline pre-paint script already set
+    // data-mode correctly (stored choice, or the OS setting on first
+    // visit) — this only decides which control shows as active, and
+    // resumes following the OS if there's no stored, manual choice.
+    syncActive(null);
+    let hasStored = false;
+    try { hasStored = localStorage.getItem('mode') !== null; } catch {}
+    if (!hasStored) followSystem();
+  }
+
+  // Recolour with whichever band is behind the rail's own centre —
+  // identical mechanism to Nav.astro's own band-follow script, just
+  // probing this element's vertical centre instead of the nav's.
+  const rail = document.getElementById('theme-rail');
+  const bands = [...document.querySelectorAll('[data-themeband]')];
+  if (rail && bands.length) {
+    const pick = () => {
+      const probe = rail.getBoundingClientRect().top + rail.offsetHeight / 2;
+      let current = bands[0];
+      for (const b of bands) {
+        const r = b.getBoundingClientRect();
+        if (r.top <= probe && r.bottom > probe) current = b;
+      }
+      const t = current.getAttribute('data-theme');
+      if (t && rail.getAttribute('data-theme') !== t) rail.setAttribute('data-theme', t);
+    };
+    pick();
+    addEventListener('scroll', pick, { passive: true });
+    addEventListener('resize', pick);
+  }
+</script>
