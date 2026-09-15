@@ -72,17 +72,25 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
   </Section>
 
   <!-- ACT 2 — selected work, one ProjectCard per project, stacked full-width
-       on a shared ink ground. Filtered to `showOnHome !== false` — /work
-       carries the full seven, but a skeleton case (unconfirmed role, scope,
-       metrics) doesn't get to represent the portfolio on the first thing a
-       recruiter sees. -->
-<Section theme="ink" full id="work" class="workhead-section">
+       on a shared bone ground. Was ink (near-black in both day and night —
+       that palette doesn't lighten in day mode, it just shifts shade), which
+       read as an unexpectedly dark band while the rest of the page was in
+       day mode. bone is also /work.astro's own grid background, so the two
+       pages now share a ground for the same content. The one cost: Chase
+       Pay's card used to wear bone too and would've had no edge against a
+       bone section — it now wears `ink` instead (see the comment on that
+       entry in work.ts), which also happens to fix the identical problem
+       that card already had on /work. Filtered to `showOnHome !== false` —
+       /work carries the full seven, but a skeleton case (unconfirmed role,
+       scope, metrics) doesn't get to represent the portfolio on the first
+       thing a recruiter sees. -->
+<Section theme="bone" full id="work" class="workhead-section">
   <div class="u-shell workhead">
     <h2 class="u-label">Selected work</h2>
     <a class="workhead__all" href="/work">See all work →</a>
   </div>
 </Section>
-<Section theme="ink" class="worklist">
+<Section theme="bone" class="worklist">
   <div class="worklist__filters" data-filters role="tablist" aria-label="Filter selected work by category">
     <button type="button" class="is-active" data-filter="all" role="tab" aria-selected="true">All</button>
     {categories.map((c) => (

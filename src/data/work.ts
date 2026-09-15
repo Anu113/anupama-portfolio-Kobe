@@ -18,6 +18,13 @@
 // ink-themed card had no visible edge against the page it was sitting on.
 // It now wears `ember` (tokens.css) instead — a genuine eighth palette,
 // added because this card needed a real fix, not claimed for its own sake.
+//
+// Same problem hit Chase Pay from the other direction: the home page's
+// Selected Work band itself moved from ink to `bone` (too dark to read as
+// "day mode"), which left this card — already wearing bone — with no edge
+// against its own section. Rather than claim a ninth palette, it now wears
+// `ink`, the one theme no other home-page card uses and the exact inverse
+// of the section it sits in.
 // The seventh, Unified Card System, is appended after OIN and reuses clay
 // (see the header comment on that case in cases.ts for why it's still a
 // skeleton) rather than claiming a ninth palette for one thin case.
@@ -85,7 +92,7 @@ export const work = [
     hoverState: 'case-study',
     tags: ['Product Strategy', 'UX'], categories: ['fintech', 'enterprise'],
     href: '/work/paypal-data-access', image: '/images/placeholder-4.svg', alt: 'Data access automation' },
-  { company: 'Walmart Labs', theme: 'bone', device: 'phone',
+  { company: 'Walmart Labs', theme: 'ink', device: 'phone',
     title: 'Chase Pay inside Walmart Pay',
     tagline: 'Brought Chase Pay into Walmart Pay, validated with real customers in-store.',
     summary: 'Savings Catcher retired in May 2019 and Walmart Pay adoption fell with it. Chase came with the integration already solved — the same pattern they had shipped with PayPal and Samsung Pay. I took it to twelve customers in a store instead, and the two things that broke were invisible from a spec.',
