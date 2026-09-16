@@ -4,7 +4,12 @@
    The day/night toggle used to live here (a sun/moon button on the
    right) — it's moved out to ThemeRail.astro, a persistent control
    fixed to the viewport on every page, not just parked in the nav.
-   This component now only owns the wordmark and the primary links. */
+   This component now only owns the wordmark and the primary links.
+   The wordmark itself is a collapsed "A.M" that expands to "Anupama
+   Mishra" on hover/focus — the reveal-on-hover initial mark from
+   carlthomasiv.com's nav ("CT_IV" → "Carl Thomas_IV"), adapted to one
+   name: "A" stays put, the dim ".M" fades out, and "nupama Mishra"
+   grows in from zero width in its place. */
 const links = [
   { label: 'Work', href: '/work' },
   { label: 'About me', href: '/about' },
@@ -13,7 +18,11 @@ const links = [
 ];
 ---
 <header class="nav" data-theme="ink" id="site-nav">
-  <a class="nav__mark" href="/">Anupama Mishra</a>
+  <a class="nav__mark" href="/" aria-label="Anupama Mishra — home">
+    <span class="nav__mark-visual" aria-hidden="true"
+      ><span class="nav__mark-fixed">A</span><span class="nav__mark-suffix">.M</span><span class="nav__mark-rest">nupama Mishra</span></span
+    >
+  </a>
   <div class="nav__right">
     <nav aria-label="Primary">
       <ul>
@@ -57,6 +66,38 @@ const links = [
     text-decoration: none; color: inherit;
     white-space: nowrap;
   }
+  .nav__mark-visual { display: inline-flex; align-items: baseline; }
+  /* Collapsed to zero width at rest; grows in on hover/focus to reveal
+     "npama" after the fixed "A" — max-width (not width) so it needs no
+     JS-measured pixel value, just a generous cap. */
+  .nav__mark-rest {
+    display: inline-block;
+    overflow: hidden;
+    max-width: 0;
+    white-space: nowrap;
+    transition: max-width var(--dur-hover) var(--ease-out);
+  }
+  .nav__mark:hover .nav__mark-rest,
+  .nav__mark:focus-visible .nav__mark-rest {
+    /* "npama Mishra" plus its own letter-spacing needs ~16ch of room;
+       18ch leaves headroom so the reveal never clips its last letter. */
+    max-width: 18ch;
+  }
+  /* Dim ".M" suffix at rest — fades and collapses away on hover/focus
+     as "npama Mishra" grows in to its left, so the two never overlap. */
+  .nav__mark-suffix {
+    display: inline-block;
+    overflow: hidden;
+    max-width: 3ch;
+    opacity: 0.45;
+    white-space: nowrap;
+    transition: max-width var(--dur-hover) var(--ease-out), opacity var(--dur-hover) var(--ease-out);
+  }
+  .nav__mark:hover .nav__mark-suffix,
+  .nav__mark:focus-visible .nav__mark-suffix {
+    max-width: 0;
+    opacity: 0;
+  }
   .nav ul {
     display: flex; gap: clamp(1.25rem, 3vw, 2.75rem);
     list-style: none; margin: 0; padding: 0;
@@ -85,6 +126,8 @@ const links = [
   .nav nav a:hover { letter-spacing: 0.26em; }
   @media (prefers-reduced-motion: reduce) {
     .nav nav a { transition: none; }
+    .nav__mark-rest,
+    .nav__mark-suffix { transition: none; }
   }
 </style>
 
