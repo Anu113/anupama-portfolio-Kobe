@@ -132,5 +132,10 @@ const links = [
     pick();
     addEventListener('scroll', pick, { passive: true });
     addEventListener('resize', pick);
+    // ThemeRail's Shuffle button and its day/night toggle both change a
+    // band's colour without any scroll happening — this event (dispatched
+    // there) is what tells nav to re-mirror it immediately instead of
+    // waiting for the visitor to scroll first.
+    addEventListener('theme:changed', pick);
   }
 </script>

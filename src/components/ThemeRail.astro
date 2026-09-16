@@ -280,10 +280,14 @@
 
   if (toggleBtn && toggleIcon && shuffleBtn) {
     let mode: 'day' | 'night' = root.dataset.mode === 'night' ? 'night' : 'day';
-    let palette: string = (() => {
-      try { return localStorage.getItem('heroPalette') || 'iris'; } catch { return 'iris'; }
-    })();
-    if (!PALETTES.hasOwnProperty(palette)) palette = 'iris';
+    // A fresh random palette every load, on purpose — this used to persist
+    // the last-shuffled palette to localStorage and restore it, but that
+    // restore only ran once the bundled script executed (after first
+    // paint), so every reload flashed the default iris palette and then
+    // snapped to the saved one. Picking a new random palette here instead
+    // means there's no "correct" saved state to race against — whatever
+    // paints first is simply this load's shuffle.
+    let palette: string = PALETTE_NAMES[Math.floor(Math.random() * PALETTE_NAMES.length)];
 
     // Nav and the rail itself are excluded here — they don't carry their
     // own colour at all, they mirror whichever band is currently behind
@@ -393,6 +397,12 @@
       toggleBtn.setAttribute('aria-label', mode === 'night' ? 'Switch to day mode' : 'Switch to night mode');
     };
 
+    // Nav.astro's own band-follow script, and the rail's own copy of it
+    // just below, only re-run on scroll/resize — neither one is told
+    // when a click (not a scroll) is what just changed a band's colour.
+    // This event is that missing signal: both listen for it below.
+    const announceThemeChange = () => window.dispatchEvent(new Event('theme:changed'));
+
     const setMode = (next: 'day' | 'night') => {
       if (next === mode) return;
       tick(next === 'night');
@@ -401,6 +411,7 @@
       try { localStorage.setItem('mode', mode); } catch {}
       syncActive();
       applyPalette();
+      announceThemeChange();
     };
 
     toggleBtn.addEventListener('click', () => setMode(mode === 'day' ? 'night' : 'day'));
@@ -414,8 +425,8 @@
         next = PALETTE_NAMES[Math.floor(Math.random() * PALETTE_NAMES.length)];
       }
       palette = next;
-      try { localStorage.setItem('heroPalette', palette); } catch {}
       applyPalette();
+      announceThemeChange();
       shuffleBtn.classList.remove('is-spinning');
       void shuffleBtn.offsetWidth;
       shuffleBtn.classList.add('is-spinning');
@@ -453,6 +464,10 @@
     };
     pick();
     addEventListener('scroll', pick, { passive: true });
+    // See announceThemeChange() above — a click (Shuffle or the day/night
+    // toggle) changes the band's colour without any scroll happening, so
+    // the rail needs its own explicit nudge to re-mirror it right away.
+    addEventListener('theme:changed', pick);
     addEventListener('resize', pick);
   }
 </script>

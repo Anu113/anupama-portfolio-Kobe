@@ -82,12 +82,10 @@ behind it and adopts that palette automatically (`Nav.astro`, bottom script). Ad
 a palette by copying a block — don't invent a parallel mechanism.
 
 Every palette also has a `[data-mode='night']` variant. `ThemeRail.astro` — a
-fixed Day / Night / Auto control, mounted only on the home page (not in
-`Base.astro`, so it never appears on interior pages) but staying on screen
-for that whole page's scroll, not just the hero — sets `data-mode` on
-`<html>`; the mode is resolved by an inline script in `Base.astro` before
-first paint, sitewide, regardless of which page set it. **A new palette
-needs a night block too**, or that band will sit unchanged while
+fixed glass pill mounted sitewide via `Base.astro`, so it's on every page,
+not just the home page — sets `data-mode` on `<html>`; the mode is resolved
+by an inline script in `Base.astro` before first paint, sitewide. **A new
+palette needs a night block too**, or that band will sit unchanged while
 everything around it turns.
 
 **3. Case studies lead with scope and judgement, then craft.**
@@ -151,7 +149,7 @@ must change.
 |---|---|
 | `Section.astro` | Wraps a band of the page in a palette. `theme` prop. |
 | `Nav.astro` | Fixed nav, recolours to match the band behind it. Wordmark + links only — the day/night toggle now lives in `ThemeRail.astro`. |
-| `ThemeRail.astro` | The day/night control — a fixed glass capsule (Day / Night / Auto, no tooltips), mounted only on the home page (`index.astro`), not `Base.astro` — every other page has no visible control. Sets `data-mode` on `<html>`, same sitewide mechanism the old nav toggle used, so the mode still carries to interior pages even without a control there. Auto clears any pinned choice and follows `prefers-color-scheme` live. |
+| `ThemeRail.astro` | The day/night + colour-shuffle control — a fixed glass pill, mounted sitewide via `Base.astro`. Two icons: a single toggle that swaps between sun/moon (letter-spacing-free, no separate "active" state — the icon itself is the state), and a Shuffle button (five-dot palette glyph) that repaints every themed band toward a random palette on click, plus a fresh random one automatically on every page load. Sets `data-mode` on `<html>`, same sitewide mechanism the old nav toggle used. |
 | `Reveal.astro` | Scroll fade-and-lift. `delay`, `y` props. |
 | `DragRail.astro` | Horizontal drag-scroll rail with grab cursor. |
 | `Mosaic.astro` | Edge-cropped asymmetric image grid + parallax. |

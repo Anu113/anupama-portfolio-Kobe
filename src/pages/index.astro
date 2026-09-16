@@ -21,17 +21,12 @@ import { tiles } from '../data/play';
 // lead, the tall portraits sit further down where this slice won't reach.
 const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/playground' }));
 
-// The Selected Work filter tabs — built from whatever categories the
-// home-page projects actually carry, not a hand-typed list that could
-// drift from work.ts. Order is fixed (not alphabetical) so "0-1" reads
-// before the domain tags rather than wherever it happens to sort.
+// The category filter tabs that used to live on this page moved to
+// /work — they were fighting the stacking-card effect below (hiding a
+// card shifts every card after it, which the sticky/settle math never
+// re-measured for), and /work's plain grid is a better home for
+// filtering anyway.
 const homeWork = work.filter((w) => w.showOnHome !== false);
-const CATEGORY_ORDER = ['0-1', 'fintech', 'consumer', 'enterprise', 'design-systems'] as const;
-const CATEGORY_LABEL: Record<string, string> = {
-  '0-1': '0→1', fintech: 'Fintech', consumer: 'Consumer',
-  enterprise: 'Enterprise', 'design-systems': 'Design Systems',
-};
-const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categories?.includes(c)));
 ---
 <Base title={`${site.name} — ${site.seeking}`}>
   <!-- ACT 1 — the editorial opening. Its own palette, "iris": cream and
@@ -56,7 +51,7 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
     <Reveal delay={100}>
       <p class="intro__links">
         <a class="intro__resume u-label" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
-        <a class="intro__linkedin" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+        <a class="intro__linkedin u-label" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
       </p>
     </Reveal>
   </Section>
@@ -81,15 +76,9 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
   </div>
 </Section>
 <Section theme="bone" class="worklist">
-  <div class="worklist__filters" data-filters role="tablist" aria-label="Filter selected work by category">
-    <button type="button" class="is-active" data-filter="all" role="tab" aria-selected="true">All</button>
-    {categories.map((c) => (
-      <button type="button" data-filter={c} role="tab" aria-selected="false">{CATEGORY_LABEL[c]}</button>
-    ))}
-  </div>
   <div class="worklist__grid" data-worklist>
     {homeWork.map((w, i) => (
-      <div class="worklist__item" data-categories={(w.categories ?? []).join(',')} style={`--stack-i:${i}`}>
+      <div class="worklist__item" style={`--stack-i:${i}`}>
         <ProjectCard
           index={i + 1}
           company={w.company}
@@ -201,7 +190,16 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
      lands on an element in Section.astro's own scope, not this page's. An
      unscoped rule here silently never matches (CLAUDE.md's own documented
      gotcha); without :global() the hero never gets its centring. */
-  :global(.hero) { position: relative; min-height: 92svh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
+  /* Was min-height: 92svh with justify-content: center — the nav gap and
+     the gap to the CTA row below were both just leftover space from
+     centering a short headline in a near-full-viewport box, not decisions.
+     Top-aligned now: the nav gap is set on purpose (clamp, so it holds
+     proportionally on a short laptop screen and a tall monitor rather of
+     a fixed rem doing something different on each), and it's deliberately
+     bigger than the .intro gap below so the headline+CTAs read as one
+     group (Gestalt proximity) separated from the nav above, not from
+     each other. */
+  :global(.hero) { position: relative; display: flex; flex-direction: column; padding-top: clamp(7rem, 16vh, 10rem); }
   /* Still --step-h1, not --step-display — a poster-scale size meant for
      a handful of words forced this same sentence into an 8-line tower
      taller than the viewport the last time this wore it. Hand-broken
@@ -225,7 +223,11 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
   :global(.intro) { padding-block: 0 clamp(2.5rem, 6vw, 4.5rem); }
   .intro__body { color: var(--fg-dim); font-size: var(--step-body); }
 
-  .intro__links { display: flex; align-items: center; gap: 1.5rem; padding-top: 1.5rem; margin: 0; }
+  /* 0.85rem, not the old 1.5rem — tight enough that the CTA row reads as
+     part of the same group as the headline above it (Gestalt proximity),
+     not a separate beat. See the .hero comment above for the other half
+     of this rebalance. */
+  .intro__links { display: flex; align-items: center; gap: 1.5rem; padding-top: 0.85rem; margin: 0; }
   /* The pill — same border-not-fill treatment as .lede__cta on the case
      study pages, so a control on this page reads as the same control
      everywhere else on the site. */
@@ -240,11 +242,20 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
                 border-color var(--dur-hover) var(--ease-out);
   }
   .intro__resume:hover { background: var(--screen); border-color: var(--fg-dim); }
+  /* Same pill shape and u-label type as .intro__resume so the two read as
+     one pair of actions, but no border — Resume stays the primary (bordered)
+     action, LinkedIn the quiet second one. Padding is kept identical so the
+     row's baseline and hit targets line up. */
   .intro__linkedin {
-    color: var(--fg);
+    display: inline-block;
+    color: var(--fg-dim);
     text-decoration: none;
-    border-bottom: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 0.65rem 1.15rem;
+    transition: background var(--dur-hover) var(--ease-out),
+                color var(--dur-hover) var(--ease-out);
   }
+  .intro__linkedin:hover { background: var(--screen); color: var(--fg); }
 
   /* The full stop blinks like a terminal caret — steps(), not a fade, so it
      snaps rather than pulses. It stays inside the sentence rather than being
@@ -315,26 +326,7 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
      the cards spanning almost the entire viewport. Section.astro's own
      .u-shell already centres this band, but at a width tuned for body
      copy; this is deliberately narrower again, just for the grid. */
-  .worklist__filters,
   .worklist__grid { max-width: 74rem; margin-inline: auto; }
-
-  .worklist__filters {
-    display: flex; gap: 0.6rem; flex-wrap: wrap;
-    padding-bottom: clamp(2rem, 4vw, 3rem);
-    margin-bottom: clamp(2rem, 4vw, 3rem);
-    border-bottom: 1px solid var(--rule);
-  }
-  .worklist__filters button {
-    all: unset; cursor: pointer;
-    font-family: var(--font-display); font-size: 0.72rem; font-weight: 600;
-    padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--rule);
-    color: var(--fg-dim);
-    transition: border-color var(--dur-hover) var(--ease-out),
-                color var(--dur-hover) var(--ease-out),
-                background var(--dur-hover) var(--ease-out);
-  }
-  .worklist__filters button:hover { border-color: var(--fg-dim); color: var(--fg); }
-  .worklist__filters button.is-active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 
   .worklist__grid {
     display: flex;
@@ -346,8 +338,7 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
      (--stack-i, set per row from index.astro's map), so as you scroll a
      new card slides up over the last and the previous card's top edge
      keeps peeking out underneath rather than vanishing. z-index makes
-     the paint order explicit instead of relying on DOM order, since a
-     hidden filtered-out row shouldn't leave a gap in the stack. The
+     the paint order explicit instead of relying on DOM order. The
      padding-bottom (replacing the old flex `gap`) is what lets that peek
      show — a plain gap would just push the next card down without ever
      overlapping. */
@@ -367,7 +358,6 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
        first. */
     padding-bottom: 40vh;
   }
-  .worklist__item[hidden] { display: none; }
 
   /* The settle effect (a card scales/dims slightly as the next one
      covers it) used to run on the browser's own scroll-driven
@@ -399,31 +389,6 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
 </style>
 
 <script>
-  // Selected Work filter tabs — plain show/hide by category, no
-  // framework needed. Each row carries its own categories as a
-  // comma-separated data attribute set server-side from work.ts.
-  const filterBar = document.querySelector<HTMLElement>('[data-filters]');
-  const list = document.querySelector<HTMLElement>('[data-worklist]');
-  if (filterBar && list) {
-    const buttons = [...filterBar.querySelectorAll<HTMLButtonElement>('button[data-filter]')];
-    const items = [...list.querySelectorAll<HTMLElement>('[data-categories]')];
-
-    filterBar.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-filter]');
-      if (!btn) return;
-      const filter = btn.dataset.filter!;
-
-      buttons.forEach((b) => {
-        b.classList.toggle('is-active', b === btn);
-        b.setAttribute('aria-selected', String(b === btn));
-      });
-      items.forEach((item) => {
-        const cats = item.dataset.categories?.split(',') ?? [];
-        item.hidden = filter !== 'all' && !cats.includes(filter);
-      });
-    });
-  }
-
   // The stacking cards' settle effect — each card scales/dims slightly
   // in direct proportion to how far it's scrolled through its own
   // pinned window, computed straight from scroll position rather than
@@ -460,7 +425,13 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
           return [{ item, card, startY: staticTop - stickyTop, padBottom }];
         });
 
-      let raf: number | null = null;
+      // Two separate rAF handles, not one shared between scroll and
+      // resize — sharing a single flag meant a resize firing while a
+      // scroll-triggered tick() was already queued got silently dropped
+      // (the `if (!raf)` guard saw it as busy), leaving `recs` stuck on
+      // pre-resize measurements until some later, uncontested resize.
+      let scrollRaf: number | null = null;
+      let resizeRaf: number | null = null;
       const tick = () => {
         for (const { card, startY, padBottom } of recs) {
           const progress = Math.min(1, Math.max(0, (scrollY - startY) / padBottom));
@@ -469,15 +440,15 @@ const categories = CATEGORY_ORDER.filter((c) => homeWork.some((w) => w.categorie
           card.style.transform = `scale(${scale})`;
           card.style.filter = `brightness(${brightness})`;
         }
-        raf = null;
+        scrollRaf = null;
       };
-      const remeasureAndTick = () => { recs = measure(); tick(); };
+      const remeasureAndTick = () => { recs = measure(); tick(); resizeRaf = null; };
       remeasureAndTick();
-      addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
+      addEventListener('scroll', () => { if (!scrollRaf) scrollRaf = requestAnimationFrame(tick); }, { passive: true });
       // Resize re-measures (a --stack-i offset, card height, or the
       // whole layout can change at a new width) rather than just
       // re-ticking with stale start positions.
-      addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(remeasureAndTick); });
+      addEventListener('resize', () => { if (!resizeRaf) resizeRaf = requestAnimationFrame(remeasureAndTick); });
     }
   }
 </script>

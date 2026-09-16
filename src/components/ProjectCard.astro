@@ -26,9 +26,11 @@
    inset via `object-fit: contain`, not `cover` — most of what lands
    here (a browser window, a phone mockup, a floating UI piece) is a
    transparent PNG meant to float on the wall, not a photo meant to
-   fill it. `image`/`alt`/`ratio` are the one-asset shorthand; pass
+   fill it. `image`/`alt` are the one-asset shorthand; pass
    `slot="hero"` for anything richer (a layered composition, a video,
-   several mockups at once).
+   several mockups at once). No `ratio` prop — this card's row height
+   is fixed (see .pc's own height comment), unlike CaseCard.astro's
+   /work grid tiles, which do vary their media ratio per tile.
 
    The hover label is the same HoverLabel.astro every card uses,
    rendered as a sibling of `.pc__hero`/`.pc__body` so its cursor-follow

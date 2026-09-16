@@ -28,6 +28,11 @@
      it's a floating cursor-follow chip, not copy sitting next to other
      text that needs to hold its own size. */
   --step-pill: 0.6rem;
+  /* The playground's mono captions (PanCanvas, InfiniteStream,
+     playground/canvas.astro) — same size as the hover pill, just a
+     different typeface/role, so it points at the same value rather
+     than duplicating it. */
+  --step-caption: var(--step-pill);
 
   --tracking-label: 0.14em;
   /* Roboto Mono is already evenly spaced; this is the extra kerning on top,
@@ -66,7 +71,7 @@
   --dur-reveal: 900ms;
   --dur-hover: 320ms;
 
-  --radius: 20px;  /* sitewide — the reference was hard-edged; raised for the Selected Work redesign and now shared by every card/image/button that reads this token. */
+  --radius: 0px;  /* sitewide — hard-edged on purpose, matching the reference. A brief pass raised this to 20px for the Selected Work redesign; reverted — square is the intended look for every card/image/button that reads this token. */
 
   /* IndexRotator is fixed chrome that floats over every band on the page
      at once (it isn't nested inside a [data-theme] block the way CaseRail
