@@ -198,8 +198,9 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      a fixed rem doing something different on each), and it's deliberately
      bigger than the .intro gap below so the headline+CTAs read as one
      group (Gestalt proximity) separated from the nav above, not from
-     each other. */
-  :global(.hero) { position: relative; display: flex; flex-direction: column; padding-top: clamp(7rem, 16vh, 10rem); }
+     each other. 6.5rem chosen live against the real hero copy (the "Modest"
+     option in the spacing tuner) — tighter than the first pass's 10rem. */
+  :global(.hero) { position: relative; display: flex; flex-direction: column; padding-top: clamp(5rem, 12vh, 6.5rem); }
   /* Still --step-h1, not --step-display — a poster-scale size meant for
      a handful of words forced this same sentence into an 8-line tower
      taller than the viewport the last time this wore it. Hand-broken
@@ -223,10 +224,10 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   :global(.intro) { padding-block: 0 clamp(2.5rem, 6vw, 4.5rem); }
   .intro__body { color: var(--fg-dim); font-size: var(--step-body); }
 
-  /* 0.85rem, not the old 1.5rem — tight enough that the CTA row reads as
-     part of the same group as the headline above it (Gestalt proximity),
-     not a separate beat. See the .hero comment above for the other half
-     of this rebalance. */
+  /* 0.85rem — the "Grouped" option in the spacing tuner, settled on
+     alongside the 6.5rem nav gap above. Down from the original 1.5rem,
+     back up from an interim 0.5rem that read as too glued once the nav
+     gap itself came down to 6.5rem. */
   .intro__links { display: flex; align-items: center; gap: 1.5rem; padding-top: 0.85rem; margin: 0; }
   /* The pill — same border-not-fill treatment as .lede__cta on the case
      study pages, so a control on this page reads as the same control

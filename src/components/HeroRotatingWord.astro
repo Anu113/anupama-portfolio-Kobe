@@ -43,6 +43,19 @@ const longest = words.reduce((a, b) => (b.length > a.length ? b : a), '');
     visibility: hidden;
   }
   .rotate__word {
+    /* Grid items stretch to fill their cell by default, which put a short
+       word's letters flush left in a box sized for the longest word
+       ("consumer") — the closing period right after this component in the
+       markup then landed in the dead space at the box's right edge,
+       visually detached from short words like "SaaS". `center` can't
+       glue the word to both "across" on its left and the period on its
+       right at once without letting the box itself resize (which is what
+       the ghost exists to prevent — a resize mid-crossfade shifts the
+       period out from under the reader's eye). Centering splits the
+       leftover space evenly instead of dumping all of it on one side, so
+       the gap reads as intentional letter-spacing air, not an orphaned
+       period. */
+    justify-self: center;
     white-space: nowrap;
     transform: translateY(0);
     opacity: 1;
