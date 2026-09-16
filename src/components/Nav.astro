@@ -62,24 +62,48 @@ const links = [
     list-style: none; margin: 0; padding: 0;
   }
   .nav a[href^='/'] { color: inherit; text-decoration: none; }
+  /* Each link's box is locked to its own natural (unhovered) width by
+     the script below, so the wider tracking on hover overflows visually
+     rather than growing the flex item — the point being that hovering
+     "Work" never nudges "About me" sideways. display: inline-block is
+     required for the JS width lock to actually constrain the text. */
+  .nav nav li { position: relative; }
   .nav nav a {
+    display: inline-block;
+    white-space: nowrap;
     font-family: var(--font-display);
     font-size: var(--step-label);
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     font-weight: 500;
-    position: relative;
+    transition: letter-spacing var(--dur-hover) var(--ease-out);
   }
-  .nav nav a::after {
-    content: ''; position: absolute; left: 0; bottom: -4px;
-    width: 100%; height: 1px; background: currentColor;
-    transform: scaleX(0); transform-origin: left;
-    transition: transform var(--dur-hover) var(--ease-out);
+  /* 0.14em resting → 0.26em on hover — dialed in over a few passes: an
+     underline was the original affordance here, tried a full repel-
+     from-cursor effect too, but this reads as the site's own restrained
+     hover language best. */
+  .nav nav a:hover { letter-spacing: 0.26em; }
+  @media (prefers-reduced-motion: reduce) {
+    .nav nav a { transition: none; }
   }
-  .nav nav a:hover::after { transform: scaleX(1); }
 </style>
 
 <script>
+  // Lock each nav link's box to its own resting width, measured once,
+  // so the wider hover tracking (see the CSS above) overflows visually
+  // instead of growing the flex item and nudging its neighbours.
+  const lockNavLinkWidths = () => {
+    document.querySelectorAll<HTMLAnchorElement>('.nav nav a').forEach((a) => {
+      a.style.width = 'auto';
+      a.style.width = `${a.getBoundingClientRect().width}px`;
+    });
+  };
+  lockNavLinkWidths();
+  // Re-measure once the real webfont swaps in — its metrics differ
+  // slightly from the fallback, which would otherwise leave the lock
+  // fixed at the wrong (fallback-font) width.
+  document.fonts?.ready.then(lockNavLinkWidths);
+
   // Nav adopts the theme of the section currently under it.
   const nav = document.getElementById('site-nav');
   const bands = [...document.querySelectorAll('[data-themeband]')];
@@ -93,6 +117,17 @@ const links = [
       }
       const t = current.getAttribute('data-theme');
       if (t && nav.getAttribute('data-theme') !== t) nav.setAttribute('data-theme', t);
+      // Mirror the band's own --bg/--fg/--fg-dim inline overrides (set by
+      // ThemeRail's shuffle) exactly, rather than just copying the theme
+      // name — a shuffled band's colour is an inline override the plain
+      // data-theme cascade above doesn't know about, so without this the
+      // nav would keep showing that theme's un-shuffled colour while
+      // scrolled over a shuffled band.
+      for (const v of ['--bg', '--fg', '--fg-dim']) {
+        const val = (current as HTMLElement).style.getPropertyValue(v);
+        if (val) nav.style.setProperty(v, val);
+        else nav.style.removeProperty(v);
+      }
     };
     pick();
     addEventListener('scroll', pick, { passive: true });

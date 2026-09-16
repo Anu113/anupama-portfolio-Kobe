@@ -1,11 +1,11 @@
 ---
 /* ProjectCard.astro — the home page's "Selected work" row: one project,
-   one full-width rounded card, text on the left and its media on the
-   right. Redesigned from an earlier stacked (hero-on-top) layout after
-   review against a reference row-card pattern: same two-column shape,
-   numbered index, pill role tags and an explicit "View case study"
-   line, kept on this site's own palette and typography rather than the
-   reference's colours.
+   one full-width card, text on the left and its media on the right.
+   Redesigned from an earlier stacked (hero-on-top) layout after review
+   against a reference row-card pattern: same two-column shape, numbered
+   index, pill role tags and an explicit "View case study" line, kept on
+   this site's own palette and typography rather than the reference's
+   colours.
 
    `theme` is the card's own background — one colour from tokens.css's
    palette, same data-theme mechanism as every other themed band on the
@@ -14,10 +14,12 @@
    nine other decisions (--fg, --fg-dim, --screen, --shell, the night
    variant) for free.
 
-   `--radius` is no longer 0 — see tokens.css's header comment on that
-   token. This card, Marquee, Mosaic, PanCanvas and InfiniteStream all
-   round together now; there's deliberately no separate radius value
-   just for this component.
+   Hard-edged (`border-radius: 0`), unlike every other card/image/button
+   on the site, which share --radius (20px) — see .pc's own inline
+   comment. Once these cards started stacking on scroll (see the sticky
+   rows in index.astro), a rounded corner peeking out from under the
+   next square-ish edge looked like a rendering glitch rather than an
+   intentional shingle; the flat edge reads as a deliberate stack.
 
    The hero is a canvas, not a picture frame: its own background is a
    muted step off the card's `--bg`, and whatever's pinned to it sits
@@ -60,7 +62,7 @@ const {
 const hasHeroSlot = Astro.slots.has('hero');
 const num = String(index).padStart(2, '0');
 ---
-<a class="pc" href={href} data-theme={theme} data-hover-trigger>
+<a class={`pc ${hoverState === 'case-study' ? 'pc--no-pill' : ''}`} href={href} data-theme={theme} data-hover-trigger>
   <div class="pc__body">
     <p class="pc__num" aria-hidden="true">{num}</p>
     <p class="pc__co u-label">{company}</p>
@@ -81,7 +83,7 @@ const num = String(index).padStart(2, '0');
     {hasHeroSlot ? <slot name="hero" /> : (image && <img src={image} alt={alt} loading="lazy" decoding="async" />)}
   </div>
 
-  <HoverLabel state={hoverState} />
+  {hoverState !== 'case-study' && <HoverLabel state={hoverState} />}
 </a>
 
 <style>
@@ -102,17 +104,32 @@ const num = String(index).padStart(2, '0');
        height regardless of title length or tag count, so the grid
        reads as evenly composed instead of jumping card to card. Text
        that doesn't fit clamps (below) rather than growing the row.
-       672px = 420px + 60%. */
+       672px = 420px + 60%. A +20% (806px) pass was tried and reverted —
+       back to the original height; the sharp corners below stayed. */
     height: 672px;
     position: relative;   /* HoverLabel tracks the whole card */
     cursor: none;         /* HoverLabel's pill is the cursor here */
     text-decoration: none;
     color: var(--fg);
     background: var(--bg);
-    border-radius: var(--radius);
+    /* Hard-edged on purpose, unlike every other card/image/button on the
+       site (which share --radius, 20px) — the stacked "Selected work"
+       rows read better with a sharp edge where one card's top slides
+       under the next, so this is a deliberate, scoped exception rather
+       than a change to the sitewide --radius token. */
+    border-radius: 0;
     padding: clamp(1.75rem, 3vw, 2.75rem);
     overflow: hidden;
     transition: transform var(--dur-hover) var(--ease-out);
+  }
+  /* case-study cards already show a static "View case study" line in
+     .pc__body (below) — HoverLabel's cursor-follow pill would just
+     repeat it, so it's left unrendered for this state (see the .astro
+     file's template) and the native pointer cursor comes back instead
+     of the `cursor: none` above, which otherwise assumes the pill is
+     standing in for the cursor. */
+  .pc.pc--no-pill {
+    cursor: pointer;
   }
 
   .pc__body { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -198,7 +215,7 @@ const num = String(index).padStart(2, '0');
     align-items: center;
     justify-content: center;
     background: color-mix(in srgb, var(--bg) 95%, black 5%);
-    border-radius: var(--radius);
+    border-radius: 0; /* matches .pc's own hard edge — see its comment */
     overflow: hidden;
     padding: clamp(1.25rem, 3vw, 2.25rem);
     /* Fills whatever height .pc's own fixed height leaves it via grid
