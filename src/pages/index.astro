@@ -34,26 +34,46 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        meagandurlak.com's "dreaming of radical futures" opener. Exclusive
        to the hero; the work-head/mosaic bands right after it stay on ink,
        unchanged in either mode. -->
+  <!-- ACT 1 + intro merged into one band, min-height: 80svh — the hero
+       always claims 80% of the first screen and "Selected work" always
+       peeks in the remaining 20%, on any monitor or phone, instead of a
+       fixed rem of bottom padding that read short on a big monitor and
+       overshot on a small laptop. Safe to merge: both wore the same
+       "iris" theme already, so there's no palette seam being lost. -->
   <Section theme="iris" class="hero">
-    <Reveal delay={120}>
-      <h1 class="u-display hero__line">
-        Staff Product Designer with<br />
-        10+ years shaping digital products<br />
-        across <HeroRotatingWord words={['fintech', 'consumer', 'SaaS']} /><span class="hero__dot">.</span>
-      </h1>
-    </Reveal>
-  </Section>
-
-  <!-- Intro paragraph removed: it duplicated the headline above once the
-       headline itself became this sentence. If a second beat is wanted
-       here again, it should say something the headline doesn't. -->
-  <Section theme="iris" class="intro">
-    <Reveal delay={100}>
-      <p class="intro__links">
-        <a class="intro__resume u-label" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
-        <a class="intro__linkedin u-label" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+    <Reveal delay={80}>
+      <p class="hero__eyebrow">
+        <span class="hero__statusdot" aria-hidden="true"></span>
+        Open to ambitious problems &amp; good people.
       </p>
     </Reveal>
+    <Reveal delay={120}>
+      <h1 class="u-display hero__line">
+        I <HeroRotatingWord words={['ship', 'nudge', 'craft']} flexible />. From
+        strategy to the stubborn pixel.
+      </h1>
+    </Reveal>
+    <Reveal delay={150}>
+      <p class="hero__bio">
+        Hi, I am Anupama, Staff Product Designer @ Okta, with a decade
+        flexing across domains, from data &amp; privacy and digital
+        identity to fintech and e-commerce. Before this, PayPal, Walmart
+        Labs, and Deloitte.
+      </p>
+    </Reveal>
+    <Reveal delay={100}>
+      <p class="intro__links">
+        <a class="btn btn--primary" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
+        <a class="btn btn--secondary" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+      </p>
+    </Reveal>
+    <!-- Flexible, not fixed — absorbs whatever's left of the 80svh after
+         the nav gap, headline and CTA row above have taken their fixed
+         amount, so the leftover room scales with the viewport instead of
+         being a flat rem number. min-height, not height, on .hero itself:
+         a floor, so a 4-line headline wrap on a narrow phone still just
+         pushes the band taller rather than clipping. */ -->
+    <div class="hero__spacer" aria-hidden="true"></div>
   </Section>
 
   <!-- ACT 2 — selected work, one ProjectCard per project, stacked full-width
@@ -196,11 +216,49 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      Top-aligned now: the nav gap is set on purpose (clamp, so it holds
      proportionally on a short laptop screen and a tall monitor rather of
      a fixed rem doing something different on each), and it's deliberately
-     bigger than the .intro gap below so the headline+CTAs read as one
+     bigger than the CTA gap below so the headline+CTAs read as one
      group (Gestalt proximity) separated from the nav above, not from
-     each other. 6.5rem chosen live against the real hero copy (the "Modest"
-     option in the spacing tuner) — tighter than the first pass's 10rem. */
-  :global(.hero) { position: relative; display: flex; flex-direction: column; padding-top: clamp(5rem, 12vh, 6.5rem); }
+     each other. clamp(7rem, 26vh, 13rem) matches the raw proportion
+     measured on hansonwu.com (nav→headline ≈26vh, ≈4x their headline's
+     font-size, at 1440x900).
+
+     min-height: 80svh (not a fixed bottom padding) makes the whole band —
+     nav gap, headline, CTA row, and the leftover room below them — always
+     read as 80% of the first screen, "Selected work" always peeking in
+     the remaining 20%, on any monitor or phone. svh, not vh: vh on
+     mobile Safari/Chrome includes the address bar's collapsed state and
+     jumps on scroll; svh locks to the smallest possible viewport. It's a
+     floor, not a cap — min-height, so a headline that wraps to a 4th line
+     on a narrow phone just pushes the band taller instead of clipping,
+     same as every clamp() gap here already behaves. Bottom padding
+     zeroed — Section.astro's base `.u-section` rule applies
+     --space-section (clamp(5rem,12vw,11rem)) to both edges, and left
+     alone that was fighting the flex spacer below for the same space. */
+  :global(.hero) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 80svh;
+    padding-top: clamp(7rem, 26vh, 13rem);
+    /* No longer zeroed. That relied on .hero__spacer alone to hold the
+       CTA row away from the section's bottom edge — true only while the
+       headline+bio+CTA stack stayed under 80svh. The current headline
+       wraps to more lines at its tightened max-width (see .hero__line),
+       so the stack now routinely exceeds 80svh: the spacer collapses to
+       0 and the Resume/LinkedIn buttons landed flush against the band's
+       bottom edge with no gap at all, reading as broken rather than
+       "the section grew to fit its content." A real bottom padding
+       means the CTA row always has breathing room, whether the spacer
+       has anything left to give or not. */
+    padding-bottom: clamp(3rem, 6vh, 4.5rem);
+  }
+  /* Absorbs whatever's left of the 80svh after the nav gap, headline and
+     CTA row above have taken their fixed amount — the actual mechanism
+     that makes "80% on every screen" true, rather than a computed number.
+     On a short viewport where the content already exceeds 80svh this
+     just collapses to 0, which is correct: min-height already lets the
+     band grow past it. */
+  .hero__spacer { flex: 1 1 auto; }
   /* Still --step-h1, not --step-display — a poster-scale size meant for
      a handful of words forced this same sentence into an 8-line tower
      taller than the viewport the last time this wore it. Hand-broken
@@ -216,62 +274,92 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      here instead (measured: fits the shell down to the hero's own min
      width), so all three authored lines land exactly where the <br/>s put
      them at every desktop width. */
-  .hero__line { font-size: clamp(2.5rem, 6vw, 5rem); max-width: 44ch; }
+  /* max-width tightened from 44ch, then 32ch, then 26ch — none of those
+     actually narrowed the rendered lines: greedy word-wrap only fills a
+     line until the next word doesn't fit, and every wrapped line here
+     was already narrower than all three of those box widths (measured:
+     the widest line topped out near 1060px against a 1241px/26ch box),
+     so the text kept wrapping at the exact same points regardless of how
+     much invisible box remained past it. The box has to be narrower than
+     the content's own natural wrap width to change anything — 18ch does
+     that (measured ~845px at the font-size cap, tighter than every line
+     the old boxes produced). */
+  /* line-height overridden up from .u-display's own --leading-display
+     (0.85) — that value is tuned for the short, 1-3-line headlines it
+     wears elsewhere on the site (Contact's "Open to work.", etc.), where
+     there's no line directly below a line ending in a descender. This
+     headline is five lines of running prose, so at 0.85 a descender
+     ending one line (the "y" in "reality") sits low enough to collide
+     with the ascenders/caps starting the next ("beyond..."). 1.08 gives
+     enough room for that without loosening the shorter headlines that
+     still rely on the tight default. */
+  .hero__line { font-size: clamp(2.5rem, 6vw, 5rem); max-width: 18ch; line-height: 1.08; }
 
-  /* The bio paragraph after the hero. Tighter than the section default —
-     it's a second beat of the opening act, not a new one, so it shouldn't
-     push the logo strip a full --space-section further down the page. */
-  :global(.intro) { padding-block: 0 clamp(2.5rem, 6vw, 4.5rem); }
+  /* The status line ("Open to a Staff Product Designer role, remote") —
+     modelled on carlthomasiv.com's mono-caps eyebrow ("CURRENTLY DESIGNING
+     AT ONA"), same monospace treatment, but the wording reads from
+     site.ask (data/site.ts) rather than being retyped here, so it can't
+     drift the way CLAUDE.md warns the ask has before. Sits above the
+     headline, not below it — a recruiter's first signal is availability,
+     the headline is the pitch.
+
+     Colour is --fg-dim, not --accent-text. ThemeRail's colour-shuffle
+     (the button next to the day/night toggle) repaints the hero band's
+     --bg/--fg/--fg-dim with the shuffled palette's exact swatch on every
+     click and on every page load, but never touches --accent-text — it
+     stays pinned to whatever the hero's base theme (iris) declared. An
+     eyebrow in --accent-text would go visibly off-hue from the
+     shuffled headline the moment a shuffle landed; --fg-dim tracks the
+     same repaint the headline gets. */
+  .hero__eyebrow {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-family: var(--font-mono); font-size: var(--step-label); font-weight: 400;
+    letter-spacing: var(--tracking-label); text-transform: uppercase;
+    color: var(--fg-dim); margin: 0 0 1.4rem;
+  }
+  /* Live-availability dot, not the old terminal-caret full stop — a small
+     pulse (not a hard blink) reads as "currently true" rather than a
+     cursor waiting for input. */
+  .hero__statusdot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: currentColor; flex: none;
+    animation: hero-pulse 2s ease-in-out infinite;
+  }
+  @keyframes hero-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__statusdot { animation: none; opacity: 1; }
+  }
+
+  /* Widened from 40ch and the copy itself cut (dropped "leading a team of
+     six on Identity & Access Management" — that's already the case
+     studies' job, not the hero's) so the sentence actually holds to two
+     lines instead of wrapping to four or five. Measured live, not
+     guessed: text-wrap:pretty avoids a lonely last word stranded alone
+     on the second line. */
+  /* font-family overridden to --font-display (sans) — the body default,
+     --font-body (Crimson Pro), is a serif, and this line reads as part
+     of the hero's sans-serif statement rather than a paragraph of body
+     copy. */
+  .hero__bio { font-family: var(--font-display); color: var(--fg-dim); font-size: var(--step-body); max-width: 64ch; margin: 1.4rem 0 0; text-wrap: pretty; }
+
   .intro__body { color: var(--fg-dim); font-size: var(--step-body); }
 
-  /* 0.85rem — the "Grouped" option in the spacing tuner, settled on
-     alongside the 6.5rem nav gap above. Down from the original 1.5rem,
-     back up from an interim 0.5rem that read as too glued once the nav
-     gap itself came down to 6.5rem. */
-  .intro__links { display: flex; align-items: center; gap: 1.5rem; padding-top: 0.85rem; margin: 0; }
-  /* The pill — same border-not-fill treatment as .lede__cta on the case
-     study pages, so a control on this page reads as the same control
-     everywhere else on the site. */
-  .intro__resume {
-    display: inline-block;
-    color: var(--fg);
-    text-decoration: none;
-    border: 1px solid var(--fg-dim);
-    border-radius: 999px;
-    padding: 0.65rem 1.15rem;
-    transition: background var(--dur-hover) var(--ease-out),
-                border-color var(--dur-hover) var(--ease-out);
-  }
-  .intro__resume:hover { background: var(--screen); border-color: var(--fg-dim); }
-  /* Same pill shape and u-label type as .intro__resume so the two read as
-     one pair of actions, but no border — Resume stays the primary (bordered)
-     action, LinkedIn the quiet second one. Padding is kept identical so the
-     row's baseline and hit targets line up. */
-  .intro__linkedin {
-    display: inline-block;
-    color: var(--fg-dim);
-    text-decoration: none;
-    border-radius: 999px;
-    padding: 0.65rem 1.15rem;
-    transition: background var(--dur-hover) var(--ease-out),
-                color var(--dur-hover) var(--ease-out);
-  }
-  .intro__linkedin:hover { background: var(--screen); color: var(--fg); }
-
-  /* The full stop blinks like a terminal caret — steps(), not a fade, so it
-     snaps rather than pulses. It stays inside the sentence rather than being
-     aria-hidden, so the line still ends in a full stop when read aloud. */
-  .hero__dot { animation: hero-blink 1.15s steps(1, end) infinite; }
-  @keyframes hero-blink {
-    0%, 60%   { opacity: 1; }
-    61%, 100% { opacity: 0; }
-  }
-  /* The global reduced-motion block only collapses the duration, which on an
-     infinite animation leaves the dot resting in an arbitrary state. Park it
-     visible instead. */
-  @media (prefers-reduced-motion: reduce) {
-    .hero__dot { animation: none; opacity: 1; }
-  }
+  /* Started at 1.13rem, picked live against a mockup slider — but that
+     mockup used a normal-leading serif font. The real .hero__line wears
+     --leading-display: 0.85 (a deliberately tight box, 68px line-height
+     on an 80px face), so the last line's descenders (the "p" in
+     "products"/"shaping") paint several px below their own line box and
+     visually eat most of a padding-top that small. 2.25rem compensates
+     for that (a fixed pixel amount, not something that scales down with
+     the smaller nav gap above) while still sitting closer than the
+     2.75rem peak, back in proportion with the hansonwu.com-matched top
+     gap. */
+  .intro__links { display: flex; align-items: center; gap: 1.5rem; padding-top: 2.25rem; margin: 0; }
+  /* Resume/LinkedIn now use the shared .btn system (global.css) —
+     Primary/Secondary — instead of their own bespoke pill rules. */
 
   .railhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 2.5rem; }
   .railhead__hint { margin: 0; }

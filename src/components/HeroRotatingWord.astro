@@ -1,25 +1,40 @@
 ---
-/* HeroRotatingWord.astro — the one changing word in the hero headline
-   ("...across fintech / consumer / SaaS."). Sits inline inside the h1,
-   in the same font as the surrounding sentence, and never causes the
-   sentence around it to reflow: an invisible "ghost" holding the
-   longest word reserves the box's width, and the real word is
-   positioned on top of it.
+/* HeroRotatingWord.astro — the one changing word in the hero headline.
 
-   A single visible word crossfades-and-slides out, swaps its text,
-   then slides-and-fades back in — never more than one word shown at
-   once, so the surrounding sentence stays the only fixed thing on the
-   page. Pauses while the tab is hidden and disables itself entirely
-   under prefers-reduced-motion, per this site's existing rule in
-   global.css — it just shows the first word and stops there. */
+   Two modes:
+
+   - Default (locked width): an invisible "ghost" holding the longest
+     word reserves the box's width, and the real word is centered on
+     top of it, so the sentence around it never reflows — right for a
+     word sandwiched between two fixed halves ("across ___ ."), where
+     jumping text on either side would be the distracting thing.
+
+   - `flexible` (no ghost, no locked width): the word sits in normal
+     flow at its own natural width, so shorter/longer words genuinely
+     take up less/more room and everything after it — the rest of the
+     sentence — shifts to match. Right for "I ___. From strategy..." —
+     a word glued to a fixed word on ONLY one side. The locked-width
+     mode there put a fluctuating gap between "I" and the word (each
+     word's own width split unevenly around it inside a fixed box) and,
+     under fast rotation, occasionally left the trailing punctuation
+     visually stranded when the grid box's layout and the text reflow
+     around it disagreed mid-transition. Flexible mode has no second
+     box to disagree with — there's nothing left to desync.
+
+   Either way: a single visible word crossfades-and-slides out, swaps
+   its text, then slides-and-fades back in — never more than one word
+   shown at once. Pauses while the tab is hidden and disables itself
+   entirely under prefers-reduced-motion, per this site's existing rule
+   in global.css — it just shows the first word and stops there. */
 interface Props {
   words: string[];
+  flexible?: boolean;
 }
-const { words } = Astro.props;
+const { words, flexible = false } = Astro.props;
 const longest = words.reduce((a, b) => (b.length > a.length ? b : a), '');
 ---
-<span class="rotate" data-rotate-words={JSON.stringify(words)}>
-  <span class="rotate__ghost" aria-hidden="true">{longest}</span>
+<span class={`rotate ${flexible ? 'rotate--flexible' : ''}`} data-rotate-words={JSON.stringify(words)}>
+  {!flexible && <span class="rotate__ghost" aria-hidden="true">{longest}</span>}
   <span class="rotate__word" data-rotate-word>{words[0]}</span>
 </span>
 
@@ -61,6 +76,34 @@ const longest = words.reduce((a, b) => (b.length > a.length ? b : a), '');
     opacity: 1;
     transition: transform 0.55s var(--ease-out), opacity 0.55s var(--ease-out);
   }
+  /* Flexible mode: no ghost sibling, so there's no grid cell to justify
+     within — the word is the only content, sized to itself, in normal
+     inline flow. Everything after it in the sentence reflows to match
+     its actual width, which is the point (see the file header). */
+  .rotate--flexible {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    /* Animated in JS (see the script): each swap freezes this to the
+       outgoing word's width, then sets it to the incoming word's
+       measured width a frame later, so the box — and everything after
+       it in the sentence — glides to the new width over the same
+       curve as the word's own fade, instead of snapping sideways the
+       instant the text node changes. */
+    transition: width 0.55s var(--ease-out);
+  }
+  .rotate--flexible .rotate__word {
+    display: inline-block;
+    justify-self: auto;
+    /* Same colour as the surrounding text, just quieter — opacity
+       instead of a different token (var(--fg-dim), tried first, is a
+       different hue on some palettes) or a mixed-in black/white (which
+       still reads as a distinct colour choice, not "the same text,
+       softer"). Opacity guarantees it's literally --fg, just less of
+       it, on every palette and every shuffle. */
+    color: var(--fg);
+    opacity: 0.72;
+  }
   .rotate__word.is-out {
     transform: translateY(-0.45em);
     opacity: 0;
@@ -96,6 +139,25 @@ const longest = words.reduce((a, b) => (b.length > a.length ? b : a), '');
     const word = root.querySelector<HTMLElement>('[data-rotate-word]');
     if (!word || words.length < 2) return;
 
+    // Flexible mode has no ghost reserving its width, so the container
+    // (`root` itself) needs its own width driven explicitly to animate
+    // the reflow smoothly — see the CSS transition on .rotate--flexible.
+    // A hidden off-screen measurer (cloning the word's own font) is how
+    // the incoming word's width gets known before it's actually visible.
+    const flexible = root.classList.contains('rotate--flexible');
+    let measurer: HTMLSpanElement | null = null;
+    if (flexible) {
+      measurer = document.createElement('span');
+      const wcs = getComputedStyle(word);
+      measurer.style.cssText = 'position:absolute; visibility:hidden; white-space:nowrap; left:-9999px; top:-9999px;';
+      measurer.style.font = wcs.font;
+      measurer.style.letterSpacing = wcs.letterSpacing;
+      document.body.appendChild(measurer);
+      // Lock the starting width so the very first transition (into word
+      // #2) has a real pixel value to animate from, not "auto".
+      root.style.width = `${word.getBoundingClientRect().width}px`;
+    }
+
     let index = 0;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -109,7 +171,13 @@ const longest = words.reduce((a, b) => (b.length > a.length ? b : a), '');
         // force a reflow so the "instant jump" applies before we
         // transition away from it on the next frame
         void word.offsetWidth;
-        requestAnimationFrame(() => word.classList.remove('is-in-start'));
+        requestAnimationFrame(() => {
+          word.classList.remove('is-in-start');
+          if (flexible && measurer) {
+            measurer.textContent = words[index];
+            root.style.width = `${measurer.getBoundingClientRect().width}px`;
+          }
+        });
         schedule();
       }, STEP_MS);
     };

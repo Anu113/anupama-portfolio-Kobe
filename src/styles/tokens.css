@@ -8,7 +8,7 @@
   --font-display: 'General Sans', ui-sans-serif, system-ui, sans-serif;
   --font-accent: 'Instrument Serif', Georgia, serif;   /* the italic word */
   --font-body: 'Crimson Pro', Georgia, serif;
-  --font-mono: 'Roboto Mono', ui-monospace, monospace;   /* the playground's print-label captions, nowhere else */
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;   /* the playground's print-label captions, and the hero's status eyebrow */
 
   /* --- TYPE SCALE ---------------------------------------
      Display sizes use vw so type overflows the viewport
