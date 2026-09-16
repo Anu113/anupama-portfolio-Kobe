@@ -14,6 +14,22 @@ import { cases } from '../data/cases';
 const lockedSlugs = new Set(cases.filter((c) => c.locked).map((c) => c.slug));
 const isLocked = (href: string) => lockedSlugs.has(href.replace('/work/', ''));
 
+// The category filter tabs — moved here from the home page's own
+// "Selected work" section, which stacks its cards on scroll: hiding a
+// card there shifts every card below it, which the sticky/settle math
+// never re-measured for. This page's plain staggered grid has no such
+// scroll-position math to desync, so filtering lives here instead. Built
+// from whatever categories the seven projects actually carry, not a
+// hand-typed list that could drift from work.ts. Order is fixed (not
+// alphabetical) so "0-1" reads before the domain tags rather than
+// wherever it happens to sort.
+const CATEGORY_ORDER = ['0-1', 'fintech', 'consumer', 'enterprise', 'design-systems'] as const;
+const CATEGORY_LABEL: Record<string, string> = {
+  '0-1': '0→1', fintech: 'Fintech', consumer: 'Consumer',
+  enterprise: 'Enterprise', 'design-systems': 'Design Systems',
+};
+const categories = CATEGORY_ORDER.filter((c) => work.some((w) => w.categories?.includes(c)));
+
 /* Where each tile sits. Presentation only, so it lives here rather than in
    work.ts — that file stays about content. Columns are on the 12-track grid
    below; `top` is a rem offset that pushes a tile down out of line with its
@@ -52,11 +68,18 @@ const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
       </PageHeader>
     </div>
 
-    <div class="grid">
+    <div class="workindex__filters" data-filters role="tablist" aria-label="Filter selected work by category">
+      <button type="button" class="is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+      {categories.map((c) => (
+        <button type="button" data-filter={c} role="tab" aria-selected="false">{CATEGORY_LABEL[c]}</button>
+      ))}
+    </div>
+
+    <div class="grid" data-worklist>
       {work.map((w, i) => {
         const l = layout[i] ?? fallback;
         return (
-          <div class="cell" style={`--col: ${l.col}; --top: ${l.top}rem;`}>
+          <div class="cell" data-categories={(w.categories ?? []).join(',')} style={`--col: ${l.col}; --top: ${l.top}rem;`}>
           <Reveal delay={i * 90}>
             <CaseCard
               title={w.title} href={w.href} image={w.image} alt={w.alt}
@@ -104,7 +127,27 @@ const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
   /* --space-band-tight, not --space-section: the header is 72svh with its
      type centred, so it already leaves a half-band of air below the intro.
      A full section space on top of that reads as a hole. */
-  .grid { margin-top: var(--space-band-tight); }
+  .workindex__filters { margin-top: var(--space-band-tight); }
+  .grid { margin-top: clamp(2rem, 4vw, 3rem); }
+
+  /* Same pill treatment the home page's own filter row used to have. */
+  .workindex__filters {
+    display: flex; gap: 0.6rem; flex-wrap: wrap;
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+    border-bottom: 1px solid var(--rule);
+  }
+  .workindex__filters button {
+    all: unset; cursor: pointer;
+    font-family: var(--font-display); font-size: 0.72rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--rule);
+    color: var(--fg-dim);
+    transition: border-color var(--dur-hover) var(--ease-out),
+                color var(--dur-hover) var(--ease-out),
+                background var(--dur-hover) var(--ease-out);
+  }
+  .workindex__filters button:hover { border-color: var(--fg-dim); color: var(--fg); }
+  .workindex__filters button.is-active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .cell[hidden] { display: none; }
 
   /* --- The staggered grid --------------------------------------------
      12 tracks. Each cell picks its span and its drop from the `layout`
@@ -132,3 +175,32 @@ const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
     .arch__year { grid-column: 2; grid-row: 1; }
   }
 </style>
+
+<script>
+  // Selected Work filter tabs — plain show/hide by category, no
+  // framework needed. Each cell carries its own categories as a
+  // comma-separated data attribute set server-side from work.ts. Ported
+  // from the home page's own version of this script (removed there —
+  // see this page's own comment on why).
+  const filterBar = document.querySelector<HTMLElement>('[data-filters]');
+  const grid = document.querySelector<HTMLElement>('[data-worklist]');
+  if (filterBar && grid) {
+    const buttons = [...filterBar.querySelectorAll<HTMLButtonElement>('button[data-filter]')];
+    const items = [...grid.querySelectorAll<HTMLElement>('[data-categories]')];
+
+    filterBar.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-filter]');
+      if (!btn) return;
+      const filter = btn.dataset.filter!;
+
+      buttons.forEach((b) => {
+        b.classList.toggle('is-active', b === btn);
+        b.setAttribute('aria-selected', String(b === btn));
+      });
+      items.forEach((item) => {
+        const cats = item.dataset.categories?.split(',') ?? [];
+        item.hidden = filter !== 'all' && !cats.includes(filter);
+      });
+    });
+  }
+</script>

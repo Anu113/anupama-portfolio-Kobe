@@ -79,12 +79,14 @@ const orgTypeOptions = [
   { value: 'Enterprise', swatch: 'clay' },
   { value: 'Agency', swatch: 'sage' },
   { value: 'Non-profit', swatch: 'lilac' },
+  { value: 'Government', swatch: 'orange' },
   { value: 'Other', swatch: 'coral' },
 ] as const;
 const needOptions = [
   { value: 'a Staff Product Designer', swatch: 'coral' },
   { value: 'design leadership', swatch: 'lilac' },
   { value: 'a project consult', swatch: 'sage' },
+  { value: 'mentorship', swatch: 'teal' },
   { value: 'something else', swatch: 'clay' },
 ] as const;
 
@@ -602,11 +604,13 @@ const timeline = [
     cursor: pointer;
   }
   .dselect__option + .dselect__option { border-top: 1px solid rgba(20, 16, 14, 0.12); }
-  .dselect__option--sand  { background: var(--swatch-sand); }
-  .dselect__option--sage  { background: var(--swatch-sage); }
-  .dselect__option--lilac { background: var(--swatch-lilac); }
-  .dselect__option--coral { background: var(--swatch-coral); }
-  .dselect__option--clay  { background: var(--swatch-clay); }
+  .dselect__option--sand   { background: var(--swatch-sand); }
+  .dselect__option--sage   { background: var(--swatch-sage); }
+  .dselect__option--lilac  { background: var(--swatch-lilac); }
+  .dselect__option--coral  { background: var(--swatch-coral); }
+  .dselect__option--clay   { background: var(--swatch-clay); }
+  .dselect__option--orange { background: var(--swatch-orange); }
+  .dselect__option--teal   { background: var(--swatch-teal); }
   .dselect__option.is-active,
   .dselect__option[aria-selected='true'] { outline: 2px solid var(--swatch-ink); outline-offset: -2px; }
 

@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
+import ThemeRail from '../components/ThemeRail.astro';
 import CursorTrail from '../components/CursorTrail.astro';
 import Footer from '../components/Footer.astro';
 /* `trail` is the cursor line. It is on everywhere except pages that own the
@@ -69,6 +70,7 @@ const {
   <body>
     <a href="#main" class="skip">Skip to content</a>
     <Nav />
+    <ThemeRail />
     <main id="main"><slot /></main>
     <Footer />
     {trail && <CursorTrail />}

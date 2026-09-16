@@ -81,10 +81,12 @@ band it sat in, and had no visible boundary against it). The nav watches which t
 behind it and adopts that palette automatically (`Nav.astro`, bottom script). Add
 a palette by copying a block — don't invent a parallel mechanism.
 
-Every palette also has a `[data-mode='night']` variant. The nav's day/night
-toggle sets `data-mode` on `<html>`; the mode is resolved by an inline script in
-`Base.astro` before first paint. **A new palette needs a night block too**, or
-that band will sit unchanged while everything around it turns.
+Every palette also has a `[data-mode='night']` variant. `ThemeRail.astro` — a
+fixed glass pill mounted sitewide via `Base.astro`, so it's on every page,
+not just the home page — sets `data-mode` on `<html>`; the mode is resolved
+by an inline script in `Base.astro` before first paint, sitewide. **A new
+palette needs a night block too**, or that band will sit unchanged while
+everything around it turns.
 
 **3. Case studies lead with scope and judgement, then craft.**
 This matters more than anything else in the repo. The standard portfolio
@@ -136,9 +138,6 @@ must change.
 
 ## Don't add without asking
 
-- An animation library (GSAP, Framer Motion, Lenis). The no-library constraint
-  is deliberate — it keeps the repo legible to a designer. If choreography
-  genuinely needs one, make the case first.
 - A CMS, React, or a component library. Markdown and `.astro` are enough.
 - Analytics or tracking scripts.
 - More palettes than there are bands to wear them. Eight exist and all eight
@@ -149,7 +148,8 @@ must change.
 | Component | What it does |
 |---|---|
 | `Section.astro` | Wraps a band of the page in a palette. `theme` prop. |
-| `Nav.astro` | Fixed nav, recolours to match the band behind it. |
+| `Nav.astro` | Fixed nav, recolours to match the band behind it. Wordmark + links only — the day/night toggle now lives in `ThemeRail.astro`. |
+| `ThemeRail.astro` | The day/night + colour-shuffle control — a fixed glass pill, mounted sitewide via `Base.astro`. Two icons: a single toggle that swaps between sun/moon (letter-spacing-free, no separate "active" state — the icon itself is the state), and a Shuffle button (five-dot palette glyph) that repaints every themed band toward a random palette on click, plus a fresh random one automatically on every page load. Sets `data-mode` on `<html>`, same sitewide mechanism the old nav toggle used. |
 | `Reveal.astro` | Scroll fade-and-lift. `delay`, `y` props. |
 | `DragRail.astro` | Horizontal drag-scroll rail with grab cursor. |
 | `Mosaic.astro` | Edge-cropped asymmetric image grid + parallax. |

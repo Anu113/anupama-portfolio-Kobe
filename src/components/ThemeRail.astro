@@ -1,0 +1,473 @@
+---
+/* ThemeRail.astro — the sitewide day/night control, plus a third
+   "shuffle" control that swaps the hero's own palette. Mounted once in
+   Base.astro (see below), so it's the same fixed element on every page.
+
+   It replaces the sun/moon button that used to live in Nav.astro: same
+   underlying mechanism (`data-mode` on <html>, remembered in
+   localStorage, resolved before first paint by the inline script in
+   Base.astro so a returning visitor never sees a flash of the wrong
+   palette) — just moved to its own persistent, glass control instead of
+   being one more icon crowded into the nav's own row.
+
+   Two controls (see further down for why it's two, not the original
+   four-icon Day/Dusk/Night/Auto or the later three-icon Day/Night/
+   Shuffle). Shuffle: on click, EVERY element on the page carrying a
+   `data-theme` attribute — every
+   `<Section>` band, every ProjectCard's own coloured panel, the footer
+   — gets repainted toward the same random palette from PALETTES below.
+   Two different treatments, by design:
+     - The hero + the short intro band (`data-theme="iris"`) get the
+       palette's EXACT bg/fg/fg-dim values, unmodified — this is the
+       band the control sits next to, so it should show the palette
+       as-designed.
+     - Every other band lends only the palette's HUE and SATURATION,
+       keeping that band's own original lightness (see hexToHsl and
+       readOriginals below) — a band that was light stays light, one
+       that was dark stays dark, just tinted into the shuffled colour's
+       family. That reads as "everything shifted toward this colour"
+       rather than "everything painted the exact same flat colour",
+       which would erase the page's whole light/dark rhythm.
+   The nav and the rail itself take neither treatment — they carry no
+   independent colour at all and instead mirror whichever band is
+   currently behind them (see the pick() functions in Nav.astro and at
+   the bottom of this file), so they always show that band's actual
+   current colour, shuffled or not.
+   Landing back on `iris` clears every override instead of setting one,
+   so the whole page returns to its normal, distinct-per-band
+   tokens.css cascade.
+
+   The chosen palette persists across a Day/Night switch: pinning Night
+   re-applies the *same* shuffled palette's night pair, not a reset to
+   iris's own night. It also survives a reload via localStorage, same as
+   the mode itself.
+
+   The moon reuses the exact mask technique the old nav toggle used, so
+   it's pixel-identical to what was there before, just relocated.
+
+   Day and Night are collapsed into a single toggle button whose own
+   glyph swaps between sun and moon on click (its icon IS the state, so
+   there's no separate "active" ring to maintain — simpler than the
+   earlier two-separate-buttons version). Shuffle keeps its own slot,
+   now a five-dot palette glyph instead of the earlier two-arrow
+   refresh — reads as "colour", not "reload".
+
+   The tap sound is the exact synthesised tick from the old nav
+   toggle — a ~100ms sine tone, pitch falling as you move toward Night
+   and rising toward Day. Shuffle gets its own flatter click rather than
+   a directional tone, since it isn't moving along the day/night scale.
+
+   Pill fill, icon stroke and the rail's own colour all recolour to
+   match whichever band is currently behind the rail's own fixed centre
+   — the identical `data-theme` swap Nav.astro already does for itself
+   (same probe-and-swap script, just keyed to this rail's vertical
+   centre instead of the nav's). */
+---
+<div class="theme-rail" id="theme-rail" data-theme="iris">
+  <button type="button" class="theme-rail__btn" id="theme-rail-toggle" aria-label="Switch to night mode">
+    <svg id="theme-rail-toggle-icon" viewBox="0 0 24 24" stroke-width="1.9" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="4.4" />
+      <path d="M12,4.2 v-1.4 M12,21.2 v-1.4 M4.2,12 h-1.4 M21.2,12 h-1.4 M6.5,6.5 L5.5,5.5 M18.5,18.5 L17.5,17.5 M17.5,6.5 L18.5,5.5 M5.5,18.5 L6.5,17.5" />
+    </svg>
+  </button>
+  <button type="button" class="theme-rail__btn" id="theme-rail-shuffle" aria-label="Shuffle hero color palette">
+    <svg viewBox="0 0 24 24" stroke-width="1.7" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12.5" r="8.5" fill="none" />
+      <circle cx="9" cy="9.5" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="13.5" cy="7.8" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="16.3" cy="11.5" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="9.3" cy="15" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="13.8" cy="16.2" r="1.15" fill="currentColor" stroke="none" />
+    </svg>
+  </button>
+</div>
+
+<style>
+  .theme-rail {
+    position: fixed;
+    top: 50%;
+    right: clamp(1.25rem, 4vw, 3rem);
+    transform: translateY(-50%);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.75rem 0.3rem;
+    border-radius: 999px;
+    color: var(--fg, #17120f);
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+                inset 0 0 14px color-mix(in srgb, currentColor 10%, transparent);
+    transition: color var(--dur-hover) var(--ease-out),
+                box-shadow var(--dur-hover) var(--ease-out);
+  }
+
+  .theme-rail__btn {
+    all: unset;
+    cursor: pointer;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    transition: background var(--dur-hover) var(--ease-out),
+                transform var(--dur-hover) var(--ease-out);
+  }
+  .theme-rail__btn:hover { transform: scale(1.05); }
+  .theme-rail__btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  .theme-rail__btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    overflow: visible;
+  }
+
+  /* Shuffle spins its glyph a quarter turn on click — a small confirming
+     flourish since, unlike Day/Night, nothing about its own icon changes
+     to show the click registered. Skipped under reduced-motion like
+     every other decorative animation on the site. */
+  .theme-rail__btn#theme-rail-shuffle.is-spinning svg {
+    transition: transform 320ms var(--ease-out);
+    transform: rotate(180deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .theme-rail__btn#theme-rail-shuffle.is-spinning svg { transition: none; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-rail__btn { transition: none; }
+  }
+</style>
+
+<script>
+  // The exact synthesised tick from the old Nav.astro toggle — carried
+  // over rather than left behind when the day/night control moved out
+  // of the nav. Sine tone, ~100ms, pitch falls going darker, rises
+  // going lighter, silenced under prefers-reduced-motion (the closest
+  // signal the platform gives for "less sensory noise, please").
+  let audioCtx: AudioContext | null = null;
+  const tick = (toDarker: boolean) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!Ctx) return;
+    try {
+      audioCtx = audioCtx || new Ctx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(toDarker ? 1046 : 659, t);
+      osc.frequency.exponentialRampToValueAtTime(toDarker ? 523 : 1318, t + 0.07);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.05, t + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.1);
+    } catch (e) { /* audio is a nicety — never let it break the control */ }
+  };
+
+  // A flatter, non-directional click for Shuffle — two quick short tones
+  // rather than the day/night glide, so it doesn't read as "lighter" or
+  // "darker" on the same scale.
+  const shuffleClick = () => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!Ctx) return;
+    try {
+      audioCtx = audioCtx || new Ctx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const t = audioCtx.currentTime;
+      [880, 990].forEach((f, i) => {
+        const osc = audioCtx!.createOscillator();
+        const gain = audioCtx!.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, t + i * 0.045);
+        gain.gain.setValueAtTime(0.0001, t + i * 0.045);
+        gain.gain.exponentialRampToValueAtTime(0.045, t + i * 0.045 + 0.006);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.045 + 0.05);
+        osc.connect(gain).connect(audioCtx!.destination);
+        osc.start(t + i * 0.045);
+        osc.stop(t + i * 0.045 + 0.06);
+      });
+    } catch (e) {}
+  };
+
+  // Small hex↔HSL helpers — no library needed for three conversions.
+  // Used so a shuffle can lend its HUE and SATURATION to every band on
+  // the page while each band keeps its OWN original lightness: a band
+  // that was light stays light, one that was dark stays dark, just
+  // tinted into the shuffled colour's family instead of the site's
+  // usual per-band palette. That reads as "everything shifted toward
+  // this colour" rather than "everything painted the exact same flat
+  // colour", which would erase the page's whole light/dark rhythm.
+  const hexToHsl = (hex: string): [number, number, number] => {
+    const n = parseInt(hex.slice(1), 16);
+    const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    if (max === min) return [0, 0, l * 100];
+    const d = max - min;
+    const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    let h = 0;
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0));
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    return [h * 60, s * 100, l * 100];
+  };
+
+  // The hero's alternate palettes. `null` (iris) means "use tokens.css's
+  // own [data-theme='iris'] cascade" — every other entry lends its hue
+  // and saturation, per band, to every themed element on the page (see
+  // hexToHsl above) — none of these live in tokens.css and none of them
+  // touch `coral`/`crimson` as used elsewhere on the site (the Okta
+  // card, the footer) — they're separate values that happen to share a
+  // name.
+  type Swatch = { bg: string; fg: string; fgDim: string };
+  type Palette = { day: Swatch; night: Swatch } | null;
+  const PALETTES: Record<string, Palette> = {
+    iris: null,
+    sand: {
+      day:   { bg: '#e3caa5', fg: '#2f7d45', fgDim: '#276237' },
+      night: { bg: '#16211b', fg: '#8fd6a4', fgDim: '#a9dfb9' },
+    },
+    coral: {
+      day:   { bg: '#f96f43', fg: '#5c1220', fgDim: '#7a2836' },
+      night: { bg: '#7a2d18', fg: '#ffe9e0', fgDim: '#e0b6a6' },
+    },
+    crimson: {
+      day:   { bg: '#5c1220', fg: '#f0a868', fgDim: '#e0b6a6' },
+      night: { bg: '#3a0a12', fg: '#f0a868', fgDim: '#e0b6a6' },
+    },
+    amber: {
+      day:   { bg: '#f2a93b', fg: '#402b06', fgDim: '#5c3d10' },
+      night: { bg: '#7a4a0a', fg: '#ffcf6e', fgDim: '#e0a94a' },
+    },
+    rose: {
+      day:   { bg: '#f3b6c4', fg: '#3a1030', fgDim: '#5c2249' },
+      night: { bg: '#7a2d3a', fg: '#f7d9de', fgDim: '#e8b8c2' },
+    },
+    plum: {
+      day:   { bg: '#3a1a4a', fg: '#f4ece1', fgDim: '#cba6fc' },
+      night: { bg: '#150a1e', fg: '#cba6fc', fgDim: '#a98adf' },
+    },
+    teal: {
+      day:   { bg: '#123832', fg: '#eef4f0', fgDim: '#a9c4bc' },
+      night: { bg: '#081f1c', fg: '#8fd6a4', fgDim: '#6fae86' },
+    },
+  };
+  const PALETTE_NAMES = Object.keys(PALETTES);
+
+  const toggleBtn = document.getElementById('theme-rail-toggle') as HTMLButtonElement | null;
+  const toggleIcon = document.getElementById('theme-rail-toggle-icon') as unknown as SVGElement | null;
+  const shuffleBtn = document.getElementById('theme-rail-shuffle') as HTMLButtonElement | null;
+  const root = document.documentElement;
+
+  // The two glyphs the single toggle button swaps between.
+  const SUN_ICON = '<circle cx="12" cy="12" r="4.4" /><path d="M12,4.2 v-1.4 M12,21.2 v-1.4 M4.2,12 h-1.4 M21.2,12 h-1.4 M6.5,6.5 L5.5,5.5 M18.5,18.5 L17.5,17.5 M17.5,6.5 L18.5,5.5 M5.5,18.5 L6.5,17.5" />';
+  const MOON_ICON = '<mask id="theme-rail-crescent"><rect width="24" height="24" fill="#fff" /><circle cx="14.6" cy="9" r="5" fill="#000" /></mask><circle cx="11.4" cy="12" r="5.6" fill="currentColor" stroke="none" mask="url(#theme-rail-crescent)" />';
+
+  if (toggleBtn && toggleIcon && shuffleBtn) {
+    let mode: 'day' | 'night' = root.dataset.mode === 'night' ? 'night' : 'day';
+    // A fresh random palette every load, on purpose — this used to persist
+    // the last-shuffled palette to localStorage and restore it, but that
+    // restore only ran once the bundled script executed (after first
+    // paint), so every reload flashed the default iris palette and then
+    // snapped to the saved one. Picking a new random palette here instead
+    // means there's no "correct" saved state to race against — whatever
+    // paints first is simply this load's shuffle.
+    let palette: string = PALETTE_NAMES[Math.floor(Math.random() * PALETTE_NAMES.length)];
+
+    // Nav and the rail itself are excluded here — they don't carry their
+    // own colour at all, they mirror whichever band is currently behind
+    // them (see the pick() functions in Nav.astro and below), so giving
+    // them an independent derived tint here would fight that mirroring.
+    const themedElements = () =>
+      [...document.querySelectorAll<HTMLElement>('[data-theme]')]
+        .filter((el) => el.id !== 'site-nav' && el.id !== 'theme-rail' && el.dataset.theme !== 'iris');
+
+    // The hero + the short intro band right after it (both carry
+    // data-theme="iris" — see index.astro) paint with the shuffled
+    // palette's EXACT bg/fg/fg-dim values, no derivation. Every other
+    // band uses the hue-lending logic below instead.
+    const heroElements = () =>
+      [...document.querySelectorAll<HTMLElement>('[data-theme="iris"]')];
+
+    // Every band's own --bg/--fg/--fg-dim lightness, in BOTH day and
+    // night, read once from the live tokens.css cascade before any
+    // shuffle ever runs. Reading only the mode active at load time was
+    // the earlier bug: Night would then reuse Day's lightness (or vice
+    // versa) for every shuffled band, so toggling day/night while a
+    // shuffle was active barely changed anything. Flipping `data-mode`
+    // twice here to sample both is synchronous — no yield to the
+    // browser in between — so it never actually paints the in-between
+    // states.
+    type Lightness = { bg: number; fg: number; fgDim: number };
+    const readOriginals = (): Map<HTMLElement, Lightness> => {
+      const map = new Map<HTMLElement, Lightness>();
+      for (const el of themedElements()) {
+        const cs = getComputedStyle(el);
+        const bgHex = cs.getPropertyValue('--bg').trim();
+        const fgHex = cs.getPropertyValue('--fg').trim();
+        const fgDimHex = cs.getPropertyValue('--fg-dim').trim();
+        if (!bgHex.startsWith('#') || !fgHex.startsWith('#')) continue;
+        map.set(el, {
+          bg: hexToHsl(bgHex)[2],
+          fg: hexToHsl(fgHex)[2],
+          fgDim: hexToHsl(fgDimHex.startsWith('#') ? fgDimHex : fgHex)[2],
+        });
+      }
+      return map;
+    };
+    const modeAtLoad = root.dataset.mode === 'night' ? 'night' : 'day';
+    root.dataset.mode = 'day';
+    const originalsByMode: Record<'day' | 'night', Map<HTMLElement, Lightness>> = {
+      day: readOriginals(),
+      night: (() => { root.dataset.mode = 'night'; return readOriginals(); })(),
+    };
+    root.dataset.mode = modeAtLoad;
+
+    const applyPalette = () => {
+      const entry = PALETTES[palette];
+
+      // Hero + intro: exact swatch values, no derivation.
+      for (const el of heroElements()) {
+        if (!entry) {
+          el.style.removeProperty('--bg');
+          el.style.removeProperty('--fg');
+          el.style.removeProperty('--fg-dim');
+          continue;
+        }
+        const swatch = entry[mode];
+        el.style.setProperty('--bg', swatch.bg);
+        el.style.setProperty('--fg', swatch.fg);
+        el.style.setProperty('--fg-dim', swatch.fgDim);
+      }
+
+      // Every other band: lend the swatch's hue/saturation but keep the
+      // band's own original lightness (see readOriginals above).
+      const originals = originalsByMode[mode];
+      for (const el of themedElements()) {
+        if (!entry) {
+          el.style.removeProperty('--bg');
+          el.style.removeProperty('--fg');
+          el.style.removeProperty('--fg-dim');
+          continue;
+        }
+        const orig = originals.get(el);
+        if (!orig) continue;
+        const swatch = entry[mode];
+        const [bgH, bgS] = hexToHsl(swatch.bg);
+        const [fgH, fgS] = hexToHsl(swatch.fg);
+        const [fgDimH, fgDimS] = hexToHsl(swatch.fgDim);
+        let bgL = orig.bg, fgL = orig.fg, fgDimL = orig.fgDim;
+        // Several of the site's own themes (coral, lilac, sage…) set
+        // --fg near-black (or near-white) since THEIR ground does the
+        // contrast work, not the text's own tint. Reusing that lightness
+        // verbatim here crushes the shuffled hue away entirely — the
+        // text just reads as plain black/white, not "a dark/light shade
+        // of the shuffled colour". Clamping into a band where the hue
+        // and saturation actually show keeps every shuffled band's text
+        // visibly tinted instead of flattening back to black or white.
+        fgL = Math.min(90, Math.max(18, fgL));
+        fgDimL = Math.min(88, Math.max(20, fgDimL));
+        // Keep a minimum lightness gap so text stays legible even when a
+        // band's original fg/bg happened to sit close together.
+        if (Math.abs(bgL - fgL) < 35) fgL = bgL > 50 ? 18 : 90;
+        if (Math.abs(bgL - fgDimL) < 28) fgDimL = bgL > 50 ? 28 : 82;
+        el.style.setProperty('--bg', `hsl(${bgH} ${bgS}% ${bgL}%)`);
+        el.style.setProperty('--fg', `hsl(${fgH} ${fgS}% ${fgL}%)`);
+        el.style.setProperty('--fg-dim', `hsl(${fgDimH} ${fgDimS}% ${fgDimL}%)`);
+      }
+    };
+
+    const syncActive = () => {
+      toggleIcon.innerHTML = mode === 'night' ? MOON_ICON : SUN_ICON;
+      toggleBtn.setAttribute('aria-label', mode === 'night' ? 'Switch to day mode' : 'Switch to night mode');
+    };
+
+    // Nav.astro's own band-follow script, and the rail's own copy of it
+    // just below, only re-run on scroll/resize — neither one is told
+    // when a click (not a scroll) is what just changed a band's colour.
+    // This event is that missing signal: both listen for it below.
+    const announceThemeChange = () => window.dispatchEvent(new Event('theme:changed'));
+
+    const setMode = (next: 'day' | 'night') => {
+      if (next === mode) return;
+      tick(next === 'night');
+      mode = next;
+      root.dataset.mode = mode;
+      try { localStorage.setItem('mode', mode); } catch {}
+      syncActive();
+      applyPalette();
+      announceThemeChange();
+    };
+
+    toggleBtn.addEventListener('click', () => setMode(mode === 'day' ? 'night' : 'day'));
+
+    shuffleBtn.addEventListener('click', () => {
+      shuffleClick();
+      // Pick a different palette than the current one when there's more
+      // than one to pick from, so a click always visibly does something.
+      let next = palette;
+      while (next === palette && PALETTE_NAMES.length > 1) {
+        next = PALETTE_NAMES[Math.floor(Math.random() * PALETTE_NAMES.length)];
+      }
+      palette = next;
+      applyPalette();
+      announceThemeChange();
+      shuffleBtn.classList.remove('is-spinning');
+      void shuffleBtn.offsetWidth;
+      shuffleBtn.classList.add('is-spinning');
+    });
+
+    syncActive();
+    applyPalette();
+  }
+
+  // Recolour with whichever band is behind the rail's own centre —
+  // identical mechanism to Nav.astro's own band-follow script, just
+  // probing this element's vertical centre instead of the nav's.
+  const rail = document.getElementById('theme-rail');
+  const bands = [...document.querySelectorAll('[data-themeband]')];
+  if (rail && bands.length) {
+    const pick = () => {
+      const probe = rail.getBoundingClientRect().top + rail.offsetHeight / 2;
+      let current = bands[0];
+      for (const b of bands) {
+        const r = b.getBoundingClientRect();
+        if (r.top <= probe && r.bottom > probe) current = b;
+      }
+      const t = current.getAttribute('data-theme');
+      if (t && rail.getAttribute('data-theme') !== t) rail.setAttribute('data-theme', t);
+      // Mirror the band's own inline overrides exactly, same reasoning as
+      // Nav.astro's identical block — the rail itself is excluded from
+      // applyPalette's own sweep above precisely so it always shows
+      // whatever the band behind it is actually showing, not a second,
+      // independently-derived tint of its own.
+      for (const v of ['--bg', '--fg', '--fg-dim']) {
+        const val = (current as HTMLElement).style.getPropertyValue(v);
+        if (val) rail.style.setProperty(v, val);
+        else rail.style.removeProperty(v);
+      }
+    };
+    pick();
+    addEventListener('scroll', pick, { passive: true });
+    // See announceThemeChange() above — a click (Shuffle or the day/night
+    // toggle) changes the band's colour without any scroll happening, so
+    // the rail needs its own explicit nudge to re-mirror it right away.
+    addEventListener('theme:changed', pick);
+    addEventListener('resize', pick);
+  }
+</script>
