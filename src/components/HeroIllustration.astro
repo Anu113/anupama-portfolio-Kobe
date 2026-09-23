@@ -1,0 +1,271 @@
+---
+/* HeroIllustration.astro — cursor-scrubbed sprite-sheet portrait card.
+   Overrides this repo's "one hero treatment" rule on record, by
+   explicit instruction: this replaces (not adds to) the hero's
+   signature interactive moment, it doesn't stack a second one.
+
+   A small card beside the copy. A full-bleed backdrop (the figure
+   filling nearly the whole banner, copy overlaid on a bottom-fade
+   scrim) was tried by explicit instruction, matching a reference —
+   and reverted, also by explicit instruction ("too big"), back to
+   this. See git history for that version if it comes back; it also
+   needed a ThemeRail.astro mobile-position fix (the vertically
+   centred toggle collided with the copy once the copy sat lower in
+   the band) that's irrelevant again now the copy is back in its
+   original spot, but harmless to leave in place.
+
+   Pointer position over the card maps to a frame index — mostly the
+   pointer's x, with a small y contribution so vertical movement is
+   felt too — and a canvas draws just that frame's slice out of the
+   sprite each tick. The index is damped with a lerp rather than
+   snapped straight to the target, so the motion reads as tracking
+   rather than flipping; leaving the card eases the index back to 0
+   (the clip's rest pose) the same way.
+
+   public/images/hero-sprite.webp is a GRID of frames (1800x1013 each,
+   8 columns x 6 rows) sampled from the source clip. A grid, not a
+   single strip, is what keeps this under WebP's 16383px per-dimension
+   limit at this frame size (14400x6078 total).
+
+   Current sprite is matted to real alpha transparency, so the figure
+   sits on whatever the card's own background is (nothing explicit —
+   it inherits the page's --bg). This was briefly OPAQUE instead (see
+   git history) — the clip's own flat backdrop baked in, with
+   tokens.css's [data-theme='charcoal'] --bg manually matched to it —
+   by explicit instruction, but that traded away automatic day/night
+   and palette-change tracking for showing the clip's backdrop colour
+   exactly as rendered, and produced a visible seam in night mode
+   (the flat backdrop can't darken the way the page's own --bg does).
+   Matted again, also by explicit instruction, once that seam showed
+   up. --bg no longer needs to track the sprite's backdrop colour at
+   all now — it can change freely (day/night, a future palette) and
+   the figure will always sit on it cleanly, in exchange for the
+   sprite always needing this matting step done, rather than being a
+   straight scale-and-tile of the source clip's own frames.
+
+   Matting recipe (flat-backdrop source — sample the new clip's own
+   corners first; if they're not near-identical it's a gradient
+   backdrop instead and needs the local-texture-variance approach
+   from this file's git history, not this one). Border-connected flood
+   fill, not a flat colour/brightness threshold alone, is what keeps
+   the matte from eating similarly-coloured content (a red pillow
+   behind the figure can be nearly the same tone as the backdrop).
+   A contact shadow directly touching the figure isn't reachable from
+   the background threshold (different, darker tone) but IS the
+   largest leftover blob once background is removed, so keeping only
+   the single largest connected foreground component after the first
+   pass cleans it up without a manual mask:
+     python3 -c "
+import numpy as np
+from PIL import Image
+from scipy import ndimage
+im = Image.open('frame.png').convert('RGB')
+arr = np.array(im).astype(np.int16)
+bg_ref = np.array([152,63,41])  # sample this clip's own corners
+diff = np.sqrt(((arr - bg_ref)**2).sum(axis=2))
+bg_like = diff < 16
+labeled, n = ndimage.label(bg_like)
+border = set(labeled[0,:])|set(labeled[-1,:])|set(labeled[:,0])|set(labeled[:,-1])
+border.discard(0)
+background_mask = np.isin(labeled, list(border))
+foreground = ~background_mask
+fg_labeled, fg_n = ndimage.label(foreground)
+sizes = ndimage.sum(foreground, fg_labeled, range(1, fg_n+1))
+main = fg_labeled == (np.argmax(sizes) + 1)
+mask = ndimage.binary_dilation(~main, iterations=1)
+alpha = np.clip(ndimage.gaussian_filter(np.where(mask,0.,255.), sigma=0.8), 0, 255).astype(np.uint8)
+rgba = np.dstack([np.array(im), alpha])
+Image.fromarray(rgba, 'RGBA').save('matted/frame.png')
+"
+   Then scale each matted frame to FRAME_W x FRAME_H and tile into the
+   COLS x ROWS grid:
+     python3 -c "
+from PIL import Image
+import glob
+files = sorted(glob.glob('matted/f*.png'))
+imgs = [Image.open(f).resize((1800,1013), Image.LANCZOS) for f in files]
+w, h = imgs[0].size
+COLS, ROWS = 8, 6
+sprite = Image.new('RGBA', (w*COLS, h*ROWS), (0,0,0,0))
+for i, im in enumerate(imgs):
+    sprite.paste(im, ((i % COLS)*w, (i // COLS)*h))
+sprite.save('public/images/hero-sprite.webp', 'WEBP', quality=82, method=6)
+imgs[0].save('public/images/hero-idle.webp', 'WEBP', quality=90, method=6)
+"
+   Update FRAME_COUNT/FRAME_W/FRAME_H/COLS below, the .hero-scrub
+   aspect-ratio, and the `size` prop passed in on the page if the
+   frame count, aspect, or target display width changes. public/
+   images/hero-idle.webp is frame 0, exported the same way, and is
+   what non-JS/reduced-motion/coarse-pointer visitors see.
+
+   Frame size intentionally tracks display size rather than going as
+   high-res as the source allows — nearest-neighbour sampling (below)
+   is what keeps the grid from bleeding colour across cell boundaries
+   when scaled, and nearest-neighbour upscaling looks pixelated, not
+   soft, so the fix for blur is matching resolution to display size,
+   not maximizing it.
+
+   Fine pointers only. Touch/coarse pointers and `prefers-reduced-motion`
+   get the static hero-idle.webp and no script runs. */
+interface Props {
+  alt: string;
+  size?: number;
+}
+const { alt, size = 480 } = Astro.props;
+---
+<figure class="hero-scrub" style={`--size:${size}px`} tabindex="0">
+  <canvas class="hero-scrub__canvas" aria-label={alt} role="img"></canvas>
+  <img class="hero-scrub__still" src="/images/hero-idle.webp" alt={alt} />
+</figure>
+
+<style>
+  .hero-scrub {
+    position: relative;
+    margin: 0;
+    flex: none;
+    /* Scales with the viewport, capped at --size, rather than sitting
+       at a single fixed pixel width — flex:none means this never
+       shrinks to make room for hero__copy on its own, so a fixed
+       width left the copy column badly crushed (single words per
+       line) at viewport widths between the 860px stacking breakpoint
+       and roughly 1300px, where there isn't enough room for the copy
+       column AND a flat --size-wide image side by side. 70vw/1150px —
+       grown twice from the original 50vw/800px baseline ("50% bigger",
+       then "30% more"), each time tried at the literal requested
+       multiple first (75vw/1200px, then 78vw/1300px) and dialed back
+       after that overlapped the fixed bottom nav pill and cramped the
+       copy column at ~1440px viewports. This is close to that ceiling
+       already — another increase likely needs an actual layout change
+       (a wider .hero__copy max-width, or dropping the side-by-side
+       layout at a lower breakpoint), not just a bigger number here. */
+    width: clamp(260px, 70vw, var(--size));
+    aspect-ratio: 16 / 9;
+    line-height: 0;
+    outline: none;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .hero-scrub:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
+
+  .hero-scrub__canvas,
+  .hero-scrub__still {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Default (JS-driven) state: canvas visible, static fallback hidden.
+     .no-js-scrub (set by the script below only when scrubbing can't
+     run — coarse pointer or reduced motion) flips this so the single
+     still frame shows instead and the canvas is inert. */
+  .hero-scrub__still { display: none; }
+  .hero-scrub.no-js-scrub .hero-scrub__canvas { display: none; }
+  .hero-scrub.no-js-scrub .hero-scrub__still { display: block; }
+</style>
+
+<script>
+  const FRAME_COUNT = 48;
+  const FRAME_W = 1800;
+  const FRAME_H = 1013;
+  const COLS = 8;
+  const SMOOTHING = 0.14; // higher = snappier, lower = more inertia
+  const Y_INFLUENCE = 0.28; // how much vertical pointer position nudges the frame vs x
+
+  document.querySelectorAll<HTMLElement>('.hero-scrub').forEach((figure) => {
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const noFinePointer = matchMedia('(hover: none), (pointer: coarse)').matches;
+    if (reduceMotion || noFinePointer) {
+      figure.classList.add('no-js-scrub');
+      return;
+    }
+
+    const canvas = figure.querySelector('canvas')!;
+    // alpha: true unconditionally — works whether the current sprite is
+    // matted (transparent, tracks the card's own background) or opaque
+    // (carries its own backdrop baked in, see the header comment above
+    // for which this sprite currently is).
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) {
+      figure.classList.add('no-js-scrub');
+      return;
+    }
+    // The sprite is a grid; smoothing can bleed colour across a cell's
+    // edge from its neighbour when scaled. Nearest-neighbour sampling
+    // reads each cell exactly.
+    ctx.imageSmoothingEnabled = false;
+
+    const sprite = new Image();
+    sprite.src = '/images/hero-sprite.webp';
+
+    let ready = false;
+    let targetIndex = 0;
+    let currentIndex = 0;
+    let raf = 0;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const sizeCanvas = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = figure.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+    };
+
+    const draw = (index: number) => {
+      if (!ready || canvas.width === 0) return;
+      const frame = Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(index)));
+      const sx = (frame % COLS) * FRAME_W;
+      const sy = Math.floor(frame / COLS) * FRAME_H;
+      // Fill (cover) the canvas with the sprite frame, matching object-fit: cover.
+      const scale = Math.max(canvas.width / FRAME_W, canvas.height / FRAME_H);
+      const dw = FRAME_W * scale;
+      const dh = FRAME_H * scale;
+      const dx = (canvas.width - dw) / 2;
+      const dy = (canvas.height - dh) / 2;
+      // Clear first: the sprite is transparent outside the figure, and
+      // without this the previous frame would show through underneath.
+      ctx!.clearRect(0, 0, canvas.width, canvas.height);
+      ctx!.drawImage(sprite, sx, sy, FRAME_W, FRAME_H, dx, dy, dw, dh);
+    };
+
+    sprite.decode().then(() => {
+      ready = true;
+      sizeCanvas();
+      draw(0);
+    }).catch(() => {
+      figure.classList.add('no-js-scrub');
+    });
+
+    const tick = () => {
+      currentIndex += (targetIndex - currentIndex) * SMOOTHING;
+      if (Math.abs(targetIndex - currentIndex) < 0.01) currentIndex = targetIndex;
+      draw(currentIndex);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    const setTargetFromPointer = (x: number, y: number, width: number, height: number) => {
+      const nx = Math.max(0, Math.min(1, width > 0 ? x / width : 0));
+      const ny = Math.max(0, Math.min(1, height > 0 ? y / height : 0));
+      const blended = nx * (1 - Y_INFLUENCE) + ny * Y_INFLUENCE;
+      targetIndex = blended * (FRAME_COUNT - 1);
+    };
+
+    const onMove = (e: PointerEvent) => {
+      const r = figure.getBoundingClientRect();
+      setTargetFromPointer(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
+    };
+    const onLeave = () => { targetIndex = 0; };
+
+    figure.addEventListener('pointerenter', onMove);
+    figure.addEventListener('pointermove', onMove);
+    figure.addEventListener('pointerleave', onLeave);
+    figure.addEventListener('focus', () => { targetIndex = (FRAME_COUNT - 1) * 0.72; });
+    figure.addEventListener('blur', onLeave);
+
+    window.addEventListener('resize', () => { sizeCanvas(); draw(currentIndex); });
+    window.addEventListener('beforeunload', () => cancelAnimationFrame(raf));
+  });
+</script>

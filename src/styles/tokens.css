@@ -70,8 +70,19 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-reveal: 900ms;
   --dur-hover: 320ms;
+  /* Micro-feedback pair for the sitewide inline-link hover (.link-ext,
+     global.css): a colour/underline swap and a tiny icon nudge, both much
+     faster than --dur-hover's bigger reveals — the two durations read as
+     "answers immediately" rather than "animates in". */
+  --dur-micro: 150ms;
+  --dur-micro-move: 180ms;
 
   --radius: 0px;  /* sitewide — hard-edged on purpose, matching the reference. A brief pass raised this to 20px for the Selected Work redesign; reverted — square is the intended look for every card/image/button that reads this token. */
+  /* One deliberate exception to --radius: 0 — the fixed bottom pill nav
+     (Nav.astro), a floating capsule of chrome rather than a content
+     surface, same carve-out logic as --chip-bg/--chip-fg below. Not for
+     reuse on cards/images/buttons; those stay square. */
+  --radius-pill: 999px;
 
   /* IndexRotator is fixed chrome that floats over every band on the page
      at once (it isn't nested inside a [data-theme] block the way CaseRail
@@ -111,14 +122,20 @@
   --accent-text: #276237;
 }
 
+/* Cooled from a warm cream (#f4ece1/#17120f) to this near-neutral paper/ink
+   after comparing both against real hero + work-list content — the warm
+   version read closer to the site's editorial-chapter past, the cooler one
+   reads closer to the product-design register the rebuild is aiming for.
+   fg-dim re-verified at 4.6:1 on the new bg (was tuned for the old, warmer
+   one); accent-text unchanged since the lighter bg only improves its ratio. */
 [data-theme='bone'] {
-  --bg: #f4ece1;
-  --fg: #17120f;
-  --fg-dim: #5d534a;
+  --bg: #fafafa;
+  --fg: #2a2a2a;
+  --fg-dim: #6b6b72;
   --accent: #e8613c;
-  --rule: #ddd2c3;
+  --rule: #e4e4e4;
   --shell: #17120f;
-  --screen: #e8dece;
+  --screen: #efefef;
   --accent-text: #a83a19;
 }
 
@@ -228,21 +245,44 @@
   --accent-text: #f4ece1; /* = --fg — the gold alone doesn't clear body text on this ground */
 }
 
-/* Iris — the hero band only, nowhere else. Cream-and-navy by day, an
-   indigo ground with a periwinkle headline at night: the pairing from
-   meagandurlak.com's "dreaming of radical futures" opener, not a
-   restatement of any editorial or chapter-card palette already here.
-   --fg is display-only (like sand's two greens) — --fg-dim carries the
-   body paragraph at a contrast --fg doesn't clear. */
-[data-theme='iris'] {
-  --bg: #ece5d4;          /* cream */
-  --fg: #2e2860;          /* navy-violet, display only — 10.5:1 */
-  --fg-dim: #4d4690;      /* lighter, still 6.4:1 at body size */
-  --accent: #2e2860;
-  --rule: #d8cdb4;
-  --shell: #2e2860;
-  --screen: #e2d9c2;
-  --accent-text: #2e2860;
+/* Charcoal — the hero band only, nowhere else. Replaces the earlier
+   "iris" purple, which read too decorative against the plain-spoken
+   opening line. Was a neutral pale-grey/near-black pair with no hue of
+   its own; now recoloured to match the hero's own cursor-scrub video
+   (HeroIllustration.astro) instead — sampled directly from five frames
+   of that footage (backdrop wall, desk, hair-shadow, skin/cream
+   highlight, mug), the same "let the work's own imagery provide the
+   colour" move rule 2 above asks for, rather than a hue picked in the
+   abstract. --accent/--accent-text reuse the lamp-gold already carried
+   by ember and crimson rather than introducing an unrelated hue. */
+[data-theme='charcoal'] {
+  /* --bg matched to HeroIllustration's current sprite (public/images/
+     hero-idle.webp) so the card's own backdrop and the page's don't
+     visibly seam — sampled from that image's own border pixels
+     (median #933e28), not eyeballed. This is the second colour this
+     block has been fixed to (see git history for the brighter-orange
+     one before it, sampled off a different, now-replaced, video) —
+     whenever HeroIllustration's sprite changes to a source with a
+     different backdrop colour, --bg here needs to follow it again or
+     the seam comes back.
+
+     This background is much DARKER than the previous one, which flips
+     which set of --fg/--fg-dim/--accent/--accent-text values pass AA:
+     the previous block's dark-maroon text (chosen for a bright orange
+     --bg) drops to ~1.9:1 here. Light cream/tan text, the same family
+     this theme's own night mode already used, is what actually holds
+     up against this bg — day and night end up close in value here
+     (this bg is only slightly lighter than night's), which is
+     expected, not a bug: the source video itself is a dark, muted
+     brick-red, not a bright day-mode orange. */
+  --bg: #933e28;
+  --fg: #ffe9e0;           /* 6.1:1 */
+  --fg-dim: #ebd0c6;       /* lightened off a tan mid-tone — that was 3.85:1, under the 4.5:1 --fg-dim needs at body size (.hero__bio etc.) */
+  --accent: #e99862;       /* 3.1:1 — UI-level (focus rings), not text */
+  --rule: #e0b6a6;
+  --shell: #6b2e1c;
+  --screen: #a8503a;
+  --accent-text: #ffe9e0;  /* = --fg — 6.1:1 */
 }
 
 /* ============================================================
@@ -439,16 +479,25 @@
   --accent-text: #fce7db;   /* = --fg */
 }
 
-/* Iris after dark — indigo ground, periwinkle headline. --fg stays
-   display-only (4.7:1, clears the 3:1 large-text floor); --fg-dim is
-   the lighter tint that carries the body paragraph at 6.1:1. */
-[data-mode='night'] [data-theme='iris'] {
-  --bg: #2b2a54;
-  --fg: #7b93f0;            /* 4.7:1 */
-  --fg-dim: #98abf7;        /* 6.1:1 */
-  --accent: #7b93f0;
-  --rule: #403e78;
-  --shell: #1c1b3a;
-  --screen: #38366a;
-  --accent-text: #98abf7;   /* 6.1:1 */
+/* Charcoal after dark — deepens the same video-sampled oxblood-brown
+   ground rather than inverting it, the same move `clay` makes off its
+   own reference ("night deepens... rather than inverting it — only
+   the ground moves"). --fg/--fg-dim hold since they already clear AA
+   by a wide margin; --accent brightens, following coral/ember's own
+   day→night pattern of the accent gaining saturation after dark. */
+[data-mode='night'] [data-theme='charcoal'] {
+  /* Night variant of the sprite-matched colour above — same hue,
+     darkened proportionally to how the previous palette's day/night
+     pair related (day L 0.62 → night L 0.29, ~0.46x; applied here:
+     day L 0.37 → night L 0.17). The existing day-mode text values
+     already clear AA against this — night is darker than day here,
+     same as any other theme on the site. */
+  --bg: #441d12;
+  --fg: #ffe9e0;            /* 12.6:1 */
+  --fg-dim: #e0b6a6;        /* 8.0:1 */
+  --accent: #e8935a;        /* 6.1:1 — UI-level, not text */
+  --rule: #5c2717;
+  --shell: #2a0f09;
+  --screen: #5c2717;
+  --accent-text: #f0a868;   /* 4.7:1 */
 }

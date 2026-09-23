@@ -5,6 +5,7 @@ import Reveal from '../components/Reveal.astro';
 
 import OneWord from '../components/OneWord.astro';
 import HeroRotatingWord from '../components/HeroRotatingWord.astro';
+import HeroIllustration from '../components/HeroIllustration.astro';
 import Mosaic from '../components/Mosaic.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import Marquee from '../components/Marquee.astro';
@@ -29,44 +30,76 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
 const homeWork = work.filter((w) => w.showOnHome !== false);
 ---
 <Base title={`${site.name} — ${site.seeking}`}>
-  <!-- ACT 1 — the editorial opening. Its own palette, "iris": cream and
-       navy by day, indigo and periwinkle at night — the pairing from
-       meagandurlak.com's "dreaming of radical futures" opener. Exclusive
-       to the hero; the work-head/mosaic bands right after it stay on ink,
-       unchanged in either mode. -->
+  <!-- ACT 1 — the editorial opening. Its own palette, "charcoal": pale
+       grey by day, near-black at night — neutral on purpose, no hue to
+       compete with the opening line. Exclusive to the hero; the
+       work-head/mosaic bands right after it stay on ink, unchanged in
+       either mode. -->
   <!-- ACT 1 + intro merged into one band, min-height: 80svh — the hero
        always claims 80% of the first screen and "Selected work" always
        peeks in the remaining 20%, on any monitor or phone, instead of a
        fixed rem of bottom padding that read short on a big monitor and
        overshot on a small laptop. Safe to merge: both wore the same
-       "iris" theme already, so there's no palette seam being lost. -->
-  <Section theme="iris" class="hero">
-    <Reveal delay={80}>
-      <p class="hero__eyebrow">
-        <span class="hero__statusdot" aria-hidden="true"></span>
-        Open to ambitious problems &amp; good people.
-      </p>
-    </Reveal>
-    <Reveal delay={120}>
-      <h1 class="u-display hero__line">
-        I <HeroRotatingWord words={['ship', 'nudge', 'craft']} flexible />. From
-        strategy to the stubborn pixel.
-      </h1>
-    </Reveal>
-    <Reveal delay={150}>
-      <p class="hero__bio">
-        Hi, I am Anupama, Staff Product Designer @ Okta, with a decade
-        flexing across domains, from data &amp; privacy and digital
-        identity to fintech and e-commerce. Before this, PayPal, Walmart
-        Labs, and Deloitte.
-      </p>
-    </Reveal>
-    <Reveal delay={100}>
-      <p class="intro__links">
-        <a class="btn btn--primary" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
-        <a class="btn btn--secondary" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
-      </p>
-    </Reveal>
+       "charcoal" theme already, so there's no palette seam being lost. -->
+  <Section theme="charcoal" class="hero">
+    <div class="hero__row">
+      <div class="hero__copy">
+        <!-- Hidden, not deleted — kept visually hidden rather than removed so
+             it's trivial to bring back later. -->
+        <Reveal delay={80}>
+          <p class="hero__eyebrow u-sr-only">
+            <span class="hero__statusdot" aria-hidden="true"></span>
+            Open to ambitious problems &amp; good people.
+          </p>
+        </Reveal>
+        <Reveal delay={120}>
+          <h1 class="u-display hero__line">Hi, I&rsquo;m Anupama.</h1>
+        </Reveal>
+        <Reveal delay={130}>
+          <p class="hero__greet">
+            <span class="reflect-wrap"><span class="reflect" tabindex="0">Staff Product Designer</span><span class="reflect__aside" aria-hidden="true">— 10+ yrs</span></span>{' '}@ Okta.
+          </p>
+        </Reveal>
+        <Reveal delay={150}>
+          <p class="hero__bio">
+            I <HeroRotatingWord words={['ship', 'nudge', 'craft']} flexible />{' '}
+            — from systems and strategy to the last stubborn pixel. I bring
+            curiosity, craft, and a little fun to whatever I&rsquo;m building.
+          </p>
+        </Reveal>
+        <Reveal delay={170}>
+          <p class="hero__bio hero__bio--secondary">
+            I&rsquo;ve worked across a wonderfully eclectic mix of domains —{' '}
+            <span class="reflect-wrap"><span class="reflect" tabindex="0">data &amp; privacy</span><span class="reflect__aside" aria-hidden="true">— Deloitte</span></span>,{' '}
+            <span class="reflect-wrap"><span class="reflect" tabindex="0">digital identity</span><span class="reflect__aside" aria-hidden="true">— Okta</span></span>,{' '}
+            <span class="reflect-wrap"><span class="reflect" tabindex="0">fintech</span><span class="reflect__aside" aria-hidden="true">— PayPal</span></span>, and{' '}
+            <span class="reflect-wrap"><span class="reflect" tabindex="0">e-commerce</span><span class="reflect__aside" aria-hidden="true">— Walmart Labs</span></span>.{' '}
+            Previously @ PayPal, Walmart Labs, and Deloitte.
+          </p>
+        </Reveal>
+        <Reveal delay={190}>
+          <p class="hero__find">
+            Find me at{' '}
+            <a class="link-ext" href={site.linkedin} target="_blank" rel="noopener">
+              LinkedIn<span class="link-ext__mark" aria-hidden="true">↗</span>
+            </a>{' '}
+            or{' '}
+            <a class="link-ext" href={`mailto:${site.email}`}>{site.email}</a>.
+          </p>
+        </Reveal>
+        <Reveal delay={100}>
+          <p class="intro__links">
+            <a class="btn btn--primary" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
+            <a class="btn btn--secondary" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+          </p>
+        </Reveal>
+      </div>
+      <Reveal delay={180}>
+        <div class="hero__portrait">
+          <HeroIllustration alt="Illustrated portrait of Anupama Mishra, working at her laptop" size={1150} />
+        </div>
+      </Reveal>
+    </div>
     <!-- Flexible, not fixed — absorbs whatever's left of the 80svh after
          the nav gap, headline and CTA row above have taken their fixed
          amount, so the leftover room scales with the viewport instead of
@@ -144,7 +177,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
       <p class="u-measure sand__body">
         Ten years of it has taught me what holds up: a model the admin can
         predict, a system that's faster than the workaround, and critique that's
-        kind and specific. <a href="/about#approach">How I work →</a>
+        kind and specific. <a class="link-ext" href="/about#approach">How I work<span class="link-ext__mark" aria-hidden="true">→</span></a>
       </p>
     </Reveal>
   </Section>
@@ -238,7 +271,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 80svh;
+    min-height: 88svh;
     padding-top: clamp(7rem, 26vh, 13rem);
     /* No longer zeroed. That relied on .hero__spacer alone to hold the
        CTA row away from the section's bottom edge — true only while the
@@ -293,7 +326,34 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      with the ascenders/caps starting the next ("beyond..."). 1.08 gives
      enough room for that without loosening the shorter headlines that
      still rely on the tight default. */
-  .hero__line { font-size: clamp(2.5rem, 6vw, 5rem); max-width: 18ch; line-height: 1.08; }
+  /* Conversational, not a marketing headline — this line used to carry
+     a rotating-word H1 at display size; now it's just "Hi, I'm
+     Anupama.", sized down to --step-h2 so it reads as a greeting, not
+     a claim. */
+  .hero__line { font-size: var(--step-h2); max-width: 18ch; line-height: 1.15; }
+
+  /* Hero copy + portrait side by side on desktop, portrait first and
+     centred above the copy on narrow screens — the halftone photo is the
+     thing a visitor's eye lands on first either way, then the headline.
+     A full-bleed backdrop version of this (figure filling the whole
+     band, copy on a bottom scrim) was tried by explicit instruction,
+     matching a reference, and reverted ("too big") back to this
+     side-by-side card layout — see git history if it comes back. */
+  .hero__row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+  .hero__copy { flex: 1 1 auto; min-width: 0; }
+  .hero__portrait { flex: none; }
+  @media (max-width: 860px) {
+    .hero__row { flex-direction: column-reverse; align-items: center; text-align: center; }
+    .hero__copy { display: flex; flex-direction: column; align-items: center; }
+    .hero__portrait { align-self: center; }
+    .hero__line { max-width: 100%; }
+    .intro__links { justify-content: center; }
+  }
 
   /* The status line ("Open to a Staff Product Designer role, remote") —
      modelled on carlthomasiv.com's mono-caps eyebrow ("CURRENTLY DESIGNING
@@ -303,14 +363,10 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      headline, not below it — a recruiter's first signal is availability,
      the headline is the pitch.
 
-     Colour is --fg-dim, not --accent-text. ThemeRail's colour-shuffle
-     (the button next to the day/night toggle) repaints the hero band's
-     --bg/--fg/--fg-dim with the shuffled palette's exact swatch on every
-     click and on every page load, but never touches --accent-text — it
-     stays pinned to whatever the hero's base theme (iris) declared. An
-     eyebrow in --accent-text would go visibly off-hue from the
-     shuffled headline the moment a shuffle landed; --fg-dim tracks the
-     same repaint the headline gets. */
+     Colour is --fg-dim, not --accent-text, to track the hero's own
+     --fg-dim value rather than sit pinned to a separate token. (This
+     is also currently hidden via .u-sr-only — see the Reveal wrapping
+     it below.) */
   .hero__eyebrow {
     display: flex; align-items: center; gap: 0.6rem;
     font-family: var(--font-mono); font-size: var(--step-label); font-weight: 400;
@@ -344,6 +400,66 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      of the hero's sans-serif statement rather than a paragraph of body
      copy. */
   .hero__bio { font-family: var(--font-display); color: var(--fg-dim); font-size: var(--step-body); max-width: 64ch; margin: 1.4rem 0 0; text-wrap: pretty; }
+  .hero__bio--secondary { margin-top: 0.9rem; }
+
+  /* Plain sans greeting line, same colour as the headline (not --fg-dim) —
+     it's the one beat before the bio proper and reads as part of the
+     "statement," not body copy. */
+  .hero__greet { font-family: var(--font-display); color: var(--fg); font-size: var(--step-h3); font-weight: 500; margin: 1.4rem 0 0; }
+
+  /* "Reflected" phrases — the cali.so-style device of drawing a second
+     look to specific words in a running bio sentence, adapted to this
+     site's own hover system rather than cali's inline emoji. The hero
+     wears "charcoal", a deliberately hue-less theme (see tokens.css — "no
+     hue to compete with the headline"), so this can't lean on a colour
+     the way the mockup did; --font-accent (the italic) plus an underline
+     that draws in with the sitewide --ease-out/--dur-hover on hover/focus
+     is the whole effect, in currentColor. The aside is a short, true
+     attribution (a company or a duration already stated elsewhere on the
+     site) that slides open next to the phrase — progressive disclosure,
+     not new information gating: the plain sentence around it already
+     carries the fact for anyone who never hovers. Hover-only by design;
+     no touch fallback, because nothing here is required reading. */
+  .reflect-wrap { display: inline; }
+  .reflect {
+    font-family: var(--font-accent);
+    font-style: italic;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--dur-hover) var(--ease-out);
+  }
+  .reflect:hover, .reflect:focus-visible {
+    text-decoration-color: currentColor;
+  }
+  .reflect__aside {
+    display: inline-block;
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: var(--step-caption);
+    color: var(--fg-dim);
+    vertical-align: middle;
+    transition: max-width var(--dur-hover) var(--ease-out),
+      opacity var(--dur-hover) var(--ease-out),
+      margin-left var(--dur-hover) var(--ease-out);
+  }
+  .reflect-wrap:hover .reflect__aside,
+  .reflect-wrap:focus-within .reflect__aside {
+    max-width: 12ch;
+    opacity: 1;
+    margin-left: 0.5em;
+  }
+
+  /* "Find me at LinkedIn ↗ or hi@anupama.design" — the hero's own line of
+     inline links, styled with the sitewide .link-ext hover (global.css)
+     rather than a button, so it reads as a sentence handing off to a link
+     the way the rest of the hero copy reads as a paragraph. */
+  .hero__find { font-family: var(--font-display); color: var(--fg-dim); font-size: var(--step-body); margin: 0.9rem 0 0; }
+  .hero__find .link-ext { color: var(--fg); font-weight: 500; }
 
   .intro__body { color: var(--fg-dim); font-size: var(--step-body); }
 
