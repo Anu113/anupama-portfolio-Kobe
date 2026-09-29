@@ -338,12 +338,12 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   .hero__head { margin: 0; font-weight: inherit; }
   .hero__hi {
     display: block;
-    font-family: var(--font-hero-sans); font-size: var(--step-h3); font-weight: 500;
+    font-family: var(--font-hero-sans); font-size: var(--step-h3); font-weight: 300;
     color: var(--fg-dim); margin-bottom: 0.6rem;
   }
   .hero__line { display: block; font-size: var(--step-hero); line-height: 1.2; text-wrap: pretty; }
   .hero__more {
-    font-family: var(--font-hero-sans); font-size: var(--step-body); line-height: 1.45;
+    font-family: var(--font-hero-sans); font-size: var(--step-body); font-weight: 300; line-height: 1.45;
     color: var(--fg-dim); max-width: 54ch; margin: 1.6rem 0 0; text-wrap: pretty;
   }
   /* Company names carry a touch more weight than the surrounding sentence —
@@ -391,12 +391,14 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   .hero__stage { position: relative; flex: 0 1 auto; min-width: 0; }
   @media (max-width: 860px) {
     .hero__copy, :global(.hero__portrait-cell) { flex: none; }
-    .hero__portrait { justify-content: center; }
-    .hero__row { flex-direction: column-reverse; align-items: center; text-align: center; }
-    .hero__copy { display: flex; flex-direction: column; align-items: center; }
-    .hero__portrait { align-self: center; }
+    /* Left-aligned on mobile now, not centred — the illustration, the
+       headline, the bio, and the CTA row all sit on one shared left
+       edge instead of each floating centred under a different width. */
+    .hero__portrait { justify-content: flex-start; }
+    .hero__row { flex-direction: column-reverse; align-items: flex-start; text-align: left; }
+    .hero__copy { display: flex; flex-direction: column; align-items: flex-start; }
+    .hero__portrait { align-self: flex-start; }
     .hero__line { max-width: 100%; }
-    .intro__links { justify-content: center; }
     /* padding-top's clamp is tuned for desktop, where 26vh is a modest
        gap under a short, wide nav row. On a tall/narrow phone the same
        26vh clamps to its 13rem ceiling — ~208px, most of a screen's worth
