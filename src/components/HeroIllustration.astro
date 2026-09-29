@@ -142,7 +142,14 @@ const { alt, size = 480 } = Astro.props;
        hero's portrait column, which is whatever the copy column
        (--hero-copy-w) leaves — so the image is what gives way on narrower
        screens, never the copy. */
-    width: clamp(260px, 76vw, var(--size));
+    /* 76vw (was) grew far faster across viewport widths than
+       --hero-copy-w's own 46vw, so the illustration nearly doubled in
+       width between a 1280px laptop and a 1920px monitor while the
+       headline's font-size barely moved (55.7px -> 60px, ~7%) — the
+       whole hero read as a different "zoom level" between screen sizes
+       even though the text was almost identical. Matched to the copy
+       column's own 46vw so both halves of the row scale together. */
+    width: clamp(260px, 46vw, var(--size));
     max-width: 100%;
     aspect-ratio: 16 / 9;
     line-height: 0;
