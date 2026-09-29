@@ -1,0 +1,242 @@
+---
+/* PixelBreak.astro — the word "pixel" in the hero sentence, which breaks
+   into coloured dots when the pointer reaches it, stays broken and pushed
+   away from the pointer for as long as the pointer stays, and settles
+   back into type when it leaves. Added on request. UX reason: the
+   sentence ends on "the last stubborn pixel"; the word answering the
+   pointer is that claim, shown at the scale of one word.
+
+   How it works: on pointerenter, the word is drawn into a canvas laid
+   over it, in its own computed font, then sampled on a grid of --pb-cell
+   cells. Each filled cell becomes a round dot, coloured by where it sits
+   across the word (--pb-c1…c7, a left-to-right rainbow). The real text
+   fades out as the dots fade in (--pb-fade-in); it stays in the DOM
+   throughout — only its colour's alpha changes — so screen readers and
+   selection never see a change.
+
+   The dots are springs, not a timeline:
+     - While the pointer is over the word (its box plus --pb-reach), each
+       dot's rest point is home plus a scatter offset pointing away from
+       where the pointer came in, and the pointer repels every dot within
+       --pb-repel of it — a magnet pushing the pixels. They don't go home
+       while the pointer stays.
+     - When the pointer leaves, the rest point is home again and a softer
+       spring glides them in. As they near home (still gliding, not
+       stopped) the dots crossfade into the real text over --pb-fade-out:
+       one shared value drives both sides on the same curve, overlapped
+       so the letters are mostly in before the dots go (no dip, no pop),
+       and the dots shrink as they fade so round dots melt into strokes.
+       The dots stay in colour all the way — no ink phase, so nothing
+       reads as a black dot landing.
+     - Coming back mid-return just re-breaks from wherever the dots are.
+
+   Off, not just invisible, on touch/coarse pointers and under
+   prefers-reduced-motion: the word is plain text there. Sizes, colours
+   and the fade live in tokens.css (PIXEL BREAK); the spring constants
+   are below, tuned per 60fps frame.
+
+   Usage: <PixelBreak>pixel</PixelBreak> — the slot must be plain text. */
+---
+
+<span class="pb" data-pixel-break><slot /></span>
+
+<style>
+  .pb { position: relative; }
+  .pb :global(canvas) {
+    position: absolute;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+  // Springs, per 60fps frame. Breaking is stiffer and bouncier (a flinch);
+  // returning is softer and more damped (a glide with a gentle landing).
+  const K_BREAK = 0.14, DAMP_BREAK = 0.74;
+  const K_HOME = 0.06, DAMP_HOME = 0.8;
+  const REPEL = 3.2;       // push at the pointer's centre, px per frame²
+  const SETTLED = 3;       // mean px from home at which the crossfade to text begins
+
+  const smooth = (t: number) => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
+
+  const num = (v: string, fallback: number) => {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : fallback;
+  };
+
+  type Dot = { hx: number; hy: number; x: number; y: number; vx: number; vy: number; ox: number; oy: number; hue: number };
+
+  document.querySelectorAll<HTMLElement>('[data-pixel-break]').forEach((el) => {
+    let running = false;
+    let reenter: ((ev: PointerEvent) => void) | null = null;
+
+    el.addEventListener('pointerenter', (ev) => {
+      if (!fine.matches || still.matches) return;
+      if (running) { reenter?.(ev); return; }
+      running = true;
+
+      const root = getComputedStyle(document.documentElement);
+      const cell = num(root.getPropertyValue('--pb-cell'), 4);
+      const reach = num(root.getPropertyValue('--pb-reach'), 16);
+      const repel = num(root.getPropertyValue('--pb-repel'), 40);
+      const fadeIn = num(root.getPropertyValue('--pb-fade-in'), 200);
+      const fadeOut = num(root.getPropertyValue('--pb-fade-out'), 650);
+      const hues = [1, 2, 3, 4, 5, 6, 7].map((i) => root.getPropertyValue(`--pb-c${i}`).trim() || 'currentColor');
+
+      const cs = getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      // Room for the scatter plus a full repel push, so no dot is clipped.
+      const pad = Math.ceil(reach * 1.6 + repel * 0.6);
+      const w = Math.ceil(rect.width) + pad * 2;
+      const h = Math.ceil(rect.height) + pad * 2;
+      const dpr = window.devicePixelRatio || 1;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      canvas.style.left = `${-pad}px`;
+      canvas.style.top = `${-pad}px`;
+      canvas.setAttribute('aria-hidden', 'true');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) { running = false; return; }
+      ctx.scale(dpr, dpr);
+
+      // Draw the word exactly where the real one sits. An inline box's
+      // rect is its content area, so the baseline is top + font ascent.
+      ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      if ('letterSpacing' in ctx) (ctx as any).letterSpacing = cs.letterSpacing;
+      ctx.fillStyle = '#000';
+      const m = ctx.measureText(el.textContent || '');
+      ctx.fillText(el.textContent || '', pad, pad + m.fontBoundingBoxAscent);
+
+      // Sample into cells: a cell is "ink" if enough of it is covered.
+      // Averaged over the whole cell, not its centre pixel — the serif's
+      // 300 weight has hairlines a centre sample would miss entirely.
+      const W = w * dpr, H = h * dpr, c = Math.max(1, Math.round(cell * dpr));
+      const data = ctx.getImageData(0, 0, W, H).data;
+      const dots: Dot[] = [];
+      for (let cy = 0; cy + c <= H; cy += c) {
+        for (let cx = 0; cx + c <= W; cx += c) {
+          let a = 0;
+          for (let j = 0; j < c; j++) for (let i = 0; i < c; i++) a += data[((cy + j) * W + cx + i) * 4 + 3];
+          if (a / (c * c) < 28) continue;
+          const hx = cx / dpr + cell / 2, hy = cy / dpr + cell / 2;
+          dots.push({
+            hx, hy, x: hx, y: hy, vx: 0, vy: 0, ox: 0, oy: 0,
+            // Rainbow across the word, with a little bleed between bands.
+            hue: Math.min(6, Math.max(0, Math.floor(((hx - pad) / rect.width) * 7 + (Math.random() - 0.5) * 0.8))),
+          });
+        }
+      }
+
+      // Scatter offsets: away from where the pointer came in, the closer
+      // the further, plus jitter. Recomputed on every re-entry.
+      const scatter = (px: number, py: number) => {
+        for (const d of dots) {
+          const vx = d.hx - px, vy = d.hy - py;
+          const dist = Math.hypot(vx, vy) || 1;
+          const f = reach * Math.max(0.15, 1 - dist / (rect.width * 0.7));
+          d.ox = (vx / dist) * f + (Math.random() - 0.5) * reach;
+          d.oy = (vy / dist) * f + (Math.random() - 0.5) * reach;
+        }
+      };
+
+      // Pointer, in canvas coordinates (the span can move on scroll, so
+      // this is re-based from clientX/Y every frame).
+      let cx0 = ev.clientX, cy0 = ev.clientY;
+      const onMove = (e: PointerEvent) => { cx0 = e.clientX; cy0 = e.clientY; };
+      addEventListener('pointermove', onMove, { passive: true });
+
+      const toCanvas = () => {
+        const r = el.getBoundingClientRect();
+        return { x: cx0 - r.left + pad, y: cy0 - r.top + pad, r };
+      };
+      const start = toCanvas();
+      scatter(start.x, start.y);
+      reenter = (e) => { cx0 = e.clientX; cy0 = e.clientY; const p = toCanvas(); scatter(p.x, p.y); };
+
+      el.append(canvas);
+      const ink = cs.color;
+      const r = Math.max(0.75, (cell - 1) / 2);   // a gap between dots reads as pixels
+      // mix: 1 = all dots, 0 = all text. Both sides read from it each frame.
+      let mix = 0;
+      let landing = false;                        // latched once the dots are near home
+      let last = performance.now();
+
+      const frame = (now: number) => {
+        const dt = Math.min(2, (now - last) / 16.67);
+        last = now;
+
+        // "On the word" = its box, grown by the scatter reach, so the
+        // pointer can follow the pixels it just pushed without dropping out.
+        const p = toCanvas();
+        const on = cx0 >= p.r.left - reach && cx0 <= p.r.right + reach
+                && cy0 >= p.r.top - reach && cy0 <= p.r.bottom + reach;
+
+        const k = on ? K_BREAK : K_HOME;
+        const damp = Math.pow(on ? DAMP_BREAK : DAMP_HOME, dt);
+        let spread = 0;
+        for (const d of dots) {
+          const tx = on ? d.hx + d.ox : d.hx;
+          const ty = on ? d.hy + d.oy : d.hy;
+          let ax = (tx - d.x) * k, ay = (ty - d.y) * k;
+          if (on) {
+            const mx = d.x - p.x, my = d.y - p.y;
+            const dist = Math.hypot(mx, my);
+            if (dist < repel && dist > 0.01) {
+              const f = REPEL * Math.pow(1 - dist / repel, 2);
+              ax += (mx / dist) * f;
+              ay += (my / dist) * f;
+            }
+          }
+          d.vx = (d.vx + ax * dt) * damp;
+          d.vy = (d.vy + ay * dt) * damp;
+          d.x += d.vx * dt;
+          d.y += d.vy * dt;
+          spread += Math.hypot(d.x - d.hx, d.y - d.hy);
+        }
+        if (on) landing = false;
+        else if (spread / Math.max(1, dots.length) < SETTLED) landing = true;
+
+        // One value, two sides. Overlapped: the text is fully in by
+        // mix 0.3 and the dots are fully out only at mix 0 — so as the
+        // dots fade the letters are already there beneath them.
+        const ms = dt * 16.67;
+        mix = landing ? Math.max(0, mix - ms / fadeOut) : Math.min(1, mix + ms / fadeIn);
+        const textA = smooth((1 - mix) / 0.7);
+        const dotA = smooth(mix / 0.7);
+        el.style.color = `color-mix(in srgb, ${ink} ${(textA * 100).toFixed(1)}%, transparent)`;
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.globalAlpha = dotA;
+        const rad = r * (0.35 + 0.65 * dotA);     // melt: dots shrink as they fade
+        for (let i = 0; i < hues.length; i++) {
+          ctx.fillStyle = hues[i];
+          ctx.beginPath();
+          for (const d of dots) {
+            if (d.hue !== i) continue;
+            ctx.moveTo(d.x + rad, d.y);
+            ctx.arc(d.x, d.y, rad, 0, Math.PI * 2);
+          }
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        if (landing && mix <= 0) {
+          el.style.color = '';
+          canvas.remove();
+          removeEventListener('pointermove', onMove);
+          reenter = null;
+          running = false;
+          return;
+        }
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    });
+  });
+</script>

@@ -6,6 +6,7 @@ import Reveal from '../components/Reveal.astro';
 import HeroIllustration from '../components/HeroIllustration.astro';
 import AskBubble from '../components/AskBubble.astro';
 import LocalTime from '../components/LocalTime.astro';
+import PixelBreak from '../components/PixelBreak.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 
 import { site } from '../data/site';
@@ -32,11 +33,11 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
              status light, city, weather, ticking time (LocalTime.astro). -->
         <div class="hero__eyebrow"><LocalTime /></div>
         <h1 class="u-display hero__line">
-          <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn pixel.
+          <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn <PixelBreak>pixel</PixelBreak>.
         </h1>
         <p class="hero__more">
-          With 10+ years of experience, I&rsquo;m currently designing
-          developer tools @&nbsp;<span class="hero__co">Okta</span>. Previously
+          10+ years in fintech, enterprise software and developer tools,
+          most recently @&nbsp;<span class="hero__co">Okta</span>. Previously
           at <span class="hero__co">PayPal</span>, <span class="hero__co">Walmart Labs</span>,
           and <span class="hero__co">Deloitte</span>.
         </p>
@@ -294,7 +295,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      the smaller nav gap above) while still sitting closer than the
      2.75rem peak, back in proportion with the hansonwu.com-matched top
      gap. */
-  .intro__links { display: flex; align-items: center; gap: 1.5rem; padding-top: 2.25rem; margin: 0; }
+  .intro__links { display: flex; align-items: center; gap: 0.75rem; padding-top: 2.25rem; margin: 0; }
   /* Resume/LinkedIn now use the shared .btn system (global.css) —
      Primary/Secondary — instead of their own bespoke pill rules. */
 

@@ -7,10 +7,13 @@ Context for Claude Code working in this repo.
 The portfolio site for **Anupama Mishra**, a product designer with 10+
 years' experience returning to work after a career break. Most recently Staff
 Product Designer at Okta on Identity & Access Management, where she also led a
-team of six. Earlier: PayPal, Walmart Labs, Deloitte Digital, Zomato.
+team of six. Earlier: PayPal, Walmart Labs, Deloitte Digital, Zomato. Her domain is
+**fintech first**, then enterprise software and developer tools — lead with
+fintech when describing her range, not enterprise.
 
-**The site has one job: land a senior/staff/principal product design or
-design-engineering role (remote).** Every decision serves that. When a change
+**The site has one job: land a Staff or Lead Product Designer role.** She
+isn't only looking for remote work, so don't state "remote" as a condition
+anywhere. Every decision serves that. When a change
 would make the site prettier but less effective at that job, say so.
 
 The role she is asking for is a **senior IC one** (or IC-track design-eng).
@@ -113,11 +116,14 @@ effect:
   ozgur.design's Dobby chat (studied screen by screen). Don't swap in
   another character without her asking. What's fixed:
   - Launcher: Moss himself, sitting on the books in the hero illustration,
-    with a small outlined cream speech bubble above his head. Moss and the
+    with a small speech bubble above his head, filled with the
+    terracotta accent (after a UX test where a visitor nearly missed it). Moss and the
     bubble are one button. At rest the bubble's three typing dots pulse in
     turn (added on request) and a light sweeps round its border — those two
-    are the only idle motion, both static under reduced motion; "Ask Moss"
-    slides out leftward on hover/focus only. Moss answers the pointer, never moves on his own: he
+    are the only idle motion, both static under reduced motion; on hover/focus
+    the fill deepens and "Short on time? / Let Moss help" slides out
+    rightward (away from her face) in two very small, softened lines;
+    touch devices show the words always. Moss answers the pointer, never moves on his own: he
     scrubs through his clip in lockstep with the portrait —
     `HeroIllustration` dispatches `hero-scrub:frame` and Moss shows the same
     frame, one timeline for both, so keep the two clips at the same 48
@@ -145,8 +151,21 @@ effect:
   the hero beyond the border shimmer and the typing dots, and don't add a second chat or
   mascot elsewhere.
 
-Outside those five moments — hero shader, first-paint loader, the reused
-hover system, `CursorTrail`, Pixel — the old rule still applies at full strength:
+- **`PixelBreak`, approved on request.** The word "pixel" at the end of
+  the hero sentence breaks into ~3px round dots when the pointer crosses
+  it and settles back into type. While the pointer stays on the word
+  the dots stay broken and are repelled by it like a magnet; they go
+  home only when it leaves. The dots are a seven-colour rainbow (on
+  request), crossfading with the text at both ends — the one sanctioned
+  rainbow on the site, and only while the word is broken (`PixelBreak.astro`, tokens under PIXEL
+  BREAK). Its reason: the sentence claims "the last stubborn pixel", and
+  the word answering the pointer shows that claim at the scale of one
+  word. Fine pointers only, plain text under reduced motion, the real
+  text stays in the DOM throughout. One word only — don't spread it to
+  other headings.
+
+Outside those six moments — hero shader, first-paint loader, the reused
+hover system, `CursorTrail`, Pixel, PixelBreak — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,

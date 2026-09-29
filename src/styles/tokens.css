@@ -129,6 +129,27 @@
   --dur-micro: 150ms;
   --dur-micro-move: 180ms;
 
+  /* PIXEL BREAK (PixelBreak.astro) — "pixel" in the hero sentence,
+     breaking into dots under the pointer, pushed away from it while it
+     stays, settling back when it leaves. Spring constants are in the
+     component; these are the sizes and the fade. */
+  --pb-cell: 4px;          /* dot pitch; the grid the word is sampled on (dots are 1px smaller) */
+  --pb-reach: 16px;        /* how far the dots scatter on the break */
+  --pb-repel: 40px;        /* the pointer's magnet: dots inside this radius are pushed out */
+  --pb-fade-in: 200ms;     /* text → dots at the break: quick, it's a flinch */
+  --pb-fade-out: 650ms;    /* dots → text on landing: slow, overlapped, dots shrinking */
+  /* The dots' colours, left to right across the word — seven hues, on
+     request. They only exist mid-break: the dots fade in over the text
+     and fade out once home, so the resting page keeps its one accent.
+     Decorative and transient, so no contrast pairing applies. */
+  --pb-c1: #e5484d;        /* red */
+  --pb-c2: #f76b15;        /* orange */
+  --pb-c3: #f5c518;        /* yellow */
+  --pb-c4: #30a46c;        /* green */
+  --pb-c5: #0090ff;        /* blue */
+  --pb-c6: #5b5bd6;        /* indigo */
+  --pb-c7: #ab4aba;        /* violet */
+
   /* --- COMPONENT TOKENS ---------------------------------- */
   /* Nav (Nav.astro). One line: the name on the left; the links, a
      hairline and the theme button, together on the right. */
@@ -185,9 +206,26 @@
      Contrast on --pixel-bg: --pixel-fg 16:1, --pixel-dim 6.9:1. */
   --ask-bg: #fbf3ee;
   --ask-ink: #6b2e1c;
-  --ask-bubble-alpha: 65%;
-  --ask-outline: color-mix(in srgb, var(--ask-ink) 28%, transparent);   /* the launcher bubble's hairline, so it holds its shape on the white hero */
   --dur-ask-typing: 1.2s;   /* one pass of the launcher's typing dots */
+  /* The launcher bubble, filled with a brighter terracotta than the site
+     accent so it reads as a control, not part of the painting. #cc4a1f is
+     the brightest step of the accent's hue that still holds white text at
+     AA: 4.6:1 (the next step up, #d0501f, is 4.3:1). Same in both modes —
+     white on it passes on either ground. Hover darkens a step. */
+  --ask-launch-bg: #cc4a1f;
+  --ask-launch-bg-hover: #a83c18;   /* the words only show on hover, on this: white 6.3:1 */
+  --ask-launch-fg: #ffffff;
+  --ask-launch-ring: rgb(255 255 255 / 0.55);
+  --ask-launch-shadow: 0 6px 14px -6px rgb(204 74 31 / 0.7);
+  /* Its two lines, "Short on time?" / "Let Moss help", shown on hover —
+     small, so the bubble stays a note in the painting, not a banner (11 / 9.5px
+     read as too small, 13 / 11px as too big). Softened with opacity (one
+     Manrope weight is loaded), checked on --ask-launch-bg-hover: line 1
+     5.6:1, line 2 4.6:1. Don't dim line 2 further — it's at the AA floor. */
+  --ask-launch-step-1: 0.75rem;     /* 12px */
+  --ask-launch-step-2: 0.625rem;    /* 10px */
+  --ask-launch-line-1: 0.92;
+  --ask-launch-line-2: 0.8;
   --pixel-bg: #17120f;
   --pixel-raised: #1e1814;
   --pixel-high: #2a221d;

@@ -2,7 +2,7 @@
 export const site = {
   name: 'Anupama Mishra',
   mark: 'A.',
-  tagline: 'Staff product designer. Identity, access, and the systems enterprises run on.',
+  tagline: 'Staff product designer. Fintech first, then enterprise software and developer tools.',
   email: 'hi@anupama.design',
   linkedin: 'https://www.linkedin.com/in/anupamamishra/',
 
@@ -10,9 +10,10 @@ export const site = {
   // reads it from here — the home page, /about and the footer each carried
   // their own wording and drifted apart into "Design Manager or Lead UX".
   // The site sells a senior IC: leading six designers at Okta is evidence of
-  // scope, not the job she's asking for.
-  seeking: 'Staff Product Designer',
-  ask: 'Staff Product Designer role, remote',
+  // scope, not the job she's asking for. Staff or Lead, not tied to remote:
+  // don't add a location condition to the ask.
+  seeking: 'Staff or Lead Product Designer',
+  ask: 'Staff or Lead Product Designer role',
 
   // The footer's location line and its live clock. `timezone` is an IANA
   // zone — the clock reads in her time, not the visitor's, which is the

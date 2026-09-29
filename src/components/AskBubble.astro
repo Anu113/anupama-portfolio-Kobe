@@ -20,9 +20,9 @@
    LAUNCHER — Moss himself, sitting on the books in HeroIllustration's
      sprite (feet on the top book: x 565 / y 462 of the 700x980 frame; the
      table and books don't move across the scrub frames, so he stays put
-     while the portrait tracks the pointer), with a small cream speech
+     while the portrait tracks the pointer), with a small terracotta speech
      bubble above his head. Moss and the bubble are one button. At rest the
-     bubble (hairline outline) holds three typing dots that pulse in turn,
+     bubble (solid accent fill) holds three typing dots that pulse in turn,
      and a light sweeps round its border — the "click me" signals; dots
      and shimmer are the only motion at rest, both static under reduced
      motion. Moss has no idle motion; he only answers the
@@ -30,10 +30,12 @@
      `hero-scrub:frame` whenever it draws a new frame and Moss shows the
      same frame of his own clip (looking left, round, up, back), so the two
      share one timeline and can't drift. Over Moss himself he also perks
-     up — grows a little from the feet — as the label slides out. Fine
+     up — grows a little from the feet. Fine
      pointers only (the sprite isn't even fetched otherwise); frame 0 and
-     no motion under reduced motion, like the portrait. Hover/focus fills it solid and
-     slides out "Ask Moss" to the left; touch devices skip the label. The
+     no motion under reduced motion, like the portrait. At rest the bubble
+     shows the dots; hover/focus deepens the fill and slides out "Short on
+     time? / Let Moss help" in two very small lines to the right (away
+     from her face). Touch devices show the words always. The
      button's aria-label carries the full "Short on time? Ask Moss…". Hidden while the panel is open.
      Must sit inside a position:relative box the portrait's size
      (index.astro, .hero__stage).
@@ -77,8 +79,8 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
 <div class="pixel-launch">
   <button class="pixel-launcher" type="button" aria-label="Short on time? Ask Moss about Anupama’s work" aria-expanded="false" aria-controls="pixel-panel" aria-haspopup="dialog">
     <span class="pixel-launcher__bubble" aria-hidden="true">
-      <span class="pixel-launcher__label"><span><span>Ask Moss</span></span></span>
       <span class="pixel-launcher__dots"><i></i><i></i><i></i></span>
+      <span class="pixel-launcher__text"><span><span>Short on time?</span><span>Let Moss help</span></span></span>
     </span>
     <span class="pixel-launcher__moss"></span>
   </button>
@@ -145,36 +147,41 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
   .pixel-launcher:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; border-radius: 4px; }
   .pixel-launcher[aria-expanded='true'] { opacity: 0; transform: translateY(8px); pointer-events: none; }
 
-  /* the speech bubble: above his head, tail (the square corner) pointing
-     down at him. Anchored on its right edge and grows leftward when the
-     label slides out — Moss sits at the portrait's right edge, so there's
-     no room to the right, but the air above the laptop is empty. */
+  /* the speech bubble: above his head, tail (the square bottom-left
+     corner) pointing down at him. Anchored on its LEFT edge and grows
+     rightward when the label slides out, after the dots — it used to grow
+     leftward and covered her face in the portrait. Measured at 1440 there
+     is ~160px clear to the right of the portrait for the ~110px label.
+     Filled with the site accent (on request, after a UX test where a
+     visitor nearly missed it): the see-through cream bubble read as part
+     of the painting; a solid terracotta one reads as something to press.
+     Label and dots in --ask-launch-fg on it. */
   .pixel-launcher__bubble {
-    position: absolute; right: 30%; bottom: calc(100% - 0.35rem);
-    display: inline-flex; align-items: center; height: 1.75rem; padding: 0 0.55rem;
-    box-shadow: inset 0 0 0 1px var(--ask-outline);   /* inset, so the bubble keeps its size */
-    background: color-mix(in srgb, var(--ask-bg) var(--ask-bubble-alpha), transparent);
-    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-    border-radius: 0.875rem 0.875rem 0.2rem 0.875rem;
+    position: absolute; left: 40%; bottom: calc(100% - 0.35rem);
+    display: inline-flex; align-items: center; padding: 0.35rem 0.6rem 0.35rem 0.55rem;
+    background: var(--ask-launch-bg); color: var(--ask-launch-fg);
+    box-shadow: var(--ask-launch-shadow);
+    border-radius: 0.875rem 0.875rem 0.875rem 0.2rem;
     width: max-content; white-space: nowrap;   /* an absolute box in a ~48px parent would otherwise shrink the label to nothing */
     transition: background var(--dur-pixel) var(--ease-pixel), transform var(--dur-pixel) var(--ease-pixel);
   }
-  /* the shimmer: a bright arc sweeping round a 1.5px border */
+  /* the shimmer: a bright arc sweeping round a 1.5px border — pale on the
+     terracotta fill, so it still reads as light catching the edge */
   .pixel-launcher__bubble::after {
     content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
-    background: conic-gradient(from var(--pixel-ring), transparent 0deg, transparent 230deg, var(--pixel-accent) 300deg, var(--ask-bg) 330deg, transparent 360deg);
+    background: conic-gradient(from var(--pixel-ring), transparent 0deg, transparent 230deg, var(--ask-launch-ring) 300deg, var(--ask-launch-fg) 330deg, transparent 360deg);
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
     animation: pixel-ring var(--dur-pixel-ring) linear infinite;
   }
   @keyframes pixel-ring { to { --pixel-ring: 360deg; } }
-  .pixel-launcher:hover .pixel-launcher__bubble, .pixel-launcher:focus-visible .pixel-launcher__bubble { background: var(--ask-bg); transform: translateY(-1px); }
+  .pixel-launcher:hover .pixel-launcher__bubble, .pixel-launcher:focus-visible .pixel-launcher__bubble { background: var(--ask-launch-bg-hover); transform: translateY(-1px); }
 
   /* typing dots: Moss "has something to say" — a wave that pulses and
      lifts each dot in turn. Static at full strength under reduced motion. */
-  .pixel-launcher__dots { display: inline-flex; align-items: center; gap: 3px; height: 8px; }
+  .pixel-launcher__dots { display: inline-flex; align-items: center; gap: 4px; height: 10px; }
   .pixel-launcher__dots i {
-    width: 4px; height: 4px; border-radius: 50%; background: currentColor;
+    width: 5px; height: 5px; border-radius: 50%; background: currentColor;
     animation: pixel-typing var(--dur-ask-typing) ease-in-out infinite;
   }
   .pixel-launcher__dots i:nth-child(2) { animation-delay: calc(var(--dur-ask-typing) * 0.15); }
@@ -184,12 +191,22 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
     30% { opacity: 1; transform: translateY(-2px); }
   }
 
-  /* label: withheld at rest, revealed on hover/focus */
-  .pixel-launcher__label { display: grid; grid-template-columns: 0fr; transition: grid-template-columns 400ms var(--ease-pixel); }
-  .pixel-launcher__label > span { overflow: hidden; min-width: 0; white-space: nowrap; }
-  .pixel-launcher__label > span > span { display: inline-block; padding: 0 0.45rem 0 0.15rem; }
-    .pixel-launcher:hover .pixel-launcher__label, .pixel-launcher:focus-visible .pixel-launcher__label { grid-template-columns: 1fr; }
-  @media (hover: none) { .pixel-launcher__label { display: none; } }
+  /* the words: two very small lines, the hook then the offer, withheld at
+     rest and revealed on hover/focus — the bubble widens rightward (away
+     from her face) and the text fades in. Softened by opacity, not weight
+     (the site loads one Manrope weight); the second line smaller and
+     dimmer so the first reads first. Both opacities are set against the
+     HOVER fill, the only fill they ever sit on: 5.6:1 and 4.6:1.
+     Touch has no hover, so there the words are simply always shown. */
+  .pixel-launcher__text {
+    display: grid; grid-template-columns: 0fr; opacity: 0;
+    transition: grid-template-columns 400ms var(--ease-pixel), opacity var(--dur-pixel) var(--ease-pixel);
+  }
+  .pixel-launcher__text > span { display: grid; gap: 1px; overflow: hidden; min-width: 0; white-space: nowrap; padding-left: 0.45rem; text-align: left; }
+  .pixel-launcher__text span span:first-child { font-size: var(--ask-launch-step-1); line-height: 1.15; opacity: var(--ask-launch-line-1); }
+  .pixel-launcher__text span span:last-child { font-size: var(--ask-launch-step-2); line-height: 1.15; opacity: var(--ask-launch-line-2); }
+  .pixel-launcher:hover .pixel-launcher__text, .pixel-launcher:focus-visible .pixel-launcher__text { grid-template-columns: 1fr; opacity: 1; }
+  @media (hover: none) { .pixel-launcher__text { grid-template-columns: 1fr; opacity: 1; } }
 
   /* ================= panel ================= */
   .pixel-scrim {
@@ -307,7 +324,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
   @keyframes pixel-tilt { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
 
   @media (prefers-reduced-motion: reduce) {
-    .pixel-launcher, .pixel-launcher__bubble, .pixel-launcher__bubble::after, .pixel-launcher__label, .pixel-launcher__dots i, .pixel-scrim, .pixel-panel,
+    .pixel-launcher, .pixel-launcher__bubble, .pixel-launcher__bubble::after, .pixel-launcher__text, .pixel-launcher__dots i, .pixel-scrim, .pixel-panel,
     .pixel-panel *, .pixel-cat, .pixel-cat * { animation: none !important; transition: none !important; }
     .pixel-shimmer { color: var(--pixel-dim); background: none; }
   }
