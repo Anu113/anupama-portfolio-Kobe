@@ -6,7 +6,20 @@
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+/* Page scale. The layout is composed for a ~1440x800 laptop, where the
+   hero fills the first screen exactly. On a taller screen every rem-sized
+   thing (type, spacing, the portrait) grows by the same factor, so a
+   1810x1300 monitor shows the laptop composition, larger, instead of the
+   same 800px block with empty screen under it. Not CSS `zoom`: that also
+   multiplies vw/svh, which the hero's height and the gutters use.
+   --page-scale is set by the inline script in Base.astro, which measures
+   the screen at 100% zoom so browser zoom still multiplies on top. 100%
+   keeps the visitor's own default font size as the base. */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  font-size: calc(100% * var(--page-scale, 1));
+}
 
 body {
   margin: 0;
@@ -154,11 +167,40 @@ h1, h2, h3, h4, h5, h6 {
 .btn[disabled],
 .btn.is-disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-.btn--primary { background: var(--accent); color: var(--on-accent-small); border-color: var(--accent); }
-.btn--primary:hover { background: var(--fg); border-color: var(--fg); }
+/* Primary: ink at rest, the accent on hover — the accent is saved for
+   the moment of intent. Ink on --bg is 14.8:1; white on the accent 5.4:1.
+   Secondary: outlined at rest, filled with ink on hover.
 
-.btn--secondary { color: var(--fg); border-color: currentColor; }
-.btn--secondary:hover { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+   The hover colour doesn't switch, it rises: a ::before fill sits just
+   below the pill (clipped by overflow + the pill radius) and slides up
+   on hover, back down on leave — so the button visibly answers the
+   pointer from the edge it arrived at, on the site's one curve and
+   hover duration. The label sits above the fill (isolation keeps the
+   z-index:-1 layer inside the button). Instant under reduced motion. */
+.btn--primary,
+.btn--secondary {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.btn--primary::before,
+.btn--secondary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--btn-fill);
+  transform: translateY(101%);
+  transition: transform var(--dur-hover) var(--ease-out);
+}
+.btn--primary:hover::before,
+.btn--secondary:hover::before { transform: translateY(0); }
+
+.btn--primary { --btn-fill: var(--accent); background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn--primary:hover { border-color: var(--accent); color: var(--on-accent-small); }
+
+.btn--secondary { --btn-fill: var(--fg); color: var(--fg); border-color: currentColor; }
+.btn--secondary:hover { border-color: var(--fg); color: var(--bg); }
 
 .btn--tertiary { color: var(--fg-dim); }
 .btn--tertiary:hover { color: var(--fg); }
@@ -202,6 +244,8 @@ h1, h2, h3, h4, h5, h6 {
 .btn--link:hover .btn__arrow { transform: translateX(3px); }
 @media (prefers-reduced-motion: reduce) {
   .btn { transition: none; }
+  .btn--primary::before,
+  .btn--secondary::before,
   .btn--link::after,
   .btn--link .btn__arrow { transition: none; }
 }

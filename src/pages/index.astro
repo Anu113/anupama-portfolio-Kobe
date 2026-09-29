@@ -6,6 +6,7 @@ import Reveal from '../components/Reveal.astro';
 import HeroIllustration from '../components/HeroIllustration.astro';
 import AskBubble from '../components/AskBubble.astro';
 import LocalTime from '../components/LocalTime.astro';
+import PixelBreak from '../components/PixelBreak.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 
 import { site } from '../data/site';
@@ -32,11 +33,11 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
              status light, city, weather, ticking time (LocalTime.astro). -->
         <div class="hero__eyebrow"><LocalTime /></div>
         <h1 class="u-display hero__line">
-          <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn pixel.
+          <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn <PixelBreak>pixel</PixelBreak>.
         </h1>
         <p class="hero__more">
-          With 10+ years of experience, I&rsquo;m currently designing
-          developer tools @&nbsp;<span class="hero__co">Okta</span>. Previously
+          10+ years in fintech, enterprise software and developer tools,
+          most recently @&nbsp;<span class="hero__co">Okta</span>. Previously
           at <span class="hero__co">PayPal</span>, <span class="hero__co">Walmart Labs</span>,
           and <span class="hero__co">Deloitte</span>.
         </p>
@@ -57,14 +58,21 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
         </div>
       </Reveal>
     </div>
-    <!-- Flexible, not fixed — absorbs whatever's left of the 80svh after
-         the nav gap, headline and CTA row above have taken their fixed
-         amount, so the leftover room scales with the viewport instead of
-         being a flat rem number. min-height, not height, on .hero itself:
-         a floor, so a 4-line headline wrap on a narrow phone still just
-         pushes the band taller rather than clipping. */ -->
-    <div class="hero__spacer" aria-hidden="true"></div>
+    <!-- Scroll cue, after alejandromejias.com.au: tells a first-time
+         visitor the work is below the fold, then fades on the first
+         scroll because the hint is spent. Static (no bobbing arrow), and
+         aria-hidden: a screen reader already knows there's more page. -->
+    <p class="u-label hero__cue" aria-hidden="true" data-hero-cue>Scroll<svg class="hero__cue-arrow" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 1v10M1.5 3.5 4 1l2.5 2.5M1.5 8.5 4 11l2.5-2.5"/></svg></p>
   </Section>
+
+  <script>
+    const cue = document.querySelector<HTMLElement>('[data-hero-cue]');
+    if (cue) {
+      const update = () => cue.classList.toggle('is-gone', scrollY > 24);
+      update();
+      addEventListener('scroll', update, { passive: true });
+    }
+  </script>
 
   <!-- Selected work. Section head in allierho.com's pattern: a centred
        serif line with its key phrase in italic, a label link under it. -->
@@ -137,47 +145,50 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      measured on hansonwu.com (nav→headline ≈26vh, ≈4x their headline's
      font-size, at 1440x900).
 
-     min-height: 80svh (not a fixed bottom padding) makes the whole band —
-     nav gap, headline, CTA row, and the leftover room below them — always
-     read as 80% of the first screen, "Selected work" always peeking in
-     the remaining 20%, on any monitor or phone. svh, not vh: vh on
-     mobile Safari/Chrome includes the address bar's collapsed state and
-     jumps on scroll; svh locks to the smallest possible viewport. It's a
-     floor, not a cap — min-height, so a headline that wraps to a 4th line
-     on a narrow phone just pushes the band taller instead of clipping,
-     same as every clamp() gap here already behaves. Bottom padding
-     zeroed — Section.astro's base `.u-section` rule applies
-     --space-section (clamp(5rem,12vw,11rem)) to both edges, and left
-     alone that was fighting the flex spacer below for the same space. */
+     min-height: 100svh, content still top-aligned: the first screen is
+     the hero and only the hero, on every screen size. Sized to content
+     alone, a tall monitor (2560x1440) showed "Selected work" and most of
+     the first card under it — read as a landing page. Top-aligned, not
+     centred, so the nav → headline distance above stays exactly as set
+     by --hero-pad-top; any extra height goes below the CTAs, where the
+     Scroll cue sits at the fold. (Before this it was 88svh plus a flex
+     spacer, which left the work neither on the first screen nor near it.) */
   :global(.hero) {
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 88svh;
-    padding-top: clamp(7rem, 26vh, 13rem);
-    /* No longer zeroed. That relied on .hero__spacer alone to hold the
-       CTA row away from the section's bottom edge — true only while the
-       headline+bio+CTA stack stayed under 80svh. The current headline
-       wraps to more lines at its tightened max-width (see .hero__line),
-       so the stack now routinely exceeds 80svh: the spacer collapses to
-       0 and the Resume/LinkedIn buttons landed flush against the band's
-       bottom edge with no gap at all, reading as broken rather than
-       "the section grew to fit its content." A real bottom padding
-       means the CTA row always has breathing room, whether the spacer
-       has anything left to give or not. */
+    min-height: 100svh;
+    padding-top: var(--hero-pad-top);
+    /* Holds the Scroll cue (.hero__cue) clear of the CTAs and the
+       portrait's feet; the rest of the gap to "Selected work" is #work's
+       own top padding (--space-hero-work). */
     padding-bottom: clamp(3rem, 6vh, 4.5rem);
   }
-  /* Absorbs whatever's left of the 80svh after the nav gap, headline and
-     CTA row above have taken their fixed amount — the actual mechanism
-     that makes "80% on every screen" true, rather than a computed number.
-     On a short viewport where the content already exceeds 80svh this
-     just collapses to 0, which is correct: min-height already lets the
-     band grow past it. */
-  .hero__spacer { flex: 1 1 auto; }
+  .hero__cue {
+    position: absolute;
+    left: 50%;
+    bottom: var(--hero-cue-offset);
+    margin: 0;
+    transform: translateX(-50%);
+    color: var(--fg-dim);
+    white-space: nowrap;
+    transition: opacity var(--dur-hover) var(--ease-out);
+  }
+  .hero__cue.is-gone { opacity: 0; }
+  /* SVG, not the ↕ glyph: neither Manrope nor Azeret Mono has it, so it
+     fell back to whatever system font each visitor had. */
+  .hero__cue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+  .hero__cue-arrow { width: 0.667em; height: 1em; }
   /* The hero sentence is .u-display (global.css): serif 300 at
      --step-display, italic lead-in via <em>. Background line under it in
      the sans at body size, dim. */
-  .hero__line { max-width: 22ch; text-wrap: pretty; }
+  /* 26ch, was 22ch: the headline ended ~70px short of its own column,
+     and that width went to the gap before the illustration. */
+  .hero__line { max-width: 26ch; text-wrap: pretty; }
   .hero__more { color: var(--fg-dim); max-width: 54ch; margin: 1.5rem 0 0; text-wrap: pretty; }
   .hero__co { color: var(--fg); }
 
@@ -198,8 +209,8 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        illustration's feet always land on the same line as the
        Resume/LinkedIn row, whatever height the copy stack ends up at. */
     align-items: flex-end;
-    /* Copy on the page's left edge, illustration on its right edge, the
-       gap between them whatever's left (never under --hero-gap). The
+    /* Copy on the page's left edge, illustration centred in the space to
+       its right (see .hero__portrait-cell), never closer than --hero-gap. The
        edges come from --gutter, which stops the content widening past
        --shell-max (tokens.css) — so on a very large screen the whole
        page, hero included, centres and the extra width goes to the outer
@@ -218,8 +229,17 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   /* Sized to the illustration, not flex: 1 — space-between hands the
      spare width to the gap, which the row's max-width caps. Still
      shrinks when space runs short. */
-  :global(.hero__portrait-cell) { flex: 0 1 auto; min-width: 0; }
-  .hero__portrait { display: flex; }
+  /* flex: 1, with the figure placed --hero-art-bias of the way across
+     the slack (tokens.css), so the gap to the text only gets a share of
+     the spare width. Pinned to the right edge instead, every spare
+     pixel went to that gap (1.1-1.4x the figure's width).
+     Negative top margin lets the figure grow upward into the band's
+     padding rather than pushing the bottom-aligned copy down. */
+  :global(.hero__portrait-cell) { flex: 1 1 auto; min-width: 0; margin-top: calc(-1 * var(--hero-art-lift)); }
+  .hero__portrait {
+    display: flex;
+    padding-inline-start: max(0px, calc((100% - var(--hero-art-h) * var(--hero-art-ratio)) * var(--hero-art-bias)));
+  }
   /* Shrinks with the column (min-width: 0) so HeroIllustration's
      max-width: 100% still resolves against real space, and is the
      positioning box AskBubble pins itself to. */
@@ -229,7 +249,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
     /* Left-aligned on mobile now, not centred — the illustration, the
        headline, the bio, and the CTA row all sit on one shared left
        edge instead of each floating centred under a different width. */
-    .hero__portrait { justify-content: flex-start; }
+    .hero__portrait { justify-content: flex-start; padding-inline-start: 0; }
     .hero__row { flex-direction: column-reverse; align-items: flex-start; text-align: left; gap: var(--hero-gap-stacked); }
     /* width: 100% is load-bearing, not decorative — flex-direction: column
        makes align-items the CROSS-axis (horizontal) sizing, and flex-start
@@ -254,6 +274,10 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        Read by HeroIllustration's own width calc, so overriding it here is
        enough. */
     .hero__stage { --hero-art-h: 13rem; }
+    :global(.hero__portrait-cell) { margin-top: 0; }
+    /* Stacked, the hero runs past the first screen and scrolling is the
+       default on a phone; the cue would only sit under the CTAs. */
+    .hero__cue { display: none; }
   }
 
   /* The location line sits above the headline, a label's distance
@@ -271,7 +295,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      the smaller nav gap above) while still sitting closer than the
      2.75rem peak, back in proportion with the hansonwu.com-matched top
      gap. */
-  .intro__links { display: flex; align-items: center; gap: 1.5rem; padding-top: 2.25rem; margin: 0; }
+  .intro__links { display: flex; align-items: center; gap: 0.75rem; padding-top: 2.25rem; margin: 0; }
   /* Resume/LinkedIn now use the shared .btn system (global.css) —
      Primary/Secondary — instead of their own bespoke pill rules. */
 
@@ -291,14 +315,14 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   :global(#work),
   :global(.worklist),
   :global(.playline) { padding-block: var(--space-band); }
-  :global(#work) { padding-block-end: 0; }
+  :global(#work) { padding-block-start: var(--space-hero-work); padding-block-end: 0; }
   :global(#work + .worklist) { padding-block-start: 0; }
 
   /* Section head, allierho.com's pattern: centred serif line, label link
      a step under it. */
   .workhead {
     display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
-    text-align: center; padding-bottom: var(--space-band);
+    text-align: center; padding-bottom: var(--space-head);
   }
   .workhead .u-heading { max-width: 20ch; }
   .playline .workhead { padding-bottom: 0; }

@@ -104,6 +104,12 @@
   --space-band: clamp(4rem, 8vw, 7.5rem);
   --space-label: clamp(1rem, 2vw, 1.5rem);
   --space-case: clamp(3.5rem, 7vw, 6rem);
+  /* Hero → "Selected work", and that heading → its cards. The first is
+     about 1.5x the second so the heading reads as the cards' title, not
+     a caption on the hero. With the hero's own bottom padding the gap
+     above the heading is ~118px at 1440 (was 175, and 338 at 1920). */
+  --space-hero-work: clamp(3rem, 4.5vw, 4rem);
+  --space-head: clamp(3.5rem, 5.5vw, 5rem);
 
   /* The top bar is 64px tall on the reference. */
   --nav-h: 4rem;
@@ -122,6 +128,27 @@
   --dur-hover: 320ms;
   --dur-micro: 150ms;
   --dur-micro-move: 180ms;
+
+  /* PIXEL BREAK (PixelBreak.astro) — "pixel" in the hero sentence,
+     breaking into dots under the pointer, pushed away from it while it
+     stays, settling back when it leaves. Spring constants are in the
+     component; these are the sizes and the fade. */
+  --pb-cell: 4px;          /* dot pitch; the grid the word is sampled on (dots are 1px smaller) */
+  --pb-reach: 16px;        /* how far the dots scatter on the break */
+  --pb-repel: 40px;        /* the pointer's magnet: dots inside this radius are pushed out */
+  --pb-fade-in: 200ms;     /* text → dots at the break: quick, it's a flinch */
+  --pb-fade-out: 650ms;    /* dots → text on landing: slow, overlapped, dots shrinking */
+  /* The dots' colours, left to right across the word — seven hues, on
+     request. They only exist mid-break: the dots fade in over the text
+     and fade out once home, so the resting page keeps its one accent.
+     Decorative and transient, so no contrast pairing applies. */
+  --pb-c1: #e5484d;        /* red */
+  --pb-c2: #f76b15;        /* orange */
+  --pb-c3: #f5c518;        /* yellow */
+  --pb-c4: #30a46c;        /* green */
+  --pb-c5: #0090ff;        /* blue */
+  --pb-c6: #5b5bd6;        /* indigo */
+  --pb-c7: #ab4aba;        /* violet */
 
   /* --- COMPONENT TOKENS ---------------------------------- */
   /* Nav (Nav.astro). One line: the name on the left; the links, a
@@ -149,7 +176,24 @@
 
   /* Home hero layout (index.astro, HeroIllustration.astro). */
   --hero-copy-w: clamp(22rem, 46vw, 50rem);
-  --hero-art-h: 31rem;
+  /* The band's top padding: the nav → headline gap (index.astro). */
+  --hero-pad-top: clamp(7rem, 26vh, 13rem);
+  /* How far the figure rises into that padding (up to 3rem, stopping
+     6rem under the nav). The figure grows by exactly this much, upward,
+     so it gets bigger without moving the headline, the CTAs or the
+     "Selected work" peek below them. Tied to the padding rather than to
+     viewport height, so a laptop with browser chrome gets it too. 6rem
+     of lift was tried and read too big. */
+  --hero-art-lift: clamp(0rem, calc(var(--hero-pad-top) - var(--nav-h) - 6rem), 3rem);
+  --hero-art-h: calc(31rem + var(--hero-art-lift));
+  /* Where the figure sits in the space right of the copy: 0 hugs the
+     copy, 0.5 centres, 1 pins to the right edge. Left of centre keeps
+     the gap to the text tight (~0.4x the figure's width) without the
+     figure having to be big to fill the space. */
+  --hero-art-bias: 0.35;
+  /* "Scroll" cue, centred at the hero's bottom edge (index.astro). 16px
+     up, as on alejandromejias.com.au. */
+  --hero-cue-offset: 1rem;
   --hero-art-ratio: 5 / 7;   /* the sprite frame, 700x980 (HeroIllustration.astro) */
   --hero-gap: 4rem;
   --hero-gap-stacked: 2rem;
@@ -162,9 +206,26 @@
      Contrast on --pixel-bg: --pixel-fg 16:1, --pixel-dim 6.9:1. */
   --ask-bg: #fbf3ee;
   --ask-ink: #6b2e1c;
-  --ask-bubble-alpha: 65%;
-  --ask-outline: color-mix(in srgb, var(--ask-ink) 28%, transparent);   /* the launcher bubble's hairline, so it holds its shape on the white hero */
   --dur-ask-typing: 1.2s;   /* one pass of the launcher's typing dots */
+  /* The launcher bubble, filled with a brighter terracotta than the site
+     accent so it reads as a control, not part of the painting. #cc4a1f is
+     the brightest step of the accent's hue that still holds white text at
+     AA: 4.6:1 (the next step up, #d0501f, is 4.3:1). Same in both modes —
+     white on it passes on either ground. Hover darkens a step. */
+  --ask-launch-bg: #cc4a1f;
+  --ask-launch-bg-hover: #a83c18;   /* the words only show on hover, on this: white 6.3:1 */
+  --ask-launch-fg: #ffffff;
+  --ask-launch-ring: rgb(255 255 255 / 0.55);
+  --ask-launch-shadow: 0 6px 14px -6px rgb(204 74 31 / 0.7);
+  /* Its two lines, "Short on time?" / "Let Moss help", shown on hover —
+     small, so the bubble stays a note in the painting, not a banner (11 / 9.5px
+     read as too small, 13 / 11px as too big). Softened with opacity (one
+     Manrope weight is loaded), checked on --ask-launch-bg-hover: line 1
+     5.6:1, line 2 4.6:1. Don't dim line 2 further — it's at the AA floor. */
+  --ask-launch-step-1: 0.75rem;     /* 12px */
+  --ask-launch-step-2: 0.625rem;    /* 10px */
+  --ask-launch-line-1: 0.92;
+  --ask-launch-line-2: 0.8;
   --pixel-bg: #17120f;
   --pixel-raised: #1e1814;
   --pixel-high: #2a221d;

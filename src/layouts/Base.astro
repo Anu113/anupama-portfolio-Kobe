@@ -10,7 +10,7 @@ import Footer from '../components/Footer.astro';
 interface Props { title: string; description?: string; trail?: boolean; }
 const {
   title,
-  description = 'Anupama Mishra — Staff Product Designer. Identity, access and the enterprise systems underneath them.',
+  description = 'Anupama Mishra — Staff Product Designer. Ten years in fintech, enterprise software and developer tools.',
   trail = true,
 } = Astro.props;
 ---
@@ -41,6 +41,37 @@ const {
         root.dataset.mode = pref === 'system'
           ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
           : pref;
+      })();
+    </script>
+    <!-- Page scale (see html in global.css). The layout is composed for a
+         ~1440x800 laptop; a taller or wider screen scales every rem up by
+         min(height / baseH, width / baseW), 1 to maxScale, so a big monitor
+         shows the laptop composition larger. Worked out here, not in CSS
+         from vw/svh, so browser zoom still works: zooming shrinks the CSS
+         viewport, and a viewport-based scale shrank by the same amount,
+         cancelling zoom out entirely up to ~150% on a big screen. Here the
+         viewport is measured at 100% zoom (current size x zoom level), so
+         the scale holds still and zoom multiplies on top of it. Zoom level:
+         outerWidth / innerWidth (Chrome, Safari: outerWidth ignores zoom)
+         or the change in devicePixelRatio since load (Firefox), snapped to
+         a real zoom step so window chrome can't read as zoom. No JS: 1x. -->
+    <script is:inline define:vars={{ baseH: 800, baseW: 1200, maxScale: 1.8 }}>
+      (() => {
+        const root = document.documentElement;
+        const steps = [0.5, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5];
+        const dpr0 = devicePixelRatio;
+        const zoom = () => {
+          const z = Math.max(innerWidth ? outerWidth / innerWidth : 1, devicePixelRatio / dpr0);
+          const near = steps.reduce((a, b) => (Math.abs(b - z) < Math.abs(a - z) ? b : a));
+          return Math.abs(near - z) / near < 0.04 ? near : 1;
+        };
+        const set = () => {
+          const z = zoom();
+          const s = Math.min(maxScale, Math.max(1, Math.min((innerHeight * z) / baseH, (innerWidth * z) / baseW)));
+          root.style.setProperty('--page-scale', s.toFixed(3));
+        };
+        set();
+        addEventListener('resize', set);
       })();
     </script>
     <!-- The type system (tokens.css): Crimson Pro 300 roman + italic for

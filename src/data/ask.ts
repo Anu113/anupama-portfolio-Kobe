@@ -79,7 +79,7 @@ export const pixelTree: Record<string, PixelNode> = {
   },
   work: {
     q: 'What has she worked on?',
-    say: ['Enterprise systems, mostly. The kind with forty settings and one dangerous one. These three are open:'],
+    say: ['Fintech, mostly: payments, cards, privacy. Then enterprise and developer tools, the kind with forty settings and one dangerous one. These three are open:'],
     cards: [
       oin,
       { label: 'PayPal', title: 'Privacy settings people can read', sub: 'Lead product designer', href: '/work/paypal-privacy' },
@@ -109,7 +109,7 @@ export const pixelTree: Record<string, PixelNode> = {
   available: {
     q: 'Is she available?',
     say: [
-      `Yes. She’s looking for a <strong>${site.ask}</strong> — senior IC, or the design-engineering track. Based in ${site.location}.`,
+      `Yes. She’s looking for a <strong>${site.ask}</strong>. Based in ${site.location}.`,
       'I’ve suggested a walk. She opened Figma instead. A team would be good for her.',
     ],
     exits: [email, linkedin],
