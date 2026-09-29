@@ -22,7 +22,7 @@ const { class: cls = '', label = 'Selected work' } = Astro.props;
   .rail__track {
     display: flex; align-items: flex-end;
     gap: clamp(1rem, 4vw, 4.5rem);
-    padding-inline: var(--gutter);
+    padding-inline: var(--gutter-start) var(--gutter);
     width: max-content;
   }
   .rail__track > * { scroll-snap-align: center; flex: 0 0 auto; }

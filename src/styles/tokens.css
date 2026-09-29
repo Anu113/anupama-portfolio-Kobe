@@ -18,6 +18,9 @@
   --step-h1: clamp(2.5rem, 7vw, 6rem);
   --step-h2: clamp(1.75rem, 3.6vw, 3rem);
   --step-h3: clamp(1.25rem, 2vw, 1.75rem);
+  /* Home hero headline. Matched to hansonwu.com's hero sentence:
+     32px at 375w, ~48px at 1024w, 60px from 1440w up. */
+  --step-hero: clamp(2rem, 1.38rem + 2.63vw, 3.75rem);
   --step-body: clamp(1rem, 1.15vw, 1.1875rem);
   --step-small: 0.9375rem;   /* captions, metric labels — copy meant to be
                                 read, one notch under body. --step-label is
@@ -70,8 +73,83 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-reveal: 900ms;
   --dur-hover: 320ms;
+  /* Micro-feedback pair for the sitewide inline-link hover (.link-ext,
+     global.css): a colour/underline swap and a tiny icon nudge, both much
+     faster than --dur-hover's bigger reveals — the two durations read as
+     "answers immediately" rather than "animates in". */
+  --dur-micro: 150ms;
+  --dur-micro-move: 180ms;
+
+  /* Identity prism (IdentityPrism.astro, top-left of the nav at ≥1200px).
+     Sizes are the reference's own (huyml.co): a 56 × 123 box, 56 deep,
+     20px off the corner, drawn 1.54× on very wide screens. The face swap
+     on hover runs 450ms, the reference's timing, on the sitewide curve. */
+  --idmark-w: 56px;
+  --idmark-h: 123px;
+  --idmark-inset: 20px;
+  --idmark-scale-xl: 1.54;
+  --idmark-word: 1.45rem;   /* ANUPAMA, sized to run the face's full length */
+  --idmark-meta: 7.5px;     /* the two small lines beside it */
+  --dur-idmark-swap: 450ms;
+
+  /* Top row (Nav.astro at ≥1200px): a 16-column grid on the same 20px
+     inset as the prism, 20px gutters. */
+  --bar-cols: 16;
+  --bar-gap: 20px;
+  --step-bar-meta: 10px;
+  --bar-meta-gap: 10px;
+
+  /* Dock (Dock.astro): cali.so's navigation dock, requested as an exact
+     match, so these are its numbers, including its own easing. */
+  --dock-size: 3.5rem;        /* the pill's thickness; = the name box's width */
+  --dock-item: 2.75rem;
+  --dock-pad: 0.375rem;
+  --dock-gap: 0.25rem;
+  --dock-rule: 1.125rem;      /* divider length */
+  --dock-dot: 4px;
+  --dock-tip-offset: 0.625rem;
+  --dock-offset: 30px;        /* under the name box, at ≥1200px */
+  --dock-edge: 1.25rem;       /* off the bottom edge, below 1200px */
+  --step-dock-tip: 0.875rem;
+  --radius-panel: 14px;
+  --dock-shadow: 0 8px 30px rgb(0 0 0 / 0.12);
+  --dock-tip-shadow: 0 4px 8px rgb(0 0 0 / 0.04), 0 1px 1px rgb(0 0 0 / 0.02);
+  --panel-shadow: 0 1px 1px -0.5px rgb(0 0 0 / 0.05), 0 3px 3px -1.5px rgb(0 0 0 / 0.05), 0 12px 12px -6px rgb(0 0 0 / 0.05), 0 24px 24px -12px rgb(0 0 0 / 0.05);
+  --ease-swift: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-dock: 150ms;          /* hover tint, tooltip, panel */
+  --dur-dock-dot: 220ms;      /* active dot and switch thumb sliding */
+
+  /* --- CHROME RAIL: keeping content out from under the fixed dock -------
+     At ≥1200px the name and, under it, the dock sit in the top bar's first
+     two columns, fixed while the page scrolls. Content starts one column
+     further in than it strictly needs to, leaving an empty band beside
+     them so the sidebar reads as its own space, not crowded by the page:
+       --gutter-start  where text and media begin on the left. Below 1200px
+                       it is just --gutter. From 1200px it is the start of
+                       the bar grid's fourth column (x≈286 at 1440 wide,
+                       ≈241 at 1200). The top row (Audio, clock, email)
+                       starts on the same line, so the bar and every
+                       page's content share one left edge.
+       --bleed-start   how far media may still bleed left past that start.
+                       --gutter below 1200px (edge-to-edge images), 0 above,
+                       so nothing slides under the menu.
+     Band backgrounds are full-width and do run under the menu; only their
+     content respects the rail. .u-shell (global.css) reads these, so any
+     <Section> gets it for free. Anything that pads itself with --gutter
+     directly should use --gutter-start on its left side instead. */
+  --chrome-cols: 3;
+  /* Home hero's copy column, side by side with the illustration (index
+     .astro). The copy keeps this width; the illustration takes the rest. */
+  --hero-copy-w: clamp(20rem, 28vw, 30rem);
+  --gutter-start: var(--gutter);
+  --bleed-start: var(--gutter);
 
   --radius: 0px;  /* sitewide — hard-edged on purpose, matching the reference. A brief pass raised this to 20px for the Selected Work redesign; reverted — square is the intended look for every card/image/button that reads this token. */
+  /* One deliberate exception to --radius: 0 — the dock and its controls
+     (Dock.astro), floating chrome rather than a content surface, same
+     carve-out logic as --chip-bg/--chip-fg below. Not for reuse on
+     cards/images/buttons; those stay square. */
+  --radius-pill: 999px;
 
   /* IndexRotator is fixed chrome that floats over every band on the page
      at once (it isn't nested inside a [data-theme] block the way CaseRail
@@ -81,6 +159,49 @@
      night — the same reasoning that keeps --shell near-black everywhere. */
   --chip-bg: #17120f;
   --chip-fg: #f4ece1;
+
+  /* Pixel (AskBubble.astro): the "ask about my work" character. Fixed
+     palettes, not theme vars — like --chip-* above, it floats over the
+     terracotta hero the same way in day and night.
+
+     Launcher: a small translucent cream bubble on the illustration's books,
+     Pixel's face drawn in the hero's darker brick (≈5:1 on the 65% bubble
+     blended over the hero bg).
+
+     Panel: Pixel's own register — dark and monospace, deliberately unlike
+     the rest of the site so the conversation reads as a machine talking.
+     Colours are the site's "ink" theme values, not a new palette.
+     Contrast on --pixel-bg: --pixel-fg 16:1, --pixel-dim 6.9:1. */
+  --ask-bg: #fbf3ee;               /* launcher bubble */
+  --ask-ink: #6b2e1c;              /* Pixel's face on the launcher */
+  --ask-bubble-alpha: 65%;         /* launcher fill at rest; solid on hover */
+  --pixel-bg: #17120f;
+  --pixel-raised: #1e1814;         /* cards */
+  --pixel-high: #2a221d;           /* visitor's bubbles, hover tint */
+  --pixel-fg: #f4ece1;
+  --pixel-dim: #a2968a;
+  --pixel-rule: #322a24;
+  --pixel-rule-strong: #4a3f37;
+  --pixel-accent: #e8613c;         /* typing caret, card hover, focus rings */
+  --pixel-pad: #e99862;            /* Pixel's paw pads and blush */
+  --pixel-scrim: rgb(58 20 10 / 0.28);
+  --pixel-shadow: 0 28px 70px -24px rgb(20 8 4 / 0.6);
+  --radius-pixel-panel: 24px;      /* soft on purpose — the site's cards stay square */
+  --radius-pixel-card: 16px;
+  --radius-pixel-msg: 18px;
+  --ease-pixel: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-pixel: 250ms;
+  --dur-pixel-ring: 2.8s;          /* one lap of the launcher's border shimmer */
+}
+
+@media (min-width: 1200px) {
+  :root {
+    /* One column of the top bar's grid (Nav.astro), then the start of
+       column (--chrome-cols + 1). */
+    --bar-col: calc((100vw - 2 * var(--idmark-inset) - (var(--bar-cols) - 1) * var(--bar-gap)) / var(--bar-cols));
+    --gutter-start: max(var(--gutter), calc(var(--idmark-inset) + var(--chrome-cols) * (var(--bar-col) + var(--bar-gap))));
+    --bleed-start: 0px;
+  }
 }
 
 /* ============================================================
@@ -111,14 +232,20 @@
   --accent-text: #276237;
 }
 
+/* Cooled from a warm cream (#f4ece1/#17120f) to this near-neutral paper/ink
+   after comparing both against real hero + work-list content — the warm
+   version read closer to the site's editorial-chapter past, the cooler one
+   reads closer to the product-design register the rebuild is aiming for.
+   fg-dim re-verified at 4.6:1 on the new bg (was tuned for the old, warmer
+   one); accent-text unchanged since the lighter bg only improves its ratio. */
 [data-theme='bone'] {
-  --bg: #f4ece1;
-  --fg: #17120f;
-  --fg-dim: #5d534a;
+  --bg: #fafafa;
+  --fg: #2a2a2a;
+  --fg-dim: #6b6b72;
   --accent: #e8613c;
-  --rule: #ddd2c3;
+  --rule: #e4e4e4;
   --shell: #17120f;
-  --screen: #e8dece;
+  --screen: #efefef;
   --accent-text: #a83a19;
 }
 
@@ -228,21 +355,44 @@
   --accent-text: #f4ece1; /* = --fg — the gold alone doesn't clear body text on this ground */
 }
 
-/* Iris — the hero band only, nowhere else. Cream-and-navy by day, an
-   indigo ground with a periwinkle headline at night: the pairing from
-   meagandurlak.com's "dreaming of radical futures" opener, not a
-   restatement of any editorial or chapter-card palette already here.
-   --fg is display-only (like sand's two greens) — --fg-dim carries the
-   body paragraph at a contrast --fg doesn't clear. */
-[data-theme='iris'] {
-  --bg: #ece5d4;          /* cream */
-  --fg: #2e2860;          /* navy-violet, display only — 10.5:1 */
-  --fg-dim: #4d4690;      /* lighter, still 6.4:1 at body size */
-  --accent: #2e2860;
-  --rule: #d8cdb4;
-  --shell: #2e2860;
-  --screen: #e2d9c2;
-  --accent-text: #2e2860;
+/* Charcoal — the hero band only, nowhere else. Replaces the earlier
+   "iris" purple, which read too decorative against the plain-spoken
+   opening line. Was a neutral pale-grey/near-black pair with no hue of
+   its own; now recoloured to match the hero's own cursor-scrub video
+   (HeroIllustration.astro) instead — sampled directly from five frames
+   of that footage (backdrop wall, desk, hair-shadow, skin/cream
+   highlight, mug), the same "let the work's own imagery provide the
+   colour" move rule 2 above asks for, rather than a hue picked in the
+   abstract. --accent/--accent-text reuse the lamp-gold already carried
+   by ember and crimson rather than introducing an unrelated hue. */
+[data-theme='charcoal'] {
+  /* --bg matched to HeroIllustration's current sprite (public/images/
+     hero-idle.webp) so the card's own backdrop and the page's don't
+     visibly seam — sampled from that image's own border pixels
+     (median #933e28), not eyeballed. This is the second colour this
+     block has been fixed to (see git history for the brighter-orange
+     one before it, sampled off a different, now-replaced, video) —
+     whenever HeroIllustration's sprite changes to a source with a
+     different backdrop colour, --bg here needs to follow it again or
+     the seam comes back.
+
+     This background is much DARKER than the previous one, which flips
+     which set of --fg/--fg-dim/--accent/--accent-text values pass AA:
+     the previous block's dark-maroon text (chosen for a bright orange
+     --bg) drops to ~1.9:1 here. Light cream/tan text, the same family
+     this theme's own night mode already used, is what actually holds
+     up against this bg — day and night end up close in value here
+     (this bg is only slightly lighter than night's), which is
+     expected, not a bug: the source video itself is a dark, muted
+     brick-red, not a bright day-mode orange. */
+  --bg: #933e28;
+  --fg: #ffe9e0;           /* 6.1:1 */
+  --fg-dim: #ebd0c6;       /* lightened off a tan mid-tone — that was 3.85:1, under the 4.5:1 --fg-dim needs at body size (.hero__bio etc.) */
+  --accent: #e99862;       /* 3.1:1 — UI-level (focus rings), not text */
+  --rule: #e0b6a6;
+  --shell: #6b2e1c;
+  --screen: #a8503a;
+  --accent-text: #ffe9e0;  /* = --fg — 6.1:1 */
 }
 
 /* ============================================================
@@ -439,16 +589,25 @@
   --accent-text: #fce7db;   /* = --fg */
 }
 
-/* Iris after dark — indigo ground, periwinkle headline. --fg stays
-   display-only (4.7:1, clears the 3:1 large-text floor); --fg-dim is
-   the lighter tint that carries the body paragraph at 6.1:1. */
-[data-mode='night'] [data-theme='iris'] {
-  --bg: #2b2a54;
-  --fg: #7b93f0;            /* 4.7:1 */
-  --fg-dim: #98abf7;        /* 6.1:1 */
-  --accent: #7b93f0;
-  --rule: #403e78;
-  --shell: #1c1b3a;
-  --screen: #38366a;
-  --accent-text: #98abf7;   /* 6.1:1 */
+/* Charcoal after dark — deepens the same video-sampled oxblood-brown
+   ground rather than inverting it, the same move `clay` makes off its
+   own reference ("night deepens... rather than inverting it — only
+   the ground moves"). --fg/--fg-dim hold since they already clear AA
+   by a wide margin; --accent brightens, following coral/ember's own
+   day→night pattern of the accent gaining saturation after dark. */
+[data-mode='night'] [data-theme='charcoal'] {
+  /* Night variant of the sprite-matched colour above — same hue,
+     darkened proportionally to how the previous palette's day/night
+     pair related (day L 0.62 → night L 0.29, ~0.46x; applied here:
+     day L 0.37 → night L 0.17). The existing day-mode text values
+     already clear AA against this — night is darker than day here,
+     same as any other theme on the site. */
+  --bg: #441d12;
+  --fg: #ffe9e0;            /* 12.6:1 */
+  --fg-dim: #e0b6a6;        /* 8.0:1 */
+  --accent: #e8935a;        /* 6.1:1 — UI-level, not text */
+  --rule: #5c2717;
+  --shell: #2a0f09;
+  --screen: #5c2717;
+  --accent-text: #f0a868;   /* 4.7:1 */
 }

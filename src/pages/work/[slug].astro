@@ -33,6 +33,7 @@ import CaseBlocks from '../../components/CaseBlocks.astro';
 import CaseGate from '../../components/CaseGate.astro';
 import LockedGate from '../../components/LockedGate.astro';
 import LockIcon from '../../components/LockIcon.astro';
+import CaseDoodle from '../../components/CaseDoodle.astro';
 import { cases, caseBySlug } from '../../data/cases';
 
 export function getStaticPaths() {
@@ -119,7 +120,7 @@ const topImpact = useRefLayout
                 <h1 class="hero__title">{study.title}</h1>
                 <p class="lede__text">{study.description}</p>
                 {study.live && (
-                  <a class="lede__cta u-label" href={study.live.href}
+                  <a class="lede__cta btn btn--secondary" href={study.live.href}
                      target="_blank" rel="noopener noreferrer">{study.live.label}</a>
                 )}
               </div>
@@ -152,7 +153,7 @@ const topImpact = useRefLayout
               <h1 class="hero__title">{study.title}</h1>
               <p class="lede__text">{study.description}</p>
               {study.live && (
-                <a class="lede__cta u-label" href={study.live.href}
+                <a class="lede__cta btn btn--secondary" href={study.live.href}
                    target="_blank" rel="noopener noreferrer">{study.live.label}</a>
               )}
             </div>
@@ -211,6 +212,7 @@ const topImpact = useRefLayout
         {openSections.map((s, i) => (
           <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
             <Reveal>
+              <CaseDoodle name={s.id} />
               {/* Numbered eyebrow — blingbling.studio's "01 / MY ROLE"
                   treatment. Number is decorative (aria-hidden); the label
                   underneath still reads as the section name to a screen
@@ -248,6 +250,7 @@ const topImpact = useRefLayout
               {gatedSections.map((s) => (
                 <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
                   <Reveal>
+                    <CaseDoodle name={s.id} />
                     <p class="u-label cs__label">{s.label}</p>
                     <h2 class="cs__head" id={`${s.id}-h`}>{s.heading}</h2>
                   </Reveal>
@@ -342,24 +345,9 @@ const topImpact = useRefLayout
     color: var(--fg-dim);
     text-wrap: pretty;
   }
-  /* The pill. Border rather than a filled ground so it reads as a control
-     without needing a colour that clears AA against the bone band. */
-  .lede__cta {
-    display: inline-block;
-    justify-self: end;
-    align-self: start;
-    white-space: nowrap;
-    text-decoration: none;
-    color: var(--fg);
-    /* --fg-dim, not --rule — --rule is tuned as a quiet hairline divider
-       and falls under the 3:1 WCAG needs for a control's own boundary. */
-    border: 1px solid var(--fg-dim);
-    border-radius: 999px;
-    padding: 0.65rem 1.15rem;
-    transition: background var(--dur-hover) var(--ease-out),
-                border-color var(--dur-hover) var(--ease-out);
-  }
-  .lede__cta:hover { background: var(--screen); border-color: var(--fg-dim); }
+  /* Visual style now comes from the shared .btn/.btn--secondary system
+     (global.css) — this rule only keeps the grid placement. */
+  .lede__cta { justify-self: end; align-self: start; white-space: nowrap; }
 
   .hero__frame {
     background: var(--screen);

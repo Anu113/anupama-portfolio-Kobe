@@ -17,7 +17,7 @@
     {
       "name": "astro-dev-alt",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "\"/Users/bhaveshupadhyay/.nvm/versions/node/v22.23.1/bin/node\" node_modules/astro/bin/astro.mjs dev --port \"$PORT\""],
+      "runtimeArgs": ["-c", "\"/Users/bhaveshupadhyay/.nvm/versions/node/v22.23.1/bin/node\" node_modules/astro/bin/astro.mjs dev --force --port \"$PORT\""],
       "port": 4325,
       "autoPort": true
     }

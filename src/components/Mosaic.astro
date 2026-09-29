@@ -31,7 +31,9 @@ const { items } = Astro.props;
     aspect-ratio: var(--ratio); overflow: hidden;
     border-radius: var(--radius);
   }
-  .mosaic__item[data-edge='left']   { align-self: flex-start; margin-left: calc(var(--gutter) * -1); }
+  /* Left-edge items bleed only as far as --bleed-start allows: to the
+     viewport edge on smaller screens, not under the fixed menu at ≥1200px. */
+  .mosaic__item[data-edge='left']   { align-self: flex-start; margin-left: calc(var(--bleed-start) * -1); }
   .mosaic__item[data-edge='right']  { align-self: flex-end;   margin-right: calc(var(--gutter) * -1); }
   .mosaic__item[data-edge='center'] { align-self: center; }
   .mosaic__item img { width: 100%; height: 100%; object-fit: cover; display: block; }

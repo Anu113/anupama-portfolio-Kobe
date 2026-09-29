@@ -23,8 +23,8 @@ colors:
   lilac-fg: "#100d18"
   coral-bg: "#f96f43"
   coral-fg: "#14100e"
-  iris-bg: "#ece5d4"
-  iris-fg: "#2e2860"
+  charcoal-bg: "#33170d"
+  charcoal-fg: "#f6e8d9"
 typography:
   display:
     fontFamily: "General Sans, ui-sans-serif, system-ui, sans-serif"
@@ -80,11 +80,49 @@ components:
 
 ## Overview
 
+**North Star:** "This isn't a portfolio about where I've worked. It's a portfolio about how I think."
+
 **Creative North Star: "The Editorial Broadside"**
 
 The site reads like a designer's own printed broadside, not a SaaS marketing page: hard-edged type blocks blown up to poster scale, saturated flat-colour grounds standing in for pages of a booklet, and a serif italic used the way a hand-annotation would be. Nothing here is soft — no shadows, no blur, no rounded cards — except the one control the visitor actually touches, the pill-shaped CTA, which is deliberately the single curved thing on the page.
 
-Density is editorial, not app-like: generous section rhythm (`--space-section`, up to 11rem), a 62ch reading measure for body copy, and display type sized in `vw` so headlines are allowed to overflow toward the viewport edge the way a poster's type would. The palette is not a light/dark pair but a sequence of eight named grounds (`ink`, `sand`, `bone`, `clay`, `sage`, `lilac`, `coral`, `iris`), each a full "page" of the broadside with its own day and night restatement — the visitor moves through the site the way they'd turn pages in a printed piece, and the fixed nav recolours itself to always match the page currently behind it.
+### Direction update: product designer first, maker in the texture
+
+This builds directly on the Editorial Broadside — it doesn't replace it. The
+site already rejects SaaS aesthetics in favour of craft; this sharpens *how*
+that craft shows up.
+
+- **Product designer first; maker/illustrator in the texture of the
+  experience.** She is not pitching herself as an illustrator — the hand-drawn
+  and authored moments are texture on top of staff-level product thinking, not
+  the headline.
+- **Subtle hand-drawn, organic, imperfect, illustrated moments.** Small,
+  margin-note scale (see `CaseDoodle`'s creatures) — never a dominant visual
+  system of their own.
+- **Personality through composition, art direction, micro-interactions, and
+  visual punctuation** — not through repeatedly saying "illustrator" in copy
+  or leaning on illustration as the primary device.
+- **Less card-heavy, less rounded-SaaS-UI.** Reinforces the existing No-Shadow
+  and Radius Exception rules below — square corners, flat grounds, no card
+  stacks doing the work a composition should be doing.
+- **More authored compositions and controlled variation** over templated,
+  repeating layouts — each band should read as deliberately laid out, not as
+  a component instantiated N times.
+- **Playground and Outside Design as extensions of her creative personality**
+  — the place the maker side gets more room, precisely because the case
+  studies and core pages stay disciplined and product-first.
+- **"Precise underneath, expressive on top"** as the design-system principle:
+  tokens, grid, contrast, and structure stay rigorous; the expressive layer
+  (doodles, the italic accent word, hero interactions) sits on top of that
+  discipline rather than replacing it.
+- **Conversational hero structures** (e.g. "by day / by night") are allowed
+  when they serve the content — they should not become a gimmick repeated for
+  its own sake.
+- **Overall goal:** read as serious Staff-level product design *and*
+  unmistakably a creative human — both at once, not traded off against each
+  other.
+
+Density is editorial, not app-like: generous section rhythm (`--space-section`, up to 11rem), a 62ch reading measure for body copy, and display type sized in `vw` so headlines are allowed to overflow toward the viewport edge the way a poster's type would. The palette is not a light/dark pair but a sequence of eight named grounds (`ink`, `sand`, `bone`, `clay`, `sage`, `lilac`, `coral`, `charcoal`), each a full "page" of the broadside with its own day and night restatement — the visitor moves through the site the way they'd turn pages in a printed piece, and the fixed nav recolours itself to always match the page currently behind it.
 
 Confirmed rejection: no animation library, no glass/blur surfaces (the nav is explicitly solid for this reason — see its own comment in `Nav.astro`), no drop shadows anywhere in the system.
 
@@ -97,7 +135,7 @@ Confirmed rejection: no animation library, no glass/blur surfaces (the nav is ex
 
 ## Colors
 
-Eight named grounds, each a self-contained day/night pair. A section (`<Section theme="…">`) wears exactly one; the fixed nav reads which palette is behind it and recolours to match. Two of the eight (`sand`, `iris`) intentionally split display and body colour into two distinct tones because the display tone alone doesn't clear body-text contrast on that ground — never collapse those two into one.
+Eight named grounds, each a self-contained day/night pair. A section (`<Section theme="…">`) wears exactly one; the fixed nav reads which palette is behind it and recolours to match. One of the eight (`sand`) intentionally splits display and body colour into two distinct tones because the display tone alone doesn't clear body-text contrast on that ground — never collapse those two into one.
 
 ### Primary
 - **Ember** (`#e8613c` / clay's `#fa4a3c`): the site's one warm accent, used for focus rings, links, and the `ink`/`bone` accent role. Appears as a controlled ember-red across most grounds; `clay` and `coral` restate it as their own dominant hue rather than an accent.
@@ -173,6 +211,43 @@ Flat by construction. **The No-Shadow Rule.** No `box-shadow` exists anywhere in
 - **Media treatment:** image scales to `1.03` on hover (`--dur-hover`/`--ease-out`), the one hover motion a card gets
 - **Meta:** title at h3 scale with `--tracking-tight`, metric line in `--fg-dim` at a slightly reduced size — scope label above the title in `.u-label`
 
+### Hand-drawn margin notes (`CaseDoodle`)
+The one place the "maker in the texture" direction above becomes a real
+component. Seven small hand-drawn creatures, one per case-study section
+(`situation`, `scope`, `hard-call`, `team`, `craft`, `impact`, `reflection`),
+sitting above the section eyebrow in the body column.
+
+- **Margin note, not illustration set.** Sized `clamp(3rem, 4.5vw, 4rem)` —
+  bigger than the icon row it replaced (a character needs room to stand up
+  in), but it must never rival the section heading beneath it. This is the
+  "subtle" half of subtle-hand-drawn: personality through a small recurring
+  detail, not a showcase.
+- **Shared skeleton, not a picked-up icon set.** Every creature is the same
+  body-blob, two ring eyes, and two thin legs with kicked-out feet — only the
+  body and one prop change per section (boxed in for "scope," holding a
+  pencil for "craft," arms up for "impact"). That shared skeleton is the
+  "precise underneath" half of the principle: the imperfection reads as one
+  consistent hand because the underlying geometry is exact, not because the
+  lines are loose. An eighth creature must copy the legs/eyes geometry
+  exactly and vary only the body and prop, or it reads as a stray icon next
+  to the rest.
+- **Tokens, not hardcoded ink.** Every stroke is `currentColor`, so a
+  creature recolours with its band and needs no separate night-mode artwork;
+  the eye whites use `var(--bg)` to knock out lines passing behind them.
+  Consistent with **Rule 1** — no hardcoded colour, even in illustration.
+- **Decorative, not content.** `aria-hidden`, contributes nothing to the
+  section's accessible name — the scope/hard-call/impact language in the
+  copy carries the meaning; the creature is composition and personality on
+  top of it, never a substitute for it. This is the whole "product designer
+  first, maker in the texture" ordering in miniature.
+- **Recurring, not per-case.** The same seven characters repeat across all
+  three case studies, keyed by section `id` — "the hard call" is the same
+  character every time, so the set reads as one authored family rather than
+  a new illustration commissioned per project.
+- **Status:** built in `CaseDoodle.astro`, not yet imported into
+  `src/pages/work/[slug].astro`. Wiring it in is the next step for this
+  direction to actually reach the page — see CLAUDE.md.
+
 ### Navigation
 - **Style:** fixed, full-width, solid background (never translucent/blurred — a glass nav would be the one soft surface against an otherwise hard-edged system, and without an opaque background tall display type would scroll straight through the nav band)
 - **Recolouring:** the nav's own colours are driven by whichever `[data-theme]` band currently sits behind it, cross-fading on `--dur-hover`
@@ -194,6 +269,6 @@ Flat by construction. **The No-Shadow Rule.** No `box-shadow` exists anywhere in
 
 ### Don't:
 - **Don't** introduce a shadow, blur, or glass surface anywhere — the system's depth model is flat colour-ground changes only.
-- **Don't** collapse `sand`'s or `iris`'s two-tone (display/body) colour pairs into one value; the display tone alone fails body-text contrast on those grounds.
+- **Don't** collapse `sand`'s two-tone (display/body) colour pair into one value; the display tone alone fails body-text contrast on that ground.
 - **Don't** hardcode a hex, px, or `ms` value in a component — add a token to `tokens.css` first, even for a one-off, so the theme system doesn't silently stop recolouring that spot.
 - **Don't** treat the CaseGate/LockedGate password panels as real security in copy or implementation — they are a soft deterrent on a static site with no server.

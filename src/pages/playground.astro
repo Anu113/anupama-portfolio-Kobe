@@ -71,7 +71,7 @@ import { tiles } from '../data/play';
      the same header /work and /about carry. The script below sets opacity on
      this element, so it has to stay. */
   .playbed__inner {
-    padding-inline: var(--gutter);
+    padding-inline: var(--gutter-start) var(--gutter);
     opacity: 1;
     /* Short enough not to lag the scroll-linked value, long enough to smooth
        the one step it can take: the frame the stream caps on, where the
@@ -100,10 +100,15 @@ import { tiles } from '../data/play';
   /* Full-bleed, unlike every other page's content. The horizontal wrap needs
      the field to be at least as wide as the viewport — inside a 1200px
      column you'd be panning tiles through a window, and the seam between a
-     set and its twin would land on screen. */
+     set and its twin would land on screen.
+     The one inset it does take is the chrome rail: at ≥1200px the field
+     starts at --gutter-start (tokens.css), so tiles clip at the edge of the
+     fixed menu's columns instead of scrolling under it, the way the
+     reference's own playground grid starts clear of its sidebar. The pan
+     measures the field's own width, so the seam stays off screen. */
   .playstream__shell {
     max-width: none;
-    padding-inline: 0;
+    padding-inline: calc(var(--gutter-start) - var(--bleed-start)) 0;
   }
 
   /* The closing band is opaque, so it slides up over the heading and ends
