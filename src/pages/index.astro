@@ -396,7 +396,15 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        edge instead of each floating centred under a different width. */
     .hero__portrait { justify-content: flex-start; }
     .hero__row { flex-direction: column-reverse; align-items: flex-start; text-align: left; }
-    .hero__copy { display: flex; flex-direction: column; align-items: flex-start; }
+    /* width: 100% is load-bearing, not decorative — flex-direction: column
+       makes align-items the CROSS-axis (horizontal) sizing, and flex-start
+       (like the old `center` it replaced) sizes a flex item to fit-content
+       instead of stretching it to the row's full width. Without an
+       explicit width, .hero__line's own `max-width: 100%` below resolves
+       against that fit-content box, not the viewport, so at some
+       in-between widths the headline stopped wrapping at all and ran off
+       the right edge instead. */
+    .hero__copy { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
     .hero__portrait { align-self: flex-start; }
     .hero__line { max-width: 100%; }
     /* padding-top's clamp is tuned for desktop, where 26vh is a modest
