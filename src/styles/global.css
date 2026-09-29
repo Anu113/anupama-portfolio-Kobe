@@ -6,7 +6,20 @@
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+/* Page scale. The layout is composed for a ~1440x800 laptop, where the
+   hero fills the first screen exactly. On a taller screen every rem-sized
+   thing (type, spacing, the portrait) grows by the same factor, so a
+   1810x1300 monitor shows the laptop composition, larger, instead of the
+   same 800px block with empty screen under it. Not CSS `zoom`: that also
+   multiplies vw/svh, which the hero's height and the gutters use.
+   --page-scale is set by the inline script in Base.astro, which measures
+   the screen at 100% zoom so browser zoom still multiplies on top. 100%
+   keeps the visitor's own default font size as the base. */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  font-size: calc(100% * var(--page-scale, 1));
+}
 
 body {
   margin: 0;

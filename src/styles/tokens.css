@@ -104,6 +104,12 @@
   --space-band: clamp(4rem, 8vw, 7.5rem);
   --space-label: clamp(1rem, 2vw, 1.5rem);
   --space-case: clamp(3.5rem, 7vw, 6rem);
+  /* Hero → "Selected work", and that heading → its cards. The first is
+     about 1.5x the second so the heading reads as the cards' title, not
+     a caption on the hero. With the hero's own bottom padding the gap
+     above the heading is ~118px at 1440 (was 175, and 338 at 1920). */
+  --space-hero-work: clamp(3rem, 4.5vw, 4rem);
+  --space-head: clamp(3.5rem, 5.5vw, 5rem);
 
   /* The top bar is 64px tall on the reference. */
   --nav-h: 4rem;
@@ -149,7 +155,24 @@
 
   /* Home hero layout (index.astro, HeroIllustration.astro). */
   --hero-copy-w: clamp(22rem, 46vw, 50rem);
-  --hero-art-h: 31rem;
+  /* The band's top padding: the nav → headline gap (index.astro). */
+  --hero-pad-top: clamp(7rem, 26vh, 13rem);
+  /* How far the figure rises into that padding (up to 3rem, stopping
+     6rem under the nav). The figure grows by exactly this much, upward,
+     so it gets bigger without moving the headline, the CTAs or the
+     "Selected work" peek below them. Tied to the padding rather than to
+     viewport height, so a laptop with browser chrome gets it too. 6rem
+     of lift was tried and read too big. */
+  --hero-art-lift: clamp(0rem, calc(var(--hero-pad-top) - var(--nav-h) - 6rem), 3rem);
+  --hero-art-h: calc(31rem + var(--hero-art-lift));
+  /* Where the figure sits in the space right of the copy: 0 hugs the
+     copy, 0.5 centres, 1 pins to the right edge. Left of centre keeps
+     the gap to the text tight (~0.4x the figure's width) without the
+     figure having to be big to fill the space. */
+  --hero-art-bias: 0.35;
+  /* "Scroll" cue, centred at the hero's bottom edge (index.astro). 16px
+     up, as on alejandromejias.com.au. */
+  --hero-cue-offset: 1rem;
   --hero-art-ratio: 5 / 7;   /* the sprite frame, 700x980 (HeroIllustration.astro) */
   --hero-gap: 4rem;
   --hero-gap-stacked: 2rem;
