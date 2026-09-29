@@ -1,32 +1,23 @@
 ---
 /* Fixed site chrome: the name top-left, a thin top row at ≥1200px, and the
    Dock (primary navigation + preferences, see Dock.astro).
-     Name       At ≥1200px it's IdentityPrism, a small 3D box that turns
-                with the mouse wheel (see its header comment), 20px off the
-                corner. Below that it's the plain text wordmark, which
-                expands to the full name on hover. Either way it's the home
-                link, which is why the dock has no Index item.
-     Top row    ≥1200px only. Starts on the page's content edge (column 4 of
+     Name       "Anupama Mishra" as plain text, at every width. It's the
+                home link, which is why the dock has no Index item.
+     Top row    ≥1200px only. Starts on the page's content edge (column 3 of
                 a 16-column grid, --gutter-start in tokens.css) and spreads
                 "Working remotely · city, local time" and the enquiries email
                 out to the right margin, each on one line.
-     Dock       Vertical under the name at ≥1200px, horizontal at the bottom
-                below that. Page content starts at --gutter-start, clear of
-                it (see CHROME RAIL in tokens.css).
+     Dock       Horizontal, fixed bottom-centre, at every width (see
+                Dock.astro). Page content still starts at --gutter-start,
+                clear of the fixed name (see CHROME RAIL in tokens.css).
    The name and top row recolour to match whichever band is behind them
    (script below); the dock does the same for itself. */
-import IdentityPrism from './IdentityPrism.astro';
 import Dock from './Dock.astro';
 import { site } from '../data/site';
 const path = Astro.url.pathname;
 ---
 <header class="nav" data-theme="ink" id="site-nav">
-  <a class="nav__mark" href="/" aria-label="Anupama Mishra — home">
-    <span class="nav__mark-visual" aria-hidden="true"
-      ><span class="nav__mark-fixed">A</span><span class="nav__mark-suffix">.M</span><span class="nav__mark-rest">nupama Mishra</span></span
-    >
-    <IdentityPrism />
-  </a>
+  <a class="nav__mark" href="/" aria-label="Anupama Mishra — home">{site.name}</a>
 
   <div class="bar__status">
     <p class="bar__meta bar__clock">
@@ -53,41 +44,16 @@ const path = Astro.url.pathname;
     pointer-events: none;
   }
   .nav a { pointer-events: auto; }
-  /* The full name, set to match the link row rather than shout over it —
-     same size and tracking as the links, heavier weight to hold the corner. */
+  /* The full name at --step-name (16→24px, matched to hansonwu.com),
+     heavier weight to hold the corner. line-height is pinned to
+     --idmark-h so the dock can sit a fixed distance under it. */
   .nav__mark {
     font-family: var(--font-display);
-    font-size: var(--step-label);
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
+    font-size: var(--step-name);
+    line-height: var(--idmark-h);
     font-weight: 600;
     text-decoration: none; color: inherit;
     white-space: nowrap;
-  }
-  .nav__mark-visual { display: inline-flex; align-items: baseline; }
-  .nav__mark-rest {
-    display: inline-block;
-    overflow: hidden;
-    max-width: 0;
-    white-space: nowrap;
-    transition: max-width var(--dur-hover) var(--ease-out);
-  }
-  .nav__mark:hover .nav__mark-rest,
-  .nav__mark:focus-visible .nav__mark-rest {
-    max-width: 18ch;
-  }
-  .nav__mark-suffix {
-    display: inline-block;
-    overflow: hidden;
-    max-width: 3ch;
-    opacity: 0.45;
-    white-space: nowrap;
-    transition: max-width var(--dur-hover) var(--ease-out), opacity var(--dur-hover) var(--ease-out);
-  }
-  .nav__mark:hover .nav__mark-suffix,
-  .nav__mark:focus-visible .nav__mark-suffix {
-    max-width: 0;
-    opacity: 0;
   }
 
   /* --- The top row (≥1200px) ---------------------------------- */
@@ -98,16 +64,27 @@ const path = Astro.url.pathname;
       display: grid;
       grid-template-columns: repeat(var(--bar-cols), minmax(0, 1fr));
       column-gap: var(--bar-gap);
-      align-items: start;
+      /* baseline, not start — the name and the top row set very different
+         font sizes, so top-aligning them left the small status text
+         floating near the name's cap-height instead of sitting on the
+         same line as it. */
+      align-items: baseline;
       padding: var(--idmark-inset);
+      /* Extra breathing room above the name/clock/email row specifically —
+         the shared --idmark-inset read too tight against the viewport's
+         top edge for all three. */
+      padding-block-start: calc(var(--idmark-inset) + 0.75rem);
     }
     .nav__mark { display: block; grid-column: 1 / span 2; }
-    .nav__mark-visual { display: none; }
 
     /* Starts on the page's content edge, the same line as the hero
-       headline, and spreads its two items out to the right margin. */
+       headline. Both status items sit together at the right margin —
+       space-between used to fling the clock over to the content edge
+       and strand the email at the far right, reading as two unrelated
+       lines instead of one status row. */
     .bar__status {
-      display: flex; align-items: baseline; justify-content: space-between;
+      display: flex; align-items: baseline; justify-content: flex-end;
+      gap: clamp(1.5rem, 3vw, 3rem);
       grid-column: calc(var(--chrome-cols) + 1) / -1;
       grid-row: 1;
     }
@@ -145,9 +122,7 @@ const path = Astro.url.pathname;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .bar__mail a::after,
-    .nav__mark-rest,
-    .nav__mark-suffix { transition: none; }
+    .bar__mail a::after { transition: none; }
   }
 </style>
 

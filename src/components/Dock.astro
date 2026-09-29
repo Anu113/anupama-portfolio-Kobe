@@ -1,11 +1,11 @@
 ---
 /* Dock — the site's primary navigation and its preferences, recreated from
    cali.so's dock by explicit request ("exact icons and exact menu style").
-   Same shape, sizes, icons, hover tint, sliding active dot and tooltips;
-   the one change is orientation:
-     ≥1200px  vertical, fixed under the name in the top-left (the name box
-              is the home link, so the dock starts at Work)
-     <1200px  horizontal, fixed bottom-centre, the reference's own placement
+   Same shape, sizes, icons, hover tint, sliding active dot and tooltips.
+   Horizontal, fixed bottom-centre, the reference's own placement — at every
+   width, including ≥1200px (it was a vertical rail under the name there;
+   moved to match the reference's single placement instead of switching
+   orientation at a breakpoint).
    Items: Work, About, Playground, Contact, then Preferences, which opens a
    small panel with two switches:
      Theme  Light / System / Dark. System follows the OS setting (the site
@@ -115,22 +115,6 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
     --dock-ring: color-mix(in oklab, var(--fg) 12%, transparent);
     --dock-hover: color-mix(in oklab, var(--fg) 6%, transparent);
   }
-  /* Vertical, under the name. Top is the name box's bottom edge plus the
-     same breathing room the old menu had. */
-  @media (min-width: 1200px) {
-    .dock {
-      flex-direction: column;
-      left: var(--idmark-inset);
-      top: calc(var(--idmark-inset) + var(--idmark-h) + var(--dock-offset));
-      bottom: auto;
-      width: var(--dock-size);
-      height: auto;
-      transform: none;
-    }
-  }
-  @media (min-width: 2400px) {
-    .dock { top: calc(var(--idmark-inset) + var(--idmark-h) * var(--idmark-scale-xl) + var(--dock-offset)); }
-  }
 
   .dock__glass {
     position: absolute; inset: 0;
@@ -166,12 +150,9 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
     margin: 0 0.125rem;
     background: color-mix(in oklab, var(--fg) 16%, transparent);
   }
-  @media (min-width: 1200px) {
-    .dock__rule { width: var(--dock-rule); height: 1px; margin: 0.125rem 0; }
-  }
 
-  /* The "you are here" dot: under the icon on the horizontal dock, beside
-     it on the vertical one. Placed by the script; slides when it moves. */
+  /* The "you are here" dot, under the active icon. Placed by the script;
+     slides when it moves. */
   .dock__dot {
     position: absolute;
     left: 0; bottom: 8px;
@@ -184,16 +165,10 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
     transform: translate(calc(var(--dot-x, 0px) - 50%), 0);
     transition: transform var(--dur-dock-dot) var(--ease-swift), opacity var(--dur-dock) ease;
   }
-  @media (min-width: 1200px) {
-    .dock__dot {
-      left: auto; right: 8px; top: 0; bottom: auto;
-      transform: translate(0, calc(var(--dot-y, 0px) - 50%));
-    }
-  }
   .dock__dot[data-ready] { opacity: 1; }
   .dock__dot[data-instant] { transition: none; }
 
-  /* Tooltips: above the horizontal dock, to the right of the vertical one. */
+  /* Tooltips, above the dock. */
   .dock__tip {
     position: absolute;
     left: 50%; bottom: calc(100% + var(--dock-tip-offset));
@@ -211,29 +186,16 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
     pointer-events: none;
     transition: opacity var(--dur-dock) var(--ease-swift), transform var(--dur-dock) var(--ease-swift);
   }
-  @media (min-width: 1200px) {
-    .dock__tip {
-      left: calc(100% + var(--dock-tip-offset)); bottom: auto; top: 50%;
-      transform: translateY(-50%) scale(0.95);
-      transform-origin: left center;
-    }
-  }
   @media (hover: hover) and (pointer: fine) {
     .dock__item:hover .dock__tip { opacity: 1; transform: translateX(-50%) scale(1); }
   }
   .dock__item:focus-visible .dock__tip { opacity: 1; transform: translateX(-50%) scale(1); }
-  @media (min-width: 1200px) {
-    .dock__item:focus-visible .dock__tip { transform: translateY(-50%) scale(1); }
-  }
-  @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
-    .dock__item:hover .dock__tip { transform: translateY(-50%) scale(1); }
-  }
   .dock__item[aria-expanded='true'] .dock__tip { opacity: 0; }
 
   /* --- Preferences panel ---------------------------------------------- */
   .dock__prefs { position: relative; }
-  /* Above the horizontal dock, flush with its right end (the button is the
-     last item, so centring on it would run off a phone screen). */
+  /* Above the dock, flush with its right end (the button is the last item,
+     so centring on it would run off a phone screen). */
   .prefs {
     position: absolute;
     bottom: calc(100% + var(--dock-tip-offset) + var(--dock-pad));
@@ -246,14 +208,6 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
     box-shadow: 0 0 0 1px var(--dock-ring), var(--panel-shadow);
     transform-origin: bottom right;
     transition: opacity var(--dur-dock) var(--ease-swift), transform var(--dur-dock) var(--ease-swift);
-  }
-  @media (min-width: 1200px) {
-    .prefs {
-      bottom: calc(var(--dock-pad) * -1);
-      left: calc(100% + var(--dock-pad) + var(--dock-tip-offset));
-      right: auto;
-      transform-origin: left bottom;
-    }
   }
   .prefs[hidden] { display: block; visibility: hidden; opacity: 0; transform: scale(0.95); pointer-events: none; }
 
@@ -316,7 +270,6 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
   if (dock) {
     const items = [...dock.querySelectorAll<HTMLAnchorElement>('[data-dock-item]')];
     const dot = dock.querySelector<HTMLElement>('[data-dock-dot]')!;
-    const vertical = matchMedia('(min-width: 1200px)');
 
     // --- Active dot -------------------------------------------------------
     // Sits on the current page's item; slides to an item as it's clicked,
@@ -327,12 +280,11 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
       if (!el) { dot.removeAttribute('data-ready'); return; }
       if (instant) dot.setAttribute('data-instant', '');
       dot.style.setProperty('--dot-x', `${el.offsetLeft + el.offsetWidth / 2}px`);
-      dot.style.setProperty('--dot-y', `${el.offsetTop + el.offsetHeight / 2}px`);
       dot.setAttribute('data-ready', '');
       if (instant) requestAnimationFrame(() => requestAnimationFrame(() => dot.removeAttribute('data-instant')));
     };
     placeDot(active, true);
-    vertical.addEventListener('change', () => placeDot(active, true));
+    addEventListener('resize', () => placeDot(active, true));
     addEventListener('pageshow', (e) => { if (e.persisted) placeDot(Number(dock.dataset.active), true); });
 
     items.forEach((el, i) => {

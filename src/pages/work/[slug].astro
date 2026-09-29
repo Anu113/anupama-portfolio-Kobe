@@ -304,6 +304,15 @@ const topImpact = useRefLayout
   :global(.casepage) {
     padding-block-start: calc(var(--nav-h) + var(--space-band-tight));
     padding-block-end: var(--space-section);
+    /* Overrides .u-shell's asymmetric padding-inline (--gutter-start on the
+       left, to dodge the fixed name). Case content already clears the name
+       vertically via padding-block-start above, so it never sits beside it —
+       the asymmetric gutter was only ever needed there, and left .body's
+       margin-inline: auto centering in a box that wasn't actually centered
+       on the viewport, visibly shifted right. Symmetric --gutter here fixes
+       it for this page without touching .u-shell's default for pages that
+       still run content right up under the name (the home hero). */
+    padding-inline: var(--gutter);
   }
 
   .hero__eyebrow { margin: 0 0 1.25rem; color: var(--fg-dim); }
@@ -481,7 +490,12 @@ const topImpact = useRefLayout
   /* --- Next / footer -------------------------------------------------- */
   /* Centred on the band, matching the reference. :global because Section
      renders this band and the class doesn't carry this page's scope. */
-  :global(.casenext) { text-align: center; }
+  /* Same asymmetric-gutter override as .casepage above, and for the same
+     reason: this band's content is centred by text-align, which only
+     centres within its own box — a box still padded off-centre by
+     .u-shell's --gutter-start would visibly shift it right of viewport
+     centre. */
+  :global(.casenext) { text-align: center; padding-inline: var(--gutter); }
 
   /* One line: label above, title below, nothing else competing for the
      moment — see the header comment above the markup for why. */
