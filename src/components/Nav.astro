@@ -1,134 +1,213 @@
 ---
-/* Fixed site chrome: the name top-left, a thin top row at ≥1200px, and the
-   Dock (primary navigation + preferences, see Dock.astro).
-     Name       "Anupama Mishra" as plain text, at every width. It's the
-                home link, which is why the dock has no Index item.
-     Top row    ≥1200px only. Starts on the page's content edge (column 3 of
-                a 16-column grid, --gutter-start in tokens.css) and spreads
-                "Working remotely · city, local time" and the enquiries email
-                out to the right margin, each on one line.
-     Dock       Horizontal, fixed bottom-centre, at every width (see
-                Dock.astro). Page content still starts at --gutter-start,
-                clear of the fixed name (see CHROME RAIL in tokens.css).
-   The name and top row recolour to match whichever band is behind them
-   (script below); the dock does the same for itself. */
-import Dock from './Dock.astro';
+/* Site chrome: one bar across the top.
+     Name   "Anupama Mishra", top-left, alone. It's the home link, and
+            the one thing in the bar set larger and in ink.
+     Right  Everything else, tucked in one group against the right edge:
+            Work · About · Playground · Contact (12px, the label role), a
+            hairline, then the theme button. (Her location and time
+            live above the hero: LocalTime.astro.)
+   Below 900px the four links fold into a "Menu" button; the theme
+   button and Menu stay on the right. Menu opens the links as a panel
+   under the bar; Escape or a second press closes it and hands
+   focus back to the button.
+   Name and bar sit on the page's own --gutter, so they share one left
+   and one right edge with every band's content.
+
+   The theme button cycles System → Light → Dark, after carlthomasiv.com
+   (their three icons: a half-filled circle, a sun, a moon). The icon
+   shows the current mode; the label and tooltip say what the next press
+   does ("Switch to dark mode"). The choice is remembered; System (the
+   default) follows the visitor's OS, live. Base.astro applies it before
+   first paint. Changing icons: the old one leaves upward and the new
+   one rises from below, 8px each way.
+
+   Hides on scroll-down, returns on scroll-up. Transparent at the very
+   top, where it reads as part of the hero; slides away as soon as the
+   visitor scrolls down into content; comes back on any scroll up on a
+   solid strip of the band behind it, so it never sits on content
+   without a ground. Keyboard focus inside it, or an open menu, always
+   brings it back. The bar recolours to match whichever band is behind
+   it (script below).
+   Colour: the links and theme button sit in the grey (--fg-dim, the hero
+   bio's); the current page, and whatever's hovered or focused, turn to
+   ink. The current page is also underlined; hover/focus draws the same
+   underline in from the left.
+   Reduced motion: no slide, no underline draw, icons swap in place. */
 import { site } from '../data/site';
 const path = Astro.url.pathname;
+const links = [
+  { label: 'Work', href: '/work' },
+  { label: 'About', href: '/about' },
+  { label: 'Playground', href: '/playground' },
+  { label: 'Contact', href: '/contact' },
+];
+const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
 ---
 <header class="nav" data-theme="ink" id="site-nav">
   <a class="nav__mark" href="/" aria-label="Anupama Mishra — home">{site.name}</a>
 
-  <div class="bar__status">
-    <p class="bar__meta bar__clock">
-      <span>Working remotely</span>
-      <span class="bar__dim">{site.location}, <time data-bar-clock={site.timezone}>--:--</time></span>
-    </p>
+  <div class="nav__right">
+    <nav aria-label="Primary">
+      <ul class="nav__links" id="nav-links">
+        {links.map((l) => (
+          <li><a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a></li>
+        ))}
+      </ul>
+    </nav>
 
-    <p class="bar__meta bar__mail">
-      <span class="bar__dim">For inquiries</span>
-      <a href={`mailto:${site.email}`}>{site.email}</a>
-    </p>
+    <span class="nav__sep" aria-hidden="true"></span>
+
+    <!-- Theme: one button cycling System → Light → Dark, after
+         carlthomasiv.com (icons are theirs). The label says what the
+         next press does; the icon shows the current mode. -->
+    <button type="button" class="nav__icon" aria-label="Switch to light mode" title="Switch to light mode" data-nav-mode>
+      <span class="nav__glyph" data-glyph="system" data-state="on"><svg viewBox="0 0 15 15" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.5 1.4 A6.1 6.1 0 0 1 7.5 13.6 A6.1 6.1 0 0 1 7.5 1.4 Z M7.5 2.6 A4.9 4.9 0 0 0 7.5 12.4 A4.9 4.9 0 0 0 7.5 2.6 Z"/><path d="M7.5 2.6 A4.9 4.9 0 0 0 7.5 12.4 Z"/></svg></span>
+      <span class="nav__glyph" data-glyph="light"><svg viewBox="0 0 15 15" fill="none" aria-hidden="true"><circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M2.93 2.93l1.06 1.06M11.01 11.01l1.06 1.06M2.93 12.07l1.06-1.06M11.01 3.99l1.06-1.06" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>
+      <span class="nav__glyph" data-glyph="dark"><svg viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M7.5 1.5A6 6 0 1 0 13.5 7.5 4.5 4.5 0 0 1 7.5 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></span>
+    </button>
+
+    <button type="button" class="nav__menu" aria-expanded="false" aria-controls="nav-links" data-nav-menu>Menu</button>
   </div>
 </header>
-
-<Dock path={path} />
 
 <style>
   .nav {
     position: fixed; inset-inline: 0; top: 0; z-index: 50;
-    display: flex; align-items: center;
-    padding: 1.5rem var(--gutter);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--nav-group-gap);
+    padding: var(--nav-pad-block) var(--gutter);
     color: var(--fg);
     background: transparent;
     pointer-events: none;
+    transition: transform var(--dur-hover) var(--ease-out);
   }
-  .nav a { pointer-events: auto; }
-  /* The full name at --step-name (16→24px, matched to hansonwu.com),
-     heavier weight to hold the corner. line-height is pinned to
-     --idmark-h so the dock can sit a fixed distance under it. */
+  .nav.is-solid, .nav.is-open { background: var(--bg); }
+  .nav.is-hidden:not(:focus-within):not(.is-open) { transform: translateY(-100%); }
+  .nav a, .nav button { pointer-events: auto; }
+
+  /* The name: allierho's nav label, Manrope 600 14px uppercase. */
   .nav__mark {
-    font-family: var(--font-display);
-    font-size: var(--step-name);
-    line-height: var(--idmark-h);
-    font-weight: 600;
+    font-family: var(--font-sans);
+    font-weight: var(--weight-sans);
+    font-size: var(--step-nav);
+    line-height: 1;
+    letter-spacing: var(--tracking-nav);
+    text-transform: uppercase;
     text-decoration: none; color: inherit;
     white-space: nowrap;
   }
 
-  /* --- The top row (≥1200px) ---------------------------------- */
-  .bar__status { display: none; }
-
-  @media (min-width: 1200px) {
-    .nav {
-      display: grid;
-      grid-template-columns: repeat(var(--bar-cols), minmax(0, 1fr));
-      column-gap: var(--bar-gap);
-      /* baseline, not start — the name and the top row set very different
-         font sizes, so top-aligning them left the small status text
-         floating near the name's cap-height instead of sitting on the
-         same line as it. */
-      align-items: baseline;
-      padding: var(--idmark-inset);
-      /* Extra breathing room above the name/clock/email row specifically —
-         the shared --idmark-inset read too tight against the viewport's
-         top edge for all three. */
-      padding-block-start: calc(var(--idmark-inset) + 0.75rem);
-    }
-    .nav__mark { display: block; grid-column: 1 / span 2; }
-
-    /* Starts on the page's content edge, the same line as the hero
-       headline. Both status items sit together at the right margin —
-       space-between used to fling the clock over to the content edge
-       and strand the email at the far right, reading as two unrelated
-       lines instead of one status row. */
-    .bar__status {
-      display: flex; align-items: baseline; justify-content: flex-end;
-      gap: clamp(1.5rem, 3vw, 3rem);
-      grid-column: calc(var(--chrome-cols) + 1) / -1;
-      grid-row: 1;
-    }
-    .bar__meta { display: flex; gap: var(--bar-meta-gap); margin: 0; white-space: nowrap; }
+  .nav__right {
+    display: flex; align-items: center;
+    gap: var(--nav-group-gap);
+    color: var(--fg-dim);
   }
 
-  .bar__meta {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: var(--step-bar-meta);
-    line-height: 1.3;
-    letter-spacing: 0.01em;
-  }
-  .bar__dim { color: var(--fg-dim); }
-  .bar__clock time { font-variant-numeric: tabular-nums; }
-
-  .bar__mail a {
-    position: relative;
-    color: var(--fg);
+  /* Links and Menu: a step under the name, in the label role, so the
+     name leads and the menu reads as secondary. */
+  .nav__links a,
+  .nav__menu {
+    font-family: var(--font-sans);
+    font-weight: var(--weight-sans);
+    font-size: var(--step-label);
+    line-height: 1;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
     text-decoration: none;
+    white-space: nowrap;
   }
-  .bar__mail a::after {
+
+  /* Links sit in the grey; the one you're on, and the one you're
+     pointing at, turn to ink — so colour says "here" and "this one",
+     not just a softer tone. */
+  .nav__links { display: flex; gap: var(--nav-link-gap); list-style: none; margin: 0; padding: 0; }
+  .nav__links a {
+    position: relative; display: inline-block;
+    color: var(--fg-dim);
+    transition: color var(--dur-micro) ease;
+  }
+  .nav__links a:hover,
+  .nav__links a:focus-visible,
+  .nav__links a[aria-current='page'] { color: var(--fg); }
+  .nav__links a::after {
     content: '';
-    position: absolute; left: 0; right: 0; bottom: -2px;
+    position: absolute; left: 0; right: 0; bottom: -4px;
     height: 1px;
     background: currentColor;
     transform: scaleX(0);
     transform-origin: right;
     transition: transform var(--dur-hover) var(--ease-out);
   }
-  .bar__mail a:hover::after,
-  .bar__mail a:focus-visible::after {
-    transform: scaleX(1);
-    transform-origin: left;
+  .nav__links a:hover::after,
+  .nav__links a:focus-visible::after,
+  .nav__links a[aria-current='page']::after { transform: scaleX(1); transform-origin: left; }
+
+  .nav__sep { width: 1px; height: var(--nav-sep-h); background: var(--rule); }
+
+
+  /* The theme button. Colour is the only hover (grey to ink, as
+     carlthomasiv.com does it). The hit area bleeds into the bar's
+     padding so it doesn't make the bar taller, and a negative margin on
+     every side means the gaps either side are measured from the glyph,
+     not the hit area. */
+  .nav__icon {
+    position: relative;
+    width: var(--nav-icon-btn); height: var(--nav-icon-btn);
+    margin: calc((var(--nav-icon-btn) - var(--nav-icon)) / -2);
+    padding: 0; border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    overflow: hidden;
+    transition: color var(--dur-micro) ease;
+  }
+  .nav__icon:hover, .nav__icon:focus-visible { color: var(--fg); }
+  /* Three glyphs stacked in one box. The current one sits in place; the
+     one it replaces leaves upward, and the next arrives from below. */
+  .nav__glyph {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    opacity: 0;
+    transform: translateY(var(--nav-glyph-shift));
+    transition: opacity var(--dur-micro-move) var(--ease-out), transform var(--dur-micro-move) var(--ease-out);
+  }
+  .nav__glyph[data-state='on'] { opacity: 1; transform: none; }
+  .nav__glyph[data-state='out'] { transform: translateY(calc(var(--nav-glyph-shift) * -1)); }
+  .nav__glyph[data-snap] { transition: none; }
+  .nav__glyph svg { width: var(--nav-icon); height: var(--nav-icon); display: block; }
+
+  .nav__menu { display: none; background: none; border: 0; padding: 0; color: var(--fg); cursor: pointer; }
+
+  /* --- Below 900px: links fold into Menu ------------------------------ */
+  @media (max-width: 899.98px) {
+    .nav__sep { display: none; }
+    /* The folded list still sits in the row as an empty item, so the
+       group's gap is dropped here and each item carries its own. */
+    .nav__right { gap: 0; }
+    .nav__icon { margin-left: 0; }
+    .nav__menu { display: block; margin-left: var(--nav-group-gap-tight); }
+    /* The one list doubles as the menu panel: stacked under the bar on
+       the same solid ground, one link per row. */
+    .nav__links {
+      position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; gap: 0;
+      padding: 0 var(--gutter) var(--nav-pad-block);
+      background: var(--bg);
+      border-bottom: 1px solid var(--rule);
+    }
+    .nav:not(.is-open) .nav__links { display: none; }
+    .nav__links a { padding-block: 0.875rem; }
+    .nav__links a::after { bottom: 0.625rem; }
+    .nav__links li { pointer-events: auto; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .bar__mail a::after { transition: none; }
+    .nav, .nav__links a, .nav__links a::after, .nav__icon, .nav__glyph { transition: none; }
   }
 </style>
 
 <script>
-  // The name and top row adopt the theme of the section currently behind
-  // them. The dock runs the same check for its own position.
+  // The bar adopts the theme of the section currently behind it.
   const nav = document.getElementById('site-nav');
   const bands = [...document.querySelectorAll('[data-themeband]')];
   if (nav && bands.length) {
@@ -153,16 +232,106 @@ const path = Astro.url.pathname;
     addEventListener('theme:changed', pick);
   }
 
-  // Top-row clock: her time, not the visitor's.
-  const clock = document.querySelector<HTMLElement>('[data-bar-clock]');
-  if (clock?.dataset.barClock) {
-    const fmt = new Intl.DateTimeFormat('en-GB', {
-      timeZone: clock.dataset.barClock,
-      hour: '2-digit',
-      minute: '2-digit',
+  if (nav) {
+    // Hide on scroll-down, show on scroll-up (see the header comment).
+    // A few px of hysteresis so trackpad jitter doesn't flicker it.
+    let lastY = scrollY;
+    const follow = () => {
+      const y = scrollY;
+      const dy = y - lastY;
+      nav.classList.toggle('is-solid', y > 0);
+      if (y <= nav.offsetHeight) nav.classList.remove('is-hidden');
+      else if (dy > 4) nav.classList.add('is-hidden');
+      else if (dy < -4) nav.classList.remove('is-hidden');
+      if (Math.abs(dy) > 4 || y <= nav.offsetHeight) lastY = y;
+    };
+    follow();
+    addEventListener('scroll', follow, { passive: true });
+
+    // Menu (below 900px).
+    const btn = nav.querySelector<HTMLButtonElement>('[data-nav-menu]')!;
+    const setOpen = (open: boolean, restoreFocus = false) => {
+      nav.classList.toggle('is-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Close' : 'Menu';
+      if (!open && restoreFocus) btn.focus();
+    };
+    btn.addEventListener('click', () => { setOpen(!nav.classList.contains('is-open')); });
+    addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && nav.classList.contains('is-open')) setOpen(false, true);
     });
-    const paint = () => { clock.textContent = fmt.format(new Date()); };
-    paint();
-    setInterval(paint, 15000);
+    addEventListener('pointerdown', (e) => {
+      if (nav.classList.contains('is-open') && !nav.contains(e.target as Node)) setOpen(false);
+    });
+    matchMedia('(min-width: 900px)').addEventListener('change', (e) => { if (e.matches) setOpen(false); });
+
+    // Theme: System → Light → Dark → System. The preference is stored
+    // ('system' is stored as nothing); data-mode on <html> is what the
+    // tokens read. Base.astro applies both before first paint.
+    const btn2 = nav.querySelector<HTMLButtonElement>('[data-nav-mode]')!;
+    const root = document.documentElement;
+    const order = ['system', 'light', 'dark'] as const;
+    type Pref = (typeof order)[number];
+    const system = matchMedia('(prefers-color-scheme: dark)');
+    const glyphs = new Map(
+      [...btn2.querySelectorAll<HTMLElement>('[data-glyph]')].map((g) => [g.dataset.glyph as Pref, g]),
+    );
+    const readPref = (): Pref => {
+      const p = root.dataset.modePref;
+      return p === 'light' || p === 'dark' ? p : 'system';
+    };
+    const apply = (pref: Pref) => {
+      const mode = pref === 'system' ? (system.matches ? 'dark' : 'light') : pref;
+      const changed = root.dataset.mode !== mode;
+      root.dataset.mode = mode;
+      root.dataset.modePref = pref;
+      if (changed) dispatchEvent(new CustomEvent('theme:changed'));
+    };
+    const label = (pref: Pref) => {
+      const next = order[(order.indexOf(pref) + 1) % order.length];
+      const text = `Switch to ${next} mode`;
+      btn2.setAttribute('aria-label', text);
+      btn2.title = text;
+    };
+    const show = (pref: Pref, from?: Pref) => {
+      glyphs.forEach((g, key) => {
+        if (key === pref && !from) {
+          // First paint: straight into place, no entrance.
+          g.setAttribute('data-snap', '');
+          g.dataset.state = 'on';
+          void g.offsetWidth;
+          g.removeAttribute('data-snap');
+        } else if (key === pref) {
+          // Park it below without animating, then let it rise into place.
+          g.setAttribute('data-snap', '');
+          g.removeAttribute('data-state');
+          void g.offsetWidth;
+          g.removeAttribute('data-snap');
+          g.dataset.state = 'on';
+        } else if (key === from) {
+          g.dataset.state = 'out';
+        } else {
+          g.setAttribute('data-snap', '');
+          g.removeAttribute('data-state');
+          void g.offsetWidth;
+          g.removeAttribute('data-snap');
+        }
+      });
+    };
+
+    let pref = readPref();
+    show(pref); label(pref);
+    btn2.addEventListener('click', () => {
+      const prev = pref;
+      pref = order[(order.indexOf(pref) + 1) % order.length];
+      try {
+        if (pref === 'system') localStorage.removeItem('mode');
+        else localStorage.setItem('mode', pref);
+      } catch {}
+      apply(pref); show(pref, prev); label(pref);
+    });
+    // In System, follow the OS as it changes (e.g. at sunset).
+    system.addEventListener('change', () => { if (pref === 'system') apply('system'); });
   }
+
 </script>

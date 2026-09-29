@@ -197,3 +197,16 @@ export const archive = [
     href: '/work/mera-data',
     image: '/images/archive/mera-data.jpg' },
 ] as const;
+
+// Which project hue (tokens.css, PROJECT HUES) a company's screenshots sit
+// on. Keyed off the company name so work.ts, cases.ts and the archive all
+// agree without a per-entry field to keep in sync. Unknown companies get
+// no hue and fall back to the neutral --screen.
+export type Hue = 'okta' | 'paypal' | 'walmart';
+export function hueFor(company?: string): Hue | undefined {
+  const c = (company ?? '').toLowerCase();
+  if (c.startsWith('okta')) return 'okta';
+  if (c.startsWith('paypal')) return 'paypal';
+  if (c.startsWith('walmart')) return 'walmart';
+  return undefined;
+}

@@ -48,9 +48,9 @@ const { label, class: cls = '' } = Astro.props;
   /* Overrides .u-display, which is sized for the home-page hero. The scope
      hash gives these the specificity to win. */
   .phead__title {
-    font-size: var(--step-h1);
-    line-height: 1;
-    font-weight: 500;
+    font-size: var(--step-heading);
+    line-height: var(--leading-heading);
+    font-weight: var(--weight-serif);
     max-width: 18ch;
     margin: 0;
   }

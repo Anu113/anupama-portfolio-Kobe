@@ -1,6 +1,14 @@
 ---
-/* AskBubble.astro — Pixel, the little character that lives in Anupama's
-   laptop and answers the questions a visitor short on time came with.
+/* AskBubble.astro — Moss (named Pixel in the code: .pixel-*, the pixel*
+   exports and tokens), the tiny design critter who looks after Anupama's
+   portfolio and answers the questions a visitor short on time came with.
+   Art: Anupama's own watercolour and her 8s clip of him looking around,
+   public/images/moss/ — every frame cut out of its backdrop:
+   moss-sprite.webp (48 frames, 8x6 grid of 188x223 cells, 4px clear gutter
+   so scaled cells can't bleed; same frames-of-the-clip as hero-sprite),
+   moss-idle.webp (frame 0), moss-sm.webp (frame 0, panel avatar),
+   moss-head.webp (frame 0, header crop). Export recipe: see
+   scripts/moss-sprite.py.
 
    UX reason: a recruiter skimming for 60–90s can get the level, the scope
    and the role she wants in two clicks, and is sent straight to the case
@@ -9,14 +17,24 @@
    Interaction model follows ozgur.design's "Dobby" chat, studied screen by
    screen, with an original character, her own content and her palette:
 
-   LAUNCHER — a small translucent cream bubble resting just above the books
-     in HeroIllustration's sprite (tail at ~67% x / 41.5% y of the frame; the
-     table and books don't move across the scrub frames, so it stays put
-     while the portrait tracks the pointer). Anchored by `bottom` so it keeps
-     resting there when it widens. Holds only Pixel's face; a light sweeps
-     round its border (the one "click me" signal — the bubble itself never
-     moves). Hover/focus fills it solid and slides out "Short on time? Ask
-     Pixel"; touch devices skip the label. Hidden while the panel is open.
+   LAUNCHER — Moss himself, sitting on the books in HeroIllustration's
+     sprite (feet on the top book: x 565 / y 462 of the 700x980 frame; the
+     table and books don't move across the scrub frames, so he stays put
+     while the portrait tracks the pointer), with a small cream speech
+     bubble above his head. Moss and the bubble are one button. At rest the
+     bubble (hairline outline) holds three typing dots that pulse in turn,
+     and a light sweeps round its border — the "click me" signals; dots
+     and shimmer are the only motion at rest, both static under reduced
+     motion. Moss has no idle motion; he only answers the
+     pointer, in lockstep with the portrait: HeroIllustration dispatches
+     `hero-scrub:frame` whenever it draws a new frame and Moss shows the
+     same frame of his own clip (looking left, round, up, back), so the two
+     share one timeline and can't drift. Over Moss himself he also perks
+     up — grows a little from the feet — as the label slides out. Fine
+     pointers only (the sprite isn't even fetched otherwise); frame 0 and
+     no motion under reduced motion, like the portrait. Hover/focus fills it solid and
+     slides out "Ask Moss" to the left; touch devices skip the label. The
+     button's aria-label carries the full "Short on time? Ask Moss…". Hidden while the panel is open.
      Must sit inside a position:relative box the portrait's size
      (index.astro, .hero__stage).
 
@@ -26,15 +44,16 @@
      monospace throughout on purpose — Pixel's own register, unlike the rest
      of the site — with soft rounded corners (the site's own cards stay
      square). Sequence:
-       1. Pixel asleep (eyes shut, a drifting "z"), "Pixel is waking up…"
-       2. wakes: ^ ^ eyes, a wave, then types its hello; six starter chips
+       1. Moss dimmed, "Moss is looking up from the sketchbook…"
+       2. he brightens, gives a small hop and a wobble, then types his
+          hello; six starter chips
        3. a chip → earlier chips dim and lock, the question appears as the
-          visitor's bubble, the header Pixel sways while a rotating status
-          line shimmers ("Pixel is opening the file…"), then the reply types
+          visitor's bubble, the header Moss sways while a rotating status
+          line shimmers ("Moss is measuring the spacing…"), then the reply types
           out behind an orange caret, followed by link cards, exit buttons
           (email / LinkedIn) and follow-up chips
-       4. "That's all, thanks Pixel", ×, Escape or the scrim close it; the
-          next open starts fresh, asleep. ↺ restarts in place.
+       4. "That's all, thanks Moss", ×, Escape or the scrim close it; the
+          next open starts fresh. ↺ restarts in place.
    Content is the tree in src/data/ask.ts — no model, no backend.
 
    A11y: role=dialog + aria-modal, focus moves in on open, Tab is kept
@@ -49,26 +68,19 @@
 import { pixelTree, pixelStatus } from '../data/ask';
 const data = JSON.stringify({ tree: pixelTree, status: pixelStatus });
 
-// Pixel, drawn once. States are classes on the <svg>: is-asleep, is-happy,
-// is-waving, is-thinking (see the .pixel-cat rules).
-const cat = `<svg class="pixel-cat is-asleep" viewBox="0 0 104 100" aria-hidden="true"><g class="pc-whole">
-  <path class="pc-paw" d="M27 49c-8-4-15 0-15 7s7 10 14 6"/>
-  <circle class="pc-pad" cx="17.5" cy="56" r="2.2"/>
-  <path class="pc-body" d="M28 36c-2-8 6-12 10-7 10-4 22-3 31 1 4-5 12-2 10 6 6 13 8 30 4 42-2 8-10 10-22 10H36c-10 0-15-6-14-16 1-14 3-26 6-36z"/>
-  <g class="pc-paw-r"><path class="pc-paw" d="M79 69c8-3 14 2 13 9s-8 9-14 5"/><circle class="pc-pad" cx="86" cy="76.5" r="2.2"/></g>
-  <ellipse class="pc-blush" cx="36" cy="61" rx="4" ry="2.4"/><ellipse class="pc-blush" cx="70" cy="63" rx="4" ry="2.4"/>
-  <g class="pc-eyes"><circle class="pc-eye" cx="41" cy="53" r="2.8"/><circle class="pc-eye" cx="64" cy="55" r="2.8"/></g>
-  <path class="pc-line pc-eyes-shut" d="M37 54q4 3 8 0M60 56q4 3 8 0"/>
-  <path class="pc-line pc-eyes-happy" d="M37 55l4-4 4 4M60 57l4-4 4 4"/>
-  <path class="pc-line" d="M46 61q2.8 4 5.6 0q2.8 4 5.6 0"/>
-  <path class="pc-z" d="M84 22h7l-7 8h7"/>
-</g></svg>`;
-const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
+// Moss, as images. States are classes on .pixel-cat: is-asleep (dimmed,
+// before he "notices" you), is-happy (a hop), is-waving (a wobble),
+// is-thinking (a sway) — see the Moss rules at the end of the styles.
+const headCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-head.webp" width="128" height="128" alt="" decoding="async"></span>`;
+const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-sm.webp" width="240" height="287" alt="" decoding="async"></span>`;
 ---
 <div class="pixel-launch">
-  <button class="pixel-launcher" type="button" aria-expanded="false" aria-controls="pixel-panel" aria-haspopup="dialog">
-    <Fragment set:html={awake} />
-    <span class="pixel-launcher__label"><span><span>Short on time? <em>Ask Pixel</em></span></span></span>
+  <button class="pixel-launcher" type="button" aria-label="Short on time? Ask Moss about Anupama’s work" aria-expanded="false" aria-controls="pixel-panel" aria-haspopup="dialog">
+    <span class="pixel-launcher__bubble" aria-hidden="true">
+      <span class="pixel-launcher__label"><span><span>Ask Moss</span></span></span>
+      <span class="pixel-launcher__dots"><i></i><i></i><i></i></span>
+    </span>
+    <span class="pixel-launcher__moss"></span>
   </button>
 </div>
 
@@ -76,8 +88,8 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
 <div class="pixel pixel-panel" id="pixel-panel" role="dialog" aria-modal="true" aria-labelledby="pixel-title" data-pixel data-tree={data}>
   <div class="pixel-head">
     <p class="pixel-title" id="pixel-title">
-      <span class="pixel-head-cat"><Fragment set:html={cat} /></span>
-      Pixel <small>lives in Anupama’s laptop</small>
+      <span class="pixel-head-cat"><Fragment set:html={headCat} /></span>
+      <span class="pixel-name">Moss</span> <small>looks after this portfolio</small>
     </p>
     <div class="pixel-actions">
       <button class="pixel-icon-btn" type="button" data-pixel-reset aria-label="Start over">
@@ -90,7 +102,7 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
   </div>
   <div class="pixel-thread" data-pixel-thread></div>
   <div class="u-sr-only" aria-live="polite" data-pixel-live></div>
-  <template data-pixel-cat><Fragment set:html={cat} /></template>
+  <template data-pixel-cat><Fragment set:html={bodyCat} /></template>
 </div>
 
 <style is:global>
@@ -98,24 +110,57 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
 
   /* ================= launcher ================= */
   .pixel-launch {
-    position: absolute; left: 67%; bottom: 58.5%;
-    width: max-content;   /* an absolute box 67% in would otherwise shrink the label to fit */
+    /* Moss's feet on the top book: x 565, y 462 in HeroIllustration's
+       700x980 frame — left 565/700, bottom (980-462)/980. His cell is the
+       clip's full width (the ears reach both edges when he turns), so the
+       box is wider than he looks; the translate puts his feet, not the
+       box's centre, on that point — feet sit at 53.3% across and 4.6% up
+       from the cell's bottom. Floored so he stays findable on the small
+       mobile portrait. */
+    position: absolute; left: 80.7%; bottom: 52.6%;
+    width: max(21%, 3.25rem);
+    transform: translate(-53.3%, 4.6%);
     text-align: left;     /* the stacked hero centres its text */
     line-height: normal;
   }
   .pixel-launcher {
-    position: relative; display: inline-flex; align-items: center;
-    height: 2rem; padding: 0 0.4rem; border: 0; cursor: pointer;
+    position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer;
+    color: var(--ask-ink); font: 500 0.8125rem/1 var(--font-display);
+    transition: opacity var(--dur-pixel) var(--ease-pixel), transform var(--dur-pixel) var(--ease-pixel);
+  }
+  /* frame 0 until the sprite has decoded; then the frame the portrait is on */
+  .pixel-launcher__moss {
+    display: block; width: 100%; aspect-ratio: 188 / 223; transform-origin: 53.3% 95.4%;
+    background: url('/images/moss/moss-idle.webp') 0 0 / 100% 100% no-repeat;
+  }
+  .pixel-launcher__moss.has-sprite {
+    background-image: url('/images/moss/moss-sprite.webp');
+    background-size: 800% 600%;
+    background-position: calc(var(--moss-col, 0) * 100% / 7) calc(var(--moss-row, 0) * 100% / 5);
+  }
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) {
+    .pixel-launcher__moss { transition: scale var(--dur-pixel) var(--ease-pixel); }
+    .pixel-launcher:hover .pixel-launcher__moss, .pixel-launcher:focus-visible .pixel-launcher__moss { scale: 1.08; }
+  }
+  .pixel-launcher:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; border-radius: 4px; }
+  .pixel-launcher[aria-expanded='true'] { opacity: 0; transform: translateY(8px); pointer-events: none; }
+
+  /* the speech bubble: above his head, tail (the square corner) pointing
+     down at him. Anchored on its right edge and grows leftward when the
+     label slides out — Moss sits at the portrait's right edge, so there's
+     no room to the right, but the air above the laptop is empty. */
+  .pixel-launcher__bubble {
+    position: absolute; right: 30%; bottom: calc(100% - 0.35rem);
+    display: inline-flex; align-items: center; height: 1.75rem; padding: 0 0.55rem;
+    box-shadow: inset 0 0 0 1px var(--ask-outline);   /* inset, so the bubble keeps its size */
     background: color-mix(in srgb, var(--ask-bg) var(--ask-bubble-alpha), transparent);
     -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-    color: var(--ask-ink);
-    border-radius: 1rem 1rem 1rem 0.25rem;   /* the square corner is the tail, down into the books */
-    font: 500 0.8125rem/1 var(--font-display);
-    transition: background var(--dur-pixel) var(--ease-pixel), transform var(--dur-pixel) var(--ease-pixel), opacity var(--dur-pixel) var(--ease-pixel);
+    border-radius: 0.875rem 0.875rem 0.2rem 0.875rem;
+    width: max-content; white-space: nowrap;   /* an absolute box in a ~48px parent would otherwise shrink the label to nothing */
+    transition: background var(--dur-pixel) var(--ease-pixel), transform var(--dur-pixel) var(--ease-pixel);
   }
-  .pixel-launcher::before { content: ''; position: absolute; inset: -6px; }   /* ~44px hit area round the small shape */
   /* the shimmer: a bright arc sweeping round a 1.5px border */
-  .pixel-launcher::after {
+  .pixel-launcher__bubble::after {
     content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
     background: conic-gradient(from var(--pixel-ring), transparent 0deg, transparent 230deg, var(--pixel-accent) 300deg, var(--ask-bg) 330deg, transparent 360deg);
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
@@ -123,26 +168,30 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
     animation: pixel-ring var(--dur-pixel-ring) linear infinite;
   }
   @keyframes pixel-ring { to { --pixel-ring: 360deg; } }
-  .pixel-launcher:hover, .pixel-launcher:focus-visible { background: var(--ask-bg); transform: translateY(-1px); }
-  .pixel-launcher:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
-  .pixel-launcher[aria-expanded='true'] { opacity: 0; transform: translateY(8px); pointer-events: none; }
+  .pixel-launcher:hover .pixel-launcher__bubble, .pixel-launcher:focus-visible .pixel-launcher__bubble { background: var(--ask-bg); transform: translateY(-1px); }
 
-  .pixel-launcher .pixel-cat { width: 22px; height: 22px; flex: none; }
-  .pixel-launcher .pc-body { fill: none; stroke: var(--ask-ink); stroke-width: 3.2; stroke-linejoin: round; }
-  .pixel-launcher .pc-line { stroke: var(--ask-ink); }
-  .pixel-launcher .pc-eye { fill: var(--ask-ink); }
-  .pixel-launcher .pc-paw, .pixel-launcher .pc-pad, .pixel-launcher .pc-z { display: none; }
+  /* typing dots: Moss "has something to say" — a wave that pulses and
+     lifts each dot in turn. Static at full strength under reduced motion. */
+  .pixel-launcher__dots { display: inline-flex; align-items: center; gap: 3px; height: 8px; }
+  .pixel-launcher__dots i {
+    width: 4px; height: 4px; border-radius: 50%; background: currentColor;
+    animation: pixel-typing var(--dur-ask-typing) ease-in-out infinite;
+  }
+  .pixel-launcher__dots i:nth-child(2) { animation-delay: calc(var(--dur-ask-typing) * 0.15); }
+  .pixel-launcher__dots i:nth-child(3) { animation-delay: calc(var(--dur-ask-typing) * 0.3); }
+  @keyframes pixel-typing {
+    0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-2px); }
+  }
 
-  /* label: withheld at rest, revealed on hover/focus. Padding lives inside
-     the clipped box so the closed bubble is just the face. */
+  /* label: withheld at rest, revealed on hover/focus */
   .pixel-launcher__label { display: grid; grid-template-columns: 0fr; transition: grid-template-columns 400ms var(--ease-pixel); }
   .pixel-launcher__label > span { overflow: hidden; min-width: 0; white-space: nowrap; }
-  .pixel-launcher__label > span > span { display: inline-block; padding: 0 0.35rem 0 0.4rem; }
-  .pixel-launcher__label em { font-style: normal; opacity: 0.65; }
-  .pixel-launch:hover .pixel-launcher__label, .pixel-launcher:focus-visible .pixel-launcher__label { grid-template-columns: 1fr; }
+  .pixel-launcher__label > span > span { display: inline-block; padding: 0 0.45rem 0 0.15rem; }
+    .pixel-launcher:hover .pixel-launcher__label, .pixel-launcher:focus-visible .pixel-launcher__label { grid-template-columns: 1fr; }
   @media (hover: none) { .pixel-launcher__label { display: none; } }
 
-  /* ================= scrim + panel ================= */
+  /* ================= panel ================= */
   .pixel-scrim {
     position: fixed; inset: 0; z-index: 1000; background: var(--pixel-scrim);
     opacity: 0; pointer-events: none; transition: opacity var(--dur-pixel) var(--ease-pixel);
@@ -162,10 +211,11 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
   .pixel-panel.is-open { opacity: 1; transform: none; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 
   .pixel-head { flex: none; display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.1rem 1.1rem 1.4rem; border-bottom: 1px solid var(--pixel-rule); }
-  .pixel-title { display: flex; align-items: center; gap: 0.625rem; margin: 0; font: 500 1rem/1 var(--font-mono); }
-  .pixel-title small { font: 400 0.8125rem/1 var(--font-mono); color: var(--pixel-dim); }
+  .pixel-title { display: flex; align-items: center; gap: 0.625rem; margin: 0; font: 500 var(--pixel-step-title)/1 var(--font-mono); }
+  .pixel-name { white-space: nowrap; }   /* two words; the tagline wraps instead */
+  .pixel-title small { font: 400 var(--pixel-step-small)/1.3 var(--font-mono); color: var(--pixel-dim); }
   .pixel-head-cat { display: inline-flex; }
-  .pixel-head-cat .pixel-cat { width: 26px; height: 26px; }
+  .pixel-head-cat .pixel-cat { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; background: var(--ask-bg); }
   .pixel-actions { display: flex; gap: 0.25rem; }
   .pixel-icon-btn {
     width: 2rem; height: 2rem; display: grid; place-items: center; border: 0; border-radius: 50%;
@@ -178,21 +228,21 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
   .pixel-thread { flex: 1; display: flex; flex-direction: column; gap: 1rem; padding: 1.25rem 1.5rem 1.5rem; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
   .pixel-thread::-webkit-scrollbar { display: none; }
   .pixel-avatar { align-self: center; padding: 0.75rem 0; animation: pixel-rise var(--dur-pixel) var(--ease-pixel) both; }
-  .pixel-avatar .pixel-cat { width: 96px; height: 96px; }
+  .pixel-avatar .pixel-cat { width: 88px; }
 
-  .pixel-msg { max-width: 92%; font: 400 0.9375rem/1.6 var(--font-mono); animation: pixel-rise var(--dur-pixel) var(--ease-pixel) both; }
+  .pixel-msg { max-width: 92%; font: 400 var(--pixel-step-body)/var(--pixel-leading) var(--font-mono); animation: pixel-rise var(--dur-pixel) var(--ease-pixel) both; }
   .pixel-msg p { margin: 0 0 0.5rem; }
   .pixel-msg p:last-child { margin: 0; }
   .pixel-msg strong { font-weight: 500; color: var(--pixel-fg); }
   .pixel-msg--user {
-    align-self: flex-end; background: var(--pixel-high); font-size: 0.875rem; line-height: 1.45;
+    align-self: flex-end; background: var(--pixel-high); font-size: var(--pixel-step-body); line-height: 1.45;
     padding: 0.6rem 1rem; border-radius: var(--radius-pixel-msg) var(--radius-pixel-msg) 6px var(--radius-pixel-msg);
   }
   .pixel-msg--bot { align-self: flex-start; }
   @keyframes pixel-rise { from { opacity: 0; transform: translateY(6px); } }
 
   /* status: dots + a shimmering, rotating line */
-  .pixel-status { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; line-height: 1; color: var(--pixel-dim); white-space: nowrap; }
+  .pixel-status { display: inline-flex; align-items: center; gap: 0.5rem; font-size: var(--pixel-step-small); line-height: 1; color: var(--pixel-dim); white-space: nowrap; }
   .pixel-status__dots { display: inline-flex; gap: 3px; }
   .pixel-status__dots i { width: 4px; height: 4px; border-radius: 50%; background: var(--pixel-dim); animation: pixel-blink 1.2s infinite; }
   .pixel-status__dots i:nth-child(2) { animation-delay: 0.2s; }
@@ -219,20 +269,20 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
   }
   .pixel-card:hover { border-color: var(--pixel-accent); background: var(--pixel-high); }
   .pixel-card__label { font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--pixel-dim); margin-bottom: 0.35rem; }
-  .pixel-card__title { color: var(--pixel-fg); font-size: 0.9375rem; font-weight: 500; line-height: 1.35; }
-  .pixel-card__sub { color: var(--pixel-dim); font-size: 0.8125rem; margin-top: 0.15rem; }
+  .pixel-card__title { color: var(--pixel-fg); font-size: var(--pixel-step-body); font-weight: 500; line-height: 1.35; }
+  .pixel-card__sub { color: var(--pixel-dim); font-size: var(--pixel-step-small); margin-top: 0.15rem; }
 
   .pixel-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; animation: pixel-rise var(--dur-pixel) var(--ease-pixel) both; }
   .pixel-chip {
     display: inline-block; padding: 0.5rem 0.9rem; border: 1px solid var(--pixel-rule-strong); border-radius: var(--radius-pill);
-    background: none; color: var(--pixel-fg); font: 400 0.8125rem/1.3 var(--font-mono); text-decoration: none; cursor: pointer;
+    background: none; color: var(--pixel-fg); font: 400 var(--pixel-step-small)/1.3 var(--font-mono); text-decoration: none; cursor: pointer;
     transition: background var(--dur-pixel) var(--ease-pixel), border-color var(--dur-pixel) var(--ease-pixel);
   }
   .pixel-chip:hover { border-color: var(--pixel-fg); background: var(--pixel-high); }
   /* exits: filled like the site's primary button */
   .pixel-chip--exit {
     background: var(--pixel-fg); border-color: var(--pixel-fg); color: var(--pixel-bg);
-    font-size: 0.75rem; font-weight: 500; letter-spacing: var(--tracking-label); text-transform: uppercase; padding: 0.65rem 1.15rem;
+    font-size: var(--pixel-step-small); font-weight: 500; letter-spacing: var(--tracking-label); text-transform: uppercase; padding: 0.65rem 1.15rem;
   }
   .pixel-chip--exit:hover { background: var(--pixel-fg); opacity: 0.86; }
   .pixel-chips.is-done .pixel-chip { opacity: 0.35; pointer-events: none; }
@@ -241,38 +291,23 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
 
   @media (max-width: 640px) {
     .pixel-panel { left: 0; right: 0; bottom: 0; width: 100%; height: 88dvh; border-radius: var(--radius-pixel-panel) var(--radius-pixel-panel) 0 0; transform: translateY(24px); }
-    .pixel-chip { padding: 0.65rem 1rem; font-size: 0.9375rem; }
+    .pixel-chip { padding: 0.7rem 1rem; }   /* same size as desktop, taller tap target */
+    .pixel-thread { padding-inline: 1.25rem; }
   }
 
-  /* ================= Pixel ================= */
-  .pixel-cat { overflow: visible; }
-  .pixel-panel .pc-body, .pixel-panel .pc-paw { fill: var(--pixel-bg); stroke: var(--pixel-fg); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
-  .pc-line { fill: none; stroke: var(--pixel-fg); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-  .pc-eye { fill: var(--pixel-fg); }
-  .pc-pad { fill: var(--pixel-pad); }
-  .pc-blush { fill: var(--pixel-pad); opacity: 0.45; }
-  .pc-z { fill: none; stroke: var(--pixel-dim); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
-  .pc-whole { transform-origin: 52px 88px; transform-box: view-box; }
-  .pc-paw-r { transform-origin: 80px 70px; transform-box: view-box; }
-  .pc-eyes { transform-origin: 52px 53px; transform-box: view-box; animation: pixel-cat-blink 4.2s infinite; }
-  .pc-eyes-shut, .pc-eyes-happy { opacity: 0; }
-  .pc-paw { transition: transform 0.35s var(--ease-pixel), opacity var(--dur-pixel) var(--ease-pixel); }
-  @keyframes pixel-cat-blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
-
-  .pixel-cat.is-asleep .pc-eyes { opacity: 0; animation: none; }
-  .pixel-cat.is-asleep .pc-eyes-shut { opacity: 1; }
-  .pixel-cat.is-asleep .pc-paw { opacity: 0; transform: translateY(10px); }
-  .pixel-cat.is-asleep .pc-z { animation: pixel-drift 2.4s ease-in-out infinite; }
-  @keyframes pixel-drift { 0% { opacity: 0; transform: translate(0, 4px); } 30%, 70% { opacity: 1; } 100% { opacity: 0; transform: translate(4px, -6px); } }
-  .pixel-cat.is-happy .pc-eyes { opacity: 0; animation: none; }
-  .pixel-cat.is-happy .pc-eyes-happy { opacity: 1; }
-  .pixel-cat.is-waving .pc-paw-r { animation: pixel-wave 0.5s ease-in-out 3 alternate; }
-  @keyframes pixel-wave { from { transform: rotate(-12deg); } to { transform: rotate(18deg); } }
-  .pixel-cat.is-thinking .pc-whole { animation: pixel-tilt 1.6s ease-in-out infinite; }
-  @keyframes pixel-tilt { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+  /* ================= Moss ================= */
+  .pixel-cat { display: block; transform-origin: 50% 100%; transition: opacity 0.4s var(--ease-pixel), filter 0.4s var(--ease-pixel); }
+  .pixel-cat img { display: block; width: 100%; height: auto; }
+  .pixel-cat.is-asleep { opacity: 0.55; filter: saturate(0.4); }
+  .pixel-cat.is-happy { animation: pixel-hop 0.5s var(--ease-pixel); }
+  @keyframes pixel-hop { 40% { transform: translateY(-6%); } }
+  .pixel-cat.is-waving { animation: pixel-wave 0.4s ease-in-out 4 alternate; }
+  @keyframes pixel-wave { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+  .pixel-cat.is-thinking { animation: pixel-tilt 1.6s ease-in-out infinite; }
+  @keyframes pixel-tilt { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
 
   @media (prefers-reduced-motion: reduce) {
-    .pixel-launcher, .pixel-launcher::after, .pixel-launcher__label, .pixel-scrim, .pixel-panel,
+    .pixel-launcher, .pixel-launcher__bubble, .pixel-launcher__bubble::after, .pixel-launcher__label, .pixel-launcher__dots i, .pixel-scrim, .pixel-panel,
     .pixel-panel *, .pixel-cat, .pixel-cat * { animation: none !important; transition: none !important; }
     .pixel-shimmer { color: var(--pixel-dim); background: none; }
   }
@@ -287,6 +322,26 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
   const launcher = document.querySelector<HTMLButtonElement>('.pixel-launcher');
   const scrim = document.querySelector<HTMLElement>('[data-pixel-scrim]');
 
+  // Moss plays the frame the portrait is on (HeroIllustration dispatches
+  // `hero-scrub:frame`); both clips are the same 48 frames of an 8s, 24fps
+  // timeline. The sprite is only fetched where the portrait scrubs — the
+  // same fine-pointer, full-motion test HeroIllustration uses — and is
+  // swapped in once decoded, so he never flashes blank.
+  const stage = launcher?.closest<HTMLElement>('.hero__stage');
+  const moss = launcher?.querySelector<HTMLElement>('.pixel-launcher__moss');
+  if (stage && moss && !matchMedia('(hover: none), (pointer: coarse)').matches
+      && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const COLS = 8;
+    const sprite = new Image();
+    sprite.src = '/images/moss/moss-sprite.webp';
+    sprite.decode().then(() => moss.classList.add('has-sprite')).catch(() => {});
+    stage.addEventListener('hero-scrub:frame', (e) => {
+      const { frame } = (e as CustomEvent<{ frame: number }>).detail;
+      moss.style.setProperty('--moss-col', String(frame % COLS));
+      moss.style.setProperty('--moss-row', String(Math.floor(frame / COLS)));
+    });
+  }
+
   if (panel && launcher && scrim) {
     // Re-parent so no transformed ancestor (e.g. Reveal) can trap position:fixed.
     document.body.append(scrim, panel);
@@ -295,7 +350,7 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
     const thread = panel.querySelector<HTMLElement>('[data-pixel-thread]')!;
     const live = panel.querySelector<HTMLElement>('[data-pixel-live]')!;
     const catTpl = panel.querySelector<HTMLTemplateElement>('[data-pixel-cat]')!;
-    const head = panel.querySelector<SVGElement>('.pixel-head-cat .pixel-cat')!;
+    const head = panel.querySelector<HTMLElement>('.pixel-head-cat .pixel-cat')!;
     const closeBtn = panel.querySelector<HTMLButtonElement>('[data-pixel-close]')!;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const wait = (ms: number) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
@@ -417,7 +472,7 @@ const awake = cat.replace('pixel-cat is-asleep', 'pixel-cat');
       const big = av.querySelector('.pixel-cat')!;
       thread.append(av);
       const wake = el('div', 'pixel-msg pixel-msg--bot');
-      wake.append(statusEl('Pixel is waking up…'));
+      wake.append(statusEl('Moss is looking up from the sketchbook…'));
       thread.append(wake);
       await wait(1300);
       if (id !== run) return;

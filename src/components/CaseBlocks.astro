@@ -111,10 +111,10 @@ const { blocks } = Astro.props;
     gap: 2rem var(--gutter);
   }
   .point__title {
-    font-family: var(--font-display);
-    font-size: var(--step-h3);
-    font-weight: 500;
-    letter-spacing: var(--tracking-tight);
+    font-family: var(--font-serif);
+    font-size: var(--step-title);
+    font-weight: var(--weight-serif);
+    letter-spacing: var(--tracking-serif);
     line-height: 1.2;
     margin: 0 0 0.6rem;
     padding-top: 1rem;
@@ -135,8 +135,8 @@ const { blocks } = Astro.props;
   }
   .row:last-child { border-bottom: 1px solid var(--rule); }
   .row__term {
-    font-family: var(--font-display);
-    font-weight: 600;
+    font-family: var(--font-sans);
+    font-weight: var(--weight-sans);
     font-size: var(--step-label);
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
@@ -168,7 +168,7 @@ const { blocks } = Astro.props;
   .fig__cap {
     margin-top: 1rem;
     max-width: var(--measure);
-    font-size: var(--step-small);
+    font-size: var(--step-body);
     line-height: 1.6;
     color: var(--fg-dim);
   }
@@ -180,11 +180,11 @@ const { blocks } = Astro.props;
     padding-inline-start: clamp(1.25rem, 3vw, 2.5rem);
   }
   .quote p {
-    font-family: var(--font-accent);
+    font-family: var(--font-serif); font-weight: var(--weight-serif);
     font-style: italic;
-    font-size: var(--step-h2);
+    font-size: var(--step-heading);
     line-height: 1.2;
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-serif);
     margin: 0;
     max-width: 24ch;
     color: var(--fg);
@@ -201,16 +201,16 @@ const { blocks } = Astro.props;
   }
   .metric { border-top: 1px solid var(--rule); padding-top: 1rem; }
   .metric__value {
-    font-family: var(--font-display);
-    font-size: var(--step-h1);
-    font-weight: 600;
-    letter-spacing: var(--tracking-display);
+    font-family: var(--font-serif);
+    font-size: var(--step-heading);
+    font-weight: var(--weight-serif);
+    letter-spacing: var(--tracking-serif);
     line-height: 1;
   }
   .metric__label {
     margin: 0.75rem 0 0;
     color: var(--fg-dim);
-    font-size: var(--step-small);
+    font-size: var(--step-body);
     line-height: 1.5;
     text-wrap: pretty;
   }

@@ -33,8 +33,8 @@ import CaseBlocks from '../../components/CaseBlocks.astro';
 import CaseGate from '../../components/CaseGate.astro';
 import LockedGate from '../../components/LockedGate.astro';
 import LockIcon from '../../components/LockIcon.astro';
-import CaseDoodle from '../../components/CaseDoodle.astro';
 import { cases, caseBySlug } from '../../data/cases';
+import { hueFor } from '../../data/work';
 
 export function getStaticPaths() {
   return cases.map((c) => ({ params: { slug: c.slug }, props: { study: c } }));
@@ -160,7 +160,7 @@ const topImpact = useRefLayout
           </Reveal>
         )}
         <Reveal delay={240}>
-          <div class="hero__frame">
+          <div class="hero__frame" data-hue={hueFor(study.company) ?? ''}>
             <img src={study.hero.src} alt={study.hero.alt} decoding="async" />
           </div>
         </Reveal>
@@ -212,7 +212,6 @@ const topImpact = useRefLayout
         {openSections.map((s, i) => (
           <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
             <Reveal>
-              <CaseDoodle name={s.id} />
               {/* Numbered eyebrow — blingbling.studio's "01 / MY ROLE"
                   treatment. Number is decorative (aria-hidden); the label
                   underneath still reads as the section name to a screen
@@ -250,7 +249,6 @@ const topImpact = useRefLayout
               {gatedSections.map((s) => (
                 <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
                   <Reveal>
-                    <CaseDoodle name={s.id} />
                     <p class="u-label cs__label">{s.label}</p>
                     <h2 class="cs__head" id={`${s.id}-h`}>{s.heading}</h2>
                   </Reveal>
@@ -317,11 +315,11 @@ const topImpact = useRefLayout
 
   .hero__eyebrow { margin: 0 0 1.25rem; color: var(--fg-dim); }
   .hero__title {
-    font-family: var(--font-display);
-    font-size: var(--step-h1);
+    font-family: var(--font-serif);
+    font-size: var(--step-heading);
     line-height: 1;
-    letter-spacing: var(--tracking-display);
-    font-weight: 500;
+    letter-spacing: var(--tracking-serif);
+    font-weight: var(--weight-serif);
     margin: 0;
     /* No max-width: column 1 of the lede grid bounds it, which is what
        makes the title and the description beneath it one column. */
@@ -358,15 +356,21 @@ const topImpact = useRefLayout
      (global.css) — this rule only keeps the grid placement. */
   .lede__cta { justify-self: end; align-self: start; white-space: nowrap; }
 
+  /* The cover sits on the company's project hue (tokens.css, PROJECT
+     HUES) — the same colour as its card on the home page and /work, so
+     the page you land on visibly matches the card you clicked. The image
+     is contained inside a margin of that colour rather than cropped to
+     cover it, the same "wall, not a picture" treatment as ProjectCard. */
   .hero__frame {
-    background: var(--screen);
+    background: var(--hue);
     /* Panoramic on purpose — 16/7 keeps the title, lede and image inside
        the first screen on a laptop now that the lede sits above it. */
     aspect-ratio: 16 / 7;
     overflow: hidden;
+    padding: clamp(1.25rem, 3vw, 2.5rem);
     margin-top: clamp(2rem, 4vw, 3rem);
   }
-  .hero__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero__frame img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
   /* The meta row: Role first, then this case's own fields. No divider —
      the image above and the whitespace here already separate it from what
@@ -387,7 +391,7 @@ const topImpact = useRefLayout
   }
   .meta__cell { min-width: 0; }
   .meta__label { margin: 0 0 0.5rem; }
-  .meta__value { margin: 0; font-weight: 500; text-wrap: pretty; }
+  .meta__value { margin: 0; font-weight: var(--weight-sans); text-wrap: pretty; }
 
   /* --- PROTOTYPE banner: sidebar meta -----------------------------------
      blingbling.studio/work/alfafrens puts Role/Team/Partners/Timeline in a
@@ -426,16 +430,16 @@ const topImpact = useRefLayout
   }
   .impact-band__stat { border-top: 1px solid var(--rule); padding-top: 1rem; }
   .impact-band__value {
-    font-family: var(--font-display);
-    font-size: var(--step-h1);
-    font-weight: 600;
-    letter-spacing: var(--tracking-display);
+    font-family: var(--font-serif);
+    font-size: var(--step-heading);
+    font-weight: var(--weight-serif);
+    letter-spacing: var(--tracking-serif);
     line-height: 1;
   }
   .impact-band__desc {
     margin: 0.75rem 0 0;
     color: var(--fg-dim);
-    font-size: var(--step-small);
+    font-size: var(--step-body);
     line-height: 1.5;
     text-wrap: pretty;
   }
@@ -462,18 +466,18 @@ const topImpact = useRefLayout
      number on its own line, larger and bolder than the label under it. */
   .cs__label--numbered { display: flex; flex-direction: column; gap: 0.5rem; }
   .cs__num {
-    font-family: var(--font-display);
-    font-size: var(--step-h3);
-    font-weight: 500;
-    letter-spacing: var(--tracking-display);
+    font-family: var(--font-serif);
+    font-size: var(--step-title);
+    font-weight: var(--weight-serif);
+    letter-spacing: var(--tracking-serif);
     color: var(--fg-dim);
   }
   .cs__head {
-    font-family: var(--font-display);
-    font-size: var(--step-h2);
+    font-family: var(--font-serif);
+    font-size: var(--step-heading);
     line-height: 1.1;
-    letter-spacing: var(--tracking-display);
-    font-weight: 500;
+    letter-spacing: var(--tracking-serif);
+    font-weight: var(--weight-serif);
     margin: 0;
     max-width: 26ch;
     text-wrap: balance;
@@ -510,11 +514,11 @@ const topImpact = useRefLayout
     color: var(--fg);
     margin-top: 0.75rem;
     max-width: 28ch;
-    font-family: var(--font-accent);
+    font-family: var(--font-serif); font-weight: var(--weight-serif);
     font-style: italic;
-    font-size: var(--step-h2);
+    font-size: var(--step-heading);
     line-height: 1.15;
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-serif);
   }
   .next__lock { flex: 0 0 auto; }
 
@@ -535,8 +539,8 @@ const topImpact = useRefLayout
     transform: translate(calc(var(--peek-x, 0px) - 50%), calc(var(--peek-y, 0px) - 50%));
     background: var(--fg);
     color: var(--bg);
-    font-size: var(--step-pill);
-    font-weight: 600;
+    font-size: var(--step-label);
+    font-weight: var(--weight-sans);
     white-space: nowrap;
     padding: 0.4rem 0.85rem;
     border-radius: 999px;
