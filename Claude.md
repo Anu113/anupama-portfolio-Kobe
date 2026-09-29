@@ -330,13 +330,14 @@ Second: a `class` passed to `<Section>` does **not** carry the page's scope
 hash, so a rule targeting the band itself must be wrapped in `:global()`.
 Rules targeting elements written in the page file scope normally.
 
-Third: at ≥1200px the name and, under it, the nav dock are fixed in the
-top-left, in the bar grid's first two columns. Page
-content must start at `--gutter-start`, not `--gutter`, on the left (see
-CHROME RAIL in `tokens.css`); `.u-shell` and so every `<Section>` already
-does. Anything that pads itself uses `padding-inline: var(--gutter-start)
-var(--gutter)`, and anything that bleeds left uses `--bleed-start`, never a
-negative `--gutter`. Otherwise it will run under the dock.
+Third: the page has one content edge, `--gutter`, on both sides, and it
+grows past `--shell-max` so content centres on very wide screens (see
+CONTENT EDGE in `tokens.css`). The nav hides on scroll-down and returns
+on a solid strip on scroll-up, so nothing scrolls under a fixed name and
+there's no left rail any more. `--gutter-start` / `--bleed-start` still
+exist because many components read them, but both equal `--gutter` now.
+Don't reintroduce a per-component max-width or a separate left edge;
+that's what put the hero, the name and the cards on three different lines.
 
 ## Commands
 

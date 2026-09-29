@@ -3,7 +3,8 @@
    Ported from meagandurlak.com/landing/js/cursor-line.js, whose technique
    I read directly rather than guessing from frames. Same model, same
    constants; the only change is that colour is read per band because this
-   site has seven palettes where the reference has one.
+   site has seven palettes where the reference has one (a band's --trail,
+   else its --fg — see recolour()).
 
    The model is a SPRING CHAIN, not a path history. Twelve points: the
    head eases toward the cursor, and each point eases toward the one ahead
@@ -110,13 +111,16 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
     };
 
     // The reference reads --fg off the root because it has one palette.
-    // Here the line wears the display colour of the band it's over, so it
-    // stays legible across all seven.
+    // Here the line wears the colour of the band it's over, so it stays
+    // legible across all seven: the band's --trail if it sets one (the
+    // day-mode white band does, so the line isn't drawn in near-black —
+    // see tokens.css), otherwise its --fg.
     const recolour = (y) => {
       for (const b of bands) {
         const r = b.getBoundingClientRect();
         if (r.top <= y && r.bottom > y) {
-          const v = getComputedStyle(b).getPropertyValue('--fg').trim();
+          const cs = getComputedStyle(b);
+          const v = cs.getPropertyValue('--trail').trim() || cs.getPropertyValue('--fg').trim();
           if (v) colour = v;
           return;
         }
@@ -281,5 +285,7 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
     document.documentElement.addEventListener('mouseleave', onLeave);
     // A scroll moves the bands under a stationary cursor.
     addEventListener('scroll', () => recolour(mouse.y), { passive: true });
+    // Day/night flips every band's palette under a stationary cursor too.
+    addEventListener('theme:changed', () => recolour(mouse.y));
   })();
 </script>

@@ -79,8 +79,8 @@ body {
 .u-measure { max-width: var(--measure); }
 
 /* --- Layout ----------------------------------------------- */
-/* Left side reads --gutter-start so content clears the fixed menu at ≥1200px
-   (see CHROME RAIL in tokens.css); right side stays --gutter. */
+/* --gutter-start and --gutter are the same value now: one edge on both
+   sides (see CONTENT EDGE in tokens.css). */
 .u-shell { padding-inline: var(--gutter-start) var(--gutter); }
 .u-section { padding-block: var(--space-section); }
 
@@ -106,7 +106,7 @@ body {
   justify-content: center;
   gap: 0.5em;
   font-family: var(--font-display);
-  font-size: var(--step-label);
+  font-size: var(--step-button);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);

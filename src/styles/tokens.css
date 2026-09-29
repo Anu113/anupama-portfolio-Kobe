@@ -35,6 +35,9 @@
                                 for uppercase eyebrows only; at 0.72rem it's
                                 too small for a sentence. */
   --step-label: 0.72rem;
+  /* Button labels (.btn, global.css). Were on --step-label, which left
+     every CTA's text smaller than the copy it sits under. */
+  --step-button: 0.8125rem;
   /* The card hover pill (HoverLabel.astro) — smaller than an eyebrow since
      it's a floating cursor-follow chip, not copy sitting next to other
      text that needs to hold its own size. */
@@ -61,7 +64,17 @@
   /* --- SPACE -------------------------------------------- */
   --space-section: clamp(5rem, 12vw, 11rem);
   --space-band-tight: clamp(2rem, 4vw, 3.5rem);  /* band that sits under its own heading */
-  --gutter: clamp(1.25rem, 4vw, 4rem);
+  /* Home page rhythm, two steps: --space-band above and below every band
+     (the same value both ends, so each colour change sits in equal
+     space), --space-label between a band's eyebrow label and the content
+     it heads. */
+  --space-band: clamp(4rem, 8vw, 7.5rem);
+  --space-label: clamp(1rem, 2vw, 1.5rem);
+  /* The page's one left/right edge. Scales with the viewport, and past
+     --shell-max it grows so content stops widening and centres: every
+     band, the nav and the hero share this edge at every width. */
+  --shell-max: 90rem;
+  --gutter: max(clamp(1.25rem, 4vw, 4rem), calc((100vw - var(--shell-max)) / 2));
   --measure: 62ch;
 
   /* Case-study page. --nav-h is the fixed nav's own height (1.5rem padding
@@ -92,11 +105,8 @@
   --idmark-h: calc(var(--step-name) * 1.2);
   --idmark-inset: 20px;
 
-  /* Top row (Nav.astro at ≥1200px): a 16-column grid on the same 20px
-     inset as the prism, 20px gutters. */
-  --bar-cols: 16;
-  --bar-gap: 20px;
-  --step-bar-meta: 10px;
+  /* Top row (Nav.astro at ≥1200px). */
+  --step-bar-meta: 0.75rem;   /* was 10px — under a comfortable reading size */
   --bar-meta-gap: 10px;
 
   /* Dock (Dock.astro): cali.so's navigation dock, requested as an exact
@@ -125,36 +135,33 @@
      an interactive element. */
   --dock-clearance: calc(var(--dock-size) + var(--dock-edge) + 0.75rem);
 
-  /* --- CHROME RAIL: keeping content out from under the fixed name -------
-     At ≥1200px the name sits fixed top-left, in the top bar's first two
-     columns, while the page scrolls under it (the dock is bottom-centre at
-     every width now, so it doesn't factor in here — it used to add a third
-     "breathing" column on top of the two the name itself needs, back when
-     it was a tall stack sitting under the name; with the dock gone that
-     extra column was just dead space down the whole page, so this is now
-     exactly the name's own width, no more):
-       --gutter-start  where text and media begin on the left. Below 1200px
-                       it is just --gutter. From 1200px it is the start of
-                       the bar grid's third column (x≈198 at 1440 wide,
-                       ≈168 at 1200 — was ≈286/≈241 with the old extra
-                       column). The top row (clock, email) starts on the
-                       same line, so the bar and every page's content share
-                       one left edge.
-       --bleed-start   how far media may still bleed left past that start.
-                       --gutter below 1200px (edge-to-edge images), 0 above,
-                       so nothing slides under the name.
-     Band backgrounds are full-width and do run under the name; only their
-     content respects the rail. .u-shell (global.css) reads these, so any
-     <Section> gets it for free. Anything that pads itself with --gutter
-     directly should use --gutter-start on its left side instead. */
-  --chrome-cols: 2;
+  /* --- CONTENT EDGE ------------------------------------------------------
+     The nav scrolls out of the way (hides on scroll-down, returns with a
+     solid band-coloured strip on scroll-up — Nav.astro), so nothing
+     scrolls under a fixed name any more and there's no left rail to
+     reserve. --gutter-start / --bleed-start are kept as names because
+     many components read them, but both are now plain --gutter: one
+     edge on both sides, everywhere. (Was: a ~200px left rail at
+     ≥1200px so content cleared the fixed name, which left the hero, the
+     name and every other band on three different left edges.) */
   /* Home hero's copy column, side by side with the illustration (index
      .astro). The copy keeps this width; the illustration takes the rest.
      Widened (was 20rem/40vw/44rem) so the headline and bio wrap to fewer
-     lines — paired with .hero reclaiming the symmetric --gutter (see
-     index.astro) so the extra width doesn't come out of the
-     illustration's own share of the row. */
+     lines. */
   --hero-copy-w: clamp(22rem, 46vw, 50rem);
+  /* Hero illustration (HeroIllustration.astro), sized by height: 31rem
+     matches the copy stack beside it (greeting to CTA row measured
+     494-544px at every desktop width), so with both bottom-aligned the
+     figure's head lands level with the greeting instead of leaving the
+     top-right of the hero empty. The box is cropped to the figure
+     (820x962 of each 1800x1013 frame), which sets the width. */
+  --hero-art-h: 31rem;
+  --hero-art-ratio: 820 / 962;
+  /* Minimum space between hero copy and illustration side by side (the
+     real gap is whatever the row leaves over); and the space between
+     them when they stack on narrow screens. */
+  --hero-gap: 4rem;
+  --hero-gap-stacked: 2rem;
   --gutter-start: var(--gutter);
   --bleed-start: var(--gutter);
 
@@ -208,15 +215,6 @@
   --dur-pixel-ring: 2.8s;          /* one lap of the launcher's border shimmer */
 }
 
-@media (min-width: 1200px) {
-  :root {
-    /* One column of the top bar's grid (Nav.astro), then the start of
-       column (--chrome-cols + 1). */
-    --bar-col: calc((100vw - 2 * var(--idmark-inset) - (var(--bar-cols) - 1) * var(--bar-gap)) / var(--bar-cols));
-    --gutter-start: max(var(--gutter), calc(var(--idmark-inset) + var(--chrome-cols) * (var(--bar-col) + var(--bar-gap))));
-    --bleed-start: 0px;
-  }
-}
 
 /* ============================================================
    THEMES — each section can wear a different palette.
@@ -261,6 +259,12 @@
   --shell: #17120f;
   --screen: #efefef;
   --accent-text: #a83a19;
+  /* CursorTrail's line colour (falls back to --fg on bands that don't
+     set it). --fg here is near-black, which drew the trail as a black
+     scrawl across the white bands. The deep accent, not the flat orange:
+     the flat orange is also the Okta card's own ground on this band, and
+     the line vanished over it. Decorative, so it only needs to read. */
+  --trail: var(--accent-text);
 }
 
 /* Clay was a warm brown; it is now an oxblood ground under the coral-red
@@ -505,6 +509,7 @@
   --shell: #0e0b09;
   --screen: #241d18;
   --accent-text: #e8613c;   /* 5.3:1 on --bg */
+  --trail: var(--fg);       /* day's orange override doesn't apply at night: cream, as on every dark band */
 }
 
 /* Sand keeps its two greens — inverted. --fg is the display green,

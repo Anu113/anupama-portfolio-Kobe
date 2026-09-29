@@ -1,15 +1,24 @@
 ---
-/* Fixed site chrome: the name top-left, a thin top row at ≥1200px, and the
+/* Site chrome: the name top-left, a thin top row at ≥1200px, and the
    Dock (primary navigation + preferences, see Dock.astro).
      Name       "Anupama Mishra" as plain text, at every width. It's the
                 home link, which is why the dock has no Index item.
-     Top row    ≥1200px only. Starts on the page's content edge (column 3 of
-                a 16-column grid, --gutter-start in tokens.css) and spreads
-                "Working remotely · city, local time" and the enquiries email
-                out to the right margin, each on one line.
+     Top row    ≥1200px only. "Working remotely · city, local time" and
+                the enquiries email, together at the right margin.
      Dock       Horizontal, fixed bottom-centre, at every width (see
-                Dock.astro). Page content still starts at --gutter-start,
-                clear of the fixed name (see CHROME RAIL in tokens.css).
+                Dock.astro) — the always-available navigation.
+   Name and top row sit on the page's own --gutter, so they share one
+   left and one right edge with every band's content.
+
+   Hides on scroll-down, returns on scroll-up. It used to stay fixed with
+   no background, so the name and the clock/email drew straight over case
+   cards, headlines and the footer as the page scrolled past (and picked
+   up band colours that failed contrast over them). Now: transparent at
+   the very top, where it reads as part of the hero; slides away as soon
+   as the visitor scrolls down into content; comes back on any scroll up
+   (the "I want to go somewhere" gesture) on a solid strip of the band
+   behind it, so it never sits on content without a ground. Keyboard focus
+   inside it always brings it back. Reduced motion: same states, no slide.
    The name and top row recolour to match whichever band is behind them
    (script below); the dock does the same for itself. */
 import Dock from './Dock.astro';
@@ -42,6 +51,12 @@ const path = Astro.url.pathname;
     color: var(--fg);
     background: transparent;
     pointer-events: none;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .nav.is-solid { background: var(--bg); }
+  .nav.is-hidden:not(:focus-within) { transform: translateY(-100%); }
+  @media (prefers-reduced-motion: reduce) {
+    .nav { transition: none; }
   }
   .nav a { pointer-events: auto; }
   /* The full name at --step-name (16→24px, matched to hansonwu.com),
@@ -61,32 +76,20 @@ const path = Astro.url.pathname;
 
   @media (min-width: 1200px) {
     .nav {
-      display: grid;
-      grid-template-columns: repeat(var(--bar-cols), minmax(0, 1fr));
-      column-gap: var(--bar-gap);
-      /* baseline, not start — the name and the top row set very different
-         font sizes, so top-aligning them left the small status text
-         floating near the name's cap-height instead of sitting on the
-         same line as it. */
+      /* baseline, not center — the name and the top row set very
+         different font sizes; sharing a baseline is what makes them read
+         as one line. */
       align-items: baseline;
-      padding: var(--idmark-inset);
-      /* Extra breathing room above the name/clock/email row specifically —
-         the shared --idmark-inset read too tight against the viewport's
-         top edge for all three. */
-      padding-block-start: calc(var(--idmark-inset) + 0.75rem);
+      justify-content: space-between;
+      padding-block: calc(var(--idmark-inset) + 0.75rem) var(--idmark-inset);
     }
-    .nav__mark { display: block; grid-column: 1 / span 2; }
+    .nav__mark { display: block; }
 
-    /* Starts on the page's content edge, the same line as the hero
-       headline. Both status items sit together at the right margin —
-       space-between used to fling the clock over to the content edge
-       and strand the email at the far right, reading as two unrelated
-       lines instead of one status row. */
+    /* Both status items sit together at the right margin — as one status
+       row rather than two unrelated lines. */
     .bar__status {
       display: flex; align-items: baseline; justify-content: flex-end;
       gap: clamp(1.5rem, 3vw, 3rem);
-      grid-column: calc(var(--chrome-cols) + 1) / -1;
-      grid-row: 1;
     }
     .bar__meta { display: flex; gap: var(--bar-meta-gap); margin: 0; white-space: nowrap; }
   }
@@ -149,6 +152,21 @@ const path = Astro.url.pathname;
     };
     pick();
     addEventListener('scroll', pick, { passive: true });
+
+    // Hide on scroll-down, show on scroll-up (see the header comment).
+    // A few px of hysteresis so trackpad jitter doesn't flicker it.
+    let lastY = scrollY;
+    const follow = () => {
+      const y = scrollY;
+      const dy = y - lastY;
+      nav.classList.toggle('is-solid', y > 0);
+      if (y <= nav.offsetHeight) nav.classList.remove('is-hidden');
+      else if (dy > 4) nav.classList.add('is-hidden');
+      else if (dy < -4) nav.classList.remove('is-hidden');
+      if (Math.abs(dy) > 4 || y <= nav.offsetHeight) lastY = y;
+    };
+    follow();
+    addEventListener('scroll', follow, { passive: true });
     addEventListener('resize', pick);
     addEventListener('theme:changed', pick);
   }

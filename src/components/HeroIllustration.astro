@@ -105,6 +105,19 @@ imgs[0].save('public/images/hero-idle.webp', 'WEBP', quality=90, method=6)
    soft, so the fix for blur is matching resolution to display size,
    not maximizing it.
 
+   Cropped to the character. Each 1800px frame is mostly backdrop — the
+   figure spans x 572-1348 in every frame (measured across all 48) — and
+   that empty band used to sit inside the box, so on wide screens the
+   hero read as "headline, huge gap, illustration" with the gap growing
+   with the image. Only the CROP_* window (below) is drawn — x 552-1372,
+   y 24-986, the figure's bounds (x 576-1350, y 36-981 across all 48
+   frames) plus a small margin — so the box's edges are the figure's
+   edges: the page's flex gap is the real text-to-figure gap, and
+   bottom-aligning the box puts her feet on the CTA row's line. The
+   still's offsets, --hero-art-ratio (tokens.css) and AskBubble's
+   position all derive from these numbers; change them together if the
+   sprite is re-exported.
+
    Fine pointers only. Touch/coarse pointers and `prefers-reduced-motion`
    get the static hero-idle.webp and no script runs. */
 interface Props {
@@ -123,35 +136,17 @@ const { alt, size = 480 } = Astro.props;
     position: relative;
     margin: 0;
     flex: none;
-    /* Scales with the viewport, capped at --size, rather than sitting
-       at a single fixed pixel width — flex:none means this never
-       shrinks to make room for hero__copy on its own, so a fixed
-       width left the copy column badly crushed (single words per
-       line) at viewport widths between the 860px stacking breakpoint
-       and roughly 1300px, where there isn't enough room for the copy
-       column AND a flat --size-wide image side by side. 70vw/1150px —
-       grown twice from the original 50vw/800px baseline ("50% bigger",
-       then "30% more"), each time tried at the literal requested
-       multiple first (75vw/1200px, then 78vw/1300px) and dialed back
-       after that overlapped the fixed bottom nav pill and cramped the
-       copy column at ~1440px viewports. This is close to that ceiling
-       already — another increase likely needs an actual layout change
-       (a wider .hero__copy max-width, or dropping the side-by-side
-       layout at a lower breakpoint), not just a bigger number here.
-       Side by side, the page now caps this with max-width: 100% of the
-       hero's portrait column, which is whatever the copy column
-       (--hero-copy-w) leaves — so the image is what gives way on narrower
-       screens, never the copy. */
-    /* 76vw (was) grew far faster across viewport widths than
-       --hero-copy-w's own 46vw, so the illustration nearly doubled in
-       width between a 1280px laptop and a 1920px monitor while the
-       headline's font-size barely moved (55.7px -> 60px, ~7%) — the
-       whole hero read as a different "zoom level" between screen sizes
-       even though the text was almost identical. Matched to the copy
-       column's own 46vw so both halves of the row scale together. */
-    width: clamp(260px, 46vw, var(--size));
+    /* Sized by height (--hero-art-h, tokens.css) so the figure matches
+       the hero's copy stack beside it; the cropped aspect sets the
+       width. max-width: 100% lets it give way when the row is short on
+       room (the copy column never does) — as max-width, not inside the
+       min(): a percentage there resolves to 0 while the parent is sizing
+       to its content, and the figure collapses. --size still caps it for
+       a caller that passes a smaller one. The long history of vw-based
+       widths this replaced is in git. */
+    width: min(calc(var(--hero-art-h) * var(--hero-art-ratio)), var(--size));
     max-width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: var(--hero-art-ratio);
     line-height: 0;
     outline: none;
     border-radius: var(--radius);
@@ -159,14 +154,24 @@ const { alt, size = 480 } = Astro.props;
   }
   .hero-scrub:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
 
-  .hero-scrub__canvas,
-  .hero-scrub__still {
+  .hero-scrub__canvas {
     position: absolute;
     inset: 0;
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+  }
+  /* The still shows the same window as the canvas crop: the whole frame,
+     scaled so CROP_W x CROP_H fills the box, shifted by CROP_X/CROP_Y.
+     1800/820, 1013/962, 552/820, 24/962. */
+  .hero-scrub__still {
+    position: absolute;
+    display: block;
+    max-width: none;
+    width: 219.51%;
+    height: 105.3%;
+    left: -67.32%;
+    top: -2.49%;
   }
 
   /* Default (JS-driven) state: canvas visible, static fallback hidden.
@@ -182,6 +187,12 @@ const { alt, size = 480 } = Astro.props;
   const FRAME_COUNT = 48;
   const FRAME_W = 1800;
   const FRAME_H = 1013;
+  // Horizontal window drawn from each frame — see "Cropped to the
+  // character" in the header comment. Matches --crop-x/--crop-w.
+  const CROP_X = 552;
+  const CROP_Y = 24;
+  const CROP_W = 820;
+  const CROP_H = 962;
   const COLS = 8;
   const SMOOTHING = 0.14; // higher = snappier, lower = more inertia
   const Y_INFLUENCE = 0.28; // how much vertical pointer position nudges the frame vs x
@@ -230,16 +241,12 @@ const { alt, size = 480 } = Astro.props;
       const frame = Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(index)));
       const sx = (frame % COLS) * FRAME_W;
       const sy = Math.floor(frame / COLS) * FRAME_H;
-      // Fill (cover) the canvas with the sprite frame, matching object-fit: cover.
-      const scale = Math.max(canvas.width / FRAME_W, canvas.height / FRAME_H);
-      const dw = FRAME_W * scale;
-      const dh = FRAME_H * scale;
-      const dx = (canvas.width - dw) / 2;
-      const dy = (canvas.height - dh) / 2;
+      // Box aspect matches the crop window (820:962), so the window
+      // maps straight onto the canvas.
       // Clear first: the sprite is transparent outside the figure, and
       // without this the previous frame would show through underneath.
       ctx!.clearRect(0, 0, canvas.width, canvas.height);
-      ctx!.drawImage(sprite, sx, sy, FRAME_W, FRAME_H, dx, dy, dw, dh);
+      ctx!.drawImage(sprite, sx + CROP_X, sy + CROP_Y, CROP_W, CROP_H, 0, 0, canvas.width, canvas.height);
     };
 
     sprite.decode().then(() => {

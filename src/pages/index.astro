@@ -58,7 +58,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
              heading carries her name and role. -->
         <h1 class="hero__head">
           <span class="hero__hi">Hi, I&rsquo;m Anupama,</span>
-          <span class="u-display hero__line">a Staff Product Designer. I ship, I nudge, I craft, from systems and strategy to the last stubborn pixel.</span>
+          <span class="u-display hero__line">a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn pixel.</span>
         </h1>
         <p class="hero__more">
           With 10+ years of experience, I&rsquo;m currently designing
@@ -206,7 +206,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   <!-- ACT 5 — contact -->
   <Section theme="bone" id="contact">
     <Reveal>
-      <h2 class="u-display">Open to work.</h2>
+      <h2 class="u-display contact__title">Open to work.</h2>
     </Reveal>
     <Reveal delay={140}>
       <p class="u-measure">
@@ -274,21 +274,6 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        partly covered by it. The clamp still wins once there's enough
        viewport height to give more room on its own. */
     padding-bottom: max(clamp(3rem, 6vh, 4.5rem), var(--dock-clearance));
-    /* Overrides .u-shell's asymmetric padding-inline (--gutter-start on
-       the left, sized to dodge the fixed name) with a symmetric --gutter,
-       same fix and same reasoning as the case-study page: the hero's own
-       padding-top above already clears the name vertically, so the row
-       never actually sits beside it. The reclaimed width goes to
-       --hero-copy-w (tokens.css) and the illustration's own share of the
-       row, rather than sitting empty on the left. */
-    padding-inline: var(--gutter);
-  }
-  /* The illustration is decorative imagery, not reading copy, so its edge
-     of the row doesn't need the same margin text would — trimmed on
-     desktop to hand the portrait more width without taking any from
-     --hero-copy-w (which sets the headline/bio's own line count). */
-  @media (min-width: 861px) {
-    :global(.hero) { padding-inline-end: calc(var(--gutter) * 0.15); }
   }
   /* Absorbs whatever's left of the 80svh after the nav gap, headline and
      CTA row above have taken their fixed amount — the actual mechanism
@@ -368,12 +353,14 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        illustration's feet always land on the same line as the
        Resume/LinkedIn row, whatever height the copy stack ends up at. */
     align-items: flex-end;
+    /* Copy on the page's left edge, illustration on its right edge, the
+       gap between them whatever's left (never under --hero-gap). The
+       edges come from --gutter, which stops the content widening past
+       --shell-max (tokens.css) — so on a very large screen the whole
+       page, hero included, centres and the extra width goes to the outer
+       margins, not into this gap. */
     justify-content: space-between;
-    /* Tightened from 2-4rem — the illustration fills 100% of whatever this
-       row leaves it (see HeroIllustration.astro), so a smaller gap hands
-       it a bit more width directly, without touching the copy column and
-       its line count. */
-    gap: clamp(1.25rem, 2.5vw, 2rem);
+    gap: var(--hero-gap);
   }
   /* The copy column gets a guaranteed width (--hero-copy-w) and the
      illustration takes whatever is left, scaling down with it. The other
@@ -383,8 +370,11 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   .hero__copy { flex: 0 0 var(--hero-copy-w); min-width: 0; }
   /* The portrait's Reveal wrapper is the actual flex item; a class passed
      into a component doesn't carry this page's scope, hence :global. */
-  :global(.hero__portrait-cell) { flex: 1 1 0; min-width: 0; }
-  .hero__portrait { display: flex; justify-content: flex-end; }
+  /* Sized to the illustration, not flex: 1 — space-between hands the
+     spare width to the gap, which the row's max-width caps. Still
+     shrinks when space runs short. */
+  :global(.hero__portrait-cell) { flex: 0 1 auto; min-width: 0; }
+  .hero__portrait { display: flex; }
   /* Shrinks with the column (min-width: 0) so HeroIllustration's
      max-width: 100% still resolves against real space, and is the
      positioning box AskBubble pins itself to. */
@@ -395,7 +385,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        headline, the bio, and the CTA row all sit on one shared left
        edge instead of each floating centred under a different width. */
     .hero__portrait { justify-content: flex-start; }
-    .hero__row { flex-direction: column-reverse; align-items: flex-start; text-align: left; }
+    .hero__row { flex-direction: column-reverse; align-items: flex-start; text-align: left; gap: var(--hero-gap-stacked); }
     /* width: 100% is load-bearing, not decorative — flex-direction: column
        makes align-items the CROSS-axis (horizontal) sizing, and flex-start
        (like the old `center` it replaced) sizes a flex item to fit-content
@@ -414,6 +404,11 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        portrait renders above the copy here (column-reverse). A flatter,
        lower clamp keeps a deliberate gap without the mobile-only bloat. */
     :global(.hero) { padding-top: clamp(4.5rem, 12vh, 6.5rem); }
+    /* Stacked, the figure no longer has a copy column to match, and
+       31rem would eat most of a phone screen before the headline starts.
+       Read by HeroIllustration's own width calc, so overriding it here is
+       enough. */
+    .hero__stage { --hero-art-h: 13rem; }
   }
 
   /* The status line ("Open to a Staff Product Designer role, remote") —
@@ -475,15 +470,34 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      before any quote appeared. Tightened to the seam value used
      elsewhere so the heading shows up right after the scroll into the
      band, not after it. */
-  :global(.saidabout) { padding-block-start: var(--space-band-tight); }
+  /* Home rhythm — see --space-band / --space-label in tokens.css. Every
+     band below the hero gets the same space above and below its content;
+     tops used to alternate between 56px and 176px with no reason tied to
+     the content. #work (the "Selected work" label) and .worklist are one
+     band split across two Sections: the label takes the band's top, the
+     list its bottom, and only --space-label sits between them. */
+  :global(#work),
+  :global(.worklist),
+  :global(#approach),
+  :global(.saidabout),
+  :global(.mosaic-band),
+  :global(.playpeek),
+  :global(#contact) { padding-block: var(--space-band); }
+  :global(#work) { padding-block-end: 0; }
+  :global(#work + .worklist) { padding-block-start: 0; }
 
   .sand__body { color: var(--fg-dim); font-size: var(--step-h3); }
   .sand__body a { color: var(--fg); text-decoration: none; border-bottom: 1px solid currentColor; }
 
+  /* --leading-display (0.85) is a deliberately tight box, so at this size
+     the "p" descender paints ~0.2em below it — straight into the
+     paragraph, which started with no gap at all. In em, so the space
+     tracks the heading's own (viewport-scaled) size. */
+  .contact__title { margin: 0 0 0.35em; }
   .contact__links { display: flex; gap: 1.5rem; padding-top: 1rem; }
   .contact__links a { color: var(--fg); }
 
-  .playpeek__head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: clamp(1rem, 2vw, 1.5rem); }
+  .playpeek__head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--space-label); }
   .playpeek__link {
     font-family: var(--font-display);
     font-size: var(--step-label); letter-spacing: var(--tracking-label);
@@ -491,7 +505,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
     color: var(--accent-text); text-decoration: none;
   }
 
-  .workhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: clamp(1rem, 2vw, 1.5rem); }
+  .workhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--space-label); }
   .workhead__count { font-family: var(--font-accent); font-style: italic; font-size: var(--step-h3); color: var(--fg-dim); margin: 0; }
   .workhead__all {
     font-family: var(--font-display); font-size: var(--step-label); font-weight: 600;
@@ -506,22 +520,12 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      closes up: no section padding underneath, and the list drops its own
      top padding to match. :global — both are rendered by Section.astro,
      so they don't carry this page's scope. */
-  :global(.workhead-section) { padding-block: var(--space-band-tight) 0; }
 
-  /* See ACT 4's own comment — this band was reading as three near-empty
-     screens of black against tiny placeholder shapes. --space-band-tight
-     instead of the default --space-section keeps it a compact interlude
-     between the approach/testimonials bands and the playground band,
-     proportionate to the placeholder content's own smaller footprint. */
-  :global(.mosaic-band) { padding-block: var(--space-band-tight); }
-  :global(.workhead-section + .worklist) { padding-top: var(--space-band-tight); }
 
-  /* Contained, not full-bleed — the redesign's whole point was to stop
-     the cards spanning almost the entire viewport. Section.astro's own
-     .u-shell already centres this band, but at a width tuned for body
-     copy; this is deliberately narrower again, just for the grid. */
-  .worklist__grid { max-width: 74rem; margin-inline: auto; }
-
+  /* No max-width of its own any more: it was 74rem centred, which put
+     the cards 13px (at 1440) to 140px inside the "Selected work" label's
+     edge. The page-wide --shell-max (tokens.css) now does the containing,
+     so cards, label and hero share one edge. */
   .worklist__grid {
     display: flex;
     flex-direction: column;
@@ -552,6 +556,9 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        first. */
     padding-bottom: 40vh;
   }
+  /* Nothing follows the last card to cover it, so its pinned window was
+     just ~40vh of empty band before the next section. */
+  .worklist__item:last-child { padding-bottom: 0; }
 
   /* The settle effect (a card scales/dims slightly as the next one
      covers it) used to run on the browser's own scroll-driven
