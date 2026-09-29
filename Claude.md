@@ -309,13 +309,34 @@ walked back. Concretely, in the current implementation:
   from the reference are commented in `tokens.css` (the reference's
   `#a8a8a8` grey fails AA and was darkened to `#707070`). Don't add a
   fourth family, a second weight, or a second palette.
+- **Dark mode** came back on request, as the same palette re-inked rather
+  than a second one: `:root[data-mode='dark']` in `tokens.css` redefines
+  only the palette tokens (ground `#1b1a19`, ink `#ecebe8`, grey
+  `#a09d98`, accent lifted to `#e0714f` for AA), and every role colour
+  follows. Switched from the theme button in the nav, which cycles System →
+  Light → Dark (after carlthomasiv.com); System follows the OS
+  (inline script in `Base.astro`).
+  Any new colour must read through the role tokens or it won't follow.
+- **The nav is one line** (`Nav.astro`): the name on the left (14px,
+  ink); on the right, the four links (12px, grey, current page in ink),
+  a hairline and the System/Light/Dark theme button. Links fold into Menu below
+  900px. The old bottom dock (`Dock.astro`) and the page sounds
+  (`scripts/sound.ts`) are gone.
+- **The location line** (`LocalTime.astro`) sits above the hero
+  headline, after abstract.systems: a green "available" light with a
+  pinging ring, `BANGALORE,IN`, a live weather icon, and 24h time with
+  seconds on rolling digits. Two deliberate, requested exceptions live
+  here: `--status` green is the one colour besides the accent and the
+  project hues (only on that dot), and the weather is fetched in the
+  browser from Open-Meteo (no key, no cookies, but the visitor's IP
+  reaches them). Don't extend either beyond this line.
 - **Project hues** are the one place colour appears beyond the accent: one
   muted hue per company (Okta sky `#c9dcf2`, PayPal lilac `#e0d6ef`, Walmart
   butter `#f4dc9c`), only behind that company's screenshots — home card
   media, /work thumbnail, case study cover. Set via `data-hue` from
   `hueFor()` in `data/work.ts`; tokens in `tokens.css` (PROJECT HUES). Never
   on text, chrome or full-width bands.
-- Night mode, the named theme palettes, tints/swatches, and the one-off
+- The old night mode, the named theme palettes, tints/swatches, and the one-off
   effect components (`OneWord`, `CaseDoodle`, `Testimonials`, `Marquee`,
   `Mosaic`, the footer's variable-weight wordmark, the section watermark
   numerals) have been removed. `<Section theme="…">` still exists but every

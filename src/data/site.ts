@@ -18,5 +18,9 @@ export const site = {
   // zone — the clock reads in her time, not the visitor's, which is the
   // point of it. Confirmed: she's in Bangalore, IST.
   location: 'Bangalore',
+  // The hero's location line (LocalTime.astro): BANGALORE,IN, and the
+  // point its live weather is fetched for.
+  countryCode: 'IN',
+  coords: { lat: 12.9716, lon: 77.5946 },
   timezone: 'Asia/Kolkata',
 };

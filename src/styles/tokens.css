@@ -65,7 +65,8 @@
   --leading-body: 1.8;       /* 21.6 / 12 */
 
   /* --- COLOUR -------------------------------------------
-     One palette, no night mode. Neutral ground and one accent.
+     One palette, plus a dark version of it (DARK MODE, below) switched
+     from the theme button in the nav. Neutral ground and one accent.
      The ground, ink and greys are allierho.com's; the accent is this
      site's own terracotta (the reference's purple, swapped by request),
      picked to sit with the hero illustration's sweater.            */
@@ -84,6 +85,11 @@
      5.0:1 on --paper-2, and white on it is 5.4:1. */
   --accent: #b4482a;
   --on-accent-small: #ffffff;   /* text on an accent fill (button labels) */
+  --device: #262626;            /* device frames around screenshots */
+  /* The "available" light above the hero headline (LocalTime.astro),
+     after abstract.systems. The one green on the site; used only for
+     that dot. 3.1:1 on --paper, over the 3:1 for a graphic. */
+  --status: #23a455;
 
   /* --- SPACE / GRID -------------------------------------
      Reference edge: 40px at 1440, 20px at 390. Two-up grids use a
@@ -118,30 +124,28 @@
   --dur-micro-move: 180ms;
 
   /* --- COMPONENT TOKENS ---------------------------------- */
-  /* The name, top-left of the nav (Nav.astro). */
-  --idmark-h: calc(var(--step-nav) * 1.2);
-  --idmark-inset: 20px;
-  --bar-meta-gap: 10px;
+  /* Nav (Nav.astro). One line: the name on the left; the links, a
+     hairline and the theme button, together on the right. */
+  --nav-pad-block: 1.5rem;
+  --nav-link-gap: clamp(1.5rem, 2.8vw, 2.5rem);
+  --nav-group-gap: 1.25rem;                      /* links ↔ hairline ↔ theme */
+  --nav-group-gap-tight: 0.875rem;               /* theme ↔ Menu below 900px */
+  --nav-sep-h: 0.625rem;
+  --nav-icon-btn: 1.75rem;                       /* 28px hit area, over the 24px minimum */
+  --nav-icon: 0.9375rem;                         /* 15px glyph */
+  --nav-glyph-shift: 8px;                        /* theme icon swap, after carlthomasiv.com */
 
-  /* Dock (Dock.astro). Square panel and tooltips; the pill itself is
-     the one round shape, same as the buttons. No drop shadows — the
-     reference has none; the 1px ring carries the edge. */
-  --dock-size: 3.5rem;
-  --dock-item: 2.75rem;
-  --dock-pad: 0.375rem;
-  --dock-gap: 0.25rem;
-  --dock-rule: 1.125rem;
-  --dock-dot: 4px;
-  --dock-tip-offset: 0.625rem;
-  --dock-edge: 1.25rem;
-  --radius-panel: 0px;
-  --dock-shadow: none;
-  --dock-tip-shadow: none;
-  --panel-shadow: none;
-  --ease-swift: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --dur-dock: 150ms;
-  --dur-dock-dot: 220ms;
-  --dock-clearance: calc(var(--dock-size) + var(--dock-edge) + 0.75rem);
+  /* Location line above the hero headline (LocalTime.astro), after
+     abstract.systems: light, city, weather, time. Their line is 12px
+     mono throughout; here the city takes the label role and the time
+     the mono, a step smaller because mono sets larger at the same size. */
+  --lt-gap: 0.5rem;
+  --lt-icon: 0.75rem;                            /* 12px weather glyph */
+  --step-clock-place: 0.75rem;                   /* 12px */
+  --step-clock-time: 0.6875rem;                  /* 11px */
+  --status-dot: 6px;
+  --status-ring: 12px;
+  --dur-status-ring: 2.5s;
 
   /* Home hero layout (index.astro, HeroIllustration.astro). */
   --hero-copy-w: clamp(22rem, 46vw, 50rem);
@@ -192,9 +196,35 @@
   --fg-dim: var(--ink-dim);
   --rule: var(--line);
   --screen: var(--paper-2);   /* image mounts, fields, placeholders */
-  --shell: var(--ink);        /* device frames around screenshots */
+  --shell: var(--device);     /* device frames around screenshots */
   --accent-text: var(--accent);
   --trail: var(--accent);     /* CursorTrail's line */
+}
+
+/* ============================================================
+   DARK MODE — the same palette, re-inked. Set on <html> as
+   data-mode="dark" by the theme button in the nav (Nav.astro) and, before
+   first paint, by the inline script in Base.astro. Only the palette
+   tokens change: every role colour above reads them, so each band
+   follows without a rule of its own.
+   Contrast, on --paper / --paper-2:
+     --ink       14.6:1 / 13.0:1
+     --ink-dim    6.4:1 /  5.7:1
+     --accent     5.5:1 /  4.9:1  (lifted from #b4482a, which is ~3:1
+                                    here; white on it failed too, so
+                                    labels on an accent fill go dark)
+   ============================================================ */
+:root[data-mode='dark'] {
+  color-scheme: dark;
+  --paper: #1b1a19;
+  --paper-2: #252422;
+  --ink: #ecebe8;
+  --ink-dim: #a09d98;
+  --line: rgb(255 255 255 / 0.12);
+  --accent: #e0714f;
+  --on-accent-small: #1b1a19;
+  --device: #3b3936;
+  --status: #31b564;            /* abstract.systems' own green, 6.6:1 here */
 }
 
 /* ============================================================

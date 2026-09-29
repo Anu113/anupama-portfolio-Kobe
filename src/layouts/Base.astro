@@ -26,6 +26,23 @@ const {
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <!-- Light/dark is resolved before first paint so a returning visitor
+         never sees the wrong palette flash: Light or Dark if they picked
+         one with the nav's theme button, otherwise (System) their OS
+         setting. data-mode-pref is the choice, data-mode what the tokens
+         read. Runs inline on purpose; don't move it to a bundled script. -->
+    <script is:inline>
+      (() => {
+        let stored = null;
+        try { stored = localStorage.getItem('mode'); } catch (e) {}
+        const pref = stored === 'dark' || stored === 'light' ? stored : 'system';
+        const root = document.documentElement;
+        root.dataset.modePref = pref;
+        root.dataset.mode = pref === 'system'
+          ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : pref;
+      })();
+    </script>
     <!-- The type system (tokens.css): Crimson Pro 300 roman + italic for
          headlines, Manrope 600 for everything else, Azeret Mono 400 for
          numbers. One weight per face on purpose — add a weight here only

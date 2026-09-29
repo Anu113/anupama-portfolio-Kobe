@@ -5,6 +5,7 @@ import Reveal from '../components/Reveal.astro';
 
 import HeroIllustration from '../components/HeroIllustration.astro';
 import AskBubble from '../components/AskBubble.astro';
+import LocalTime from '../components/LocalTime.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 
 import { site } from '../data/site';
@@ -27,12 +28,9 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
       <div class="hero__copy">
         <!-- No entrance animation on the hero text: it is the first thing
              read, so it is simply there on first paint. -->
-        <!-- Hidden, not deleted — kept visually hidden rather than removed so
-             it's trivial to bring back later. -->
-        <p class="hero__eyebrow u-sr-only">
-          <span class="hero__statusdot" aria-hidden="true"></span>
-          Open to ambitious problems &amp; good people.
-        </p>
+        <!-- Where she is and whether she's around, before the pitch:
+             status light, city, weather, ticking time (LocalTime.astro). -->
+        <div class="hero__eyebrow"><LocalTime /></div>
         <h1 class="u-display hero__line">
           <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn pixel.
         </h1>
@@ -51,9 +49,8 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
         <div class="hero__portrait">
           <!-- .hero__stage: a positioned box exactly the portrait's size, so
                AskBubble can sit Moss on the books in the
-               illustration. data-scrub-area: the portrait reads the
-               pointer over this whole box, Moss included. -->
-          <div class="hero__stage" data-scrub-area>
+               illustration. -->
+          <div class="hero__stage">
             <HeroIllustration alt="Illustrated portrait of Anupama Mishra, working at her laptop" size={1700} />
             <AskBubble />
           </div>
@@ -167,15 +164,8 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        bottom edge with no gap at all, reading as broken rather than
        "the section grew to fit its content." A real bottom padding
        means the CTA row always has breathing room, whether the spacer
-       has anything left to give or not.
-
-       max() against --dock-clearance on top of that: the bottom dock
-       (Dock.astro) is fixed over every band at every width now, and on a
-       short/mobile viewport this band's own height is close enough to the
-       viewport's that the Resume/LinkedIn row landed right under the dock,
-       partly covered by it. The clamp still wins once there's enough
-       viewport height to give more room on its own. */
-    padding-bottom: max(clamp(3rem, 6vh, 4.5rem), var(--dock-clearance));
+       has anything left to give or not. */
+    padding-bottom: clamp(3rem, 6vh, 4.5rem);
   }
   /* Absorbs whatever's left of the 80svh after the nav gap, headline and
      CTA row above have taken their fixed amount — the actual mechanism
@@ -266,39 +256,9 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
     .hero__stage { --hero-art-h: 13rem; }
   }
 
-  /* The status line ("Open to a Staff Product Designer role, remote") —
-     modelled on carlthomasiv.com's mono-caps eyebrow ("CURRENTLY DESIGNING
-     AT ONA"), same monospace treatment, but the wording reads from
-     site.ask (data/site.ts) rather than being retyped here, so it can't
-     drift the way CLAUDE.md warns the ask has before. Sits above the
-     headline, not below it — a recruiter's first signal is availability,
-     the headline is the pitch.
-
-     Colour is --fg-dim, not --accent-text, to track the hero's own
-     --fg-dim value rather than sit pinned to a separate token. (This
-     is also currently hidden via .u-sr-only — see the Reveal wrapping
-     it below.) */
-  .hero__eyebrow {
-    display: flex; align-items: center; gap: 0.6rem;
-    font-family: var(--font-mono); font-size: var(--step-label); font-weight: var(--weight-mono);
-    letter-spacing: var(--tracking-label); text-transform: uppercase;
-    color: var(--fg-dim); margin: 0 0 1.4rem;
-  }
-  /* Live-availability dot, not the old terminal-caret full stop — a small
-     pulse (not a hard blink) reads as "currently true" rather than a
-     cursor waiting for input. */
-  .hero__statusdot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: currentColor; flex: none;
-    animation: hero-pulse 2s ease-in-out infinite;
-  }
-  @keyframes hero-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.35; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .hero__statusdot { animation: none; opacity: 1; }
-  }
+  /* The location line sits above the headline, a label's distance
+     from it — the first thing read is where and when she is. */
+  .hero__eyebrow { margin: 0 0 1.4rem; }
 
 
   /* Started at 1.13rem, picked live against a mockup slider — but that

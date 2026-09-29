@@ -14,7 +14,7 @@
    the band) that's irrelevant again now the copy is back in its
    original spot, but harmless to leave in place.
 
-   Pointer position over the card maps to a frame index — mostly the
+   Pointer position over the hero band maps to a frame index — mostly the
    pointer's x, with a small y contribution so vertical movement is
    felt too — and a canvas draws just that frame's slice out of the
    sprite each tick. The index is damped with a lerp rather than
@@ -81,9 +81,11 @@ imgs[0].save('public/images/hero-idle.webp', 'WEBP', quality=88, alpha_quality=9
    bubbling `hero-scrub:frame` event ({ frame, count }). AskBubble's Moss
    listens and shows the same frame of his own 48-frame clip, so the two
    characters share one timeline and one damping loop and can't drift.
-   The pointer is read over the nearest [data-scrub-area] ancestor (the
-   hero stage, which also holds Moss) when there is one, so reaching for
-   Moss doesn't count as leaving the portrait. */
+   The pointer is read over the whole band the figure sits in (the
+   hero section, via its data-themeband), and its x/y across that band
+   picks the frame: she responds as soon as the cursor is anywhere in the
+   hero, and Moss, being inside the band, never counts as leaving it.
+   Leaving the band eases her back to frame 0. */
 interface Props {
   alt: string;
   size?: number;
@@ -234,13 +236,17 @@ const { alt, size = 480 } = Astro.props;
       targetIndex = blended * (FRAME_COUNT - 1);
     };
 
+    // The pointer is read over the whole band the figure sits in (the
+    // hero), and its position across that band sets the frame, so she
+    // follows the cursor from anywhere in the hero, not only over her own
+    // box (where the full clip was squeezed into a few hundred pixels).
+    const area = figure.closest<HTMLElement>('[data-themeband]') ?? figure;
     const onMove = (e: PointerEvent) => {
-      const r = figure.getBoundingClientRect();
+      const r = area.getBoundingClientRect();
       setTargetFromPointer(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
     };
     const onLeave = () => { targetIndex = 0; };
 
-    const area = figure.closest<HTMLElement>('[data-scrub-area]') ?? figure;
     area.addEventListener('pointerenter', onMove);
     area.addEventListener('pointermove', onMove);
     area.addEventListener('pointerleave', onLeave);
