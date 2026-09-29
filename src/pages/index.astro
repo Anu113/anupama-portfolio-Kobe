@@ -3,24 +3,12 @@ import Base from '../layouts/Base.astro';
 import Section from '../components/Section.astro';
 import Reveal from '../components/Reveal.astro';
 
-import OneWord from '../components/OneWord.astro';
 import HeroIllustration from '../components/HeroIllustration.astro';
 import AskBubble from '../components/AskBubble.astro';
-import Mosaic from '../components/Mosaic.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import Marquee from '../components/Marquee.astro';
-import Testimonials from '../components/Testimonials.astro';
 
 import { site } from '../data/site';
 import { work } from '../data/work';
-import { testimonials } from '../data/home';
-import { tiles } from '../data/play';
-
-// The preview shows the first six playground tiles — enough to read as a set,
-// short enough that the loop isn't a minute long. The card is a 4:3 crop, so
-// the order in `play.ts` decides which pieces survive it: the squarer ones
-// lead, the tall portraits sit further down where this slice won't reach.
-const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/playground' }));
 
 // The category filter tabs that used to live on this page moved to
 // /work — they were fighting the stacking-card effect below (hiding a
@@ -30,17 +18,10 @@ const playCards = tiles.slice(0, 6).map((t) => ({ ...t, label: t.alt, href: '/pl
 const homeWork = work.filter((w) => w.showOnHome !== false);
 ---
 <Base title={`${site.name} — ${site.seeking}`}>
-  <!-- ACT 1 — the editorial opening. Its own palette, "charcoal": pale
-       grey by day, near-black at night — neutral on purpose, no hue to
-       compete with the opening line. Exclusive to the hero; the
-       work-head/mosaic bands right after it stay on ink, unchanged in
-       either mode. -->
-  <!-- ACT 1 + intro merged into one band, min-height: 80svh — the hero
-       always claims 80% of the first screen and "Selected work" always
-       peeks in the remaining 20%, on any monitor or phone, instead of a
-       fixed rem of bottom padding that read short on a big monitor and
-       overshot on a small laptop. Safe to merge: both wore the same
-       "charcoal" theme already, so there's no palette seam being lost. -->
+  <!-- Hero. Type follows allierho.com's hero sentence: one serif display
+       line that opens in italic and turns roman mid-sentence — the
+       system's only emphasis. Background line and CTAs underneath in the
+       sans. -->
   <Section theme="charcoal" class="hero">
     <div class="hero__row">
       <div class="hero__copy">
@@ -52,13 +33,8 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
           <span class="hero__statusdot" aria-hidden="true"></span>
           Open to ambitious problems &amp; good people.
         </p>
-        <!-- Three levels: a small greeting, the statement at --step-hero
-             (the headline size on hansonwu.com), then the background at a
-             reading size. Greeting and statement share the h1 so the
-             heading carries her name and role. -->
-        <h1 class="hero__head">
-          <span class="hero__hi">Hi, I&rsquo;m Anupama,</span>
-          <span class="u-display hero__line">a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn pixel.</span>
+        <h1 class="u-display hero__line">
+          <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn pixel.
         </h1>
         <p class="hero__more">
           With 10+ years of experience, I&rsquo;m currently designing
@@ -92,23 +68,12 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
     <div class="hero__spacer" aria-hidden="true"></div>
   </Section>
 
-  <!-- ACT 2 — selected work, one ProjectCard per project, stacked full-width
-       on a shared bone ground. Was ink (near-black in both day and night —
-       that palette doesn't lighten in day mode, it just shifts shade), which
-       read as an unexpectedly dark band while the rest of the page was in
-       day mode. bone is also /work.astro's own grid background, so the two
-       pages now share a ground for the same content. The one cost: Chase
-       Pay's card used to wear bone too and would've had no edge against a
-       bone section — it now wears `ink` instead (see the comment on that
-       entry in work.ts), which also happens to fix the identical problem
-       that card already had on /work. Filtered to `showOnHome !== false` —
-       /work carries the full seven, but a skeleton case (unconfirmed role,
-       scope, metrics) doesn't get to represent the portfolio on the first
-       thing a recruiter sees. -->
+  <!-- Selected work. Section head in allierho.com's pattern: a centred
+       serif line with its key phrase in italic, a label link under it. -->
 <Section theme="bone" full id="work" class="workhead-section">
   <div class="u-shell workhead">
-    <h2 class="u-label">Selected work</h2>
-    <a class="workhead__all" href="/work">See all work →</a>
+    <h2 class="u-heading">Selected <em>work</em></h2>
+    <a class="btn--link" href="/work">View all work</a>
   </div>
 </Section>
 <Section theme="bone" class="worklist">
@@ -147,77 +112,13 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   </div>
 </Section>
 
-  <!-- ACT 3 — palette flips, the interactive moment -->
-  <Section theme="sand" id="approach">
-    <OneWord
-      before="The best enterprise software feels"
-      after="."
-      seed="obvious"
-      prompt="Type one word"
-      suggestions={['obvious', 'learnable', 'quiet', 'honest', 'fast']}
-    />
-    <Reveal delay={200}>
-      <p class="u-measure sand__body">
-        Ten years of it has taught me what holds up: a model the admin can
-        predict, a system that's faster than the workaround, and critique that's
-        kind and specific. <a class="link-ext" href="/about#approach">How I work<span class="link-ext__mark" aria-hidden="true">→</span></a>
-      </p>
-    </Reveal>
-  </Section>
-
-  <!-- Testimonials. Placed after the work and the approach, where a hiring
-       manager already knows what she did and is looking for corroboration.
-       Clay is shared with the fourth work band — far enough up the page that
-       the two don't read as a pair. -->
-  <Section theme="clay" class="saidabout">
-    <Reveal>
-      <h2 class="u-label">What people say</h2>
-    </Reveal>
-    <Reveal delay={120}>
-      <Testimonials items={testimonials} />
-    </Reveal>
-  </Section>
-
-  <!-- ACT 4 — full-bleed mosaic, back to dark. Tighter than the original
-       spread (was 44/38/56vw with up to 7rem gaps and a full --space-section
-       of padding top and bottom): three placeholder shapes at that scale
-       read as a broken, mostly-empty band rather than an airy one. Smaller
-       widths, a smaller gap (Mosaic.astro) and .mosaic-band's own reduced
-       padding keep the same left/right/center composition without the
-       dead space either side of it. -->
-  <Section theme="ink" full class="mosaic-band">
-    <Mosaic items={[
-      { src: '/images/placeholder-1.svg', alt: 'Placeholder — replace with work imagery', edge: 'left', w: 36 },
-      { src: '/images/placeholder-2.svg', alt: 'Placeholder — replace with work imagery', edge: 'right', w: 30, y: -3 },
-      { src: '/images/placeholder-3.svg', alt: 'Placeholder — replace with work imagery', edge: 'center', w: 44, y: 3 },
-    ]} />
-  </Section>
-
-  <!-- The playground, previewed. Last light note before the contact band;
-       the whole row is a way into /playground. -->
-  <Section theme="sand" full class="playpeek">
-    <div class="u-shell playpeek__head">
-      <h2 class="u-label">From the playground</h2>
-      <a class="playpeek__link" href="/playground">See all &rarr;</a>
+  <!-- The playground, pointed to — the same centred head as Selected
+       work, standing on its own. Contact is the footer's job. -->
+  <Section theme="bone" class="playline">
+    <div class="workhead">
+      <h2 class="u-heading">Smaller experiments live in the <em>playground.</em></h2>
+      <a class="btn--link" href="/playground">Explore playground</a>
     </div>
-    <Marquee items={playCards} kind="card" seconds={26} label="From the playground" />
-  </Section>
-
-  <!-- ACT 5 — contact -->
-  <Section theme="bone" id="contact">
-    <Reveal>
-      <h2 class="u-display contact__title">Open to work.</h2>
-    </Reveal>
-    <Reveal delay={140}>
-      <p class="u-measure">
-        Looking for a {site.ask}. The hard, systemic parts of enterprise
-        software, hands on the work.
-      </p>
-      <p class="contact__links">
-        <a href={`mailto:${site.email}`}>{site.email}</a>
-        <a href={site.linkedin}>LinkedIn</a>
-      </p>
-    </Reveal>
   </Section>
 </Base>
 
@@ -282,59 +183,12 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      just collapses to 0, which is correct: min-height already lets the
      band grow past it. */
   .hero__spacer { flex: 1 1 auto; }
-  /* Still --step-h1, not --step-display — a poster-scale size meant for
-     a handful of words forced this same sentence into an 8-line tower
-     taller than the viewport the last time this wore it. Hand-broken
-     into three lines again (the industry now lives in
-     HeroRotatingWord, one word at a time, so it never has to be the
-     line that decides where the break falls); measure widened enough
-     to hold "10+ years shaping digital products" as a single line at
-     this size without extra wrapping. */
-  /* var(--step-h1) tops out at 6rem/96px once the viewport crosses ~1371px
-     — and at that size "10+ years shaping digital products" needs ~1507px
-     while the shell only gives it ~1325px, so it wraps mid-sentence and
-     strands "products" alone on the line after it. Capped at 5rem/80px
-     here instead (measured: fits the shell down to the hero's own min
-     width), so all three authored lines land exactly where the <br/>s put
-     them at every desktop width. */
-  /* max-width tightened from 44ch, then 32ch, then 26ch — none of those
-     actually narrowed the rendered lines: greedy word-wrap only fills a
-     line until the next word doesn't fit, and every wrapped line here
-     was already narrower than all three of those box widths (measured:
-     the widest line topped out near 1060px against a 1241px/26ch box),
-     so the text kept wrapping at the exact same points regardless of how
-     much invisible box remained past it. The box has to be narrower than
-     the content's own natural wrap width to change anything — 18ch does
-     that (measured ~845px at the font-size cap, tighter than every line
-     the old boxes produced). */
-  /* line-height overridden up from .u-display's own --leading-display
-     (0.85) — that value is tuned for the short, 1-3-line headlines it
-     wears elsewhere on the site (Contact's "Open to work.", etc.), where
-     there's no line directly below a line ending in a descender. This
-     headline is five lines of running prose, so at 0.85 a descender
-     ending one line (the "y" in "reality") sits low enough to collide
-     with the ascenders/caps starting the next ("beyond..."). 1.08 gives
-     enough room for that without loosening the shorter headlines that
-     still rely on the tight default. */
-  /* Three levels of type. .hero__hi, the greeting, is the quiet lead-in;
-     .hero__line, the statement, is the headline at --step-hero (32→60px,
-     matched to hansonwu.com) with its 1.2 leading; .hero__more, the
-     background, drops to --step-lede in --fg-dim so it reads as supporting. */
-  .hero__head { margin: 0; font-weight: inherit; }
-  .hero__hi {
-    display: block;
-    font-family: var(--font-hero-sans); font-size: var(--step-h3); font-weight: 300;
-    color: var(--fg-dim); margin-bottom: 0.6rem;
-  }
-  .hero__line { display: block; font-size: var(--step-hero); line-height: 1.2; text-wrap: pretty; }
-  .hero__more {
-    font-family: var(--font-hero-sans); font-size: var(--step-body); font-weight: 300; line-height: 1.45;
-    color: var(--fg-dim); max-width: 54ch; margin: 1.6rem 0 0; text-wrap: pretty;
-  }
-  /* Company names carry a touch more weight than the surrounding sentence —
-     still --fg-dim, not --fg, so they read as emphasis within one quiet
-     paragraph rather than jumping out as their own element. */
-  .hero__co { font-weight: 600; }
+  /* The hero sentence is .u-display (global.css): serif 300 at
+     --step-display, italic lead-in via <em>. Background line under it in
+     the sans at body size, dim. */
+  .hero__line { max-width: 22ch; text-wrap: pretty; }
+  .hero__more { color: var(--fg-dim); max-width: 54ch; margin: 1.5rem 0 0; text-wrap: pretty; }
+  .hero__co { color: var(--fg); }
 
   /* Hero copy + portrait side by side on desktop, portrait first and
      centred above the copy on narrow screens — the halftone photo is the
@@ -425,7 +279,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      it below.) */
   .hero__eyebrow {
     display: flex; align-items: center; gap: 0.6rem;
-    font-family: var(--font-mono); font-size: var(--step-label); font-weight: 400;
+    font-family: var(--font-mono); font-size: var(--step-label); font-weight: var(--weight-mono);
     letter-spacing: var(--tracking-label); text-transform: uppercase;
     color: var(--fg-dim); margin: 0 0 1.4rem;
   }
@@ -445,7 +299,6 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
     .hero__statusdot { animation: none; opacity: 1; }
   }
 
-  .intro__body { color: var(--fg-dim); font-size: var(--step-body); }
 
   /* Started at 1.13rem, picked live against a mockup slider — but that
      mockup used a normal-leading serif font. The real .hero__line wears
@@ -461,8 +314,6 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   /* Resume/LinkedIn now use the shared .btn system (global.css) —
      Primary/Secondary — instead of their own bespoke pill rules. */
 
-  .railhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 2.5rem; }
-  .railhead__hint { margin: 0; }
 
   /* The default --space-section top padding, stacked on top of the
      approach band's own bottom padding right above it, pushed "What
@@ -478,43 +329,18 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      list its bottom, and only --space-label sits between them. */
   :global(#work),
   :global(.worklist),
-  :global(#approach),
-  :global(.saidabout),
-  :global(.mosaic-band),
-  :global(.playpeek),
-  :global(#contact) { padding-block: var(--space-band); }
+  :global(.playline) { padding-block: var(--space-band); }
   :global(#work) { padding-block-end: 0; }
   :global(#work + .worklist) { padding-block-start: 0; }
 
-  .sand__body { color: var(--fg-dim); font-size: var(--step-h3); }
-  .sand__body a { color: var(--fg); text-decoration: none; border-bottom: 1px solid currentColor; }
-
-  /* --leading-display (0.85) is a deliberately tight box, so at this size
-     the "p" descender paints ~0.2em below it — straight into the
-     paragraph, which started with no gap at all. In em, so the space
-     tracks the heading's own (viewport-scaled) size. */
-  .contact__title { margin: 0 0 0.35em; }
-  .contact__links { display: flex; gap: 1.5rem; padding-top: 1rem; }
-  .contact__links a { color: var(--fg); }
-
-  .playpeek__head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--space-label); }
-  .playpeek__link {
-    font-family: var(--font-display);
-    font-size: var(--step-label); letter-spacing: var(--tracking-label);
-    text-transform: uppercase; font-weight: 600;
-    color: var(--accent-text); text-decoration: none;
+  /* Section head, allierho.com's pattern: centred serif line, label link
+     a step under it. */
+  .workhead {
+    display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+    text-align: center; padding-bottom: var(--space-band);
   }
-
-  .workhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--space-label); }
-  .workhead__count { font-family: var(--font-accent); font-style: italic; font-size: var(--step-h3); color: var(--fg-dim); margin: 0; }
-  .workhead__all {
-    font-family: var(--font-display); font-size: var(--step-label); font-weight: 600;
-    letter-spacing: var(--tracking-label); text-transform: uppercase;
-    color: var(--accent-text); text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color var(--dur-hover) var(--ease-out);
-  }
-  .workhead__all:hover { border-color: currentColor; }
+  .workhead .u-heading { max-width: 20ch; }
+  .playline .workhead { padding-bottom: 0; }
 
   /* The "Selected work" label owns the list right below it, so that pair
      closes up: no section padding underneath, and the list drops its own
@@ -570,7 +396,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      animation-timeline also doesn't account for `position: sticky`
      freezing the element's own rect while pinned, which made the
      mismatch worse. Replaced with the same plain rAF-on-scroll
-     technique Mosaic.astro's parallax already uses — see the <script>
+     rAF-on-scroll technique — see the script
      below — so the effect is always exactly proportional to how far
      through its own pinned window a card actually is, in every
      browser, transition-free (no lag behind the scroll position). */
@@ -597,7 +423,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   // timeline's animation-range can't stay correct across an arbitrary,
   // responsive padding-bottom, and doesn't account for position:sticky
   // freezing the element's own rect while pinned). Same plain
-  // rAF-on-scroll shape as Mosaic.astro's own parallax.
+  // rAF-on-scroll shape.
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const stackItems = [...document.querySelectorAll<HTMLElement>('.worklist__item')];
     if (stackItems.length) {

@@ -71,11 +71,11 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
            without adding a new colour or a shadow. */
         [data-impeccable-variant="2"] .locked__head-quiet {
           color: var(--fg-dim);
-          font-weight: 500;
+          font-weight: var(--weight-serif);
         }
         [data-impeccable-variant="2"] .locked__head-strong {
           color: var(--fg);
-          font-weight: 600;
+          font-weight: var(--weight-serif);
         }
         /* Variant 3 — micro-details: at 6rem the shared -0.035em display
            tracking sits open; -0.025em (still inside the -0.02..-0.03em
@@ -194,11 +194,11 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     margin: 0 0 1.25rem;
   }
   .locked__head {
-    font-family: var(--font-display);
-    font-size: var(--step-h1);
+    font-family: var(--font-serif);
+    font-size: var(--step-heading);
     line-height: 1.02;
-    letter-spacing: var(--tracking-display);
-    font-weight: 500;
+    letter-spacing: var(--tracking-serif);
+    font-weight: var(--weight-serif);
     margin: 0 0 1.5rem;
     /* Balances across whatever line count the width naturally produces —
        two, at .locked__shell's new max-width, rather than the hand-placed
@@ -242,7 +242,7 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
      square. */
   .locked__peek { flex: 0 0 auto; align-self: center; }
 
-  .locked__err { margin: 0; font-size: var(--step-small); color: var(--accent-text); }
+  .locked__err { margin: 0; font-size: var(--step-body); color: var(--accent-text); }
 
   .locked__actions {
     display: flex;

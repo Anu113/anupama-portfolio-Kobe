@@ -7,12 +7,10 @@
    this site's own palette and typography rather than the reference's
    colours.
 
-   `theme` is the card's own background — one colour from tokens.css's
-   palette, same data-theme mechanism as every other themed band on the
-   site — so each project reads as its own coloured panel against the
-   page's (usually ink) ground, and swapping the theme still carries
-   nine other decisions (--fg, --fg-dim, --screen, --shell, the night
-   variant) for free.
+   Colour: the card itself is the page's white; only the media half is
+   coloured, with the company's project hue (hueFor() in data/work.ts,
+   PROJECT HUES in tokens.css) — so every card reads the same and only
+   the picture changes. `theme` is still accepted but inert.
 
    Hard-edged (`border-radius: 0`), unlike every other card/image/button
    on the site, which share --radius (20px) — see .pc's own inline
@@ -42,6 +40,7 @@
 import type { HoverState } from '../data/hoverState';
 import HoverLabel from './HoverLabel.astro';
 import LockIcon from './LockIcon.astro';
+import { hueFor } from '../data/work';
 
 interface Props {
   index: number;
@@ -61,7 +60,6 @@ const {
   hoverState = 'case-study',
   locked = false,
 } = Astro.props;
-const hasHeroSlot = Astro.slots.has('hero');
 const num = String(index).padStart(2, '0');
 ---
 <a class={`pc ${hoverState === 'case-study' ? 'pc--no-pill' : ''}`} href={href} data-theme={theme} data-hover-trigger>
@@ -81,8 +79,14 @@ const num = String(index).padStart(2, '0');
     <span class="pc__cta">View case study <span class="pc__arrow" aria-hidden="true">→</span></span>
   </div>
 
-  <div class="pc__hero">
-    {hasHeroSlot ? <slot name="hero" /> : (image && <img src={image} alt={alt} loading="lazy" decoding="async" />)}
+  <div class="pc__hero" data-hue={hueFor(company) ?? ''}>
+    {/* Both, not either/or: index.astro passes the hero slot inside a
+        `{'video' in w && …}` condition, and Astro counts that slot as
+        present even when the condition renders nothing — which left every
+        image card's media empty. The page passes `image` only when there's
+        no video, so at most one of these renders. */}
+    <slot name="hero" />
+    {image && <img src={image} alt={alt} loading="lazy" decoding="async" />}
   </div>
 
   {hoverState !== 'case-study' && <HoverLabel state={hoverState} />}
@@ -136,8 +140,8 @@ const num = String(index).padStart(2, '0');
 
   .pc__body { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .pc__num {
-    font-family: var(--font-display);
-    font-size: var(--step-small);
+    font-family: var(--font-sans); font-weight: var(--weight-sans);
+    font-size: var(--step-body);
     color: var(--fg-dim);
     margin: 0 0 clamp(1rem, 2vw, 1.5rem);
   }
@@ -148,11 +152,11 @@ const num = String(index).padStart(2, '0');
   }
   .pc:hover .pc__co { color: var(--fg); }
   .pc__title {
-    font-family: var(--font-display);
-    font-size: var(--step-h2);
+    font-family: var(--font-serif);
+    font-size: var(--step-heading);
     line-height: 1.15;
-    letter-spacing: var(--tracking-tight);
-    font-weight: 600;
+    letter-spacing: var(--tracking-serif);
+    font-weight: var(--weight-serif);
     margin: 0 0 0.6rem;
     text-wrap: balance;
     /* Clamped, not left to grow — a longer title stays the same card
@@ -164,7 +168,7 @@ const num = String(index).padStart(2, '0');
   }
   .pc__lock { margin-left: 0.4em; color: var(--fg-dim); vertical-align: middle; }
   .pc__tagline {
-    font-family: var(--font-accent);
+    font-family: var(--font-serif); font-weight: var(--weight-serif); letter-spacing: var(--tracking-serif);
     font-style: italic;
     font-size: var(--step-body);
     color: var(--fg-dim);
@@ -188,10 +192,10 @@ const num = String(index).padStart(2, '0');
     max-height: 4.2rem; overflow: hidden;
   }
   .pc__tags li {
-    font-family: var(--font-display);
-    font-size: 0.62rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    font-family: var(--font-sans);
+    font-size: var(--step-label);
+    font-weight: var(--weight-sans);
+    letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--fg-dim);
     border: 1px solid currentColor;
@@ -205,9 +209,9 @@ const num = String(index).padStart(2, '0');
     display: inline-flex;
     align-items: center;
     gap: 0.4em;
-    font-family: var(--font-display);
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-family: var(--font-sans);
+    font-size: var(--step-label);
+    font-weight: var(--weight-sans);
     color: var(--fg);
     text-decoration: underline dotted 1px;
     text-underline-offset: 0.2em;
@@ -222,15 +226,16 @@ const num = String(index).padStart(2, '0');
   }
   .pc:hover .pc__arrow { opacity: 1; transform: translate(2px, -2px); }
 
-  /* The canvas — a wall, not a picture. Muted step off the card's own
-     --bg (same hue family), object-fit: contain so a pinned asset
-     centres and shows whole instead of cropping to cover every edge. */
+  /* The canvas — a wall, not a picture. The company's project hue
+     (tokens.css, PROJECT HUES; the only colour on the card), object-fit:
+     contain so a pinned asset centres and shows whole instead of
+     cropping to cover every edge. */
   .pc__hero {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: color-mix(in srgb, var(--bg) 95%, black 5%);
+    background: var(--hue);
     border-radius: 0; /* matches .pc's own hard edge — see its comment */
     overflow: hidden;
     padding: clamp(1.25rem, 3vw, 2.25rem);

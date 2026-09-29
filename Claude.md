@@ -120,7 +120,11 @@ effect:
     `--radius` rule; the site's own cards stay square. Colours, corners and
     timing live in the "Pixel" block of `tokens.css`.
   - Content: a conversation tree in `src/data/ask.ts` — buttons only, no
-    free text, no model, no backend. Pixel's jokes are about Pixel (the
+    free text, no model, no backend. Pixel speaks in light inverted,
+    sage-ish syntax ("Staff designer, she is.") — chosen on request as a
+    speech pattern only; no Star Wars name, art, quote or catchphrase, and
+    never so heavy that the level, the ask or the location takes a second
+    read. Pixel's jokes are about Pixel (the
     laptop, tabs, meetings), never claims about her work; the facts stay
     plain and come only from `cases.ts`/`site.ts`, with `site.ask`,
     `site.location`, `site.email` read from `site.ts`. Every path ends in a
@@ -285,28 +289,35 @@ prior brief). That direction is now considered **too decorative and too
 text-heavy** for the senior/staff/design-eng positioning above, and is being
 walked back. Concretely, in the current implementation:
 
-- The palette system (`tokens.css`) still carries ~10 named theme blocks with
-  day/night variants. This is more than the new direction calls for and
-  should shrink toward a neutral base + one accent as work proceeds — don't
-  add to it.
-- `OneWord.astro` (visitor-typed headline word), `CaseDoodle.astro`
-  (hover-reveal creature doodles), `Testimonials.astro`, and `Marquee.astro`
-  are examples of the scattered "demonstrate capability" pattern this file
-  asks to avoid — each was its own one-off effect. They are being replaced,
-  not just deleted: the home page's signature-moment budget moves to the
-  named exceptions above (hero shader, first-paint loader, one reused hover
-  system), approved via mockup before implementation. Don't extend these old
-  components' usage; when touching pages that use them, replace with the new
-  hover vocabulary rather than adding another pattern alongside it.
-  `CursorTrail.astro` is the one exception — it's kept (see above), unchanged
-  from its existing implementation and constraints. Pixel (`AskBubble.astro`)
-  is a newer, separately approved addition, not one of these old one-offs.
-- The home page itself is being rethought around this: hero (shader) → work
-  grid with the reveal-on-hover treatment → a denser text-row list variant
-  (underline-draw hover, no image movement, for long lists) → a stat-row
-  "approach" section replacing a written paragraph → plain contact. Fewer,
-  larger sections; each one doing more visual work than the section it
-  replaces.
+- **Design system = allierho.com's, measured off the live site.** Three
+  faces, one weight each: Crimson Pro 300 (roman + italic) for headlines,
+  Manrope 600 for everything else, Azeret Mono 400 for ticking numbers.
+  Scale: display 34→50px, heading 32→44px, nav 14px, label 12px uppercase;
+  plus two steps the reference lacks (title 20→26px, body 15px) because it
+  has no long copy. Emphasis is the serif turning italic mid-line, nothing
+  else. One palette: `#fcfcfc` ground, `#262626` ink, one terracotta accent
+  (`#b4482a`, her own — the reference's purple was swapped out), square corners except pill buttons. Deliberate departures
+  from the reference are commented in `tokens.css` (the reference's
+  `#a8a8a8` grey fails AA and was darkened to `#707070`). Don't add a
+  fourth family, a second weight, or a second palette.
+- **Project hues** are the one place colour appears beyond the accent: one
+  muted hue per company (Okta sky `#c9dcf2`, PayPal lilac `#e0d6ef`, Walmart
+  butter `#f4dc9c`), only behind that company's screenshots — home card
+  media, /work thumbnail, case study cover. Set via `data-hue` from
+  `hueFor()` in `data/work.ts`; tokens in `tokens.css` (PROJECT HUES). Never
+  on text, chrome or full-width bands.
+- Night mode, the named theme palettes, tints/swatches, and the one-off
+  effect components (`OneWord`, `CaseDoodle`, `Testimonials`, `Marquee`,
+  `Mosaic`, the footer's variable-weight wordmark, the section watermark
+  numerals) have been removed. `<Section theme="…">` still exists but every
+  theme name resolves to the same colours.
+- Pixel (`AskBubble.astro`) was left out of that pass on request: it keeps
+  its own palette and pins its old type (Roboto Mono, still loaded only for
+  it) via the block at the end of `tokens.css`.
+- The home page is now: hero → "Selected *work*" head + project cards →
+  one-line playground pointer → footer (which carries contact). Section
+  heads follow the reference: a centred serif line with an italic phrase,
+  a label link under it.
 - `cases.ts` holds case-study content as structural prose with `[X]`
   placeholders for real numbers — written from what this file already
   records about each project, not confirmed by Anupama. It also currently

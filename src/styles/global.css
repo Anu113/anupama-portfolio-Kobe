@@ -1,10 +1,8 @@
 @import 'tailwindcss';
 @import './tokens.css';
 
-/* No @font-face here on purpose. General Sans is loaded by the <link> in
-   Base.astro, which is what serves the real .woff2. A second @font-face
-   pointing at that stylesheet URL was never a valid src, and once the
-   variable cut landed it also claimed weight 400 for the whole site. */
+/* No @font-face here: Crimson Pro, Manrope and Azeret Mono come from the
+   Google Fonts <link> in Base.astro. */
 
 * { box-sizing: border-box; }
 
@@ -14,9 +12,11 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-sans);
   font-size: var(--step-body);
   line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
   -webkit-font-smoothing: antialiased;
   /* clip, not hidden. `overflow-x: hidden` forces overflow-y to `auto`,
      which makes <body> a scroll container and silently breaks every
@@ -27,10 +27,12 @@ body {
               color var(--dur-hover) var(--ease-out);
 }
 
-/* Themed bands cross-fade when night mode is toggled. */
-[data-themeband] {
-  transition: background var(--dur-hover) var(--ease-out),
-              color var(--dur-hover) var(--ease-out);
+/* Headings default to the serif role. Browsers bold h1–h6; the system
+   has one serif weight, so undo that here once rather than per component. */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: var(--weight-serif);
+  letter-spacing: var(--tracking-serif);
 }
 
 /* Visually hidden but present to screen readers/assistive tech — for
@@ -48,33 +50,58 @@ body {
   border: 0;
 }
 
-/* --- Reusable type roles ---------------------------------- */
-.u-display {
-  font-family: var(--font-display);
-  font-size: var(--step-display);
-  line-height: var(--leading-display);
-  letter-spacing: var(--tracking-display);
-  font-weight: 500;
+/* --- Reusable type roles ----------------------------------
+   The whole system, as classes. Components that set type themselves
+   read the same tokens.
+     .u-display  the hero sentence — serif 300, 50px
+     .u-heading  section/page headlines — serif 300, 44px
+     .u-title    sub-headings — serif 300, 26px
+     .u-label    labels, captions — Manrope 600, 12px, uppercase
+     .u-nav      the name and nav links — Manrope 600, 14px, uppercase
+     .u-mono     ticking numbers, arrows — Azeret Mono 400
+   Inside any serif role, <em> (or .u-accent) is the same face in italic:
+   that roman/italic switch mid-line is the system's only emphasis. */
+.u-display,
+.u-heading,
+.u-title {
+  font-family: var(--font-serif);
+  font-weight: var(--weight-serif);
+  letter-spacing: var(--tracking-serif);
   margin: 0;
   text-wrap: balance;
 }
+.u-display { font-size: var(--step-display); line-height: var(--leading-display); }
+.u-heading { font-size: var(--step-heading); line-height: var(--leading-heading); }
+.u-title   { font-size: var(--step-title);   line-height: var(--leading-heading); }
 .u-display em,
+.u-heading em,
+.u-title em,
 .u-accent {
-  font-family: var(--font-accent);
+  font-family: var(--font-serif);
   font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: var(--weight-serif);
+}
+.u-label,
+.u-nav {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-sans);
+  text-transform: uppercase;
 }
 .u-label {
-  /* Explicit, not inherited: --font-body is now Crimson Pro. Uppercase
-     captions/eyebrows/labels are a different register from reading copy and
-     keep the original sans rather than following body type. */
-  font-family: var(--font-display);
   font-size: var(--step-label);
+  line-height: var(--leading-label);
   letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  font-weight: 500;
   color: var(--fg-dim);
+}
+.u-nav {
+  font-size: var(--step-nav);
+  line-height: 1;
+  letter-spacing: var(--tracking-nav);
+}
+.u-mono {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-mono);
+  letter-spacing: 0;
 }
 .u-measure { max-width: var(--measure); }
 
@@ -105,14 +132,16 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5em;
-  font-family: var(--font-display);
-  font-size: var(--step-button);
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-size: var(--step-label);
+  font-weight: var(--weight-sans);
+  line-height: var(--leading-label);
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
   text-decoration: none;
-  border-radius: 999px;
-  padding: 0.65rem 1.15rem;
+  border-radius: var(--radius-pill);
+  /* The reference's pill: 10px 18px around a 12px label. */
+  padding: 0.625rem 1.125rem;
   border: 1px solid transparent;
   cursor: pointer;
   background: none;
@@ -125,30 +154,31 @@ body {
 .btn[disabled],
 .btn.is-disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-.btn--primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-.btn--primary:hover { opacity: 0.86; }
+.btn--primary { background: var(--accent); color: var(--on-accent-small); border-color: var(--accent); }
+.btn--primary:hover { background: var(--fg); border-color: var(--fg); }
 
-.btn--secondary { color: var(--fg); border-color: var(--fg-dim); }
-.btn--secondary:hover { background: var(--screen); border-color: var(--fg-dim); }
+.btn--secondary { color: var(--fg); border-color: currentColor; }
+.btn--secondary:hover { background: var(--fg); border-color: var(--fg); color: var(--bg); }
 
 .btn--tertiary { color: var(--fg-dim); }
-.btn--tertiary:hover { background: var(--screen); color: var(--fg); }
+.btn--tertiary:hover { color: var(--fg); }
 
 /* Icon-only — same family, square padding instead of horizontal. Pair
    with --secondary or --tertiary, e.g. the password show/hide toggle. */
 .btn--icon { padding: 0.6rem; aspect-ratio: 1; gap: 0; }
 
-/* Not a pill at all — in-flow text, reads as body copy so it doesn't look
-   like a stray caption inside a sentence. */
+/* Not a pill at all — the reference's "VIEW ALL WORK": a label-sized
+   uppercase link with an underline that draws in on hover. */
 .btn--link {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
-  font-family: var(--font-display);
-  font-size: var(--step-body);
-  font-weight: 500;
-  text-transform: none;
-  letter-spacing: normal;
+  font-family: var(--font-sans);
+  font-size: var(--step-label);
+  font-weight: var(--weight-sans);
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
   padding: 0;
   border: none;
   border-radius: 0;
@@ -235,6 +265,4 @@ body {
   }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
 }
-a {
-   color: var(--accent-text); 
-}
+a { color: var(--accent-text); }

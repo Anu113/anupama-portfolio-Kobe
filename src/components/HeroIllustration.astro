@@ -22,101 +22,57 @@
    rather than flipping; leaving the card eases the index back to 0
    (the clip's rest pose) the same way.
 
-   public/images/hero-sprite.webp is a GRID of frames (1800x1013 each,
-   8 columns x 6 rows) sampled from the source clip. A grid, not a
-   single strip, is what keeps this under WebP's 16383px per-dimension
-   limit at this frame size (14400x6078 total).
+   public/images/hero-sprite.webp is a GRID of 48 frames (700x980 each,
+   8 columns x 6 rows) — every 4th frame of the 8s, 24fps source clip
+   (a watercolour version of the character on a near-white backdrop,
+   1080x1920, added 2026-09-29).
 
-   Current sprite is matted to real alpha transparency, so the figure
-   sits on whatever the card's own background is (nothing explicit —
-   it inherits the page's --bg). This was briefly OPAQUE instead (see
-   git history) — the clip's own flat backdrop baked in, with
-   tokens.css's [data-theme='charcoal'] --bg manually matched to it —
-   by explicit instruction, but that traded away automatic day/night
-   and palette-change tracking for showing the clip's backdrop colour
-   exactly as rendered, and produced a visible seam in night mode
-   (the flat backdrop can't darken the way the page's own --bg does).
-   Matted again, also by explicit instruction, once that seam showed
-   up. --bg no longer needs to track the sprite's backdrop colour at
-   all now — it can change freely (day/night, a future palette) and
-   the figure will always sit on it cleanly, in exchange for the
-   sprite always needing this matting step done, rather than being a
-   straight scale-and-tile of the source clip's own frames.
+   Each frame is cropped to the character before export: source window
+   x 40-1080, y 374-1830 (the figure's union bounds across all 48 frames,
+   x 56-1069, y 390-1812, plus a margin), which is 5:7 — the box's
+   --hero-art-ratio (tokens.css). The box's edges are the figure's edges,
+   so bottom-aligning it puts the chair legs on the CTA row's line.
+   AskBubble's launcher position is measured in this same 700x980 frame.
 
-   Matting recipe (flat-backdrop source — sample the new clip's own
-   corners first; if they're not near-identical it's a gradient
-   backdrop instead and needs the local-texture-variance approach
-   from this file's git history, not this one). Border-connected flood
-   fill, not a flat colour/brightness threshold alone, is what keeps
-   the matte from eating similarly-coloured content (a red pillow
-   behind the figure can be nearly the same tone as the backdrop).
-   A contact shadow directly touching the figure isn't reachable from
-   the background threshold (different, darker tone) but IS the
-   largest leftover blob once background is removed, so keeping only
-   the single largest connected foreground component after the first
-   pass cleans it up without a manual mask:
-     python3 -c "
-import numpy as np
-from PIL import Image
-from scipy import ndimage
-im = Image.open('frame.png').convert('RGB')
-arr = np.array(im).astype(np.int16)
-bg_ref = np.array([152,63,41])  # sample this clip's own corners
-diff = np.sqrt(((arr - bg_ref)**2).sum(axis=2))
-bg_like = diff < 16
-labeled, n = ndimage.label(bg_like)
-border = set(labeled[0,:])|set(labeled[-1,:])|set(labeled[:,0])|set(labeled[:,-1])
-border.discard(0)
-background_mask = np.isin(labeled, list(border))
-foreground = ~background_mask
-fg_labeled, fg_n = ndimage.label(foreground)
-sizes = ndimage.sum(foreground, fg_labeled, range(1, fg_n+1))
-main = fg_labeled == (np.argmax(sizes) + 1)
-mask = ndimage.binary_dilation(~main, iterations=1)
-alpha = np.clip(ndimage.gaussian_filter(np.where(mask,0.,255.), sigma=0.8), 0, 255).astype(np.uint8)
-rgba = np.dstack([np.array(im), alpha])
-Image.fromarray(rgba, 'RGBA').save('matted/frame.png')
-"
-   Then scale each matted frame to FRAME_W x FRAME_H and tile into the
-   COLS x ROWS grid:
+   The source backdrop is off-white (247-253, never pure). Export first
+   lifts only the highlights — levels 200-247 stretched to 200-255,
+   darker values untouched — so the backdrop is exactly white without
+   shifting the figure's colours. Then a soft matte: alpha ramps from 0
+   at white to 1 at 40 levels below it (on each pixel's darkest channel),
+   colour left as is. No flood fill, so the watercolour edges stay soft;
+   it sits cleanly on any light ground and still holds up on a dark one.
+   (mix-blend-mode: multiply on an opaque sprite was tried first and is
+   smaller, but any fading ancestor — the Reveal wrapper — isolates the
+   blend and flashes a white box on load. Colour-to-alpha against white
+   was exact but 12-15MB.)
+
+   Export recipe (from the source .mp4):
+     ffmpeg -i clip.mp4 -vf "select='not(mod(n\,4))'" -vsync vfr frames/f%03d.png
      python3 -c "
 from PIL import Image
-import glob
-files = sorted(glob.glob('matted/f*.png'))
-imgs = [Image.open(f).resize((1800,1013), Image.LANCZOS) for f in files]
-w, h = imgs[0].size
-COLS, ROWS = 8, 6
-sprite = Image.new('RGBA', (w*COLS, h*ROWS), (0,0,0,0))
+import numpy as np, glob
+lut = np.arange(256, dtype=float)
+lut = np.where(lut <= 200, lut, 200 + (lut - 200) * 55 / 47)
+lut = np.clip(np.round(lut), 0, 255).astype(np.uint8)
+def frame(f):
+    rgb = lut[np.array(Image.open(f).convert('RGB')
+              .crop((40, 374, 1080, 1830)).resize((700, 980), Image.LANCZOS))]
+    a = np.clip((255 - rgb.min(2).astype(float)) / 40, 0, 1)
+    return Image.fromarray(np.dstack([rgb, np.round(a * 255).astype(np.uint8)]), 'RGBA')
+imgs = [frame(f) for f in sorted(glob.glob('frames/*.png'))]
+sprite = Image.new('RGBA', (700 * 8, 980 * 6), (255, 255, 255, 0))
 for i, im in enumerate(imgs):
-    sprite.paste(im, ((i % COLS)*w, (i // COLS)*h))
-sprite.save('public/images/hero-sprite.webp', 'WEBP', quality=82, method=6)
-imgs[0].save('public/images/hero-idle.webp', 'WEBP', quality=90, method=6)
+    sprite.paste(im, ((i % 8) * 700, (i // 8) * 980))
+sprite.save('public/images/hero-sprite.webp', 'WEBP', quality=80, alpha_quality=80, method=6)
+imgs[0].save('public/images/hero-idle.webp', 'WEBP', quality=88, alpha_quality=90, method=6)
 "
-   Update FRAME_COUNT/FRAME_W/FRAME_H/COLS below, the .hero-scrub
-   aspect-ratio, and the `size` prop passed in on the page if the
-   frame count, aspect, or target display width changes. public/
-   images/hero-idle.webp is frame 0, exported the same way, and is
-   what non-JS/reduced-motion/coarse-pointer visitors see.
+   public/images/hero-idle.webp (frame 0) is what non-JS, reduced-motion
+   and coarse-pointer visitors see.
 
-   Frame size intentionally tracks display size rather than going as
-   high-res as the source allows — nearest-neighbour sampling (below)
-   is what keeps the grid from bleeding colour across cell boundaries
-   when scaled, and nearest-neighbour upscaling looks pixelated, not
-   soft, so the fix for blur is matching resolution to display size,
-   not maximizing it.
-
-   Cropped to the character. Each 1800px frame is mostly backdrop — the
-   figure spans x 572-1348 in every frame (measured across all 48) — and
-   that empty band used to sit inside the box, so on wide screens the
-   hero read as "headline, huge gap, illustration" with the gap growing
-   with the image. Only the CROP_* window (below) is drawn — x 552-1372,
-   y 24-986, the figure's bounds (x 576-1350, y 36-981 across all 48
-   frames) plus a small margin — so the box's edges are the figure's
-   edges: the page's flex gap is the real text-to-figure gap, and
-   bottom-aligning the box puts her feet on the CTA row's line. The
-   still's offsets, --hero-art-ratio (tokens.css) and AskBubble's
-   position all derive from these numbers; change them together if the
-   sprite is re-exported.
+   Frame size tracks display size (~2x the 31rem box height) rather than
+   the source's full resolution — nearest-neighbour sampling (below)
+   keeps the grid from bleeding colour across cell edges, and it looks
+   pixelated when upscaled, so resolution is matched, not maximised.
 
    Fine pointers only. Touch/coarse pointers and `prefers-reduced-motion`
    get the static hero-idle.webp and no script runs. */
@@ -161,18 +117,15 @@ const { alt, size = 480 } = Astro.props;
     width: 100%;
     height: 100%;
   }
-  /* The still shows the same window as the canvas crop: the whole frame,
-     scaled so CROP_W x CROP_H fills the box, shifted by CROP_X/CROP_Y.
-     1800/820, 1013/962, 552/820, 24/962. */
+  /* The still is frame 0, already cropped to the same window. */
   .hero-scrub__still {
     position: absolute;
+    inset: 0;
     display: block;
-    max-width: none;
-    width: 219.51%;
-    height: 105.3%;
-    left: -67.32%;
-    top: -2.49%;
+    width: 100%;
+    height: 100%;
   }
+
 
   /* Default (JS-driven) state: canvas visible, static fallback hidden.
      .no-js-scrub (set by the script below only when scrubbing can't
@@ -185,14 +138,14 @@ const { alt, size = 480 } = Astro.props;
 
 <script>
   const FRAME_COUNT = 48;
-  const FRAME_W = 1800;
-  const FRAME_H = 1013;
-  // Horizontal window drawn from each frame — see "Cropped to the
-  // character" in the header comment. Matches --crop-x/--crop-w.
-  const CROP_X = 552;
-  const CROP_Y = 24;
-  const CROP_W = 820;
-  const CROP_H = 962;
+  const FRAME_W = 700;
+  const FRAME_H = 980;
+  // Frames are exported pre-cropped to the character (see the header
+  // comment), so the whole frame is drawn.
+  const CROP_X = 0;
+  const CROP_Y = 0;
+  const CROP_W = FRAME_W;
+  const CROP_H = FRAME_H;
   const COLS = 8;
   const SMOOTHING = 0.14; // higher = snappier, lower = more inertia
   const Y_INFLUENCE = 0.28; // how much vertical pointer position nudges the frame vs x
@@ -206,10 +159,8 @@ const { alt, size = 480 } = Astro.props;
     }
 
     const canvas = figure.querySelector('canvas')!;
-    // alpha: true unconditionally — works whether the current sprite is
-    // matted (transparent, tracks the card's own background) or opaque
-    // (carries its own backdrop baked in, see the header comment above
-    // for which this sprite currently is).
+    // The sprite is matted (transparent backdrop), so the canvas needs
+    // alpha; clearRect each frame leaves nothing behind.
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) {
       figure.classList.add('no-js-scrub');
@@ -241,10 +192,8 @@ const { alt, size = 480 } = Astro.props;
       const frame = Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(index)));
       const sx = (frame % COLS) * FRAME_W;
       const sy = Math.floor(frame / COLS) * FRAME_H;
-      // Box aspect matches the crop window (820:962), so the window
-      // maps straight onto the canvas.
-      // Clear first: the sprite is transparent outside the figure, and
-      // without this the previous frame would show through underneath.
+      // Box aspect matches the frame (5:7), so it maps straight onto the
+      // canvas. Clear first so no previous frame shows through.
       ctx!.clearRect(0, 0, canvas.width, canvas.height);
       ctx!.drawImage(sprite, sx + CROP_X, sy + CROP_Y, CROP_W, CROP_H, 0, 0, canvas.width, canvas.height);
     };

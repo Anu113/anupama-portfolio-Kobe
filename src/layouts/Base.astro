@@ -19,18 +19,6 @@ const {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Day/night mode is resolved before first paint so a returning
-         visitor never sees the wrong palette flash. Runs inline on
-         purpose — do not move this to a bundled script. -->
-    <script is:inline>
-      (() => {
-        let stored = null;
-        try { stored = localStorage.getItem('mode'); } catch (e) {}
-        document.documentElement.dataset.mode =
-          stored ||
-          (matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day');
-      })();
-    </script>
     <title>{title}</title>
     <meta name="description" content={description} />
     <!-- Indexable. The Wix site was serving noindex — do not reintroduce it. -->
@@ -38,41 +26,16 @@ const {
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-    <!-- `@1` is Fontshare's VARIABLE cut of General Sans: one file covering
-         the whole 200–700 weight axis instead of three static masters. The
-         footer wordmark animates that axis under the cursor, which a static
-         face cannot do. Weights 400/500/600 used everywhere else render the
-         same. Don't swap this back to `@400,500,600`. -->
+    <!-- The type system (tokens.css): Crimson Pro 300 roman + italic for
+         headlines, Manrope 600 for everything else, Azeret Mono 400 for
+         numbers. One weight per face on purpose — add a weight here only
+         if tokens.css gains a role that needs it. Roboto Mono is Pixel's
+         (AskBubble.astro) alone, kept until the chat is restyled. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://api.fontshare.com/v2/css?f[]=general-sans@1&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap"
-    />
-    <!-- Body copy. 400/500 covers regular paragraphs and the heavier .u-label
-         weight; italic comes along for any <em> that lands in body text. -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap"
-    />
-    <!-- The playground stream's print-label captions only. Weight 400 is
-         the only cut used. -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap"
-    />
-    <!-- Home hero only: the greeting ("Hi, I'm Anupama,") and the bio line
-         under the headline (.hero__hi/.hero__more, index.astro) — a
-         softer, less geometric sans than General Sans, by request. 300
-         (Light) for the greeting and the bio's own weight — 400/500 read
-         too heavy — and 600 for the company names inside the bio
-         (.hero__co inherits this face too). -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Roboto+Mono:wght@400&display=swap"
     />
     <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
   </head>

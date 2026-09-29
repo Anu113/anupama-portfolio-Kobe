@@ -7,11 +7,10 @@
    moved to match the reference's single placement instead of switching
    orientation at a breakpoint).
    Items: Work, About, Playground, Contact, then Preferences, which opens a
-   small panel with two switches:
-     Theme  Light / System / Dark. System follows the OS setting (the site
-            already did this until a visitor picked one); Light and Dark are
-            remembered, the same `mode` key Base.astro reads before paint.
+   small panel with one switch:
      Sound  On / Off, the site's UI sounds (src/scripts/sound.ts).
+   (A Light / System / Dark switch lived here too; removed with night mode
+   when the site moved to allierho.com's single palette.)
    The glass (a translucent page-coloured fill with a backdrop blur) is the
    reference's own, requested as an exact match; it sits on its own layer so
    the panel and tooltips aren't caught inside a blurred box.
@@ -64,21 +63,6 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
     </button>
 
     <div class="prefs" id="dock-prefs" role="dialog" aria-label="Preferences" hidden data-prefs>
-      <div class="prefs__row">
-        <span class="prefs__label" id="prefs-theme">Theme</span>
-        <div class="seg" role="radiogroup" aria-labelledby="prefs-theme" data-seg="theme">
-          <span class="seg__thumb" aria-hidden="true"></span>
-          <button type="button" class="seg__opt" role="radio" aria-checked="false" aria-label="Light" data-value="light">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-          </button>
-          <button type="button" class="seg__opt" role="radio" aria-checked="false" aria-label="System" data-value="system">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
-          </button>
-          <button type="button" class="seg__opt" role="radio" aria-checked="false" aria-label="Dark" data-value="dark">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
-          </button>
-        </div>
-      </div>
       <div class="prefs__row">
         <span class="prefs__label" id="prefs-sound">Sound</span>
         <div class="seg" role="radiogroup" aria-labelledby="prefs-sound" data-seg="sound">
@@ -178,8 +162,8 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
     background: var(--bg);
     color: var(--fg);
     box-shadow: 0 0 0 1px var(--dock-ring), var(--dock-tip-shadow);
-    font-family: var(--font-display);
-    font-size: var(--step-dock-tip);
+    font-family: var(--font-sans); font-weight: var(--weight-sans);
+    font-size: var(--step-label);
     line-height: 1.3;
     white-space: nowrap;
     opacity: 0;
@@ -218,8 +202,8 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
   }
   .prefs__row + .prefs__row { margin-top: 0.25rem; }
   .prefs__label {
-    font-family: var(--font-display);
-    font-size: var(--step-dock-tip);
+    font-family: var(--font-sans); font-weight: var(--weight-sans);
+    font-size: var(--step-label);
     color: var(--fg-dim);
   }
 
@@ -264,7 +248,7 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
 </style>
 
 <script>
-  import { isSoundOn, setSoundOn, onSoundChange, playTick, playTap, playThemeTone } from '../scripts/sound';
+  import { isSoundOn, setSoundOn, onSoundChange, playTick, playTap } from '../scripts/sound';
 
   const dock = document.querySelector<HTMLElement>('[data-dock]');
   if (dock) {
@@ -315,7 +299,6 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
     pick();
     addEventListener('scroll', pick, { passive: true });
     addEventListener('resize', pick);
-    addEventListener('theme:changed', pick);
 
     // --- Preferences panel ------------------------------------------------
     const btn = dock.querySelector<HTMLButtonElement>('[data-prefs-btn]')!;
@@ -344,32 +327,7 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
       if (instant) requestAnimationFrame(() => requestAnimationFrame(() => s.thumb.removeAttribute('data-instant')));
     };
 
-    // Theme. `mode` in localStorage is 'day' | 'night' when chosen, absent
-    // for System; Base.astro resolves it before first paint either way.
-    const root = document.documentElement;
-    const osDark = matchMedia('(prefers-color-scheme: dark)');
-    const storedMode = () => { try { return localStorage.getItem('mode'); } catch { return null; } };
-    const themePref = () => { const m = storedMode(); return m === 'night' ? 'dark' : m === 'day' ? 'light' : 'system'; };
-    const applyMode = (next: 'day' | 'night') => {
-      if (root.dataset.mode === next) return;
-      playThemeTone(next === 'night');
-      root.dataset.mode = next;
-      dispatchEvent(new Event('theme:changed'));
-    };
-    const setTheme = (pref: string) => {
-      try {
-        if (pref === 'system') localStorage.removeItem('mode');
-        else localStorage.setItem('mode', pref === 'dark' ? 'night' : 'day');
-      } catch {}
-      applyMode(pref === 'dark' ? 'night' : pref === 'light' ? 'day' : osDark.matches ? 'night' : 'day');
-      paintSeg('theme', pref);
-    };
-    osDark.addEventListener('change', () => { if (themePref() === 'system') applyMode(osDark.matches ? 'night' : 'day'); });
-
-    const choose = (name: string, value: string) => {
-      if (name === 'theme') setTheme(value);
-      else setSoundOn(value === 'on');
-    };
+    const choose = (_name: string, value: string) => setSoundOn(value === 'on');
     onSoundChange((on) => paintSeg('sound', on ? 'on' : 'off'));
 
     segs.forEach((s, name) => {
@@ -389,7 +347,6 @@ const activeIndex = items.findIndex((i) => path === i.href || path.startsWith(`$
     const open = () => {
       panel.hidden = false;
       btn.setAttribute('aria-expanded', 'true');
-      paintSeg('theme', themePref(), true);
       paintSeg('sound', isSoundOn() ? 'on' : 'off', true);
       panel.querySelector<HTMLElement>('[role="radio"][tabindex="0"]')?.focus({ preventScroll: true });
     };
