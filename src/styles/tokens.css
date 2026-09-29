@@ -9,6 +9,12 @@
   --font-accent: 'Instrument Serif', Georgia, serif;   /* the italic word */
   --font-body: 'Crimson Pro', Georgia, serif;
   --font-mono: 'Roboto Mono', ui-monospace, monospace;   /* the playground's print-label captions, and the hero's status eyebrow */
+  /* Home hero only (.hero__hi/.hero__more, index.astro) — a softer, less
+     geometric sans than --font-display, added specifically for the
+     greeting and bio line under the headline, by request. Not a general
+     type-system addition: everywhere else on the site still reads
+     --font-display/--font-body/--font-accent/--font-mono. */
+  --font-hero-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 
   /* --- TYPE SCALE ---------------------------------------
      Display sizes use vw so type overflows the viewport
@@ -21,6 +27,8 @@
   /* Home hero headline. Matched to hansonwu.com's hero sentence:
      32px at 375w, ~48px at 1024w, 60px from 1440w up. */
   --step-hero: clamp(2rem, 1.38rem + 2.63vw, 3.75rem);
+  --step-lede: clamp(1.125rem, 1rem + 0.55vw, 1.5rem);   /* supporting line under the hero headline: 18→24px */
+  --step-name: clamp(1rem, 0.825rem + 0.75vw, 1.5rem);   /* the name, top-left of the nav: 16→24px, matched to hansonwu.com */
   --step-body: clamp(1rem, 1.15vw, 1.1875rem);
   --step-small: 0.9375rem;   /* captions, metric labels — copy meant to be
                                 read, one notch under body. --step-label is
@@ -80,17 +88,9 @@
   --dur-micro: 150ms;
   --dur-micro-move: 180ms;
 
-  /* Identity prism (IdentityPrism.astro, top-left of the nav at ≥1200px).
-     Sizes are the reference's own (huyml.co): a 56 × 123 box, 56 deep,
-     20px off the corner, drawn 1.54× on very wide screens. The face swap
-     on hover runs 450ms, the reference's timing, on the sitewide curve. */
-  --idmark-w: 56px;
-  --idmark-h: 123px;
+  /* The name, top-left of the nav (Nav.astro). --idmark-h is its line box. */
+  --idmark-h: calc(var(--step-name) * 1.2);
   --idmark-inset: 20px;
-  --idmark-scale-xl: 1.54;
-  --idmark-word: 1.45rem;   /* ANUPAMA, sized to run the face's full length */
-  --idmark-meta: 7.5px;     /* the two small lines beside it */
-  --dur-idmark-swap: 450ms;
 
   /* Top row (Nav.astro at ≥1200px): a 16-column grid on the same 20px
      inset as the prism, 20px gutters. */
@@ -108,8 +108,7 @@
   --dock-rule: 1.125rem;      /* divider length */
   --dock-dot: 4px;
   --dock-tip-offset: 0.625rem;
-  --dock-offset: 30px;        /* under the name box, at ≥1200px */
-  --dock-edge: 1.25rem;       /* off the bottom edge, below 1200px */
+  --dock-edge: 1.25rem;       /* off the bottom edge, every width */
   --step-dock-tip: 0.875rem;
   --radius-panel: 14px;
   --dock-shadow: 0 8px 30px rgb(0 0 0 / 0.12);
@@ -118,29 +117,44 @@
   --ease-swift: cubic-bezier(0.2, 0.8, 0.2, 1);
   --dur-dock: 150ms;          /* hover tint, tooltip, panel */
   --dur-dock-dot: 220ms;      /* active dot and switch thumb sliding */
+  /* Total footprint the fixed bottom dock claims at the viewport's bottom
+     edge — its own thickness, the edge offset, and a little breathing room
+     on top. Any band whose last content could land at the bottom of the
+     viewport (the home hero's CTA row on a short/mobile screen, most
+     visibly) should reserve at least this much so the dock never sits over
+     an interactive element. */
+  --dock-clearance: calc(var(--dock-size) + var(--dock-edge) + 0.75rem);
 
-  /* --- CHROME RAIL: keeping content out from under the fixed dock -------
-     At ≥1200px the name and, under it, the dock sit in the top bar's first
-     two columns, fixed while the page scrolls. Content starts one column
-     further in than it strictly needs to, leaving an empty band beside
-     them so the sidebar reads as its own space, not crowded by the page:
+  /* --- CHROME RAIL: keeping content out from under the fixed name -------
+     At ≥1200px the name sits fixed top-left, in the top bar's first two
+     columns, while the page scrolls under it (the dock is bottom-centre at
+     every width now, so it doesn't factor in here — it used to add a third
+     "breathing" column on top of the two the name itself needs, back when
+     it was a tall stack sitting under the name; with the dock gone that
+     extra column was just dead space down the whole page, so this is now
+     exactly the name's own width, no more):
        --gutter-start  where text and media begin on the left. Below 1200px
                        it is just --gutter. From 1200px it is the start of
-                       the bar grid's fourth column (x≈286 at 1440 wide,
-                       ≈241 at 1200). The top row (Audio, clock, email)
-                       starts on the same line, so the bar and every
-                       page's content share one left edge.
+                       the bar grid's third column (x≈198 at 1440 wide,
+                       ≈168 at 1200 — was ≈286/≈241 with the old extra
+                       column). The top row (clock, email) starts on the
+                       same line, so the bar and every page's content share
+                       one left edge.
        --bleed-start   how far media may still bleed left past that start.
                        --gutter below 1200px (edge-to-edge images), 0 above,
-                       so nothing slides under the menu.
-     Band backgrounds are full-width and do run under the menu; only their
+                       so nothing slides under the name.
+     Band backgrounds are full-width and do run under the name; only their
      content respects the rail. .u-shell (global.css) reads these, so any
      <Section> gets it for free. Anything that pads itself with --gutter
      directly should use --gutter-start on its left side instead. */
-  --chrome-cols: 3;
+  --chrome-cols: 2;
   /* Home hero's copy column, side by side with the illustration (index
-     .astro). The copy keeps this width; the illustration takes the rest. */
-  --hero-copy-w: clamp(20rem, 28vw, 30rem);
+     .astro). The copy keeps this width; the illustration takes the rest.
+     Widened (was 20rem/40vw/44rem) so the headline and bio wrap to fewer
+     lines — paired with .hero reclaiming the symmetric --gutter (see
+     index.astro) so the extra width doesn't come out of the
+     illustration's own share of the row. */
+  --hero-copy-w: clamp(22rem, 46vw, 50rem);
   --gutter-start: var(--gutter);
   --bleed-start: var(--gutter);
 

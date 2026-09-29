@@ -52,30 +52,19 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
           <span class="hero__statusdot" aria-hidden="true"></span>
           Open to ambitious problems &amp; good people.
         </p>
-        <h1 class="u-display hero__line">Hi, I&rsquo;m Anupama.</h1>
-        <p class="hero__greet">
-          <span class="reflect-wrap"><span class="reflect" tabindex="0">Staff Product Designer</span><span class="reflect__aside" aria-hidden="true">— 10+ yrs</span></span>{' '}@ Okta.
-        </p>
-        <p class="hero__bio">
-          I ship
-          — from systems and strategy to the last stubborn pixel. I bring
-          curiosity, craft, and a little fun to whatever I&rsquo;m building.
-        </p>
-        <p class="hero__bio hero__bio--secondary">
-          I&rsquo;ve worked across a wonderfully eclectic mix of domains —{' '}
-          <span class="reflect-wrap"><span class="reflect" tabindex="0">data &amp; privacy</span><span class="reflect__aside" aria-hidden="true">— Deloitte</span></span>,{' '}
-          <span class="reflect-wrap"><span class="reflect" tabindex="0">digital identity</span><span class="reflect__aside" aria-hidden="true">— Okta</span></span>,{' '}
-          <span class="reflect-wrap"><span class="reflect" tabindex="0">fintech</span><span class="reflect__aside" aria-hidden="true">— PayPal</span></span>, and{' '}
-          <span class="reflect-wrap"><span class="reflect" tabindex="0">e-commerce</span><span class="reflect__aside" aria-hidden="true">— Walmart Labs</span></span>.{' '}
-          Previously @ PayPal, Walmart Labs, and Deloitte.
-        </p>
-        <p class="hero__find">
-          Find me at{' '}
-          <a class="link-ext" href={site.linkedin} target="_blank" rel="noopener">
-            LinkedIn<span class="link-ext__mark" aria-hidden="true">↗</span>
-          </a>{' '}
-          or{' '}
-          <a class="link-ext" href={`mailto:${site.email}`}>{site.email}</a>.
+        <!-- Three levels: a small greeting, the statement at --step-hero
+             (the headline size on hansonwu.com), then the background at a
+             reading size. Greeting and statement share the h1 so the
+             heading carries her name and role. -->
+        <h1 class="hero__head">
+          <span class="hero__hi">Hi, I&rsquo;m Anupama,</span>
+          <span class="u-display hero__line">a Staff Product Designer. I ship, I nudge, I craft, from systems and strategy to the last stubborn pixel.</span>
+        </h1>
+        <p class="hero__more">
+          With 10+ years of experience, I&rsquo;m currently designing
+          developer tools @&nbsp;<span class="hero__co">Okta</span>. Previously
+          at <span class="hero__co">PayPal</span>, <span class="hero__co">Walmart Labs</span>,
+          and <span class="hero__co">Deloitte</span>.
         </p>
         <p class="intro__links">
           <a class="btn btn--primary" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
@@ -88,7 +77,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
                AskBubble (Pixel) can pin its launcher to the books in the
                illustration. -->
           <div class="hero__stage">
-            <HeroIllustration alt="Illustrated portrait of Anupama Mishra, working at her laptop" size={1150} />
+            <HeroIllustration alt="Illustrated portrait of Anupama Mishra, working at her laptop" size={1700} />
             <AskBubble />
           </div>
         </div>
@@ -276,8 +265,30 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        bottom edge with no gap at all, reading as broken rather than
        "the section grew to fit its content." A real bottom padding
        means the CTA row always has breathing room, whether the spacer
-       has anything left to give or not. */
-    padding-bottom: clamp(3rem, 6vh, 4.5rem);
+       has anything left to give or not.
+
+       max() against --dock-clearance on top of that: the bottom dock
+       (Dock.astro) is fixed over every band at every width now, and on a
+       short/mobile viewport this band's own height is close enough to the
+       viewport's that the Resume/LinkedIn row landed right under the dock,
+       partly covered by it. The clamp still wins once there's enough
+       viewport height to give more room on its own. */
+    padding-bottom: max(clamp(3rem, 6vh, 4.5rem), var(--dock-clearance));
+    /* Overrides .u-shell's asymmetric padding-inline (--gutter-start on
+       the left, sized to dodge the fixed name) with a symmetric --gutter,
+       same fix and same reasoning as the case-study page: the hero's own
+       padding-top above already clears the name vertically, so the row
+       never actually sits beside it. The reclaimed width goes to
+       --hero-copy-w (tokens.css) and the illustration's own share of the
+       row, rather than sitting empty on the left. */
+    padding-inline: var(--gutter);
+  }
+  /* The illustration is decorative imagery, not reading copy, so its edge
+     of the row doesn't need the same margin text would — trimmed on
+     desktop to hand the portrait more width without taking any from
+     --hero-copy-w (which sets the headline/bio's own line count). */
+  @media (min-width: 861px) {
+    :global(.hero) { padding-inline-end: calc(var(--gutter) * 0.15); }
   }
   /* Absorbs whatever's left of the 80svh after the nav gap, headline and
      CTA row above have taken their fixed amount — the actual mechanism
@@ -320,11 +331,25 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      with the ascenders/caps starting the next ("beyond..."). 1.08 gives
      enough room for that without loosening the shorter headlines that
      still rely on the tight default. */
-  /* Conversational, not a marketing headline — this line used to carry
-     a rotating-word H1 at display size; now it's just "Hi, I'm
-     Anupama.", at --step-hero (32→60px, matched to hansonwu.com) with
-     its 1.2 leading. */
-  .hero__line { font-size: var(--step-hero); max-width: 18ch; line-height: 1.2; }
+  /* Three levels of type. .hero__hi, the greeting, is the quiet lead-in;
+     .hero__line, the statement, is the headline at --step-hero (32→60px,
+     matched to hansonwu.com) with its 1.2 leading; .hero__more, the
+     background, drops to --step-lede in --fg-dim so it reads as supporting. */
+  .hero__head { margin: 0; font-weight: inherit; }
+  .hero__hi {
+    display: block;
+    font-family: var(--font-hero-sans); font-size: var(--step-h3); font-weight: 500;
+    color: var(--fg-dim); margin-bottom: 0.6rem;
+  }
+  .hero__line { display: block; font-size: var(--step-hero); line-height: 1.2; text-wrap: pretty; }
+  .hero__more {
+    font-family: var(--font-hero-sans); font-size: var(--step-body); line-height: 1.45;
+    color: var(--fg-dim); max-width: 54ch; margin: 1.6rem 0 0; text-wrap: pretty;
+  }
+  /* Company names carry a touch more weight than the surrounding sentence —
+     still --fg-dim, not --fg, so they read as emphasis within one quiet
+     paragraph rather than jumping out as their own element. */
+  .hero__co { font-weight: 600; }
 
   /* Hero copy + portrait side by side on desktop, portrait first and
      centred above the copy on narrow screens — the halftone photo is the
@@ -335,9 +360,20 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      side-by-side card layout — see git history if it comes back. */
   .hero__row {
     display: flex;
-    align-items: flex-start;
+    /* flex-end, not flex-start — the illustration used to hang from the
+       row's top edge, vertically centred against a copy column whose
+       height changes with the headline's line count, so the gap above
+       and below the figure drifted at different viewports and never
+       read as composed. Bottom-aligning both columns means the
+       illustration's feet always land on the same line as the
+       Resume/LinkedIn row, whatever height the copy stack ends up at. */
+    align-items: flex-end;
     justify-content: space-between;
-    gap: clamp(2rem, 5vw, 4rem);
+    /* Tightened from 2-4rem — the illustration fills 100% of whatever this
+       row leaves it (see HeroIllustration.astro), so a smaller gap hands
+       it a bit more width directly, without touching the copy column and
+       its line count. */
+    gap: clamp(1.25rem, 2.5vw, 2rem);
   }
   /* The copy column gets a guaranteed width (--hero-copy-w) and the
      illustration takes whatever is left, scaling down with it. The other
@@ -361,6 +397,13 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
     .hero__portrait { align-self: center; }
     .hero__line { max-width: 100%; }
     .intro__links { justify-content: center; }
+    /* padding-top's clamp is tuned for desktop, where 26vh is a modest
+       gap under a short, wide nav row. On a tall/narrow phone the same
+       26vh clamps to its 13rem ceiling — ~208px, most of a screen's worth
+       of dead air before the portrait even starts, worse now that the
+       portrait renders above the copy here (column-reverse). A flatter,
+       lower clamp keeps a deliberate gap without the mobile-only bloat. */
+    :global(.hero) { padding-top: clamp(4.5rem, 12vh, 6.5rem); }
   }
 
   /* The status line ("Open to a Staff Product Designer role, remote") —
@@ -396,78 +439,6 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   @media (prefers-reduced-motion: reduce) {
     .hero__statusdot { animation: none; opacity: 1; }
   }
-
-  /* Widened from 40ch and the copy itself cut (dropped "leading a team of
-     six on Identity & Access Management" — that's already the case
-     studies' job, not the hero's) so the sentence actually holds to two
-     lines instead of wrapping to four or five. Measured live, not
-     guessed: text-wrap:pretty avoids a lonely last word stranded alone
-     on the second line. */
-  /* font-family overridden to --font-display (sans) — the body default,
-     --font-body (Crimson Pro), is a serif, and this line reads as part
-     of the hero's sans-serif statement rather than a paragraph of body
-     copy. */
-  .hero__bio { font-family: var(--font-display); color: var(--fg-dim); font-size: var(--step-body); max-width: 64ch; margin: 1.4rem 0 0; text-wrap: pretty; }
-  .hero__bio--secondary { margin-top: 0.9rem; }
-
-  /* Plain sans greeting line, same colour as the headline (not --fg-dim) —
-     it's the one beat before the bio proper and reads as part of the
-     "statement," not body copy. */
-  .hero__greet { font-family: var(--font-display); color: var(--fg); font-size: var(--step-h3); font-weight: 500; margin: 1.4rem 0 0; }
-
-  /* "Reflected" phrases — the cali.so-style device of drawing a second
-     look to specific words in a running bio sentence, adapted to this
-     site's own hover system rather than cali's inline emoji. The hero
-     wears "charcoal", a deliberately hue-less theme (see tokens.css — "no
-     hue to compete with the headline"), so this can't lean on a colour
-     the way the mockup did; --font-accent (the italic) plus an underline
-     that draws in with the sitewide --ease-out/--dur-hover on hover/focus
-     is the whole effect, in currentColor. The aside is a short, true
-     attribution (a company or a duration already stated elsewhere on the
-     site) that slides open next to the phrase — progressive disclosure,
-     not new information gating: the plain sentence around it already
-     carries the fact for anyone who never hovers. Hover-only by design;
-     no touch fallback, because nothing here is required reading. */
-  .reflect-wrap { display: inline; }
-  .reflect {
-    font-family: var(--font-accent);
-    font-style: italic;
-    text-decoration: underline;
-    text-decoration-color: transparent;
-    text-underline-offset: 0.2em;
-    transition: text-decoration-color var(--dur-hover) var(--ease-out);
-  }
-  .reflect:hover, .reflect:focus-visible {
-    text-decoration-color: currentColor;
-  }
-  .reflect__aside {
-    display: inline-block;
-    max-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    opacity: 0;
-    font-family: var(--font-mono);
-    font-style: normal;
-    font-size: var(--step-caption);
-    color: var(--fg-dim);
-    vertical-align: middle;
-    transition: max-width var(--dur-hover) var(--ease-out),
-      opacity var(--dur-hover) var(--ease-out),
-      margin-left var(--dur-hover) var(--ease-out);
-  }
-  .reflect-wrap:hover .reflect__aside,
-  .reflect-wrap:focus-within .reflect__aside {
-    max-width: 12ch;
-    opacity: 1;
-    margin-left: 0.5em;
-  }
-
-  /* "Find me at LinkedIn ↗ or hi@anupama.design" — the hero's own line of
-     inline links, styled with the sitewide .link-ext hover (global.css)
-     rather than a button, so it reads as a sentence handing off to a link
-     the way the rest of the hero copy reads as a paragraph. */
-  .hero__find { font-family: var(--font-display); color: var(--fg-dim); font-size: var(--step-body); margin: 0.9rem 0 0; }
-  .hero__find .link-ext { color: var(--fg); font-weight: 500; }
 
   .intro__body { color: var(--fg-dim); font-size: var(--step-body); }
 
