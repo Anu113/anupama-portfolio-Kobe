@@ -41,7 +41,7 @@ const year = new Date().getFullYear();
       <p class="u-label foot__eyebrow">Get in touch</p>
       <ul class="foot__links">
         <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
-        <li><a href={site.linkedin} rel="me">LinkedIn</a></li>
+        <li><a href={site.linkedin} rel="me">LinkedIn<span class="foot__mark-nudge" aria-hidden="true">↗</span></a></li>
       </ul>
     </div>
 
@@ -134,6 +134,25 @@ const year = new Date().getFullYear();
     transition: color var(--dur-hover) var(--ease-out);
   }
   .foot__links a:hover { color: var(--accent-text); }
+  /* Same micro-nudge as .link-ext (global.css) on the LinkedIn row's
+     external-link glyph — kept local rather than swapped for .link-ext
+     itself, since this row's own underline-as-hover-target treatment
+     (above) already does the job .link-ext's dotted underline does
+     elsewhere. */
+  .foot__mark-nudge {
+    display: inline-block;
+    opacity: 0.6;
+    margin-inline-start: 0.15em;
+    transition: opacity var(--dur-micro) var(--ease-out),
+                transform var(--dur-micro-move) var(--ease-out);
+  }
+  .foot__links a:hover .foot__mark-nudge {
+    opacity: 0.95;
+    transform: translate(1.5px, -1.5px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .foot__mark-nudge { transition: none; }
+  }
 
   /* --- Row 3: city + clock, credit, copyright ------------------------ */
   .foot__meta {

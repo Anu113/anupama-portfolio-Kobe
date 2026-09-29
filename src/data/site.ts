@@ -3,7 +3,7 @@ export const site = {
   name: 'Anupama Mishra',
   mark: 'A.',
   tagline: 'Staff product designer. Identity, access, and the systems enterprises run on.',
-  email: 'anupama.mishra113@gmail.com',
+  email: 'hi@anupama.design',
   linkedin: 'https://www.linkedin.com/in/anupamamishra/',
 
   // The role being sought, written down once. Every band that states the ask

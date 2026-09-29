@@ -73,14 +73,14 @@ const MESSAGE_CAP = 280;
           <p class="u-label cform__count" aria-hidden="true" data-cform-count>0 / {MESSAGE_CAP}</p>
         </div>
 
-        <button class="cform__submit" type="submit">Send message</button>
+        <button class="cform__submit btn btn--primary" type="submit">Send message</button>
       </form>
     </Reveal>
 
     <Reveal delay={280}>
       <p class="cform__alt">
-        Prefer it plain? <a href={`mailto:${site.email}`}>{site.email}</a> or{' '}
-        <a href={site.linkedin} rel="me">LinkedIn</a>.
+        Prefer it plain? <a class="link-ext" href={`mailto:${site.email}`}>{site.email}</a> or{' '}
+        <a class="link-ext" href={site.linkedin} rel="me">LinkedIn<span class="link-ext__mark" aria-hidden="true">↗</span></a>.
       </p>
     </Reveal>
   </Section>
@@ -166,19 +166,9 @@ const MESSAGE_CAP = 280;
     margin: 0;
   }
 
-  .cform__submit {
-    align-self: flex-start;
-    font: inherit;
-    font-size: var(--step-body);
-    color: var(--fg);
-    background: none;
-    border: 1px solid var(--fg-dim);
-    border-radius: 999px;
-    padding: 0.7rem 1.75rem;
-    cursor: pointer;
-    transition: background var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
-  }
-  .cform__submit:hover { background: var(--screen); border-color: var(--fg-dim); }
+  /* Visual style now comes from the shared .btn/.btn--primary system
+     (global.css) — this rule only keeps the form's own alignment. */
+  .cform__submit { align-self: flex-start; }
 
   .cform__alt { color: var(--fg-dim); margin: 0; text-align: center; }
   .cform__alt a { color: var(--fg); }

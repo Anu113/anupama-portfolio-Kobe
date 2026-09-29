@@ -4,46 +4,173 @@ Context for Claude Code working in this repo.
 
 ## What this is
 
-The portfolio site for **Anupama Mishra**, a staff product designer with 10+
+The portfolio site for **Anupama Mishra**, a product designer with 10+
 years' experience returning to work after a career break. Most recently Staff
 Product Designer at Okta on Identity & Access Management, where she also led a
 team of six. Earlier: PayPal, Walmart Labs, Deloitte Digital, Zomato.
 
-<<<<<<< HEAD
-**The site has one job: land a Staff Product Designer role (remote).** Every
-=======
-**The site has one job: land a Staff Product Designer/Lead Product Designer role.** Every
->>>>>>> origin/work-bands-and-spacing
-decision serves that. When a change would make the site prettier but less
-effective at that job, say so.
+**The site has one job: land a senior/staff/principal product design or
+design-engineering role (remote).** Every decision serves that. When a change
+would make the site prettier but less effective at that job, say so.
 
-The role she is asking for is a **senior IC one**. Leading six designers is
-evidence of scope, influence and judgement — it is not the ask, and no band
-should read as a management pitch. The ask is written once, in `site.ask`
-(`data/site.ts`); every band that states it reads from there. It drifted into
-"Design Manager or Lead UX" across three files once already.
+The role she is asking for is a **senior IC one** (or IC-track design-eng).
+Leading six designers is evidence of scope, influence and judgement — it is
+not the ask, and no page should read as a management pitch. The ask is
+written once, in `site.ask` (`data/site.ts`); every place that states it reads
+from there.
 
 Live site today: `anupama.design` (Wix). This repo replaces it.
 
+## The positioning (read this before touching anything visual)
+
+This is **not** a graphic-design portfolio, an editorial/magazine layout, or
+a generic SaaS landing page. It is a working artifact from someone who does
+product design and understands how products get built — closer to
+**product design × design engineering × digital craft**.
+
+A visitor should feel, within seconds: *this person knows how to design
+complex products, understands how things are built, and cares about the
+final pixel.* Not "look what I can build." The site should **quietly
+demonstrate** capability, not announce it.
+
+Concretely, that means:
+
+- **Deep product thinking and UX judgment over decoration.** Every visual
+  choice should read as a design decision with a reason, not a flourish.
+- **Visual-first, text-light.** If a section can communicate through a
+  screenshot, interface fragment, diagram, before/after, or short interaction
+  instead of a paragraph, it should. The work does the talking; copy is
+  captions and short context, not essays.
+- **Design-engineering felt through the implementation, not announced by it.**
+  Precise spacing, real interaction states, sensible motion, clean responsive
+  behavior, accessible keyboard/focus handling — that IS the design-eng
+  pitch. A hand-rolled effect that exists to prove technical range is the
+  opposite of this.
+- **Seniority through restraint.** A senior designer doesn't over-explain a
+  decision or over-decorate a page. Prefer strong visual evidence + concise
+  context over paragraphs about how thoughtful the process was.
+
+### Avoid the portfolio-template look
+
+Do not reach for: a giant "Hi, I'm X" hero, gradient blobs, oversized
+centered type as the default register, cards-inside-cards, heavy rounded
+corners, glassmorphism, decorative 3D objects, fake dashboard graphics,
+skill-meter/badge grids, "UX / UI / Research / Strategy" icon rows, generic
+stat counters, rainbow or SaaS-startup gradients, Behance-style case-study
+scrolls, or magazine layouts that put text ahead of product. If a component
+under consideration matches one of these, it needs a specific reason to
+exist here, not just precedent from other portfolios.
+
+### Avoid the "showing off" look — but craft is allowed to be felt
+
+Motion, cursor effects, and interaction flourishes still need a **UX
+reason**, not just a capability to demonstrate — that principle doesn't
+change. What changed is where the bar sits: a small number of signature
+moments are now deliberately part of the pitch, because for a design-eng
+role, *feeling* the engineering is the point. The difference between this and
+"showing off" is restraint in **quantity and volume**, not in ambition per
+effect:
+
+- **One hero treatment, not effects scattered everywhere.** The hero may
+  carry a genuinely crafted moment — currently a subtle WebGL flow-noise
+  shader behind the headline (ink → accent, ~0.55 opacity, a scrim on top for
+  text contrast, frozen to a static frame under `prefers-reduced-motion`).
+  It should read as texture noticed on a second look, not a lava lamp. This
+  is the one place on the site allowed to be visibly "built," and it earns
+  that by being the very first thing a visitor sees — it sets the design-eng
+  claim before a word of copy does.
+- **A real loading sequence, once, on first paint.** A short (≈1–1.5s) branded
+  loader — a drawn mark plus a wordmark treatment — is allowed at the top of
+  the session, because it's the one moment where "nothing to look at yet" is
+  true and filling it well is itself a design decision. It must never block
+  or delay access to content beyond that first paint, must be skippable/instant
+  on repeat navigation within a session, and must resolve instantly (no
+  animation) under `prefers-reduced-motion`.
+- **A consistent hover system on interactive surfaces**, not one bespoke
+  effect per component. Work tiles, links, and cards get *the same* motion
+  vocabulary reused everywhere: default state is quiet; hover reveals
+  information that was intentionally withheld (title, metric, an implied UI
+  detail nudging) using one shared easing curve and duration sitewide. The
+  "one curve, one duration, reused everywhere" constraint is what keeps a
+  sitewide hover system from reading as a pile of tricks — pick the curve
+  once (e.g. `cubic-bezier(.16,1,.3,1)`, ~500-600ms for reveals, faster for
+  micro-feedback) and put it in `tokens.css`, not per component.
+- **`CursorTrail`, kept.** The existing 12-point spring-chain cursor effect
+  (`CursorTrail.astro`) stays, on request — it's the one earlier "capability
+  demo" component that survives this pass rather than being folded into the
+  hover system. It keeps its existing constraints unchanged: hover devices
+  only, no pointer events, `display: none` under `prefers-reduced-motion`,
+  draws in the theme colour under the pointer, suppressed sitewide only on
+  `/playground` (see the dedicated section on it further down). Don't add a
+  second cursor effect alongside it.
+- **Pixel, the "ask about my work" character (`AskBubble.astro`), approved
+  on request.** A small hand-drawn creature that "lives in Anupama's laptop"
+  and answers a visitor who's short on time. Its interaction model follows
+  ozgur.design's Dobby chat (studied screen by screen) with an **original**
+  character — never Dobby, Bongo Cat or any other existing character's art,
+  name or voice; don't swap one in. What's fixed:
+  - Launcher: a small translucent cream bubble resting on the books in the
+    hero illustration, holding only Pixel's face; a light sweeps round its
+    border (the one "click me" signal — the bubble itself doesn't move).
+    Label on hover/focus only.
+  - Panel: opens on click as a dialog with a scrim; dark (the site's `ink`
+    values) and **monospace throughout** — deliberately unlike the rest of
+    the site, so the conversation reads as a machine talking — with soft
+    rounded corners. That's the one sanctioned exception to the square
+    `--radius` rule; the site's own cards stay square. Colours, corners and
+    timing live in the "Pixel" block of `tokens.css`.
+  - Content: a conversation tree in `src/data/ask.ts` — buttons only, no
+    free text, no model, no backend. Pixel's jokes are about Pixel (the
+    laptop, tabs, meetings), never claims about her work; the facts stay
+    plain and come only from `cases.ts`/`site.ts`, with `site.ask`,
+    `site.location`, `site.email` read from `site.ts`. Every path ends in a
+    case study or a way to reach her.
+  - A11y, as built: focus moves in and stays in, Escape closes and returns
+    focus, replies go to screen readers once through a live region (the
+    typewriter is visual only), everything static under reduced motion.
+  Keep it to one character with one voice; don't give it idle animation on
+  the hero beyond the border shimmer, and don't add a second chat or
+  mascot elsewhere.
+
+Outside those five moments — hero shader, first-paint loader, the reused
+hover system, `CursorTrail`, Pixel — the old rule still applies at full strength:
+prefer hover previews, subtle scale/opacity shifts, masked/positional
+transitions, scroll-linked reveals tied to content appearing, fast and
+physically believable feedback. Avoid slow cinematic transitions,
+floating/bouncing idle animation, parallax for its own sake, a second
+full-screen shader anywhere else on the site, or any interaction whose only
+purpose is "this is hard to build." If you can't name the UX reason for an
+interaction in one sentence, cut it — that test still applies to the five
+allowed moments too, it just resolves differently for them (the hero shader's
+reason is "sets the design-eng claim on first paint"; the loader's is "the
+one screen with nothing else to show"; the hover system's is "reveals
+information, doesn't just move"; `CursorTrail`'s is the standing one already
+in this file — a felt, physical response to the pointer, not a demo;
+Pixel's is "a recruiter short on time gets level, scope and the ask in two
+clicks, then lands on the evidence").
+
 ## The two audiences, in tension
 
-1. **A recruiter, 60–90 seconds, skimming.** Needs the level, the surface area
-   and business impact fast. Will not scroll patiently or wait for animations.
+1. **A recruiter, 60–90 seconds, skimming.** Needs the level, the surface
+   area and business impact fast, mostly from visuals and hierarchy — not
+   from reading paragraphs.
 2. **A hiring manager or design leader, reading properly.** Wants craft,
-   judgement, and evidence she can carry a hard problem end to end and pull
-   other people along with her.
+   judgement, and evidence she can carry a hard problem end to end. Give them
+   progressive disclosure — more detail available on demand — rather than
+   putting everything up front.
 
-The visual language is deliberately expressive (see `REFERENCE-NOTES.md`), but
-it sits on top of a fast scannable spine. If a change buries her scope or a
-metric behind an interaction, flag it.
+If a change buries her scope or a metric behind an interaction, or forces
+either audience to read a wall of copy to get the point, flag it.
 
 ## Architecture
 
 Astro 5, static output. Tailwind 4 present but **most styling is plain CSS using
-custom properties**, scoped inside each `.astro` component. No animation
-library — motion is IntersectionObserver, CSS transitions, and one hand-rolled
-rAF loop (`CursorTrail`). Still no React: components ported from React sources
-are rewritten as plain `.astro`.
+custom properties**, scoped inside each `.astro` component. GSAP and anime.js
+are available for motion that CSS transitions/IntersectionObserver can't
+express cleanly (sequenced timelines, physics-based easing); still default to
+plain CSS transitions and scroll-driven effects for anything simple enough for
+those. Still no React: components ported from React sources are rewritten as
+plain `.astro`.
 
 ```
 src/
@@ -51,11 +178,7 @@ src/
 │  ├─ tokens.css     ← every colour, type size, space value, easing. THE file.
 │  └─ global.css     ← type roles (.u-display, .u-label), a11y baseline
 ├─ layouts/Base.astro
-<<<<<<< HEAD
-├─ components/       ← 18 components, each with a header comment
-=======
-├─ components/       ← 11 components, each with a header comment
->>>>>>> origin/work-bands-and-spacing
+├─ components/       ← each with a header comment
 ├─ data/site.ts      ← email, links, one-liners
 └─ pages/
 public/
@@ -68,47 +191,47 @@ public/
 **1. Never hardcode a colour, font size, or spacing value.**
 Use `var(--bg)`, `var(--fg)`, `var(--step-h2)`, `var(--gutter)`, etc. If a value
 you need doesn't exist, add it to `tokens.css` rather than inlining a hex.
-Hardcoded colours break the theme system — a section will stop recolouring.
+Hardcoded colours break the theme system.
 
-**2. Themes are how palettes work.**
-Palettes are declared as `[data-theme='name']` blocks in `tokens.css` and applied
-via `<Section theme="sand">`. Available: `ink`, `sand`, `bone`, `clay` (the
-editorial four), `sage`, `lilac`, `coral` (saturated grounds under near-black
-type, from the chapter-card reference), and `ember` (a warmer, browner red —
-sampled from reference photos, not the chapter set — added to give the Okta
-OIN project card its own colour after it wore `ink`, the same theme as the
-band it sat in, and had no visible boundary against it). The nav watches which themed band is
-behind it and adopts that palette automatically (`Nav.astro`, bottom script). Add
-a palette by copying a block — don't invent a parallel mechanism.
+**2. Colour is restrained by default, and belongs to the work.**
+The base palette is near-neutral: ink/near-black, paper/off-white, warm
+greys, and **one** accent colour, tokenised the same way everything else is.
+That's the register every page opens in. Saturated colour is earned by the
+work itself — a project's own product UI, a screenshot, a diagram — not
+applied to page chrome to differentiate bands. Before adding a new palette or
+themed band, ask whether a neutral treatment with the work's own imagery
+providing the colour would do the job better; it almost always will. Don't
+recreate the old multi-palette "chapter" system (8+ named themes wearing
+different hues) — that was the editorial/expressive direction this file used
+to specify, and it's exactly what reads as graphic-design rather than
+product-design.
 
-Every palette also has a `[data-mode='night']` variant. `ThemeRail.astro` — a
-fixed glass pill mounted sitewide via `Base.astro`, so it's on every page,
-not just the home page — sets `data-mode` on `<html>`; the mode is resolved
-by an inline script in `Base.astro` before first paint, sitewide. **A new
-palette needs a night block too**, or that band will sit unchanged while
-everything around it turns.
+**3. Case studies lead with a visual, then answer fast, then let the work
+breathe.**
+This matters more than anything else in the repo. A wall of narrative prose
+argues she is a mid-level designer who explains rather than a senior one who
+ships. Every case study should answer, quickly and largely through visuals:
 
-**3. Case studies lead with scope and judgement, then craft.**
-This matters more than anything else in the repo. The standard portfolio
-narrative — persona, user journey, wireframes, hi-fi screens — argues she is a
-mid-level designer who executes, which loses a staff role. Staff is bought on
-blast radius and judgement: the size of the problem she can hold, the calls she
-made, and the quality of what shipped. Every case study runs:
+1. What was the problem? (one or two sentences, business stakes)
+2. What did I own? (scope — what she owned, what she influenced, who else)
+3. What was difficult? (the one real tradeoff, and the call she made)
+4. What did I change? (how the work got made — briefly)
+5. The craft — screens, UI fragments, interaction detail, now that scope and
+   difficulty are established
+6. What was the outcome? (business, craft, team — numbers where real)
+7. What I'd do differently (short, if present at all)
 
-1. The situation (business stakes, two sentences)
-2. **My scope** — what she owned, what she influenced, who else was on it
-3. The hard call — one real tradeoff and why she made it
-4. How the work got made — the process and the partners, not just output
-5. The craft — screens, now that the scope is established
-6. Impact — business, craft, and team numbers
-7. What I'd do differently
+Prefer an interface fragment, diagram, or before/after over a paragraph
+wherever one can carry the point. Use progressive disclosure (expandable
+detail, a "read more" for the deeper narrative) rather than presenting every
+paragraph up front. If asked to write or restructure a case study and it's
+mostly unbroken prose, rebuild it around visual evidence first. Pushing back
+here is correct.
 
-If asked to write or restructure a case study and this shape is missing, rebuild
-it to this shape and explain why. Pushing back here is correct.
-
-The case bodies in `cases.ts` still narrate several of these sections in a
-manager's voice ("the team I ran", "I staffed it"). That reads as scope, which
-is fine, but any rewrite should keep her hands visibly on the design work.
+The case bodies in `cases.ts` may still narrate some of this in a manager's
+voice ("the team I ran," "I staffed it"). That's acceptable as scope
+evidence, but keep her hands visibly on the design work — the craft section
+in particular should read as hers, not delegated.
 
 **4. Accessibility is not optional.**
 Anupama has a public talk titled *The Saga of Accessibility*. An inaccessible
@@ -116,14 +239,16 @@ portfolio is a specific credibility risk for her, not a generic lint failure.
 Hold WCAG 2.1 AA: 4.5:1 for body text, 3:1 for large text and UI, visible focus
 rings, keyboard-operable interactions, `prefers-reduced-motion` respected.
 
-Note the `sand` theme carries **two greens** on purpose: `--fg` (`#2f7d45`) for
-display type only, `--fg-dim` (`#276237`) for body copy. Don't "simplify" them
-into one.
-
 **5. Prefer editing tokens over editing components.**
-Most requests ("make it warmer", "bigger headlines", "tighter spacing") are
-`tokens.css` edits. Reach for component changes only when behaviour or structure
-must change.
+Most requests ("make it warmer," "bigger headlines," "tighter spacing") are
+`tokens.css` edits. Reach for component changes only when behaviour or
+structure must change.
+
+**6. Every interaction needs a stated UX reason.**
+When adding or reviewing motion — hover state, transition, scroll effect —
+be able to say in one sentence what it communicates to the visitor. "It
+demonstrates technical skill" is not a reason. If the interaction delays
+access to content, or exists mainly to be noticed, cut it or simplify it.
 
 ## Guardrails — don't undo these
 
@@ -131,170 +256,87 @@ must change.
   was serving `noindex`, making it invisible to recruiters searching her name.
 - The `prefers-reduced-motion` block at the bottom of `global.css`.
 - The skip link in `Base.astro`.
-- Keyboard support in `DragRail.astro` (arrow keys) — the rail must not be
-  mouse-only.
-- The header comment at the top of each component. They exist so a designer can
-  read the file. Keep them updated when behaviour changes.
+- Keyboard support on any drag/scroll-rail-style interaction.
+- The header comment at the top of each component. They exist so a designer
+  can read the file. Keep them updated when behaviour changes.
 
 ## Don't add without asking
 
 - A CMS, React, or a component library. Markdown and `.astro` are enough.
 - Analytics or tracking scripts.
-- More palettes than there are bands to wear them. Eight exist and all eight
-  are in use; a ninth needs a real ninth band.
+- A new themed colour band, or any component whose main purpose is
+  demonstrating a technical effect rather than serving content — the hero
+  shader, the first-paint loader, and the sitewide hover system (see above)
+  are the named exceptions (plus `CursorTrail`, kept from the prior direction,
+  and Pixel, `AskBubble.astro` — see above); a sixth "signature effect" is
+  not automatically in scope just because those five are.
+- A live model, backend or API key behind Pixel, or any logging of what
+  visitors pick in it (that's tracking — see above). A live model also needs
+  every `[X]` in `cases.ts` confirmed first, or it will invent the numbers.
+- Testimonials, stat counters, skill-meter/badge grids, or icon rows for
+  disciplines ("UX / UI / Research") — these read as generic and are on the
+  explicit avoid-list for this rebuild.
 
-## Components
+## Current state — mid-repositioning
 
-| Component | What it does |
-|---|---|
-| `Section.astro` | Wraps a band of the page in a palette. `theme` prop. |
-| `Nav.astro` | Fixed nav, recolours to match the band behind it. Wordmark + links only — the day/night toggle now lives in `ThemeRail.astro`. |
-| `ThemeRail.astro` | The day/night + colour-shuffle control — a fixed glass pill, mounted sitewide via `Base.astro`. Two icons: a single toggle that swaps between sun/moon (letter-spacing-free, no separate "active" state — the icon itself is the state), and a Shuffle button (five-dot palette glyph) that repaints every themed band toward a random palette on click, plus a fresh random one automatically on every page load. Sets `data-mode` on `<html>`, same sitewide mechanism the old nav toggle used. |
-| `Reveal.astro` | Scroll fade-and-lift. `delay`, `y` props. |
-| `DragRail.astro` | Horizontal drag-scroll rail with grab cursor. |
-| `Mosaic.astro` | Edge-cropped asymmetric image grid + parallax. |
-| `CaseCard.astro` | The one project-card component (`/work`'s grid). Carries scope and metric — keep both. Hover reveals a `HoverLabel`. |
-| `HoverLabel.astro` | The shared hover label every project card uses — one of five `hoverState` values from `data/hoverState.ts` (`case-study`, `overview`, `website`, `building`, `coming-soon`). |
-| `OneWord.astro` | Interactive headline; visitor types a word into it. |
-| `CursorTrail.astro` | A 12-point spring chain following the pointer. Hover devices only. |
-| `CasePreview.astro` | One project as a full-bleed band. Home page ACT 2 and `/work`. |
-| `InfiniteStream.astro` | The playground's looping collage. Pans on both axes: the page scrolls down, the field wraps sideways. Drifting columns, tops itself up as you scroll. |
-| `Marquee.astro` | A row that scrolls itself. `kind="logo"` for the company strip, `kind="card"` for the playground preview. |
-| `Testimonials.astro` | Three quotes across. Content in `data/home.ts` is **placeholder — not real quotes**. |
-| `PageHeader.astro` | The standing header for every interior page. Centred eyebrow + display title + optional intro. |
-<<<<<<< HEAD
-| `ArchiveList.astro` | The archive tier on `/work`. Text rows; each hides a preview that opens from zero width on hover. Hover-capable, wide screens only. |
-| `CaseRail.astro` | The sticky section rail on a case study. Scroll-spy; becomes a horizontal strip under 1080px. |
-| `CaseBlocks.astro` | Renders one case-study section's body from the `CaseBlock` union in `data/cases.ts`. |
-| `CaseDoodle.astro` | Seven hand-drawn creatures, one per case-study section. **Built but not wired in** — see below. |
-=======
-| `CaseRail.astro` | The sticky section rail on a case study. Scroll-spy; becomes a horizontal strip under 1080px. |
-| `CaseBlocks.astro` | Renders one case-study section's body from the `CaseBlock` union in `data/cases.ts`. |
-| `CaseDoodle.astro` | Seven hand-drawn creatures, one per case-study section. Shared body/eyes/legs skeleton, keyed by section `id`. |
->>>>>>> origin/work-bands-and-spacing
-| `Footer.astro` | Closes every page: bio / contact / "let's talk", then a meta line with a live clock, then the wordmark. Ink band, in `Base.astro` below `<main>`. |
+This repo was previously built toward an expressive, editorial, multi-palette
+direction (see git history / `REFERENCE-NOTES.md` and `DESIGN.md` for that
+prior brief). That direction is now considered **too decorative and too
+text-heavy** for the senior/staff/design-eng positioning above, and is being
+walked back. Concretely, in the current implementation:
 
-`CursorTrail` is a port of the reference site's `cursor-line.js` — a spring
-chain, not a path history: the head eases toward the cursor, each point eases
-toward the one ahead, and a speed-driven perpendicular curl makes the tail
-hook. Constant 6.5px stroke; it retracts by collapsing onto the cursor, and
-fades via an `is-visible` class (350ms opacity). It lives in `Base.astro`, takes
-no pointer events, never replaces the native cursor, draws in the `--fg` of the
-band under the pointer (the one change from the reference, which has a single
-palette), and is `display: none` under `prefers-reduced-motion`. Its rAF loop
-parks once the chain settles. **Don't "simplify" the curl or the chain into a
-plain trailing line — that's the whole effect.**
-
-It is on everywhere except `/playground`, which passes `trail={false}` to
-`Base`. That page owns its cursor: the stream is a pannable field wearing the
-grab/grabbing hand, and a line trailing off a hand you are dragging with reads
-as two cursors. Any future page that takes over the cursor opts out the same
-way — don't add a second suppression mechanism.
-
-The playground's two axes come from the moodboard on
-`meagandurlak.com/case-studies` (`case-studies/js/moodboard.js`), read the same
-way `cursor-line.js` was. Vertical is the document's own scroll, so the closing
-band and the footer stay reachable. Horizontal is a pan: every row renders its
-column set twice — the twin is `aria-hidden` — and the pan wraps on the exact
-distance between the two, measured at runtime. The seam is invisible because
-the gap between the sets is the same clamp as the gap between columns inside
-one; **if you change one, change the other.** The field must also stay
-full-bleed (`.playstream__shell` in `playground.astro`) — inside a 1200px
-column the wrap has less width than the viewport and the seam lands on screen.
-**The two axes are separate gestures.** A wheel goes to whichever axis
-dominates it: mostly sideways pans the field, anything else falls through to
-the document untouched, because native vertical scrolling feels better than
-anything hand-rolled and it is what keeps the closing band and the footer
-reachable. Arrow keys pan left/right. Columns drift straight up and down, not
-on a slant. A **diagonal was built and then taken back out** — it worked, but
-owning both halves of a wheel gesture means owning the vertical scroll, and
-that trade wasn't worth it on this page. Don't reintroduce it casually.
-
-A drag is the one exception: direct manipulation has to follow the hand, so it
-pans and scrolls at once. Two things keep it honest. **The vertical half is
-queued (`pendingY`), never scrolled from the event handler** — the sideways
-half is a transform and can only land in a frame, so scrolling at the event
-puts the two a frame apart and the drag shears. **The frame reads every row
-before it writes any** — a rect read after a transform write forces a style
-recalc, and interleaving costs one per row.
-
-Release inertia and the drift both switch off under `prefers-reduced-motion`;
-drag, wheel and keys don't, because those are the visitor's own hand.
-
-## Current state
-
-Built and working: token/theme system, every component above, home page (five
-acts), `/work`, `/about`, `/playground`, build passing.
-
-The nav carries three links — Work, About me, Playground. `/approach` and
-`/profile` were never built and are no longer linked; "How I work" on the home
-page points at `/about#approach` instead.
-
-Case studies are built. `/work/okta-iam`, `/work/paypal-privacy` and
-`/work/walmart-scan-go` all render from `src/pages/work/[slug].astro`, and the
-layout follows `rachelchen.tech/projects/openai` — banner (eyebrow, title,
-full-width image, meta row), then a two-column body with a sticky section rail,
-then the next project.
-
-The banner is **`bone` on every case study**, not the project's palette. A
-full-bleed saturated ground behind display type reads as a poster and fights
-the reading page under it. The project's hue lives on its `/work` tile and on
-<<<<<<< HEAD
-the closing "next case study" band.
-
-`CaseDoodle.astro` holds seven hand-drawn creatures, one per section, keyed by
-section `id`. **It is not currently rendered** — it was taken back out of
-`[slug].astro` and the file is kept only so the drawings aren't lost. To put
-them back, import it and drop `<CaseDoodle name={s.id} />` above the section
-eyebrow. If you extend the set: they are **characters, not icons** — every one
-is a body, two ring eyes and two thin legs with kicked-out feet on a shared
-skeleton, and only the body and one prop change. An abstract mark drawn to the
-same brief reads as a stray icon next to the rest.
-=======
-the closing "next case study" band. Each body section opens with a small
-hand-drawn creature from `CaseDoodle.astro`, keyed by section `id` — the same
-seven across all three cases, so "the hard call" is the same character every
-time. They are **characters, not icons**: every one is a body, two ring eyes
-and two thin legs with kicked-out feet, on a shared skeleton, and only the
-body and one prop change. Keep that skeleton if you add one — an abstract
-mark drawn to the same brief will read as a stray icon next to the rest. They
-are margin notes; don't scale them up or draw a set per case.
->>>>>>> origin/work-bands-and-spacing
-
-Content lives in **`src/data/cases.ts`**, not in a content collection. These
-pages aren't prose — each section is a composition of small typed blocks
-(`prose`, `points`, `rows`, `figure`, `quote`, `metrics`), and Markdown would
-have meant either adding MDX or writing raw HTML in `.md`. The typed union is
-also the guardrail for rule 3: the section order (situation → my scope → the
-hard call → how the team worked → the craft → impact → what I'd do differently)
-is declared per case, and a missing section is visible in one file.
-`src/content/work/` is now an empty leftover — delete it or leave it, but don't
-build a second content path.
-
-**The prose in `cases.ts` is a structural draft, not confirmed fact.** It is
-written from what CLAUDE.md and `work.ts` already record about each project.
-Every number is still a `[X]` placeholder, and the specifics — squad counts,
-who Anupama reported to, the exact tradeoffs — need her to confirm or replace
-them before this ships.
+- The palette system (`tokens.css`) still carries ~10 named theme blocks with
+  day/night variants. This is more than the new direction calls for and
+  should shrink toward a neutral base + one accent as work proceeds — don't
+  add to it.
+- `OneWord.astro` (visitor-typed headline word), `CaseDoodle.astro`
+  (hover-reveal creature doodles), `Testimonials.astro`, and `Marquee.astro`
+  are examples of the scattered "demonstrate capability" pattern this file
+  asks to avoid — each was its own one-off effect. They are being replaced,
+  not just deleted: the home page's signature-moment budget moves to the
+  named exceptions above (hero shader, first-paint loader, one reused hover
+  system), approved via mockup before implementation. Don't extend these old
+  components' usage; when touching pages that use them, replace with the new
+  hover vocabulary rather than adding another pattern alongside it.
+  `CursorTrail.astro` is the one exception — it's kept (see above), unchanged
+  from its existing implementation and constraints. Pixel (`AskBubble.astro`)
+  is a newer, separately approved addition, not one of these old one-offs.
+- The home page itself is being rethought around this: hero (shader) → work
+  grid with the reveal-on-hover treatment → a denser text-row list variant
+  (underline-draw hover, no image movement, for long lists) → a stat-row
+  "approach" section replacing a written paragraph → plain contact. Fewer,
+  larger sections; each one doing more visual work than the section it
+  replaces.
+- `cases.ts` holds case-study content as structural prose with `[X]`
+  placeholders for real numbers — written from what this file already
+  records about each project, not confirmed by Anupama. It also currently
+  under-uses visual evidence relative to rule 3 above; new work on case
+  studies should shift the balance toward screens/diagrams over paragraphs.
+- Images in `public/images/` are placeholder SVGs. Real imagery is pending an
+  NDA check on the Okta IAM console work — real screenshots are a priority
+  once available, since the new direction depends on visual evidence more
+  than the old one did.
+- The footer clock runs off `location` and `timezone` in `data/site.ts`. Both
+  are placeholders — `location` reads `[City]` on purpose, same bracket
+  convention as the unconfirmed numbers, so it stays visible until she says
+  where she's based.
 
 Two Astro/CSS gotchas, learned the hard way. First: `body { overflow-x: hidden }`
 forces `overflow-y` to `auto`, which makes `<body>` a scroll container and
-silently breaks every `position: sticky` inside it — the case-study rail just
-stops sticking. `global.css` uses `overflow-x: clip` instead; it trims the
-bleeding display type identically without creating a scroll container. Don't
-change it back.
+silently breaks every `position: sticky` inside it. `global.css` uses
+`overflow-x: clip` instead. Don't change it back.
 
-Second: a `class` passed to `<Section>` does
-**not** carry this page's scope hash, so a rule targeting the band itself
-(`.playhead`, `.abouthead`, …) must be wrapped in `:global()`. Rules targeting
-elements written in the page file scope normally.
+Second: a `class` passed to `<Section>` does **not** carry the page's scope
+hash, so a rule targeting the band itself must be wrapped in `:global()`.
+Rules targeting elements written in the page file scope normally.
 
-Images in `public/images/` are placeholder SVGs. Real imagery is pending an NDA
-check on the Okta IAM console work.
-
-The footer clock runs off `location` and `timezone` in `data/site.ts`. Both are
-placeholders — `location` reads `[City]` on purpose, same bracket convention as
-the unconfirmed numbers, so it stays visible until she says where she's based.
+Third: at ≥1200px the name and, under it, the nav dock are fixed in the
+top-left, in the bar grid's first two columns. Page
+content must start at `--gutter-start`, not `--gutter`, on the left (see
+CHROME RAIL in `tokens.css`); `.u-shell` and so every `<Section>` already
+does. Anything that pads itself uses `padding-inline: var(--gutter-start)
+var(--gutter)`, and anything that bleeds left uses `--bleed-start`, never a
+negative `--gutter`. Otherwise it will run under the dock.
 
 ## Commands
 
@@ -306,7 +348,8 @@ npm run preview   # serve the build
 
 ## Voice
 
-Her own writing is direct and task-oriented. Site copy should be plain and
-specific — concrete numbers over adjectives. Avoid "passionate", "seamless",
-"leverage", "storyteller". No emoji. If a sentence could appear on any
-designer's portfolio, it's not earning its place.
+Her own writing is direct and task-oriented. Site copy should be plain,
+specific, and short — concrete numbers over adjectives, captions over
+paragraphs. Avoid "passionate," "seamless," "leverage," "storyteller." No
+emoji. If a sentence could appear on any designer's portfolio, cut it; if a
+paragraph could be a caption instead, make it one.

@@ -137,8 +137,13 @@ const { alt, size = 480 } = Astro.props;
        copy column at ~1440px viewports. This is close to that ceiling
        already — another increase likely needs an actual layout change
        (a wider .hero__copy max-width, or dropping the side-by-side
-       layout at a lower breakpoint), not just a bigger number here. */
+       layout at a lower breakpoint), not just a bigger number here.
+       Side by side, the page now caps this with max-width: 100% of the
+       hero's portrait column, which is whatever the copy column
+       (--hero-copy-w) leaves — so the image is what gives way on narrower
+       screens, never the copy. */
     width: clamp(260px, 70vw, var(--size));
+    max-width: 100%;
     aspect-ratio: 16 / 9;
     line-height: 0;
     outline: none;

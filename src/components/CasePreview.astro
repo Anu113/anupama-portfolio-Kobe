@@ -90,12 +90,12 @@ const { company, title, tagline, impact, href, image, alt = '',
     <h3 class="title">{title}</h3>
     <p class="tagline">{tagline}</p>
     <p class="impact">{impact}</p>
-    <a class="cta" href={href}>View case study &rarr;</a>
+    <a class="btn btn--primary" href={href}>View case study &rarr;</a>
   </Reveal>
 </article>
 
 <style>
-  .band { background: var(--bg); color: var(--fg); padding: clamp(6rem, 11vw, 10rem) var(--gutter); min-height: 92svh; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); align-items: center; }
+  .band { background: var(--bg); color: var(--fg); padding: clamp(6rem, 11vw, 10rem) var(--gutter) clamp(6rem, 11vw, 10rem) var(--gutter-start); min-height: 92svh; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); align-items: center; }
 
   /* Media dominates: seven of twelve tracks, sitting flush against the
      band's own left edge. The body takes three, with a full track of air
@@ -119,20 +119,8 @@ const { company, title, tagline, impact, href, image, alt = '',
   .title { font-family: var(--font-display); font-size: var(--step-h2); font-weight: 600; letter-spacing: var(--tracking-tight); line-height: 1.05; margin: 0 0 1.25rem; max-width: 16ch; text-wrap: balance; }
   .tagline { font-family: var(--font-accent); font-style: italic; font-size: var(--step-h3); color: var(--fg-dim); line-height: 1.35; margin: 0 0 2.75rem; max-width: 28ch; text-wrap: pretty; }
   .impact { font-family: var(--font-display); font-size: var(--step-body); font-weight: 600; letter-spacing: -0.01em; line-height: 1.4; margin: 0 0 2.75rem; max-width: 26ch; border-top: 1px solid var(--rule); padding-top: 1.25rem; text-wrap: pretty; }
-  /* Same bordered-pill control as the hero's resume link — a control
-     reads as the same control everywhere it appears on the site. */
-  .cta {
-    display: inline-block;
-    color: var(--fg);
-    text-decoration: none;
-    border: 1px solid var(--fg-dim);
-    border-radius: 999px;
-    padding: 0.75rem 1.5rem;
-    font-family: var(--font-display); font-size: var(--step-label); letter-spacing: var(--tracking-label);
-    text-transform: uppercase; font-weight: 600;
-    transition: background var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
-  }
-  .cta:hover { background: var(--screen); border-color: var(--fg-dim); }
+  /* Visual style now comes from the shared .btn/.btn--primary system
+     (global.css) — the one clickable action in this band. */
 
   /* Device frames. --shell / --screen come from tokens.css (see note below).
      Sized up from a thumbnail to something that carries the band on its

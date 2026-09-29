@@ -4,8 +4,8 @@ import Section from '../components/Section.astro';
 import Reveal from '../components/Reveal.astro';
 
 import OneWord from '../components/OneWord.astro';
-import HeroRotatingWord from '../components/HeroRotatingWord.astro';
 import HeroIllustration from '../components/HeroIllustration.astro';
+import AskBubble from '../components/AskBubble.astro';
 import Mosaic from '../components/Mosaic.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import Marquee from '../components/Marquee.astro';
@@ -44,59 +44,53 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   <Section theme="charcoal" class="hero">
     <div class="hero__row">
       <div class="hero__copy">
+        <!-- No entrance animation on the hero text: it is the first thing
+             read, so it is simply there on first paint. -->
         <!-- Hidden, not deleted — kept visually hidden rather than removed so
              it's trivial to bring back later. -->
-        <Reveal delay={80}>
-          <p class="hero__eyebrow u-sr-only">
-            <span class="hero__statusdot" aria-hidden="true"></span>
-            Open to ambitious problems &amp; good people.
-          </p>
-        </Reveal>
-        <Reveal delay={120}>
-          <h1 class="u-display hero__line">Hi, I&rsquo;m Anupama.</h1>
-        </Reveal>
-        <Reveal delay={130}>
-          <p class="hero__greet">
-            <span class="reflect-wrap"><span class="reflect" tabindex="0">Staff Product Designer</span><span class="reflect__aside" aria-hidden="true">— 10+ yrs</span></span>{' '}@ Okta.
-          </p>
-        </Reveal>
-        <Reveal delay={150}>
-          <p class="hero__bio">
-            I <HeroRotatingWord words={['ship', 'nudge', 'craft']} flexible />{' '}
-            — from systems and strategy to the last stubborn pixel. I bring
-            curiosity, craft, and a little fun to whatever I&rsquo;m building.
-          </p>
-        </Reveal>
-        <Reveal delay={170}>
-          <p class="hero__bio hero__bio--secondary">
-            I&rsquo;ve worked across a wonderfully eclectic mix of domains —{' '}
-            <span class="reflect-wrap"><span class="reflect" tabindex="0">data &amp; privacy</span><span class="reflect__aside" aria-hidden="true">— Deloitte</span></span>,{' '}
-            <span class="reflect-wrap"><span class="reflect" tabindex="0">digital identity</span><span class="reflect__aside" aria-hidden="true">— Okta</span></span>,{' '}
-            <span class="reflect-wrap"><span class="reflect" tabindex="0">fintech</span><span class="reflect__aside" aria-hidden="true">— PayPal</span></span>, and{' '}
-            <span class="reflect-wrap"><span class="reflect" tabindex="0">e-commerce</span><span class="reflect__aside" aria-hidden="true">— Walmart Labs</span></span>.{' '}
-            Previously @ PayPal, Walmart Labs, and Deloitte.
-          </p>
-        </Reveal>
-        <Reveal delay={190}>
-          <p class="hero__find">
-            Find me at{' '}
-            <a class="link-ext" href={site.linkedin} target="_blank" rel="noopener">
-              LinkedIn<span class="link-ext__mark" aria-hidden="true">↗</span>
-            </a>{' '}
-            or{' '}
-            <a class="link-ext" href={`mailto:${site.email}`}>{site.email}</a>.
-          </p>
-        </Reveal>
-        <Reveal delay={100}>
-          <p class="intro__links">
-            <a class="btn btn--primary" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
-            <a class="btn btn--secondary" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
-          </p>
-        </Reveal>
+        <p class="hero__eyebrow u-sr-only">
+          <span class="hero__statusdot" aria-hidden="true"></span>
+          Open to ambitious problems &amp; good people.
+        </p>
+        <h1 class="u-display hero__line">Hi, I&rsquo;m Anupama.</h1>
+        <p class="hero__greet">
+          <span class="reflect-wrap"><span class="reflect" tabindex="0">Staff Product Designer</span><span class="reflect__aside" aria-hidden="true">— 10+ yrs</span></span>{' '}@ Okta.
+        </p>
+        <p class="hero__bio">
+          I ship
+          — from systems and strategy to the last stubborn pixel. I bring
+          curiosity, craft, and a little fun to whatever I&rsquo;m building.
+        </p>
+        <p class="hero__bio hero__bio--secondary">
+          I&rsquo;ve worked across a wonderfully eclectic mix of domains —{' '}
+          <span class="reflect-wrap"><span class="reflect" tabindex="0">data &amp; privacy</span><span class="reflect__aside" aria-hidden="true">— Deloitte</span></span>,{' '}
+          <span class="reflect-wrap"><span class="reflect" tabindex="0">digital identity</span><span class="reflect__aside" aria-hidden="true">— Okta</span></span>,{' '}
+          <span class="reflect-wrap"><span class="reflect" tabindex="0">fintech</span><span class="reflect__aside" aria-hidden="true">— PayPal</span></span>, and{' '}
+          <span class="reflect-wrap"><span class="reflect" tabindex="0">e-commerce</span><span class="reflect__aside" aria-hidden="true">— Walmart Labs</span></span>.{' '}
+          Previously @ PayPal, Walmart Labs, and Deloitte.
+        </p>
+        <p class="hero__find">
+          Find me at{' '}
+          <a class="link-ext" href={site.linkedin} target="_blank" rel="noopener">
+            LinkedIn<span class="link-ext__mark" aria-hidden="true">↗</span>
+          </a>{' '}
+          or{' '}
+          <a class="link-ext" href={`mailto:${site.email}`}>{site.email}</a>.
+        </p>
+        <p class="intro__links">
+          <a class="btn btn--primary" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
+          <a class="btn btn--secondary" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+        </p>
       </div>
-      <Reveal delay={180}>
+      <Reveal delay={180} class="hero__portrait-cell">
         <div class="hero__portrait">
-          <HeroIllustration alt="Illustrated portrait of Anupama Mishra, working at her laptop" size={1150} />
+          <!-- .hero__stage: a positioned box exactly the portrait's size, so
+               AskBubble (Pixel) can pin its launcher to the books in the
+               illustration. -->
+          <div class="hero__stage">
+            <HeroIllustration alt="Illustrated portrait of Anupama Mishra, working at her laptop" size={1150} />
+            <AskBubble />
+          </div>
         </div>
       </Reveal>
     </div>
@@ -328,9 +322,9 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      still rely on the tight default. */
   /* Conversational, not a marketing headline — this line used to carry
      a rotating-word H1 at display size; now it's just "Hi, I'm
-     Anupama.", sized down to --step-h2 so it reads as a greeting, not
-     a claim. */
-  .hero__line { font-size: var(--step-h2); max-width: 18ch; line-height: 1.15; }
+     Anupama.", at --step-hero (32→60px, matched to hansonwu.com) with
+     its 1.2 leading. */
+  .hero__line { font-size: var(--step-hero); max-width: 18ch; line-height: 1.2; }
 
   /* Hero copy + portrait side by side on desktop, portrait first and
      centred above the copy on narrow screens — the halftone photo is the
@@ -345,9 +339,23 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
     justify-content: space-between;
     gap: clamp(2rem, 5vw, 4rem);
   }
-  .hero__copy { flex: 1 1 auto; min-width: 0; }
-  .hero__portrait { flex: none; }
+  /* The copy column gets a guaranteed width (--hero-copy-w) and the
+     illustration takes whatever is left, scaling down with it. The other
+     way round (image at a fixed share, copy getting the remainder) left
+     the copy at ~200px on laptop-width screens once the left rail for the
+     fixed menu (--gutter-start) came in. */
+  .hero__copy { flex: 0 0 var(--hero-copy-w); min-width: 0; }
+  /* The portrait's Reveal wrapper is the actual flex item; a class passed
+     into a component doesn't carry this page's scope, hence :global. */
+  :global(.hero__portrait-cell) { flex: 1 1 0; min-width: 0; }
+  .hero__portrait { display: flex; justify-content: flex-end; }
+  /* Shrinks with the column (min-width: 0) so HeroIllustration's
+     max-width: 100% still resolves against real space, and is the
+     positioning box AskBubble pins itself to. */
+  .hero__stage { position: relative; flex: 0 1 auto; min-width: 0; }
   @media (max-width: 860px) {
+    .hero__copy, :global(.hero__portrait-cell) { flex: none; }
+    .hero__portrait { justify-content: center; }
     .hero__row { flex-direction: column-reverse; align-items: center; text-align: center; }
     .hero__copy { display: flex; flex-direction: column; align-items: center; }
     .hero__portrait { align-self: center; }

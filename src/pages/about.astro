@@ -293,7 +293,7 @@ const timeline = [
                       <input class="connect__field connect__field--email" type="email" name="email" required aria-label="Your email" />
                       {' '}.
                     </p>
-                    <button class="connect__submit" type="submit">Submit</button>
+                    <button class="connect__submit btn btn--primary" type="submit">Submit</button>
                   </form>
                   {/* "Submit" builds a mailto: and navigates to it — there's no
                       server behind this static site. That fails silently on
@@ -302,7 +302,7 @@ const timeline = [
                       in Gmail-in-browser), and this stage had no plain way
                       out if it does. A direct address is the fallback. */}
                   <p class="connect__alt">
-                    Prefer email? <a href={`mailto:${site.email}`}>{site.email}</a>
+                    Prefer email? <a class="link-ext" href={`mailto:${site.email}`}>{site.email}</a>
                   </p>
                 </>
               )}
@@ -614,22 +614,9 @@ const timeline = [
   .dselect__option.is-active,
   .dselect__option[aria-selected='true'] { outline: 2px solid var(--swatch-ink); outline-offset: -2px; }
 
-  .connect__submit {
-    font: inherit;
-    font-size: var(--step-body);
-    color: var(--fg);
-    background: none;
-    /* --fg-dim, not --rule — see .connect__field above. A CTA whose only
-       edge is a sub-3:1 border is close to invisible until hovered, which
-       a touch or keyboard visitor never gets. */
-    border: 1px solid var(--fg-dim);
-    border-radius: 999px;
-    padding: 0.7rem 1.5rem;
-    margin-top: 1.5rem;
-    cursor: pointer;
-    transition: background var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
-  }
-  .connect__submit:hover { background: var(--screen); border-color: var(--fg-dim); }
+  /* Visual style now comes from the shared .btn/.btn--primary system
+     (global.css) — this rule only keeps the form's own top margin. */
+  .connect__submit { margin-top: 1.5rem; }
 
   .connect__alt {
     margin: 1.25rem 0 0;

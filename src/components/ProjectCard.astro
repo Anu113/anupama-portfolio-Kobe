@@ -141,7 +141,12 @@ const num = String(index).padStart(2, '0');
     color: var(--fg-dim);
     margin: 0 0 clamp(1rem, 2vw, 1.5rem);
   }
-  .pc__co { color: var(--fg-dim); margin: 0 0 0.6rem; }
+  .pc__co {
+    color: var(--fg-dim);
+    margin: 0 0 0.6rem;
+    transition: color var(--dur-micro) var(--ease-out);
+  }
+  .pc:hover .pc__co { color: var(--fg); }
   .pc__title {
     font-family: var(--font-display);
     font-size: var(--step-h2);
@@ -204,9 +209,18 @@ const num = String(index).padStart(2, '0');
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--fg);
+    text-decoration: underline dotted 1px;
+    text-underline-offset: 0.2em;
+    text-decoration-color: color-mix(in oklab, currentColor 38%, transparent);
+    transition: text-decoration-color var(--dur-micro) var(--ease-out);
   }
-  .pc__arrow { transition: transform var(--dur-hover) var(--ease-out); }
-  .pc:hover .pc__arrow { transform: translateX(3px); }
+  .pc:hover .pc__cta { text-decoration-color: currentColor; }
+  .pc__arrow {
+    opacity: 0.7;
+    transition: opacity var(--dur-micro) var(--ease-out),
+                transform var(--dur-micro-move) var(--ease-out);
+  }
+  .pc:hover .pc__arrow { opacity: 1; transform: translate(2px, -2px); }
 
   /* The canvas — a wall, not a picture. Muted step off the card's own
      --bg (same hue family), object-fit: contain so a pinned asset
@@ -235,6 +249,15 @@ const num = String(index).padStart(2, '0');
     height: auto;
     object-fit: contain;
     display: block;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  /* A one-pixel lift on the pinned asset itself, same idea as the CTA
+     arrow's nudge — a small, immediate sign the row is "live" under the
+     cursor, not a parallax effect. */
+  .pc:hover .pc__hero img,
+  .pc:hover .pc__hero :global(img),
+  .pc:hover .pc__hero :global(video) {
+    transform: translateY(-4px);
   }
 
   @media (max-width: 860px) {
