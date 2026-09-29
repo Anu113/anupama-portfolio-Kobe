@@ -50,9 +50,10 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
       <Reveal delay={180} class="hero__portrait-cell">
         <div class="hero__portrait">
           <!-- .hero__stage: a positioned box exactly the portrait's size, so
-               AskBubble (Pixel) can pin its launcher to the books in the
-               illustration. -->
-          <div class="hero__stage">
+               AskBubble can sit Moss on the books in the
+               illustration. data-scrub-area: the portrait reads the
+               pointer over this whole box, Moss included. -->
+          <div class="hero__stage" data-scrub-area>
             <HeroIllustration alt="Illustrated portrait of Anupama Mishra, working at her laptop" size={1700} />
             <AskBubble />
           </div>

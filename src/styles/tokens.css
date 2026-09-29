@@ -159,6 +159,8 @@
   --ask-bg: #fbf3ee;
   --ask-ink: #6b2e1c;
   --ask-bubble-alpha: 65%;
+  --ask-outline: color-mix(in srgb, var(--ask-ink) 28%, transparent);   /* the launcher bubble's hairline, so it holds its shape on the white hero */
+  --dur-ask-typing: 1.2s;   /* one pass of the launcher's typing dots */
   --pixel-bg: #17120f;
   --pixel-raised: #1e1814;
   --pixel-high: #2a221d;
@@ -167,7 +169,6 @@
   --pixel-rule: #322a24;
   --pixel-rule-strong: #4a3f37;
   --pixel-accent: #e8613c;
-  --pixel-pad: #e99862;
   --pixel-scrim: rgb(58 20 10 / 0.28);
   --pixel-shadow: 0 28px 70px -24px rgb(20 8 4 / 0.6);
   --radius-pixel-panel: 24px;
@@ -232,4 +233,12 @@
   --font-display: var(--font-sans);
   --step-label: 0.72rem;
   --tracking-label: 0.14em;
+  /* Mono sets ~20% wider than the site's sans, so these sit a step under
+     where a proportional face would: 13px mono reads like ~15px sans and
+     gives ~40 characters a line on a 375px phone. Replies are the largest
+     text in the panel; chips sit one step under so the answer leads. */
+  --pixel-step-title: 0.875rem;
+  --pixel-step-body: 0.8125rem;
+  --pixel-step-small: 0.75rem;
+  --pixel-leading: 1.55;
 }

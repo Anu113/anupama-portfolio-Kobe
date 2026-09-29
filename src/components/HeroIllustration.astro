@@ -75,7 +75,15 @@ imgs[0].save('public/images/hero-idle.webp', 'WEBP', quality=88, alpha_quality=9
    pixelated when upscaled, so resolution is matched, not maximised.
 
    Fine pointers only. Touch/coarse pointers and `prefers-reduced-motion`
-   get the static hero-idle.webp and no script runs. */
+   get the static hero-idle.webp and no script runs.
+
+   Sync: every time the drawn frame changes, the figure dispatches a
+   bubbling `hero-scrub:frame` event ({ frame, count }). AskBubble's Moss
+   listens and shows the same frame of his own 48-frame clip, so the two
+   characters share one timeline and one damping loop and can't drift.
+   The pointer is read over the nearest [data-scrub-area] ancestor (the
+   hero stage, which also holds Moss) when there is one, so reaching for
+   Moss doesn't count as leaving the portrait. */
 interface Props {
   alt: string;
   size?: number;
@@ -178,6 +186,7 @@ const { alt, size = 480 } = Astro.props;
     let targetIndex = 0;
     let currentIndex = 0;
     let raf = 0;
+    let lastFrame = -1;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     const sizeCanvas = () => {
@@ -190,6 +199,10 @@ const { alt, size = 480 } = Astro.props;
     const draw = (index: number) => {
       if (!ready || canvas.width === 0) return;
       const frame = Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(index)));
+      if (frame !== lastFrame) {
+        lastFrame = frame;
+        figure.dispatchEvent(new CustomEvent('hero-scrub:frame', { detail: { frame, count: FRAME_COUNT }, bubbles: true }));
+      }
       const sx = (frame % COLS) * FRAME_W;
       const sy = Math.floor(frame / COLS) * FRAME_H;
       // Box aspect matches the frame (5:7), so it maps straight onto the
@@ -227,9 +240,10 @@ const { alt, size = 480 } = Astro.props;
     };
     const onLeave = () => { targetIndex = 0; };
 
-    figure.addEventListener('pointerenter', onMove);
-    figure.addEventListener('pointermove', onMove);
-    figure.addEventListener('pointerleave', onLeave);
+    const area = figure.closest<HTMLElement>('[data-scrub-area]') ?? figure;
+    area.addEventListener('pointerenter', onMove);
+    area.addEventListener('pointermove', onMove);
+    area.addEventListener('pointerleave', onLeave);
     figure.addEventListener('focus', () => { targetIndex = (FRAME_COUNT - 1) * 0.72; });
     figure.addEventListener('blur', onLeave);
 
