@@ -20,23 +20,24 @@
    LAUNCHER — Moss himself, sitting on the books in HeroIllustration's
      sprite (feet on the top book: x 565 / y 462 of the 700x980 frame; the
      table and books don't move across the scrub frames, so he stays put
-     while the portrait tracks the pointer), with a small terracotta speech
-     bubble above his head. Moss and the bubble are one button. At rest the
-     bubble (solid accent fill) holds three typing dots that pulse in turn,
-     and a light sweeps round its border — the "click me" signals; dots
-     and shimmer are the only motion at rest, both static under reduced
-     motion. Moss has no idle motion; he only answers the
-     pointer, in lockstep with the portrait: HeroIllustration dispatches
-     `hero-scrub:frame` whenever it draws a new frame and Moss shows the
-     same frame of his own clip (looking left, round, up, back), so the two
-     share one timeline and can't drift. Over Moss himself he also perks
-     up — grows a little from the feet. Fine
-     pointers only (the sprite isn't even fetched otherwise); frame 0 and
-     no motion under reduced motion, like the portrait. At rest the bubble
-     shows the dots; hover/focus deepens the fill and slides out "Short on
-     time? / Let Moss help" in two very small lines to the right (away
-     from her face). Touch devices show the words always. The
-     button's aria-label carries the full "Short on time? Ask Moss…". Hidden while the panel is open.
+     while the portrait tracks the pointer), with a chat-preview card to
+     his right: "Moss" (small, dim, an accent dot) over "Psst…", a tail
+     pointing back at him. Moss and the card are one button. At rest the
+     only motion is the ellipsis after "Psst" slowly fading in and out
+     (static under reduced motion); the words are the "click me" signal. Moss has no
+     idle motion; he only answers the pointer, in lockstep with the
+     portrait: HeroIllustration dispatches `hero-scrub:frame` whenever it
+     draws a new frame and Moss shows the same frame of his own clip
+     (looking left, round, up, back),
+     so the two share one timeline and can't drift. Over Moss himself he
+     also perks up — grows a little from the feet. Fine pointers only (the
+     sprite isn't even fetched otherwise); frame 0 and no motion under
+     reduced motion, like the portrait. Hover/focus lifts the card and
+     opens the offer under "Psst…", "Want the short version?", growing
+     right and down (away from her face, never over him); on narrower
+     two-column screens the card sits under him instead (.is-below).
+     Touch devices show the offer always. The button's
+     aria-label carries the full line. Hidden while the panel is open.
      Must sit inside a position:relative box the portrait's size
      (index.astro, .hero__stage).
 
@@ -77,12 +78,13 @@ const headCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-h
 const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-sm.webp" width="240" height="287" alt="" decoding="async"></span>`;
 ---
 <div class="pixel-launch">
-  <button class="pixel-launcher" type="button" aria-label="Short on time? Ask Moss about Anupama’s work" aria-expanded="false" aria-controls="pixel-panel" aria-haspopup="dialog">
-    <span class="pixel-launcher__bubble" aria-hidden="true">
-      <span class="pixel-launcher__dots"><i></i><i></i><i></i></span>
-      <span class="pixel-launcher__text"><span><span>Short on time?</span><span>Let Moss help</span></span></span>
-    </span>
+  <button class="pixel-launcher" type="button" aria-label="Psst… Want the short version? Ask Moss about Anupama’s work" aria-expanded="false" aria-controls="pixel-panel" aria-haspopup="dialog">
     <span class="pixel-launcher__moss"></span>
+    <span class="pixel-launcher__card" aria-hidden="true">
+      <span class="pixel-launcher__who">Moss</span>
+      <span class="pixel-launcher__first">Psst<span class="pixel-launcher__dots"><i></i><i></i><i></i></span></span>
+      <span class="pixel-launcher__text"><span>Want the short version?</span></span>
+    </span>
   </button>
 </div>
 
@@ -108,8 +110,6 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
 </div>
 
 <style is:global>
-  @property --pixel-ring { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-
   /* ================= launcher ================= */
   .pixel-launch {
     /* Moss's feet on the top book: x 565, y 462 in HeroIllustration's
@@ -147,66 +147,68 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
   .pixel-launcher:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; border-radius: 4px; }
   .pixel-launcher[aria-expanded='true'] { opacity: 0; transform: translateY(8px); pointer-events: none; }
 
-  /* the speech bubble: above his head, tail (the square bottom-left
-     corner) pointing down at him. Anchored on its LEFT edge and grows
-     rightward when the label slides out, after the dots — it used to grow
-     leftward and covered her face in the portrait. Measured at 1440 there
-     is ~160px clear to the right of the portrait for the ~110px label.
-     Filled with the site accent (on request, after a UX test where a
-     visitor nearly missed it): the see-through cream bubble read as part
-     of the painting; a solid terracotta one reads as something to press.
-     Label and dots in --ask-launch-fg on it. */
-  .pixel-launcher__bubble {
-    position: absolute; left: 40%; bottom: calc(100% - 0.35rem);
-    display: inline-flex; align-items: center; padding: 0.35rem 0.6rem 0.35rem 0.55rem;
-    background: var(--ask-launch-bg); color: var(--ask-launch-fg);
-    box-shadow: var(--ask-launch-shadow);
-    border-radius: 0.875rem 0.875rem 0.875rem 0.2rem;
-    width: max-content; white-space: nowrap;   /* an absolute box in a ~48px parent would otherwise shrink the label to nothing */
-    transition: background var(--dur-pixel) var(--ease-pixel), transform var(--dur-pixel) var(--ease-pixel);
+  /* the card: a chat preview, the first message of a conversation —
+     his name, small and dim, over what he's saying, "Psst…" It sits to
+     his RIGHT at face level with a tail pointing back at him, so it never
+     covers him and grows away from her face. Anchored on its top-left
+     corner (percentages of his box, so it tracks him at every portrait
+     size). Words at rest are what make it findable — the UX test where a
+     visitor nearly missed the old wordless bubble; the only motion at
+     rest is the breathing ellipsis. Hover/focus lifts it, darkens the edge and opens the offer,
+     "Want the short version?", in the accent under the first line.
+     Ground, ink and edge are the page's role colours, so it re-inks in
+     dark mode; the accent dot by his name is the only fixed colour. */
+  .pixel-launcher__card {
+    position: absolute; left: 92%; top: 18%;
+    display: grid; justify-items: start; gap: 0.15rem;
+    padding: 0.5rem 0.65rem 0.55rem; border: 1px solid var(--rule); border-radius: var(--ask-card-radius);
+    background: var(--bg); color: var(--fg); box-shadow: var(--ask-card-shadow);
+    width: max-content; white-space: nowrap;   /* an absolute box in a ~48px parent would otherwise shrink the words to nothing */
+    font-size: var(--ask-launch-step-1); line-height: 1.2;
+    transition: border-color var(--dur-pixel) var(--ease-pixel), transform var(--dur-pixel) var(--ease-pixel);
   }
-  /* the shimmer: a bright arc sweeping round a 1.5px border — pale on the
-     terracotta fill, so it still reads as light catching the edge */
-  .pixel-launcher__bubble::after {
-    content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
-    background: conic-gradient(from var(--pixel-ring), transparent 0deg, transparent 230deg, var(--ask-launch-ring) 300deg, var(--ask-launch-fg) 330deg, transparent 360deg);
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
-    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-    animation: pixel-ring var(--dur-pixel-ring) linear infinite;
+  /* the tail: a square turned 45deg, two edges drawn, pointing at him */
+  .pixel-launcher__card::before {
+    content: ''; position: absolute; left: calc(var(--ask-card-tail) / -2 - 1px); top: 0.9rem;
+    width: var(--ask-card-tail); height: var(--ask-card-tail); background: inherit;
+    border-style: solid; border-width: 0 0 1px 1px; border-color: inherit;
+    transform: rotate(45deg);
   }
-  @keyframes pixel-ring { to { --pixel-ring: 360deg; } }
-  .pixel-launcher:hover .pixel-launcher__bubble, .pixel-launcher:focus-visible .pixel-launcher__bubble { background: var(--ask-launch-bg-hover); transform: translateY(-1px); }
+  .pixel-launcher:hover .pixel-launcher__card, .pixel-launcher:focus-visible .pixel-launcher__card { border-color: var(--fg-dim); transform: translateY(-1px); }
+  .pixel-launcher__who { display: inline-flex; align-items: center; gap: 0.35rem; font-size: var(--ask-launch-step-2); color: var(--fg-dim); }
+  .pixel-launcher__who::before { content: ''; width: 0.375rem; height: 0.375rem; border-radius: 50%; background: var(--accent); }
+  .pixel-launcher__first { display: inline-flex; align-items: baseline; font-size: var(--ask-launch-step-1); }
 
-  /* typing dots: Moss "has something to say" — a wave that pulses and
-     lifts each dot in turn. Static at full strength under reduced motion. */
-  .pixel-launcher__dots { display: inline-flex; align-items: center; gap: 4px; height: 10px; }
-  .pixel-launcher__dots i {
-    width: 5px; height: 5px; border-radius: 50%; background: currentColor;
-    animation: pixel-typing var(--dur-ask-typing) ease-in-out infinite;
-  }
-  .pixel-launcher__dots i:nth-child(2) { animation-delay: calc(var(--dur-ask-typing) * 0.15); }
-  .pixel-launcher__dots i:nth-child(3) { animation-delay: calc(var(--dur-ask-typing) * 0.3); }
-  @keyframes pixel-typing {
-    0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
-    30% { opacity: 1; transform: translateY(-2px); }
-  }
+  /* "Psst…": the ellipsis breathes — all three dots fade slowly between
+     full and dim together, Moss has something to say. Chosen over a
+     bouncing typing wave as the calmest option. The one motion at rest.
+     Static at full strength under reduced motion, a plain "…". */
+  .pixel-launcher__dots { display: inline-flex; gap: var(--ask-dot-gap); margin-left: 0.1em; animation: pixel-breathe var(--dur-ask-breathe) ease-in-out infinite; }
+  .pixel-launcher__dots i { width: var(--ask-dot); height: var(--ask-dot); border-radius: 50%; background: currentColor; }
+  @keyframes pixel-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 
-  /* the words: two very small lines, the hook then the offer, withheld at
-     rest and revealed on hover/focus — the bubble widens rightward (away
-     from her face) and the text fades in. Softened by opacity, not weight
-     (the site loads one Manrope weight); the second line smaller and
-     dimmer so the first reads first. Both opacities are set against the
-     HOVER fill, the only fill they ever sit on: 5.6:1 and 4.6:1.
-     Touch has no hover, so there the words are simply always shown. */
+  /* the offer: withheld at rest, opened on hover/focus — 0fr → 1fr on
+     both axes so the card grows right and down. --accent-text on --bg
+     (5.5:1 light, AA in dark too). Touch has no hover, so there it's
+     always shown. */
   .pixel-launcher__text {
-    display: grid; grid-template-columns: 0fr; opacity: 0;
-    transition: grid-template-columns 400ms var(--ease-pixel), opacity var(--dur-pixel) var(--ease-pixel);
+    display: grid; grid-template-columns: 0fr; grid-template-rows: 0fr; opacity: 0;
+    transition: grid-template-columns 400ms var(--ease-pixel), grid-template-rows 400ms var(--ease-pixel), opacity var(--dur-pixel) var(--ease-pixel);
   }
-  .pixel-launcher__text > span { display: grid; gap: 1px; overflow: hidden; min-width: 0; white-space: nowrap; padding-left: 0.45rem; text-align: left; }
-  .pixel-launcher__text span span:first-child { font-size: var(--ask-launch-step-1); line-height: 1.15; opacity: var(--ask-launch-line-1); }
-  .pixel-launcher__text span span:last-child { font-size: var(--ask-launch-step-2); line-height: 1.15; opacity: var(--ask-launch-line-2); }
-  .pixel-launcher:hover .pixel-launcher__text, .pixel-launcher:focus-visible .pixel-launcher__text { grid-template-columns: 1fr; opacity: 1; }
-  @media (hover: none) { .pixel-launcher__text { grid-template-columns: 1fr; opacity: 1; } }
+  .pixel-launcher__text > span { overflow: hidden; min-width: 0; min-height: 0; white-space: nowrap; color: var(--accent-text); font-size: var(--ask-launch-step-1); }
+  .pixel-launcher:hover .pixel-launcher__text, .pixel-launcher:focus-visible .pixel-launcher__text { grid-template-columns: 1fr; grid-template-rows: 1fr; opacity: 1; }
+  @media (hover: none) { .pixel-launcher__text { grid-template-columns: 1fr; grid-template-rows: 1fr; opacity: 1; } }
+
+  /* BELOW HIM, when the right side is short: on narrower two-column
+     screens (roughly 860–1280px) the portrait sits close to the content
+     edge and the open card would run off it. There the card drops under
+     the books, onto the table, anchored top-right so it opens down and
+     to the left, with the tail on its top edge pointing up at him.
+     (Above his head was tried — it covered her face.) Decided on load
+     and resize (the script sets .is-below), never on hover, so the card
+     doesn't jump under the pointer. */
+  .pixel-launch.is-below .pixel-launcher__card { left: auto; right: 4%; top: 108%; justify-items: end; }
+  .pixel-launch.is-below .pixel-launcher__card::before { left: auto; right: 1rem; top: calc(var(--ask-card-tail) / -2 - 1px); transform: rotate(135deg); }
 
   /* ================= panel ================= */
   .pixel-scrim {
@@ -324,7 +326,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
   @keyframes pixel-tilt { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
 
   @media (prefers-reduced-motion: reduce) {
-    .pixel-launcher, .pixel-launcher__bubble, .pixel-launcher__bubble::after, .pixel-launcher__text, .pixel-launcher__dots i, .pixel-scrim, .pixel-panel,
+    .pixel-launcher, .pixel-launcher__card, .pixel-launcher__text, .pixel-launcher__dots, .pixel-scrim, .pixel-panel,
     .pixel-panel *, .pixel-cat, .pixel-cat * { animation: none !important; transition: none !important; }
     .pixel-shimmer { color: var(--pixel-dim); background: none; }
   }
@@ -357,6 +359,32 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
       moss.style.setProperty('--moss-col', String(frame % COLS));
       moss.style.setProperty('--moss-row', String(Math.floor(frame / COLS)));
     });
+  }
+
+  // The card opens to Moss's right when the open card stays clear of the
+  // screen edge — it may run into the outer two-thirds of --gutter (it's
+  // a hover note, not layout), never closer to the edge than that — otherwise under him (.is-below, see the
+  // styles). Measured with the words' full width, so it's decided before
+  // anyone hovers; re-checked on resize.
+  const launch = launcher?.closest<HTMLElement>('.pixel-launch');
+  const words = launcher?.querySelector<HTMLElement>('.pixel-launcher__text > span');
+  if (launch && words) {
+    // --gutter is a clamp()/max() expression; a probe element resolves it to px
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:absolute;visibility:hidden;height:0;width:var(--gutter)';
+    document.body.append(probe);
+    const place = () => {
+      launch.classList.remove('is-below');
+      const label = launch.querySelector<HTMLElement>('.pixel-launcher__card')!;
+      const pad = parseFloat(getComputedStyle(label).paddingLeft) * 2;
+      const right = label.getBoundingClientRect().left + Math.max(words.scrollWidth, label.offsetWidth - pad) + pad;
+      const gutter = probe.getBoundingClientRect().width;
+      launch.classList.toggle('is-below', right > document.documentElement.clientWidth - gutter / 3);
+    };
+    place();
+    document.fonts?.ready.then(place);
+    let raf = 0;
+    addEventListener('resize', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(place); });
   }
 
   if (panel && launcher && scrim) {

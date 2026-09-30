@@ -206,26 +206,20 @@
      Contrast on --pixel-bg: --pixel-fg 16:1, --pixel-dim 6.9:1. */
   --ask-bg: #fbf3ee;
   --ask-ink: #6b2e1c;
-  --dur-ask-typing: 1.2s;   /* one pass of the launcher's typing dots */
-  /* The launcher bubble, filled with a brighter terracotta than the site
-     accent so it reads as a control, not part of the painting. #cc4a1f is
-     the brightest step of the accent's hue that still holds white text at
-     AA: 4.6:1 (the next step up, #d0501f, is 4.3:1). Same in both modes —
-     white on it passes on either ground. Hover darkens a step. */
-  --ask-launch-bg: #cc4a1f;
-  --ask-launch-bg-hover: #a83c18;   /* the words only show on hover, on this: white 6.3:1 */
-  --ask-launch-fg: #ffffff;
-  --ask-launch-ring: rgb(255 255 255 / 0.55);
-  --ask-launch-shadow: 0 6px 14px -6px rgb(204 74 31 / 0.7);
-  /* Its two lines, "Short on time?" / "Let Moss help", shown on hover —
-     small, so the bubble stays a note in the painting, not a banner (11 / 9.5px
-     read as too small, 13 / 11px as too big). Softened with opacity (one
-     Manrope weight is loaded), checked on --ask-launch-bg-hover: line 1
-     5.6:1, line 2 4.6:1. Don't dim line 2 further — it's at the AA floor. */
+  /* The launcher's chat-preview card. Ground, ink, edge and the offer's
+     colour come from the role tokens (--bg, --fg, --rule, --accent-text),
+     so it re-inks in dark mode; only its shape and shadow live here.
+     Type is small, so the card stays a note in the painting, not a
+     banner: "Psst." and the offer at 12px, "Moss" at 11px in --fg-dim
+     (4.8:1 light, 6.4:1 dark). */
+  --ask-card-radius: 0.75rem;
+  --ask-card-tail: 0.5rem;          /* the tail's square, before it turns 45deg */
+  --ask-card-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.28);
+  --ask-dot: 3px;                   /* the breathing ellipsis after "Psst" */
+  --ask-dot-gap: 2px;
+  --dur-ask-breathe: 2.4s;          /* one slow fade out and back of the ellipsis */
   --ask-launch-step-1: 0.75rem;     /* 12px */
-  --ask-launch-step-2: 0.625rem;    /* 10px */
-  --ask-launch-line-1: 0.92;
-  --ask-launch-line-2: 0.8;
+  --ask-launch-step-2: 0.6875rem;   /* 11px */
   --pixel-bg: #17120f;
   --pixel-raised: #1e1814;
   --pixel-high: #2a221d;
@@ -241,7 +235,6 @@
   --radius-pixel-msg: 18px;
   --ease-pixel: cubic-bezier(0.2, 0.8, 0.2, 1);
   --dur-pixel: 250ms;
-  --dur-pixel-ring: 2.8s;
 }
 
 /* ============================================================
@@ -286,6 +279,7 @@
   --on-accent-small: #1b1a19;
   --device: #3b3936;
   --status: #31b564;            /* abstract.systems' own green, 6.6:1 here */
+  --ask-card-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.7);   /* a light shadow disappears on the dark ground */
 }
 
 /* ============================================================

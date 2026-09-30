@@ -59,6 +59,7 @@ export const pixelTree: Record<string, PixelNode> = {
     q: 'Who are you?',
     say: [
       'I’m Moss. I live here, somewhere between her desk, a sketchbook and a very quiet forest.',
+      'Totoro’s younger brother, if you were wondering. The only difference is I talk.',
       'Mostly I sit around and judge spacing.',
     ],
     next: ['site', 'who'],
