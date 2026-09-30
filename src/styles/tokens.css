@@ -48,8 +48,10 @@
   --step-heading: clamp(2rem, 1.721rem + 1.143vw, 2.75rem);
   --step-title: clamp(1.25rem, 1.111rem + 0.571vw, 1.625rem);
   --step-body: 0.9375rem;
+  --step-small: 0.8125rem;  /* 13px — the footer's one-line note, under body */
   --step-nav: 0.875rem;
   --step-label: 0.75rem;
+  --step-fine: 0.6875rem;   /* 11px — the footer's base line (mono) */
   --step-mono: 1.125rem;
 
   /* Reference: -1.5px on 44/50px serif, 1.2px on 14px nav, 0.8px on
@@ -98,6 +100,11 @@
   --gutter: max(clamp(1.25rem, 0.786rem + 1.905vw, 2.5rem), calc((100vw - var(--shell-max)) / 2));
   --grid-gap: 1.25rem;
   --measure: 62ch;
+  /* A project card's inner padding (ProjectCard). The footer's content
+     is inset by the same amount, so its text lines up with the text
+     inside the cards rather than with their outer edge. */
+  --card-pad: clamp(1.75rem, 3vw, 2.75rem);
+  --card-gap: clamp(1.5rem, 3vw, 2.5rem);   /* between a card's text and image columns */
 
   --space-section: clamp(5rem, 10vw, 9rem);
   --space-band-tight: clamp(2rem, 4vw, 3.5rem);
@@ -252,6 +259,11 @@
   --screen: var(--paper-2);   /* image mounts, fields, placeholders */
   --shell: var(--device);     /* device frames around screenshots */
   --accent-text: var(--accent);
+  /* A marker-pen wash of the accent, behind accent text (the footer
+     sign-off's highlighted words). Mixed from --accent so it re-inks in
+     dark mode. The text on it stays above 3:1, which is enough for the
+     heading size it's used at. */
+  --accent-wash: color-mix(in srgb, var(--accent) 16%, transparent);
   --trail: var(--accent);     /* CursorTrail's line */
 }
 
@@ -280,6 +292,32 @@
   --device: #3b3936;
   --status: #31b564;            /* abstract.systems' own green, 6.6:1 here */
   --ask-card-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.7);   /* a light shadow disappears on the dark ground */
+}
+
+/* ============================================================
+   NIGHT FOOTER — the one dark band, requested after rachelatwork.com.
+   The footer is a black ground the page lifts off: it sits fixed-feeling
+   under <main>, and <main>'s bottom corners round off over it (see
+   Base.astro and Footer.astro). The same values in light and dark mode,
+   so it's black either way; in dark mode the page ground (#1b1a19) still
+   reads as a lighter sheet over it.
+   Contrast on --night:
+     --night-ink      17.6:1
+     --night-ink-dim   7.5:1
+     --night-accent    6.9:1  (dark mode's accent; the light-mode
+                               #b4482a is only ~3.9:1 on black)
+   ============================================================ */
+:root {
+  --night: #0b0b0b;
+  --night-ink: #ecebe8;
+  --night-ink-dim: #a09d98;
+  --night-line: rgb(255 255 255 / 0.14);
+  --night-accent: #e0714f;
+  --night-ink-faint: color-mix(in srgb, var(--night-ink-dim) 80%, var(--night));   /* 4.9:1 — "Built with…" */
+  /* The curve where the page ends: 24px on phones, growing to 80px on
+     wide screens (the reference's 24 / 32 / 80 steps, made fluid). The
+     one large radius on the site besides Moss's panel. */
+  --radius-page-end: clamp(1.5rem, -0.5rem + 5vw, 5rem);
 }
 
 /* ============================================================

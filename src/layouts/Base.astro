@@ -99,6 +99,20 @@ const {
         padding: 0.75rem 1rem; z-index: 100;
       }
       .skip:focus { left: var(--gutter); top: 1rem; }
+
+      /* The page is a sheet lifted over the black footer (after
+         rachelatwork.com): it stacks above it, paints its own ground, and
+         its bottom corners round off onto the black. clip-path, not
+         border-radius + overflow — clip-path also trims fixed layers
+         inside the page (the playground's pinned heading), which would
+         otherwise cover the footer. See Footer.astro for the other half. */
+      main {
+        position: relative;
+        z-index: 1;
+        background: var(--bg);
+        clip-path: inset(0 round 0 0 var(--radius-page-end) var(--radius-page-end));
+        transition: background var(--dur-hover) var(--ease-out);
+      }
     </style>
   </body>
 </html>

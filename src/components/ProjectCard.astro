@@ -105,7 +105,7 @@ const num = String(index).padStart(2, '0');
        content clips via `overflow: hidden` instead. */
     grid-template-rows: minmax(0, 1fr);
     align-items: stretch;
-    gap: clamp(1.5rem, 3vw, 2.5rem);
+    gap: var(--card-gap);
     /* Fixed, not content-driven — every row in the list is this same
        height regardless of title length or tag count, so the grid
        reads as evenly composed instead of jumping card to card. Text
@@ -124,7 +124,7 @@ const num = String(index).padStart(2, '0');
        under the next, so this is a deliberate, scoped exception rather
        than a change to the sitewide --radius token. */
     border-radius: 0;
-    padding: clamp(1.75rem, 3vw, 2.75rem);
+    padding: var(--card-pad);   /* the footer insets by this too */
     overflow: hidden;
     transition: transform var(--dur-hover) var(--ease-out);
   }

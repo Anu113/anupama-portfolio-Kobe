@@ -1,171 +1,254 @@
 ---
 /* The footer closing every page, in `Base.astro` below <main>.
-   Four rows, top to bottom (restructured after emmiwu.com/figma's footer —
-   a short personal sign-off leading, not a bio paragraph, with the contact
-   and site links as two plain columns underneath it):
-     1. the sign-off — one big line carrying the ask ("Let's talk"), reading
-        `site.ask` so it never drifts from the wording every other band uses
-     2. two columns, "Get in touch" and "Site" — how to reach her, where
-        else to go
-     3. a meta line — her city and a live clock in HER timezone (mono, the
-        system's one use of it), the credit, the copyright
-   Type and colour follow allierho.com's footer: the sign-off is the serif
-   heading in the accent, everything under it 12px uppercase labels. (A
-   full-bleed name wordmark with a variable-weight cursor effect used to
-   close this; removed with the move to that system — its typeface is
-   gone, and it was decoration the reference doesn't carry.) */
+   Two rows, top to bottom (option C of three mocks, links moved under
+   the words on request):
+     1. the words, then the links under them.
+        - "Let's start with a conversation." — one big serif line in ink.
+          The word "conversation" is a link (Gmail compose to `site.email`,
+          new tab): underlined in ink at rest, the accent on hover/focus.
+        - one line under it, in grey at 13px (--step-small), exactly as
+          wide as the headline: the ask first ("Open to <site.seeking>
+          roles."), then everyone else ("Projects, questions and feedback
+          are welcome too."). The role steps up to ink on a marker-pen
+          wash of the accent, so a recruiter gets it without reading.
+          It ends on her crayon smiley, an 11-frame loop at 10fps in the
+          rhythm of bradleyziffer.com's — an animated WebP alternating
+          two faces: three frames of her drawing exactly as given, then
+          two of the same face with a wider closed smile, repeat. Each frame
+          shifts a hair so the crayon line "boils". Its reason: a warm, human sign-off on the
+          invitation to write. Decorative (empty alt); a still frame
+          (smiley.webp) under reduced motion, via <picture>.
+        - no link columns: Email and LinkedIn are the icons in row 2,
+          and the pages are its centre links.
+     2. the base line, after carlthomasiv.com's footer: a full-width
+        hairline, then three equal parts (after ozgur.design): "© year
+        name · Built with Claude Code & Astro" in 11px mono on the left
+        (all ink except "Built with…", a step fainter), Work / About me / Playground
+        centred in the same mono, and LinkedIn + email line icons
+        (Lucide's, 20px) on the right, the email one opening Gmail in a new
+        tab. On phones the page links drop to their own line.
+   Edges: every row is inset from the page gutter by --card-pad, the
+   project cards' own padding, so the footer's text lines up with the
+   text inside the cards above it.
+   Ground: black, with the page ending on a curve above it (after
+   rachelatwork.com). <main> rounds its bottom corners (Base.astro) and
+   the footer tucks up under them by --radius-page-end so black shows in
+   the corners. When the footer fits in the window it is sticky at the
+   bottom, under <main>: the page scrolls up off it like a sheet being
+   lifted, revealing it in place rather than scrolling it in. When it's
+   taller than the window (phones, short screens) that would hide its
+   top, so the script below drops the reveal and it scrolls normally —
+   the curve stays either way. It re-inks the palette tokens to the
+   NIGHT values in tokens.css, so every role colour inside follows. No
+   text rests in the accent; links turn to it on hover.
+   Type follows allierho.com's system: the sign-off is the serif display
+   step, the note body text, links and labels 12px uppercase. */
 import { site } from '../data/site';
 
 const year = new Date().getFullYear();
+const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
 ---
 
 <footer id="site-footer" data-theme="bone" data-themeband class="foot">
-  <div class="foot__top u-shell">
-    <p class="foot__signoff">
-      Building something complicated? <em>Let's talk</em> — I'm looking for a {site.ask}.
-    </p>
-  </div>
-
-  <div class="foot__cols u-shell">
-    <div class="foot__contact">
-      <p class="u-label foot__eyebrow">Get in touch</p>
-      <ul class="foot__links">
-        <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
-        <li><a href={site.linkedin} rel="me">LinkedIn<span class="foot__mark-nudge" aria-hidden="true">↗</span></a></li>
-      </ul>
+  <div class="foot__main u-shell">
+    <div class="foot__words">
+      <h2 class="foot__signoff">Let's start with a <a
+          class="foot__talk"
+          href={gmail}
+          target="_blank"
+          rel="noopener"
+        ><em>conversation</em><span class="foot__vh"> — email Anupama (opens Gmail in a new tab)</span></a>.</h2>
+      <p class="foot__note">
+        Open to <span class="foot__key">{site.seeking}</span> roles. Projects, questions and feedback are welcome <span class="foot__nowrap">too.<picture>
+          <source srcset="/images/footer/smiley.webp" media="(prefers-reduced-motion: reduce)" />
+          <img
+            class="foot__smile"
+            src="/images/footer/smiley-loop.webp"
+            width="192" height="192"
+            alt="" aria-hidden="true"
+            loading="lazy" decoding="async"
+          />
+        </picture></span>
+      </p>
     </div>
 
-    <div class="foot__sitenav">
-      <p class="u-label foot__eyebrow">Site</p>
-      <ul class="foot__links">
-        <li><a href="/work">Work</a></li>
-        <li><a href="/about">About me</a></li>
-        <li><a href="/playground">Playground</a></li>
-        <li><a href="/contact">Contact</a></li>
-      </ul>
-    </div>
   </div>
 
   <div class="foot__meta u-shell">
-    <p class="foot__where u-label">
-      <span>{site.location}</span>
-      <!-- Filled by the script below; the dashes are what a visitor with no
-           JS sees, which is honest about a clock that can't tick. -->
-      <span class="foot__clock" data-clock={site.timezone}>--:--:--</span>
+    <p class="foot__legal">
+      <span>© {year} {site.name}</span><span class="foot__dot" aria-hidden="true">·</span><span class="foot__built">Built with Claude Code &amp; Astro</span>
     </p>
-
-    <p class="foot__credit u-label">
-      Designed + coded with <span class="foot__heart" aria-hidden="true">♡</span
-      ><span class="foot__vh">love</span> by {site.name.split(' ')[0]}
-    </p>
-
-    <p class="foot__legal u-label">
-      © {year}, {site.name}<br />All rights reserved
-    </p>
+    <nav class="foot__nav" aria-label="Footer">
+      <a href="/work">Work</a>
+      <a href="/about">About me</a>
+      <a href="/playground">Playground</a>
+    </nav>
+    <ul class="foot__icons">
+      <li>
+        <a href={site.linkedin} target="_blank" rel="me noopener" aria-label="LinkedIn (opens in a new tab)">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href={gmail} target="_blank" rel="noopener" aria-label="Email Anupama (opens Gmail in a new tab)">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+        </a>
+      </li>
+    </ul>
   </div>
-
 </footer>
 
 <style>
   .foot {
+    /* Re-ink the palette, as dark mode does, so --bg/--fg/--accent-text
+       and the rest all resolve to the night values in here. */
+    --paper: var(--night);
+    --ink: var(--night-ink);
+    --ink-dim: var(--night-ink-dim);
+    --line: var(--night-line);
+    --accent: var(--night-accent);
     background: var(--bg);
     color: var(--fg);
-    border-top: 1px solid var(--rule);
-    /* The playground paints its heading on a fixed layer at z-index 0.
-       A static footer would be painted under it — stay positioned. */
+    /* Positioned, under <main> (z-index 1). */
     position: relative;
-    z-index: 1;
-    padding-top: clamp(2.5rem, 5vw, 4rem);
+    z-index: 0;
+    /* Tuck up under the page's rounded corners. */
+    margin-top: calc(-1 * var(--radius-page-end));
+    padding-top: calc(var(--radius-page-end) + clamp(4rem, 9vw, 8rem));
+  }
+  .foot.is-reveal { position: sticky; bottom: 0; }
+
+  /* Inset by the project cards' padding (see the header). */
+  .foot__main,
+  .foot__meta {
+    padding-inline: calc(var(--gutter-start) + var(--card-pad)) calc(var(--gutter) + var(--card-pad));
   }
 
-  /* --- Row 1: the sign-off -------------------------------------------- */
+  /* --- Row 1: the words --------------------------------------------- */
+
   .foot__signoff {
     margin: 0;
-    max-width: 34ch;
     font-family: var(--font-serif); font-weight: var(--weight-serif);
-    font-size: var(--step-heading);
+    font-size: var(--step-display);
     line-height: var(--leading-heading);
     letter-spacing: var(--tracking-serif);
-    color: var(--accent-text);
-  }
-  .foot__signoff em { font-style: italic; }
-
-  /* --- Row 2: get in touch | site -------------------------------------- */
-  .foot__cols {
-    display: flex;
-    gap: clamp(3rem, 8vw, 6rem);
-    padding-top: clamp(2.5rem, 5vw, 4rem);
-  }
-
-  .foot__eyebrow { margin: 0 0 1rem; }
-
-  .foot__links { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
-  .foot__links a {
-    font-family: var(--font-sans);
-    font-size: var(--step-label);
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
-    font-weight: var(--weight-sans);
     color: var(--fg);
-    text-decoration: none;
-    /* Underline sits off the baseline rather than through the descenders,
-       and it's the hover target as well — colour alone never carries it. */
-    border-bottom: 1px solid currentColor;
-    padding-bottom: 0.2em;
+  }
+  .foot__talk {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.14em;
     transition: color var(--dur-hover) var(--ease-out);
   }
-  .foot__links a:hover { color: var(--accent-text); }
-  /* Same micro-nudge as .link-ext (global.css) on the LinkedIn row's
-     external-link glyph — kept local rather than swapped for .link-ext
-     itself, since this row's own underline-as-hover-target treatment
-     (above) already does the job .link-ext's dotted underline does
-     elsewhere. */
-  .foot__mark-nudge {
+  .foot__talk em { font-style: italic; }
+  .foot__talk:hover,
+  .foot__talk:focus-visible { color: var(--accent-text); }
+
+  /* The words block is as wide as the headline, and the note fills
+     exactly that: `contain: inline-size` stops the note's long lines from
+     widening the block, so the headline alone sets the width. */
+  .foot__words { width: fit-content; max-width: 100%; }
+  .foot__note {
+    contain: inline-size;
+    margin: 1.25rem 0 0;
+    font-size: var(--step-small);
+    color: var(--fg-dim);
+  }
+  /* Keeps "too." and the smiley together so it never wraps alone. */
+  .foot__nowrap { white-space: nowrap; }
+  /* Sized to the text, centred on it, and the negative block margin
+     stops it from making its line taller than the others. */
+  .foot__smile {
     display: inline-block;
-    opacity: 0.6;
-    margin-inline-start: 0.15em;
-    transition: opacity var(--dur-micro) var(--ease-out),
-                transform var(--dur-micro-move) var(--ease-out);
-  }
-  .foot__links a:hover .foot__mark-nudge {
-    opacity: 0.95;
-    transform: translate(1.5px, -1.5px);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .foot__mark-nudge { transition: none; }
+    width: 1.9em;
+    height: auto;
+    vertical-align: middle;
+    margin-block: -0.6em;
+    margin-inline-start: 0.4em;
   }
 
-  /* --- Row 3: city + clock, credit, copyright ------------------------ */
+  /* The wash covers the lower two-thirds of the line, like a highlighter
+     pass, and clones onto each line if a word ever wraps. */
+  .foot__key {
+    color: var(--fg);
+    background: linear-gradient(transparent 35%, var(--accent-wash) 35%);
+    padding-inline: 0.1em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  /* --- Row 2: the base line (after carlthomasiv.com's footer) ---------
+     A hairline across the full width, then one slim row: copyright and
+     how it was built on the left in small mono, LinkedIn and email as
+     line icons on the right. */
   .foot__meta {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 1rem clamp(2rem, 5vw, 4rem);
-    padding-top: clamp(3rem, 7vw, 6rem);
-    padding-bottom: clamp(2rem, 4vw, 3rem);
-  }
-
-  .foot__where,
-  .foot__credit,
-  .foot__legal { margin: 0; }
-
-  .foot__where {
-    display: flex;
-    gap: 1rem;
-    align-items: baseline;
+    /* Three equal parts, after ozgur.design's footer: left, the page
+       links centred, right. */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem 2rem;
+    margin-top: clamp(6rem, 13vw, 11rem);
+    padding-block: 2.5rem;
+    border-top: 1px solid var(--rule);
     color: var(--fg);
   }
-  /* Tabular figures so the seconds don't shuffle the line every tick. */
-  .foot__clock { font-family: var(--font-mono); font-weight: var(--weight-mono); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; }
+  .foot__legal {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.4rem;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-fine);
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+  /* The one quiet thing in the row (everything else is ink), as on
+     carlthomasiv.com — a colour, not opacity, so it stays AA (4.9:1). */
+  .foot__built { color: var(--night-ink-faint); }
 
-  .foot__legal { text-align: right; }
+  .foot__nav {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-fine);
+    letter-spacing: 0.04em;
+  }
+  .foot__nav a {
+    color: var(--fg);
+    text-decoration: none;
+    padding-block: 0.5rem;
+    transition: color var(--dur-hover) var(--ease-out);
+  }
+  .foot__nav a:hover,
+  .foot__nav a:focus-visible { color: var(--accent-text); }
 
-  .foot__heart {
-    display: inline-block;
-    padding-inline: 0.15em;
-    transform: translateY(0.05em);
-    font-size: 1.1em;
+  .foot__icons { list-style: none; margin: 0; padding: 0; display: flex; justify-content: flex-end; gap: 0.5rem; }
+  /* 15px glyph, 32px hit area (the padding), so it's easy to tap. */
+  .foot__icons a {
+    display: grid;
+    place-items: center;
+    padding: 0.5rem;
+    margin: -0.5rem;
+    margin-inline: 0;
+    color: var(--fg);
+    transition: color var(--dur-hover) var(--ease-out);
+  }
+  .foot__icons a:hover,
+  .foot__icons a:focus-visible { color: var(--accent-text); }
+  .foot__icons svg { display: block; }
+
+  /* Narrow screens: copyright and icons share the top line, the page
+     links sit on their own line under them. */
+  @media (max-width: 700px) {
+    .foot__meta { grid-template-columns: 1fr auto; }
+    .foot__nav { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; }
+    .foot__legal { flex-direction: column; }
+    .foot__dot { display: none; }
   }
 
   .foot__vh {
@@ -176,25 +259,16 @@ const year = new Date().getFullYear();
     white-space: nowrap;
   }
 
-  @media (max-width: 900px) {
-    .foot__signoff { max-width: none; }
-    .foot__cols { flex-direction: column; gap: 2.5rem; }
-    .foot__meta { flex-direction: column; align-items: flex-start; }
-    .foot__legal { text-align: left; }
-  }
 </style>
 
 <script>
-  const el = document.querySelector<HTMLElement>('.foot__clock');
-  if (el?.dataset.clock) {
-    try {
-      const fmt = new Intl.DateTimeFormat('en-GB', {
-        timeZone: el.dataset.clock,
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
-      });
-      const tick = () => { el.textContent = fmt.format(new Date()); };
-      tick();
-      setInterval(tick, 1000);
-    } catch (e) { /* leave the placeholder in place */ }
+  // The reveal only works while the whole footer fits in the window;
+  // otherwise its top would stay pinned out of sight under the page.
+  const foot = document.getElementById('site-footer');
+  if (foot) {
+    const fit = () => foot.classList.toggle('is-reveal', foot.offsetHeight <= innerHeight);
+    fit();
+    new ResizeObserver(fit).observe(foot);
+    addEventListener('resize', fit);
   }
 </script>

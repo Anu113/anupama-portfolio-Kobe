@@ -140,8 +140,9 @@ effect:
   - Panel: opens on click as a dialog with a scrim; dark (the site's `ink`
     values) and **monospace throughout** — deliberately unlike the rest of
     the site, so the conversation reads as a machine talking — with soft
-    rounded corners. That's the one sanctioned exception to the square
-    `--radius` rule; the site's own cards stay square. Colours, corners and
+    rounded corners. That's one of two sanctioned exceptions to the square
+    `--radius` rule (the other is the page's curved end over the black
+    footer, below); the site's own cards stay square. Colours, corners and
     timing live in the "Pixel" block of `tokens.css`.
   - Content: a conversation tree in `src/data/ask.ts` — buttons only, no
     free text, no model, no backend. Moss's voice comes from her character
@@ -304,7 +305,8 @@ access to content, or exists mainly to be noticed, cut it or simplify it.
 
 - A CMS, React, or a component library. Markdown and `.astro` are enough.
 - Analytics or tracking scripts.
-- A new themed colour band, or any component whose main purpose is
+- A new themed colour band (the black footer, below, is the one approved
+  dark band — don't add a second), or any component whose main purpose is
   demonstrating a technical effect rather than serving content — the hero
   shader, the first-paint loader, and the sitewide hover system (see above)
   are the named exceptions (plus `CursorTrail`, kept from the prior direction,
@@ -332,7 +334,8 @@ walked back. Concretely, in the current implementation:
   plus two steps the reference lacks (title 20→26px, body 15px) because it
   has no long copy. Emphasis is the serif turning italic mid-line, nothing
   else. One palette: `#fcfcfc` ground, `#262626` ink, one terracotta accent
-  (`#b4482a`, her own — the reference's purple was swapped out), square corners except pill buttons. Deliberate departures
+  (`#b4482a`, her own — the reference's purple was swapped out), square corners except pill buttons (and the two approved curves: Moss's
+  panel and the page's end over the black footer). Deliberate departures
   from the reference are commented in `tokens.css` (the reference's
   `#a8a8a8` grey fails AA and was darkened to `#707070`). Don't add a
   fourth family, a second weight, or a second palette.
@@ -371,6 +374,49 @@ walked back. Concretely, in the current implementation:
 - Pixel (`AskBubble.astro`) was left out of that pass on request: it keeps
   its own palette and pins its old type (Roboto Mono, still loaded only for
   it) via the block at the end of `tokens.css`.
+- **The footer is black, and the page ends on a curve above it**
+  (approved on request, after rachelatwork.com). `<main>` in `Base.astro`
+  stacks above the footer, paints its own ground and rounds its bottom
+  corners with `clip-path` (which also trims the playground's fixed
+  heading layer — don't swap it for `border-radius` + `overflow`). The
+  footer tucks up under the curve by `--radius-page-end` and, when it
+  fits in the window, is `position: sticky; bottom: 0` under the page, so
+  scrolling lifts the page off it; when it's taller than the window a
+  script drops that and it scrolls normally. It's black in both light and
+  dark mode: it re-inks the palette tokens to the NIGHT FOOTER values in
+  `tokens.css`. Its reason: a clear, felt end to the page, landing on the
+  contact line. Don't extend the dark ground or the curve anywhere else.
+- **The footer's content** (option C of three mocks): row 1 — "Let's start with a
+  *conversation*." in ink, where "conversation" is the link (Gmail
+  compose, new tab; underlined in ink, the accent on hover, no motion),
+  over one line in grey at `--step-small` (13px), exactly as wide as the
+  headline: "Open to `site.seeking` roles. Projects, questions and
+  feedback are welcome too." — the role on a marker-pen wash of the
+  accent (`--accent-wash`), and the line ends on her crayon smiley
+  (`public/images/footer/smiley-loop.webp`, an 11-frame 10fps loop in
+  bradleyziffer.com's rhythm — three frames of her drawing as given, two
+  of it with a wider smile — built from her one
+  drawing; their artwork is not used; `smiley.webp`, a still
+  frame, under reduced motion). Approved on request
+  as the footer's one looping animation — an exception to the no-idle-
+  animation rule; don't add another; no link columns. Row 2 — the
+  base line, after carlthomasiv.com's footer: a full-width hairline, then
+  three equal parts (after ozgur.design): "© year name · Built with Claude
+  Code & Astro" in 11px mono (`--step-fine`; "Built with…" in the fainter
+  `--night-ink-faint`, the only faint text in the row — the rest is ink) on the left, Work / About me / Playground centred
+  in the same mono, and LinkedIn + email line icons (Lucide, 20px) on the
+  right, the email icon opening Gmail. "Astro" is accurate — don't swap
+  in another framework name. No illustration, no coffee copy, no Copy button, no
+  Contact link, no city or clock (the hero's location line has them).
+  No footer text rests in the accent; links turn to it on hover. Every
+  row is inset from the gutter by `--card-pad` (the project cards'
+  padding), so the footer's text lines up with the text inside the
+  cards — a deliberate, token-tied exception to the one-content-edge
+  rule, not a free-floating max-width.
+- **Her email is `anupama.mishra113@gmail.com`** (`site.email`). There is
+  no `@anupama.design` mailbox — don't reintroduce one. Links to it say
+  "Email" rather than printing the address; /contact is the one page
+  that prints it in full.
 - The home page is now: hero → "Selected *work*" head + project cards →
   one-line playground pointer → footer (which carries contact). Section
   heads follow the reference: a centred serif line with an italic phrase,
@@ -384,10 +430,8 @@ walked back. Concretely, in the current implementation:
   NDA check on the Okta IAM console work — real screenshots are a priority
   once available, since the new direction depends on visual evidence more
   than the old one did.
-- The footer clock runs off `location` and `timezone` in `data/site.ts`. Both
-  are placeholders — `location` reads `[City]` on purpose, same bracket
-  convention as the unconfirmed numbers, so it stays visible until she says
-  where she's based.
+- The hero's location line (`LocalTime.astro`) runs off `location`,
+  `timezone` and `coords` in `data/site.ts` (Bangalore, IST, confirmed).
 
 Two Astro/CSS gotchas, learned the hard way. First: `body { overflow-x: hidden }`
 forces `overflow-y` to `auto`, which makes `<body>` a scroll container and

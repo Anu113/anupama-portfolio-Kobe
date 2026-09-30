@@ -3,7 +3,9 @@ export const site = {
   name: 'Anupama Mishra',
   mark: 'A.',
   tagline: 'Staff product designer. Fintech first, then enterprise software and developer tools.',
-  email: 'hi@anupama.design',
+  // Her one address — there is no @anupama.design mailbox. The footer
+  // sign-off's "Let's connect and chat" opens a Gmail compose window to it.
+  email: 'anupama.mishra113@gmail.com',
   linkedin: 'https://www.linkedin.com/in/anupamamishra/',
 
   // The role being sought, written down once. Every band that states the ask
