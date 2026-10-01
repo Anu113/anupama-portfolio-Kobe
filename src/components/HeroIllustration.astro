@@ -75,7 +75,21 @@ imgs[0].save('public/images/hero-idle.webp', 'WEBP', quality=88, alpha_quality=9
    pixelated when upscaled, so resolution is matched, not maximised.
 
    Fine pointers only. Touch/coarse pointers and `prefers-reduced-motion`
-   get the static hero-idle.webp and no script runs.
+   get hero-idle.webp (frame 0) drawn once into the same canvas, with no
+   pointer tracking; the <img> is the fallback if the canvas fails.
+
+   Night light (dark mode; NIGHT LIGHT in tokens.css): after each frame
+   is drawn, three layers are painted on a second canvas, clipped to her
+   shape with her frame's alpha, and blended on — a multiply shade that
+   darkens everything the screen doesn't reach, the screen's cool light
+   (soft-light) on her chest, chin, lower face and keyboard hand, and a
+   faint screen-blend glow on her face. The face lights move with her
+   head via FACE_DX/FACE_DY (measured per frame off the sprite; re-measure
+   if the sprite is re-exported). All of it is scaled by `lit`, which
+   eases between 0 (light mode, nothing drawn) and 1 (dark) over
+   --dur-night when the theme changes, so the lights come on rather than
+   snapping; instant under reduced motion. The canvas only repaints when
+   the frame, the size or the theme changes, or during that fade.
 
    Sync: every time the drawn frame changes, the figure dispatches a
    bubbling `hero-scrub:frame` event ({ frame, count }). AskBubble's Moss
@@ -160,19 +174,52 @@ const { alt, size = 480 } = Astro.props;
   const SMOOTHING = 0.14; // higher = snappier, lower = more inertia
   const Y_INFLUENCE = 0.28; // how much vertical pointer position nudges the frame vs x
 
+  // Night light (dark mode). Where her face sits in each frame, as an
+  // offset from frame 0 in % of the frame, measured off the sprite (the
+  // centroid of her skin tones in the head band): x 38-47%, y 20-22%.
+  // The face light moves by this so it stays on her as she turns.
+  const FACE_DX = [0,0,.2,0,.1,.1,-.1,-1.3,-2.3,-2.6,-2.6,-2.7,-2.7,-2.7,-2.8,-4.2,-6.6,-7.6,-7.8,-7.9,-7.8,-7.4,-4.4,-.9,.2,.3,.1,.3,.2,.2,.2,.2,.4,.8,1,.9,1,.9,.7,.3,.1,0,.1,0,.1,0,.1,.1];
+  const FACE_DY = [0,-.1,-.2,-.3,-.5,-.5,-.6,-.8,-.7,-.7,-.6,-.7,-.7,-.7,-.7,-1.3,-1.5,-1.7,-1.5,-1.4,-1.3,-1.3,-1.1,-.1,-.1,-.7,-1,-1,-.9,-1,-.9,-1,-.9,-.6,.2,.3,.4,.3,0,-.1,-.4,-.4,-.4,-.5,-.5,-.4,-.4,-.5];
+
+  // One elliptical light: centre and radii in % of the frame (as CSS
+  // radial-gradient(rx ry at cx cy)), from `inner` alpha at the centre
+  // to `outer` at the rim and beyond.
+  type Ellipse = { cx: number; cy: number; rx: number; ry: number; inner: number; outer: number; hold?: number };
+
+  type Night = { screen: string; shade: string; screenK: number; glowK: number; shadeK: number; on: number; ms: number };
+  const readNight = (): Night => {
+    const cs = getComputedStyle(document.documentElement);
+    const num = (n: string) => parseFloat(cs.getPropertyValue(n)) || 0;
+    return {
+      screen: cs.getPropertyValue('--hero-screen').trim(),
+      shade: cs.getPropertyValue('--hero-shade').trim(),
+      screenK: num('--hero-screen-k'),
+      glowK: num('--hero-glow-k'),
+      shadeK: num('--hero-shade-k'),
+      on: num('--hero-night'),   // 0 light, 1 dark
+      ms: num('--dur-night'),    // "900ms" → 900
+    };
+  };
+  // Close to the sitewide --ease-out (cubic-bezier(.16, 1, .3, 1)).
+  const easeOut = (x: number) => 1 - Math.pow(1 - x, 4);
+
   document.querySelectorAll<HTMLElement>('.hero-scrub').forEach((figure) => {
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const noFinePointer = matchMedia('(hover: none), (pointer: coarse)').matches;
-    if (reduceMotion || noFinePointer) {
-      figure.classList.add('no-js-scrub');
-      return;
-    }
+    // Still visitors get frame 0 alone (the small hero-idle.webp, not the
+    // sprite) drawn once into the same canvas, so the night light reaches
+    // them too. The <img> stays as the fallback if the canvas fails.
+    const still = reduceMotion || noFinePointer;
 
     const canvas = figure.querySelector('canvas')!;
     // The sprite is matted (transparent backdrop), so the canvas needs
     // alpha; clearRect each frame leaves nothing behind.
     const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) {
+    // The night light is built on a second canvas, clipped to her shape,
+    // then blended onto the first.
+    const fxCanvas = document.createElement('canvas');
+    const fx = fxCanvas.getContext('2d', { alpha: true });
+    if (!ctx || !fx) {
       figure.classList.add('no-js-scrub');
       return;
     }
@@ -180,37 +227,109 @@ const { alt, size = 480 } = Astro.props;
     // edge from its neighbour when scaled. Nearest-neighbour sampling
     // reads each cell exactly.
     ctx.imageSmoothingEnabled = false;
+    fx.imageSmoothingEnabled = false;
 
     const sprite = new Image();
-    sprite.src = '/images/hero-sprite.webp';
+    sprite.src = still ? '/images/hero-idle.webp' : '/images/hero-sprite.webp';
 
     let ready = false;
     let targetIndex = 0;
     let currentIndex = 0;
     let raf = 0;
     let lastFrame = -1;
+    let drawnFrame = -1;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let night = readNight();
+    // How lit she is right now, 0-1. Starts at the page's mode, then
+    // eases towards it when the theme changes.
+    let lit = night.on;
+    let fadeRaf = 0;
 
     const sizeCanvas = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       const rect = figure.getBoundingClientRect();
-      canvas.width = Math.round(rect.width * dpr);
-      canvas.height = Math.round(rect.height * dpr);
+      canvas.width = fxCanvas.width = Math.round(rect.width * dpr);
+      canvas.height = fxCanvas.height = Math.round(rect.height * dpr);
+      fx.imageSmoothingEnabled = ctx.imageSmoothingEnabled = false;
+      drawnFrame = -1;
+    };
+
+    const W = () => canvas.width;
+    const H = () => canvas.height;
+
+    // Paints ellipses into fx, then keeps only what falls on her (her
+    // frame's alpha), and blends the result onto the main canvas.
+    const layer = (frameArgs: [number, number], mode: GlobalCompositeOperation, rgb: string, ellipses: Ellipse[], fillOuter = false) => {
+      fx.globalCompositeOperation = 'source-over';
+      fx.clearRect(0, 0, W(), H());
+      for (const e of ellipses) {
+        fx.save();
+        fx.translate((e.cx / 100) * W(), (e.cy / 100) * H());
+        fx.scale((e.rx / 100) * W(), (e.ry / 100) * H());
+        const g = fx.createRadialGradient(0, 0, 0, 0, 0, 1);
+        // Alpha-only stops on one colour, so the fade doesn't pass
+        // through black the way 'transparent' would.
+        g.addColorStop(0, `rgb(${rgb} / ${Math.min(1, e.inner)})`);
+        if (e.hold) g.addColorStop(e.hold, `rgb(${rgb} / ${Math.min(1, e.inner)})`);
+        g.addColorStop(1, `rgb(${rgb} / ${Math.min(1, e.outer)})`);
+        fx.fillStyle = g;
+        // The shade keeps its rim value out to the frame's edges.
+        if (fillOuter) fx.fillRect(-100, -100, 200, 200);
+        else fx.fillRect(-1, -1, 2, 2);
+        fx.restore();
+      }
+      fx.globalCompositeOperation = 'destination-in';
+      fx.drawImage(sprite, frameArgs[0], frameArgs[1], CROP_W, CROP_H, 0, 0, W(), H());
+      ctx.globalCompositeOperation = mode;
+      ctx.drawImage(fxCanvas, 0, 0);
+      ctx.globalCompositeOperation = 'source-over';
+    };
+
+    const light = (frame: number, src: [number, number]) => {
+      if (lit <= 0) return;
+      const { screen, shade } = night;
+      const k = night.screenK * lit;
+      const glowK = night.glowK * lit;
+      const shadeK = night.shadeK * lit;
+      const dx = FACE_DX[frame] ?? 0;
+      const dy = FACE_DY[frame] ?? 0;
+      // Shade: dark everywhere but a clear core where the screen lands
+      // (half-following her head, since the core also covers her chest).
+      if (shadeK > 0) {
+        layer(src, 'multiply', shade, [{ cx: 45 + dx / 2, cy: 31 + dy / 2, rx: 20, ry: 15, inner: 0, hold: 0.25, outer: shadeK }], true);
+      }
+      // Screen light rising from the lid: chest (fixed), chin and lower
+      // face, cheeks (following her head), the keyboard hand (fixed).
+      if (k > 0) {
+        layer(src, 'soft-light', screen, [
+          { cx: 46, cy: 39, rx: 30, ry: 20, inner: 0.75 * k, outer: 0 },
+          { cx: 45 + dx, cy: 25 + dy, rx: 15, ry: 8, inner: 0.85 * k, outer: 0 },
+          { cx: 45 + dx, cy: 22 + dy, rx: 22, ry: 10, inner: 0.55 * k, outer: 0 },
+          { cx: 33, cy: 48, rx: 8, ry: 4.5, inner: 0.75 * k, outer: 0 },
+        ]);
+      }
+      if (glowK > 0) {
+        layer(src, 'screen', screen, [{ cx: 45 + dx, cy: 25 + dy, rx: 14, ry: 7, inner: glowK, outer: 0 }]);
+      }
     };
 
     const draw = (index: number) => {
       if (!ready || canvas.width === 0) return;
-      const frame = Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(index)));
+      const frame = still ? 0 : Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(index)));
       if (frame !== lastFrame) {
         lastFrame = frame;
         figure.dispatchEvent(new CustomEvent('hero-scrub:frame', { detail: { frame, count: FRAME_COUNT }, bubbles: true }));
       }
-      const sx = (frame % COLS) * FRAME_W;
-      const sy = Math.floor(frame / COLS) * FRAME_H;
+      // Only repaint when the picture changes: a new frame, a resize or
+      // a theme switch (which resets drawnFrame).
+      if (frame === drawnFrame) return;
+      drawnFrame = frame;
+      const src: [number, number] = still ? [0, 0] : [(frame % COLS) * FRAME_W + CROP_X, Math.floor(frame / COLS) * FRAME_H + CROP_Y];
       // Box aspect matches the frame (5:7), so it maps straight onto the
       // canvas. Clear first so no previous frame shows through.
-      ctx!.clearRect(0, 0, canvas.width, canvas.height);
-      ctx!.drawImage(sprite, sx + CROP_X, sy + CROP_Y, CROP_W, CROP_H, 0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(sprite, src[0], src[1], CROP_W, CROP_H, 0, 0, canvas.width, canvas.height);
+      light(frame, src);
     };
 
     sprite.decode().then(() => {
@@ -220,6 +339,32 @@ const { alt, size = 480 } = Astro.props;
     }).catch(() => {
       figure.classList.add('no-js-scrub');
     });
+
+    // The theme button flips data-mode on <html>; re-read the night
+    // light's tokens and ease `lit` to the new mode over --dur-night, in
+    // step with the CSS layers behind her (index.astro). Instant under
+    // reduced motion.
+    new MutationObserver(() => {
+      night = readNight();
+      cancelAnimationFrame(fadeRaf);
+      const from = lit;
+      const to = night.on;
+      if (reduceMotion || night.ms <= 0 || from === to) {
+        lit = to; drawnFrame = -1; draw(currentIndex);
+        return;
+      }
+      const start = performance.now();
+      const step = (now: number) => {
+        const p = Math.min(1, (now - start) / night.ms);
+        lit = from + (to - from) * easeOut(p);
+        drawnFrame = -1; draw(currentIndex);
+        if (p < 1) fadeRaf = requestAnimationFrame(step);
+      };
+      fadeRaf = requestAnimationFrame(step);
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+    window.addEventListener('resize', () => { sizeCanvas(); draw(currentIndex); });
+
+    if (still) return;
 
     const tick = () => {
       currentIndex += (targetIndex - currentIndex) * SMOOTHING;
@@ -253,7 +398,6 @@ const { alt, size = 480 } = Astro.props;
     figure.addEventListener('focus', () => { targetIndex = (FRAME_COUNT - 1) * 0.72; });
     figure.addEventListener('blur', onLeave);
 
-    window.addEventListener('resize', () => { sizeCanvas(); draw(currentIndex); });
     window.addEventListener('beforeunload', () => cancelAnimationFrame(raf));
   });
 </script>

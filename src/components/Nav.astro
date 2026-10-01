@@ -13,13 +13,14 @@
    Name and bar sit on the page's own --gutter, so they share one left
    and one right edge with every band's content.
 
-   The theme button cycles System → Light → Dark, after carlthomasiv.com
-   (their three icons: a half-filled circle, a sun, a moon). The icon
-   shows the current mode; the label and tooltip say what the next press
-   does ("Switch to dark mode"). The choice is remembered; System (the
-   default) follows the visitor's OS, live. Base.astro applies it before
-   first paint. Changing icons: the old one leaves upward and the new
-   one rises from below, 8px each way.
+   The theme button toggles Light ↔ Dark (a sun and a moon). A third
+   System state was dropped on request: pressing it often changed
+   nothing on the page, so the press felt dead. The icon shows the
+   current mode; the label and tooltip say what a press does ("Switch
+   to dark mode"). Until the visitor presses it, the page follows their
+   OS, live; a press is remembered. Base.astro applies it before first
+   paint. Changing icons: the old one leaves upward and the new one
+   rises from below, 8px each way.
 
    Hides on scroll-down, returns on scroll-up. Transparent at the very
    top, where it reads as part of the hero; slides away as soon as the
@@ -61,7 +62,6 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
          carlthomasiv.com (icons are theirs). The label says what the
          next press does; the icon shows the current mode. -->
     <button type="button" class="nav__icon" aria-label="Switch to light mode" title="Switch to light mode" data-nav-mode>
-      <span class="nav__glyph" data-glyph="system" data-state="on"><svg viewBox="0 0 15 15" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.5 1.4 A6.1 6.1 0 0 1 7.5 13.6 A6.1 6.1 0 0 1 7.5 1.4 Z M7.5 2.6 A4.9 4.9 0 0 0 7.5 12.4 A4.9 4.9 0 0 0 7.5 2.6 Z"/><path d="M7.5 2.6 A4.9 4.9 0 0 0 7.5 12.4 Z"/></svg></span>
       <span class="nav__glyph" data-glyph="light"><svg viewBox="0 0 15 15" fill="none" aria-hidden="true"><circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M2.93 2.93l1.06 1.06M11.01 11.01l1.06 1.06M2.93 12.07l1.06-1.06M11.01 3.99l1.06-1.06" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>
       <span class="nav__glyph" data-glyph="dark"><svg viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M7.5 1.5A6 6 0 1 0 13.5 7.5 4.5 4.5 0 0 1 7.5 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></span>
     </button>
@@ -265,43 +265,37 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     });
     matchMedia('(min-width: 900px)').addEventListener('change', (e) => { if (e.matches) setOpen(false); });
 
-    // Theme: System → Light → Dark → System. The preference is stored
-    // ('system' is stored as nothing); data-mode on <html> is what the
-    // tokens read. Base.astro applies both before first paint.
+    // Theme: Light ↔ Dark. A press stores the choice; with nothing
+    // stored the page follows the OS (data-mode-pref 'system').
+    // data-mode on <html> is what the tokens read. Base.astro applies
+    // both before first paint.
     const btn2 = nav.querySelector<HTMLButtonElement>('[data-nav-mode]')!;
     const root = document.documentElement;
-    const order = ['system', 'light', 'dark'] as const;
-    type Pref = (typeof order)[number];
+    type Mode = 'light' | 'dark';
     const system = matchMedia('(prefers-color-scheme: dark)');
     const glyphs = new Map(
-      [...btn2.querySelectorAll<HTMLElement>('[data-glyph]')].map((g) => [g.dataset.glyph as Pref, g]),
+      [...btn2.querySelectorAll<HTMLElement>('[data-glyph]')].map((g) => [g.dataset.glyph as Mode, g]),
     );
-    const readPref = (): Pref => {
-      const p = root.dataset.modePref;
-      return p === 'light' || p === 'dark' ? p : 'system';
-    };
-    const apply = (pref: Pref) => {
-      const mode = pref === 'system' ? (system.matches ? 'dark' : 'light') : pref;
+    const current = (): Mode => (root.dataset.mode === 'dark' ? 'dark' : 'light');
+    const apply = (mode: Mode) => {
       const changed = root.dataset.mode !== mode;
       root.dataset.mode = mode;
-      root.dataset.modePref = pref;
       if (changed) dispatchEvent(new CustomEvent('theme:changed'));
     };
-    const label = (pref: Pref) => {
-      const next = order[(order.indexOf(pref) + 1) % order.length];
-      const text = `Switch to ${next} mode`;
+    const label = (mode: Mode) => {
+      const text = `Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`;
       btn2.setAttribute('aria-label', text);
       btn2.title = text;
     };
-    const show = (pref: Pref, from?: Pref) => {
+    const show = (mode: Mode, from?: Mode) => {
       glyphs.forEach((g, key) => {
-        if (key === pref && !from) {
+        if (key === mode && !from) {
           // First paint: straight into place, no entrance.
           g.setAttribute('data-snap', '');
           g.dataset.state = 'on';
           void g.offsetWidth;
           g.removeAttribute('data-snap');
-        } else if (key === pref) {
+        } else if (key === mode) {
           // Park it below without animating, then let it rise into place.
           g.setAttribute('data-snap', '');
           g.removeAttribute('data-state');
@@ -319,19 +313,22 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       });
     };
 
-    let pref = readPref();
-    show(pref); label(pref);
+    show(current()); label(current());
     btn2.addEventListener('click', () => {
-      const prev = pref;
-      pref = order[(order.indexOf(pref) + 1) % order.length];
-      try {
-        if (pref === 'system') localStorage.removeItem('mode');
-        else localStorage.setItem('mode', pref);
-      } catch {}
-      apply(pref); show(pref, prev); label(pref);
+      const prev = current();
+      const next: Mode = prev === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('mode', next); } catch {}
+      root.dataset.modePref = next;
+      apply(next); show(next, prev); label(next);
     });
-    // In System, follow the OS as it changes (e.g. at sunset).
-    system.addEventListener('change', () => { if (pref === 'system') apply('system'); });
+    // Until a press, follow the OS as it changes (e.g. at sunset).
+    system.addEventListener('change', () => {
+      if (root.dataset.modePref !== 'system') return;
+      const prev = current();
+      const next: Mode = system.matches ? 'dark' : 'light';
+      if (next === prev) return;
+      apply(next); show(next, prev); label(next);
+    });
   }
 
 </script>

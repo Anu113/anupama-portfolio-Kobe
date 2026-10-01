@@ -203,6 +203,41 @@
   --hero-cue-offset: 1rem;
   --hero-art-ratio: 5 / 7;   /* the sprite frame, 700x980 (HeroIllustration.astro) */
   --hero-gap: 4rem;
+  /* NIGHT LIGHT — dark mode only: she's working late, lit by her
+     laptop in a warm room (chosen from a round of mocks: "laptop glow +
+     warm room", late-night strength, with shadow; then warmed on
+     request, so the room still reads as lit around the screen's light).
+     Reason: the watercolour is matted against white, so on the dark
+     ground its edge read as a pale cut-out outline; lighting her like a
+     real scene puts that edge in shadow and gives the figure a place to
+     sit.
+     Two parts:
+     - Behind her (index.astro, .hero__stage::before/::after): a warm
+       pool for the room, and a cool spill from the screen.
+     - On her (HeroIllustration.astro, drawn in the canvas and clipped
+       to her shape): a warm shade where the screen doesn't reach (the
+       room's light, not a cold shadow), the screen's cool light rising
+       onto her chest, chin, lower face and keyboard hand, and a faint
+       glow on her face. The face light follows her head frame by frame.
+     --hero-night (0 light, 1 dark) switches all of it. Both parts fade
+     with it over --dur-night when the theme changes — the lights come
+     on as the room goes dark — and switch instantly under reduced
+     motion. Colours are bare "r g b" triples so the script can add
+     alpha; the -k values are the strengths at full night. If the edge
+     still shows, the next step is re-matting the sprite's edge
+     (un-mixing the white), not trimming the art. */
+  --hero-night: 0;
+  --dur-night: var(--dur-reveal);
+  --hero-lamp: rgb(255 168 96 / 0.34);   /* warm room pool, centre */
+  --hero-lamp-mid: rgb(255 168 96 / 0.12); /* ...and its falloff */
+  --hero-lamp-spread: 20%;               /* how far it reaches past the figure */
+  --hero-spill: rgb(96 150 255 / 0.32);  /* screen spill behind her: laptop blue */
+  --hero-screen: 110 165 255;            /* screen light colour: laptop blue, not white */
+  --hero-screen-k: 1.3;                  /* soft-light strength on her */
+  --hero-glow-k: 0.3;                    /* face glow (screen blend) */
+  --hero-shade: 104 72 50;               /* shade colour (multiply), warm */
+  --hero-shade-k: 0.6;                   /* shade strength */
+  --hero-light-blur: 28px;               /* softens the two layers behind her */
   --hero-gap-stacked: 2rem;
   --gutter-start: var(--gutter);
   --bleed-start: var(--gutter);
@@ -293,6 +328,7 @@
   --device: #3b3936;
   --status: #31b564;            /* abstract.systems' own green, 6.6:1 here */
   --ask-card-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.7);   /* a light shadow disappears on the dark ground */
+  --hero-night: 1;   /* NIGHT LIGHT, above */
 }
 
 /* ============================================================

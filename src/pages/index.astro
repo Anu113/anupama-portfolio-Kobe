@@ -243,7 +243,44 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   /* Shrinks with the column (min-width: 0) so HeroIllustration's
      max-width: 100% still resolves against real space, and is the
      positioning box AskBubble pins itself to. */
-  .hero__stage { position: relative; flex: 0 1 auto; min-width: 0; }
+  .hero__stage { position: relative; flex: 0 1 auto; min-width: 0; isolation: isolate; }
+  /* Night light, behind her (NIGHT LIGHT in tokens.css; the light on
+     her is drawn in HeroIllustration's canvas). ::before is the warm
+     room, ::after the cool spill from the laptop screen. They fade in
+     with --hero-night when the page turns dark (and out when it turns
+     light), in step with the canvas. No pointer events; isolation
+     keeps z-index: -1 above the page ground. */
+  .hero__stage::before,
+  .hero__stage::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--hero-night);
+    transition: opacity var(--dur-night) var(--ease-out);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__stage::before, .hero__stage::after { transition: none; }
+  }
+  .hero__stage::before {
+    inset: calc(-1 * var(--hero-lamp-spread));
+    /* Not one circle: three overlapping soft pools, off-centre and of
+       different sizes, so the light reads as a room's uneven glow — fuller
+       low-left around the chair and table, a smaller lift up behind her
+       head — rather than a spotlight. The blur melts them into one. */
+    background:
+      radial-gradient(46% 40% at 42% 56%, var(--hero-lamp), var(--hero-lamp-mid) 50%, transparent 78%),
+      radial-gradient(34% 30% at 28% 70%, var(--hero-lamp-mid), transparent 75%),
+      radial-gradient(30% 26% at 60% 34%, var(--hero-lamp-mid), transparent 75%);
+    filter: blur(var(--hero-light-blur));
+  }
+  .hero__stage::after {
+    left: 20%; top: 12%; width: 60%; height: 42%;
+    /* Wider than tall and leaning up from the lid, like a screen's
+       light rather than a ball. */
+    background: radial-gradient(56% 46% at 50% 72%, var(--hero-spill), transparent 75%);
+    filter: blur(var(--hero-light-blur));
+  }
   @media (max-width: 860px) {
     .hero__copy, :global(.hero__portrait-cell) { flex: none; }
     /* Left-aligned on mobile now, not centred — the illustration, the
