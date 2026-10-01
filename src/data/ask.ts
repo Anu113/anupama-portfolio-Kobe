@@ -62,12 +62,22 @@ export const pixelTree: Record<string, PixelNode> = {
       'Totoro’s younger brother, if you were wondering. The only difference is I talk.',
       'Mostly I sit around and judge spacing.',
     ],
-    next: ['site', 'who'],
+    next: ['site', 'built', 'who'],
   },
   site: {
     q: 'What is this site?',
     say: ['Her portfolio. Selected work at the top, how she works further down, a playground for side projects at the end. I’m the shortcut.'],
-    next: ['work', 'who'],
+    next: ['built', 'work'],
+  },
+  built: {
+    q: 'How was this site built?',
+    say: [
+      'By hand. Astro, written with Claude Code. No template, no page builder.',
+      'Every colour, size and space lives in one token file, so dark mode is the same palette re-inked, not a second one. Everything works from the keyboard, and the motion stops if you’ve asked your computer for less.',
+      'She drew me too, in watercolour. I have notes.',
+    ],
+    cards: [{ label: 'Playground', title: 'Side projects and experiments', sub: 'More of the building', href: '/playground' }],
+    next: ['work', 'contact'],
   },
   who: {
     q: 'Who is Anupama?',
@@ -96,7 +106,20 @@ export const pixelTree: Record<string, PixelNode> = {
       'Then PayPal privacy, if you like settings people can actually read.',
     ],
     cards: [{ ...oin, sub: 'Start here' }],
-    next: ['locked', 'available'],
+    next: ['hardest', 'locked'],
+  },
+  hardest: {
+    q: 'What’s the hardest call she made?',
+    say: [
+      'Pick one. She has a habit of arguing for the slower option.',
+      'At Okta: one framework for every kind of integration, instead of four quick fixes. Nobody shipped anything for a quarter. Four impatient teams watched each other wait.',
+      'At Walmart: six weeks on store floors, then she argued to keep a staffed exit on a product funded to remove it. Three executive reviews.',
+    ],
+    cards: [
+      { ...oin, sub: 'The hard call' },
+      { label: 'Walmart Labs', title: 'Scan & Go, in-store', sub: 'The hard call', href: '/work/walmart-scan-go' },
+    ],
+    next: ['available', 'contact'],
   },
   locked: {
     q: 'Is anything locked?',
@@ -114,7 +137,16 @@ export const pixelTree: Record<string, PixelNode> = {
       'I’ve suggested a walk. She opened Figma instead. A team would be good for her.',
     ],
     exits: [email, linkedin],
-    next: ['how', 'bye'],
+    next: ['manage', 'how', 'bye'],
+  },
+  manage: {
+    q: 'Is she after a management role?',
+    say: [
+      `No. She wants a <strong>${site.ask}</strong>, with her hands on the work.`,
+      'She led a team of six at Okta. That’s how big the problems got, not what she’s asking for next.',
+    ],
+    exits: [email, linkedin],
+    next: ['first', 'bye'],
   },
   how: {
     q: 'How does she work?',
