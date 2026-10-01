@@ -47,14 +47,15 @@
      monospace throughout on purpose — Pixel's own register, unlike the rest
      of the site — with soft rounded corners (the site's own cards stay
      square). Sequence:
-       1. Moss dimmed, "Moss is looking up from the sketchbook…"
+       1. Moss dimmed, a waking-up line picked at random from pixelWake
+          ("Moss is pretending he wasn't asleep…")
        2. he brightens, gives a small hop and a wobble, then types his
-          hello; six starter chips
+          hello; six starter chips, rising in one by one
        3. a chip → earlier chips dim and lock, the question appears as the
           visitor's bubble, the header Moss sways while a rotating status
           line shimmers ("Moss is measuring the spacing…"), then the reply types
           out behind an orange caret, followed by link cards, exit buttons
-          (email / LinkedIn) and follow-up chips
+          (email / LinkedIn) and follow-up chips, which rise in one by one
        4. "That's all, thanks Moss", ×, Escape or the scrim close it; the
           next open starts fresh. ↺ restarts in place.
    Content is the tree in src/data/ask.ts — no model, no backend.
@@ -68,8 +69,8 @@
    Styles are global but namespaced (.pixel-*) because most of the thread
    is built by the script at runtime and the panel is re-parented to
    <body>, so Astro's scope hash wouldn't reach it. */
-import { pixelTree, pixelStatus } from '../data/ask';
-const data = JSON.stringify({ tree: pixelTree, status: pixelStatus });
+import { pixelTree, pixelStatus, pixelWake } from '../data/ask';
+const data = JSON.stringify({ tree: pixelTree, status: pixelStatus, wakeLines: pixelWake });
 
 // Moss, as images. States are classes on .pixel-cat: is-asleep (dimmed,
 // before he "notices" you), is-happy (a hop), is-waving (a wobble),
@@ -291,11 +292,14 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
   .pixel-card__title { color: var(--pixel-fg); font-size: var(--pixel-step-body); font-weight: 500; line-height: 1.35; }
   .pixel-card__sub { color: var(--pixel-dim); font-size: var(--pixel-step-small); margin-top: 0.15rem; }
 
-  .pixel-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; animation: pixel-rise var(--dur-pixel) var(--ease-pixel) both; }
+  .pixel-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+  /* chips arrive one by one, so the options read as a list rather than a block */
   .pixel-chip {
     display: inline-block; padding: 0.5rem 0.9rem; border: 1px solid var(--pixel-rule-strong); border-radius: var(--radius-pill);
     background: none; color: var(--pixel-fg); font: 400 var(--pixel-step-small)/1.3 var(--font-mono); text-decoration: none; cursor: pointer;
     transition: background var(--dur-pixel) var(--ease-pixel), border-color var(--dur-pixel) var(--ease-pixel);
+    animation: pixel-rise var(--dur-pixel) var(--ease-pixel) backwards;
+    animation-delay: calc(var(--i, 0) * var(--pixel-stagger));
   }
   .pixel-chip:hover { border-color: var(--pixel-fg); background: var(--pixel-high); }
   /* exits: filled like the site's primary button */
@@ -391,7 +395,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
     // Re-parent so no transformed ancestor (e.g. Reveal) can trap position:fixed.
     document.body.append(scrim, panel);
 
-    const { tree, status } = JSON.parse(panel.dataset.tree!) as { tree: Record<string, Node>; status: string[] };
+    const { tree, status, wakeLines } = JSON.parse(panel.dataset.tree!) as { tree: Record<string, Node>; status: string[]; wakeLines: string[] };
     const thread = panel.querySelector<HTMLElement>('[data-pixel-thread]')!;
     const live = panel.querySelector<HTMLElement>('[data-pixel-live]')!;
     const catTpl = panel.querySelector<HTMLTemplateElement>('[data-pixel-cat]')!;
@@ -417,6 +421,9 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
       return s;
     };
 
+    // Typing pace: roughly reading speed, with a beat at commas and sentence ends.
+    const TYPE_CHAR = 30, TYPE_COMMA = 120, TYPE_STOP = 260;
+
     async function typeInto(p: HTMLElement, html: string, id: number) {
       const text = el('div', undefined, html).textContent ?? '';
       if (!reduce) {
@@ -425,7 +432,8 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
           if (id !== run) return;
           p.textContent = text.slice(0, i);
           if (i % 4 === 0) scrollEnd();
-          await wait(text[i - 1] === '.' ? 90 : 14);
+          const ch = text[i - 1];
+          await wait(/[.?!…]/.test(ch) ? TYPE_STOP : ch === ',' ? TYPE_COMMA : TYPE_CHAR);
         }
         p.classList.remove('pixel-cursor');
       }
@@ -480,6 +488,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
           arrow.setAttribute('aria-hidden', 'true');
           a.append(arrow);
         }
+        a.style.setProperty('--i', String(chips.children.length));
         chips.append(a);
       });
       (node.next ?? []).forEach((k) => {
@@ -487,6 +496,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
         b.type = 'button';
         b.textContent = tree[k].q;
         b.addEventListener('click', () => pick(k, chips));
+        b.style.setProperty('--i', String(chips.children.length));
         chips.append(b);
       });
       thread.append(chips);
@@ -517,7 +527,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
       const big = av.querySelector('.pixel-cat')!;
       thread.append(av);
       const wake = el('div', 'pixel-msg pixel-msg--bot');
-      wake.append(statusEl('Moss is looking up from the sketchbook…'));
+      wake.append(statusEl(wakeLines[(Math.random() * wakeLines.length) | 0]));
       thread.append(wake);
       await wait(1300);
       if (id !== run) return;

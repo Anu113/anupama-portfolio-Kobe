@@ -242,6 +242,7 @@
   --radius-pixel-msg: 18px;
   --ease-pixel: cubic-bezier(0.2, 0.8, 0.2, 1);
   --dur-pixel: 250ms;
+  --pixel-stagger: 90ms;   /* gap between chips rising in, one by one */
 }
 
 /* ============================================================
