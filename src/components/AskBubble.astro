@@ -41,6 +41,10 @@
      Must sit inside a position:relative box the portrait's size
      (index.astro, .hero__stage).
 
+   NIGHT LIGHT — in dark mode he's lit like her (warm shade, the
+     laptop's blue on his left side), via two masked overlays on his
+     sprite; see the launcher styles. Fades with the theme.
+
    PANEL — opens on click (not hover: it's a dialog with a scrim), fixed
      bottom-right, full-width bottom sheet under 640px. Moved to <body> on
      load so no transformed ancestor can trap its position:fixed. Dark and
@@ -133,13 +137,45 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
   }
   /* frame 0 until the sprite has decoded; then the frame the portrait is on */
   .pixel-launcher__moss {
+    --moss-img: url('/images/moss/moss-idle.webp');
+    --moss-size: 100% 100%;
+    --moss-pos: 0 0;
+    position: relative;
     display: block; width: 100%; aspect-ratio: 188 / 223; transform-origin: 53.3% 95.4%;
-    background: url('/images/moss/moss-idle.webp') 0 0 / 100% 100% no-repeat;
+    background: var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat;
   }
   .pixel-launcher__moss.has-sprite {
-    background-image: url('/images/moss/moss-sprite.webp');
-    background-size: 800% 600%;
-    background-position: calc(var(--moss-col, 0) * 100% / 7) calc(var(--moss-row, 0) * 100% / 5);
+    --moss-img: url('/images/moss/moss-sprite.webp');
+    --moss-size: 800% 600%;
+    --moss-pos: calc(var(--moss-col, 0) * 100% / 7) calc(var(--moss-row, 0) * 100% / 5);
+  }
+  /* Night light (NIGHT LIGHT in tokens.css), so he sits in the same
+     scene as her in dark mode: a warm shade (multiply) everywhere but his
+     left side, and the laptop's blue (soft-light) spilling onto that
+     side from the screen beside him. Both are masked with his own
+     current frame — same image, size and position as his background —
+     so they stay cut to him as he turns. Faded by --hero-night with the
+     portrait's lights; instant under reduced motion. */
+  .pixel-launcher__moss::before,
+  .pixel-launcher__moss::after {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    -webkit-mask: var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat;
+    mask: var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat;
+    opacity: var(--hero-night);
+    transition: opacity var(--dur-night) var(--ease-out);
+  }
+  .pixel-launcher__moss::before {
+    mix-blend-mode: multiply;
+    background: radial-gradient(70% 60% at 20% 55%, rgb(var(--hero-shade) / 0) 20%, rgb(var(--hero-shade) / var(--hero-shade-k)) 100%);
+  }
+  .pixel-launcher__moss::after {
+    mix-blend-mode: soft-light;
+    background: linear-gradient(90deg, rgb(var(--hero-screen) / calc(var(--hero-screen-k) * 0.6)), rgb(var(--hero-screen) / 0) 60%);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pixel-launcher__moss::before, .pixel-launcher__moss::after { transition: none; }
   }
   @media (prefers-reduced-motion: no-preference) and (hover: hover) {
     .pixel-launcher__moss { transition: scale var(--dur-pixel) var(--ease-pixel); }

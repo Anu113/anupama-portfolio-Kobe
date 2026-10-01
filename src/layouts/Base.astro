@@ -28,8 +28,9 @@ const {
     <meta property="og:type" content="website" />
     <!-- Light/dark is resolved before first paint so a returning visitor
          never sees the wrong palette flash: Light or Dark if they picked
-         one with the nav's theme button, otherwise (System) their OS
-         setting. data-mode-pref is the choice, data-mode what the tokens
+         one with the nav's theme toggle, otherwise their OS setting
+         (data-mode-pref 'system', which the toggle no longer offers as
+         a state — it's just "not chosen yet"). data-mode-pref is the choice, data-mode what the tokens
          read. Runs inline on purpose; don't move it to a bundled script. -->
     <script is:inline>
       (() => {

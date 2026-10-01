@@ -343,13 +343,28 @@ walked back. Concretely, in the current implementation:
   than a second one: `:root[data-mode='dark']` in `tokens.css` redefines
   only the palette tokens (ground `#1b1a19`, ink `#ecebe8`, grey
   `#a09d98`, accent lifted to `#e0714f` for AA), and every role colour
-  follows. Switched from the theme button in the nav, which cycles System →
-  Light → Dark (after carlthomasiv.com); System follows the OS
-  (inline script in `Base.astro`).
+  follows. Switched from the theme button in the nav, a Light ↔ Dark
+  toggle (sun/moon); until a visitor presses it the page follows their
+  OS (inline script in `Base.astro`). A third System state was removed
+  on request — a press that changed nothing on the page felt dead.
   Any new colour must read through the role tokens or it won't follow.
+  In dark mode only, the hero portrait is lit as a late-night scene
+  (NIGHT LIGHT in `tokens.css`; every strength is 0 in light mode),
+  chosen on request from a round of mocks: a soft, uneven warm room glow
+  and a blue laptop spill behind her (`index.astro`), and, drawn in
+  `HeroIllustration`'s canvas and clipped to her shape, a shade plus the
+  screen's light on her chest, chin, lower face and keyboard hand. The
+  face light follows her head per frame (`FACE_DX`/`FACE_DY`; re-measure
+  if the sprite is re-exported). Its reason: the watercolour is matted
+  against white, and on the dark ground its edge read as a pale cut-out
+  outline. It fades in and out with the theme over `--dur-night`
+  (instant under reduced motion); otherwise static apart from following
+  the scrub; one place only. If the
+  edge still shows, the next step is re-matting the sprite's edge
+  (un-mixing the white), not trimming the art.
 - **The nav is one line** (`Nav.astro`): the name on the left (14px,
   ink); on the right, the four links (12px, grey, current page in ink),
-  a hairline and the System/Light/Dark theme button. Links fold into Menu below
+  a hairline and the Light/Dark theme toggle. Links fold into Menu below
   900px. The old bottom dock (`Dock.astro`) and the page sounds
   (`scripts/sound.ts`) are gone.
 - **The location line** (`LocalTime.astro`) sits above the hero
