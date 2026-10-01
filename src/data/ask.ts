@@ -133,6 +133,18 @@ export const pixelTree: Record<string, PixelNode> = {
   bye: { q: 'That’s all, thanks Moss', say: [] },
 };
 
+/** Waking-up lines while the panel opens; one picked at random per open. */
+export const pixelWake = [
+  'Moss is waking up…',
+  'Moss is stretching…',
+  'Moss is pretending he wasn’t asleep…',
+  'Moss is climbing off the books…',
+  'Moss is finding his good side…',
+  'Moss is closing 37 tabs…',
+  'Moss is hiding the moodboard…',
+  'Moss is renaming “final_final_v3”…',
+];
+
 /** Rotating "thinking" lines while a reply loads. */
 export const pixelStatus = [
   'Moss is thinking…',
