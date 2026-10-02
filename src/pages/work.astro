@@ -5,7 +5,7 @@ import Reveal from '../components/Reveal.astro';
 import PageHeader from '../components/PageHeader.astro';
 import ArchiveList from '../components/ArchiveList.astro';
 import CaseCard from '../components/CaseCard.astro';
-import { work, archive } from '../data/work';
+import { work, archive, labelsFor } from '../data/work';
 import { cases } from '../data/cases';
 
 /* Cross-referenced by href rather than duplicating a `locked` flag in
@@ -23,10 +23,10 @@ const isLocked = (href: string) => lockedSlugs.has(href.replace('/work/', ''));
 // hand-typed list that could drift from work.ts. Order is fixed (not
 // alphabetical) so "0-1" reads before the domain tags rather than
 // wherever it happens to sort.
-const CATEGORY_ORDER = ['0-1', 'fintech', 'consumer', 'enterprise', 'design-systems'] as const;
+const CATEGORY_ORDER = ['0-1', 'fintech', 'devtools', 'growth', 'design-systems'] as const;
 const CATEGORY_LABEL: Record<string, string> = {
-  '0-1': '0→1', fintech: 'Fintech', consumer: 'Consumer',
-  enterprise: 'Enterprise', 'design-systems': 'Design Systems',
+  '0-1': '0→1', fintech: 'Fintech', devtools: 'Developer Tools',
+  growth: 'Growth', 'design-systems': 'Design Systems',
 };
 const categories = CATEGORY_ORDER.filter((c) => work.some((w) => w.categories?.includes(c)));
 
@@ -84,6 +84,7 @@ const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
             <CaseCard
               title={w.title} href={w.href} image={w.image} alt={w.alt}
               company={w.company} role={w.role} impact={w.impact}
+              labels={labelsFor(w)}
               theme={w.theme} ratio={l.ratio}
               locked={isLocked(w.href)}
               hoverState={w.hoverState}

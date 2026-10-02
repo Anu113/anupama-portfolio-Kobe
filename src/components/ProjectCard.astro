@@ -36,7 +36,9 @@
    `tags` are new: the number is decorative (aria-hidden, the link
    itself already names the project), the tags are real text — quiet
    metadata about what she actually did on it, not another loud visual
-   element. */
+   element. They sit in one row with the company above the title —
+   `OKTA · ENTERPRISE · PRODUCT STRATEGY` — after carlthomasiv.com's
+   case-study list; the page passes labelsFor(w) (data/work.ts). */
 import type { HoverState } from '../data/hoverState';
 import HoverLabel from './HoverLabel.astro';
 import LockIcon from './LockIcon.astro';
@@ -65,17 +67,24 @@ const num = String(index).padStart(2, '0');
 <a class={`pc ${hoverState === 'case-study' ? 'pc--no-pill' : ''}`} href={href} data-theme={theme} data-hover-trigger>
   <div class="pc__body">
     <p class="pc__num" aria-hidden="true">{num}</p>
-    <p class="pc__co u-label">{company}</p>
+    {/* COMPANY · [domain] [discipline]… — after carlthomasiv.com; the
+        chips come from labelsFor() in data/work.ts. */}
+    <div class="pc__meta">
+      <p class="pc__co u-label">{company}</p>
+      {tags.length > 0 && (
+        <>
+          <span class="pc__dot u-label" aria-hidden="true">·</span>
+          <ul class="pc__tags" aria-label="Domain and discipline">
+            {tags.map((t) => <li>{t}</li>)}
+          </ul>
+        </>
+      )}
+    </div>
     <h2 class="pc__title">
       {title}
       {locked && <LockIcon class="pc__lock" size="0.6em" />}
     </h2>
     <p class="pc__tagline">{tagline}</p>
-    {tags.length > 0 && (
-      <ul class="pc__tags">
-        {tags.map((t) => <li>{t}</li>)}
-      </ul>
-    )}
     <span class="pc__cta">View case study <span class="pc__arrow" aria-hidden="true">→</span></span>
   </div>
 
@@ -145,9 +154,15 @@ const num = String(index).padStart(2, '0');
     color: var(--fg-dim);
     margin: 0 0 clamp(1rem, 2vw, 1.5rem);
   }
+  .pc__meta {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.9rem;
+  }
+  .pc__dot { color: var(--fg-dim); }
   .pc__co {
     color: var(--fg-dim);
-    margin: 0 0 0.6rem;
+    margin: 0;
     transition: color var(--dur-micro) var(--ease-out);
   }
   .pc:hover .pc__co { color: var(--fg); }
@@ -182,14 +197,12 @@ const num = String(index).padStart(2, '0');
     overflow: hidden;
   }
 
-  /* Role tags — quiet metadata, not another loud element: a hairline
-     outline, no fill, small tracked caps. Height-capped for the same
-     reason the title/tagline clamp — four tags and two tags take the
-     same vertical space. */
+  /* Label chips — quiet metadata, not another loud element: a hairline
+     box, no fill, small tracked caps, square like the rest of the
+     site's cards (the reference's chips are square-cornered too). */
   .pc__tags {
-    display: flex; flex-wrap: wrap; gap: 0.5rem;
-    list-style: none; margin: 0 0 1.4rem; padding: 0;
-    max-height: 4.2rem; overflow: hidden;
+    display: contents;
+    list-style: none; margin: 0; padding: 0;
   }
   .pc__tags li {
     font-family: var(--font-sans);
@@ -198,10 +211,9 @@ const num = String(index).padStart(2, '0');
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--fg-dim);
-    border: 1px solid currentColor;
-    border-radius: 999px;
-    padding: 0.3rem 0.7rem;
-    opacity: 0.85;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 0.25rem 0.55rem;
   }
 
   .pc__cta {

@@ -1,0 +1,581 @@
+---
+/* Bookshelf.astro — "Books I love" on the About page, added on request
+   and built to match cali.so's shelf (layout, geometry and timing taken
+   from it); the spine design follows a later reference she sent (rule,
+   bold title, mono author). UX reason: a row of spines is how you browse
+   a real shelf — ten books fit in one column's width, and one at a time
+   turns to show its cover and title, so the list reads as hers rather
+   than a reading list pasted in.
+
+   What the visitor sees: books standing on a wooden plank, spines out,
+   leaning a little away from the one book that faces front. Hovering a
+   spine lifts it (--book-lift). Clicking one turns the open book back to
+   its spine while the chosen one swings out to its cover, and every book
+   in between slides along to make room (--dur-book, ease-in-out cubic).
+   The caption under the plank names the open book (a link when the book
+   has a url).
+
+   How: each book is a 3D box (cover face + spine face, preserve-3d).
+   Its pose — how far it's turned and how far it leans — is two numbers
+   per book, interpolated per frame; layoutShelf() in data/books.ts turns
+   them into transforms and the room each book takes on the shelf. The
+   first frame is rendered on the server with the same function, so the
+   shelf is correct with no JS. The whole row scales down (never up) to
+   fit its column, measured against its widest arrangement so it doesn't
+   jump between books.
+
+   Pointer: the row's 3D boxes overlap, so hover and click are resolved
+   by pointer x against each book's footprint, not by what the browser
+   hit-tests — the book you see under the pointer is the one you get.
+
+   Keyboard: one tab stop (roving tabindex). Left/Right move and wrap,
+   Home/End jump; the switch is instant from the keyboard. Each button's
+   label names the book and whether it's the one shown; the caption is a
+   polite live region. Reduced motion: books switch instantly, no lift. */
+import {
+  TONE_INK,
+  layoutShelf,
+  openState,
+  leanState,
+  shelfWidth,
+  toShelfBooks,
+  type Book,
+} from '../data/books';
+
+interface Props {
+  books: Book[];
+}
+const { books } = Astro.props;
+const geo = toShelfBooks(books);
+const poses = layoutShelf(geo, openState(geo, 0), leanState(geo, 0));
+const width = shelfWidth(geo);
+const first = books[0];
+// Vertical text turns the curly apostrophe upright, which reads as a
+// gap ("Doesn ’ t"); the straight one rotates with the line.
+const spineText = (t: string) => t.replace(/’/g, "'");
+---
+<div class="shelf" data-bookshelf data-books={JSON.stringify(geo)} style="--shelf-scale: 1;">
+  <div class="shelf__viewport" data-viewport>
+    <ul
+      class="shelf__row"
+      aria-label="Bookshelf"
+      data-row
+      style={`--shelf-w: ${width.toFixed(2)}px;`}
+    >
+      {books.map((b, i) => {
+        const p = poses[i];
+        const spine = geo[i].spine;
+        const w = geo[i].cover;
+        const ink = TONE_INK[b.tone];
+        return (
+          <li
+            class="book"
+            data-book
+            style={`width: ${spine}px; z-index: ${i === 0 ? 2 : 1}; transform: translateX(${p.frameX.toFixed(2)}px); --contact-w: ${w.toFixed(2)}px; --contact-scale: ${(p.width / w).toFixed(4)};`}
+          >
+            <span class="book__contact" aria-hidden="true"></span>
+            <button
+              type="button"
+              class="book__btn"
+              data-book-btn
+              data-title={b.title}
+              data-author={b.author}
+              data-url={b.url}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+              aria-label={`${b.title} by ${b.author}${i === 0 ? ' (shown)' : ''}`}
+            >
+              <span
+                class="book__inner"
+                data-book-inner
+                style={`width: ${w.toFixed(2)}px; transform: translateX(${p.offsetX.toFixed(2)}px) rotate(${p.lean.toFixed(3)}deg) rotateY(${p.turn.toFixed(3)}deg);`}
+              >
+                <span
+                  class={`book__cover book__cover--${ink}`}
+                  style={`transform: translateZ(${spine}px); --tone: var(--book-${b.tone});`}
+                >
+                  {b.art ? (
+                    <img src={b.art} alt="" width={b.coverWidth} height={b.coverHeight} loading="lazy" decoding="async" />
+                  ) : (
+                    <span class="book__type">
+                      <b>{b.title}</b>
+                      <span>{b.author}</span>
+                    </span>
+                  )}
+                </span>
+                <span
+                  class={`book__spine book__spine--${ink}`}
+                  style={`width: ${spine}px; --tone: var(--book-${b.tone});`}
+                >
+                  <span class="book__spine-title">{spineText(b.spineTitle ?? b.title)}</span>
+                  <span class="book__spine-author">{b.author}</span>
+                </span>
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  </div>
+  <span class="shelf__plank" aria-hidden="true"></span>
+  <p class="shelf__caption" aria-live="polite" data-caption>
+    {first.url ? (
+      <a href={first.url} target="_blank" rel="noopener noreferrer">{first.title}<span class="sr-only"> (opens in a new tab)</span></a>
+    ) : (
+      first.title
+    )}
+  </p>
+</div>
+
+<style>
+  .shelf { position: relative; }
+
+  .shelf__viewport {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    /* The row scales from its bottom edge, so the viewport shrinks with
+       it — no empty band above a scaled-down shelf. */
+    height: calc(var(--shelf-h) * var(--shelf-scale));
+    overflow: clip;
+  }
+  .shelf__row {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    width: var(--shelf-w);
+    height: var(--shelf-h);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    transform: scale(var(--shelf-scale));
+    transform-origin: 0 100%;
+  }
+
+  .book {
+    position: relative;
+    flex-shrink: 0;
+    height: 210px;
+  }
+  /* The soft shadow where the book meets the plank, as wide as the book
+     currently is on the shelf. */
+  .book__contact {
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    z-index: 0;
+    width: var(--contact-w);
+    height: 9px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center,
+      rgb(var(--shelf-shadow-rgb) / 0.38) 0%,
+      rgb(var(--shelf-shadow-rgb) / 0.16) 48%,
+      transparent 84%);
+    opacity: 0.9;
+    transform: scaleX(var(--contact-scale));
+    transform-origin: 0 center;
+    pointer-events: none;
+  }
+
+  .book__btn {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    perspective: 1200px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform var(--dur-book-lift) var(--ease-book-lift);
+  }
+  .book__btn[aria-pressed='true'] { cursor: default; }
+  /* A wider invisible hit area than the 24px spine, so thin spines are
+     easy to land on (the row resolves which book by pointer x anyway). */
+  .book__btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: max(100%, calc(44px / var(--shelf-scale)));
+    transform: translateX(-50%);
+  }
+  .book__btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .book__btn[data-hover] { transform: translateY(var(--book-lift)); }
+  }
+
+  .book__inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform-origin: 0 center;
+    will-change: transform;
+  }
+
+  .book__cover {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: var(--book-radius);
+    backface-visibility: hidden;
+    background: var(--tone);
+    box-shadow:
+      0 0 0 1px var(--book-edge),
+      1px 2px 3px -1px rgb(var(--shelf-shadow-rgb) / 0.2),
+      4px 9px 16px -9px rgb(var(--shelf-shadow-rgb) / 0.3);
+    user-select: none;
+  }
+  /* The hinge: a faint crease a few px in from the spine edge. */
+  .book__cover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 9px;
+    width: 1px;
+    background: currentColor;
+    opacity: 0.14;
+    pointer-events: none;
+  }
+  .book__cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+  }
+  /* No cover art yet: the cover is set in the site's own type on the
+     spine colour, like a plain cloth hardback. */
+  .book__type {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: 1rem 0.85rem 0.85rem 1rem;
+    background: var(--book-spine-shade), var(--tone);
+    background-size: 14px 100%, auto;
+    background-repeat: no-repeat;
+  }
+  .book__type b {
+    font-family: var(--font-serif);
+    font-weight: var(--weight-serif);
+    font-size: var(--step-title);
+    letter-spacing: var(--tracking-serif);
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+  .book__type span {
+    font-size: var(--step-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    line-height: 1.3;
+  }
+  .book__cover--light, .book__spine--light { color: var(--book-ink-light); }
+  .book__cover--dark, .book__spine--dark { color: var(--book-ink-dark); }
+
+  /* Spine, after the reference she sent: a short rule near the head,
+     the title in bold sans reading bottom to top, the author's full name
+     in mono at the foot, broken into short columns. */
+  .book__spine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    height: 100%;
+    padding: 0.75rem 0 0.625rem;
+    overflow: hidden;
+    border-radius: var(--book-spine-radius);
+    background: var(--book-spine-shade), var(--tone);
+    box-shadow: inset 0 0 0 1px var(--book-edge);
+    transform: rotateY(-90deg);
+    transform-origin: 0 center;
+    backface-visibility: hidden;
+  }
+  .book__spine::before {
+    content: '';
+    flex: 0 0 auto;
+    width: 35%;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  .book__spine-title {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow: hidden;
+    /* Reads bottom to top; a long title wraps to a second line (the
+       spine fits two), and anything longer clips. */
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-align: end;
+    text-wrap: balance;
+    font-family: var(--font-sans);
+    font-weight: var(--weight-sans);
+    font-size: var(--step-spine);
+    line-height: 1.1;
+    color: inherit;
+  }
+  .book__spine-author {
+    flex: 0 0 auto;
+    writing-mode: vertical-lr;
+    inline-size: var(--book-author-h);
+    overflow-wrap: anywhere;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-spine-author);
+    letter-spacing: 0.08em;
+    line-height: 1.15;
+    text-transform: uppercase;
+    color: inherit;
+    opacity: 0.75;
+  }
+
+  /* The plank: a 12px front edge with a 6px top face drawn above it in
+     perspective, light grain, and three stacked drop shadows. */
+  .shelf__plank {
+    position: relative;
+    z-index: 1;
+    display: block;
+    height: 12px;
+    border-radius: 1px 1px 2px 2px;
+    background:
+      radial-gradient(ellipse 22% 38% at 12% 22%, transparent 0 92%, var(--shelf-wood-grain) 93% 95%, transparent 96%),
+      radial-gradient(ellipse 32% 42% at 67% 70%, transparent 0 93%, var(--shelf-wood-grain) 94% 96%, transparent 97%),
+      linear-gradient(92deg, transparent 0 8%, var(--shelf-wood-grain) 14%, transparent 22% 54%, var(--shelf-wood-grain) 61%, transparent 72%),
+      linear-gradient(180deg, var(--shelf-wood-front-top), var(--shelf-wood-front-bottom));
+    box-shadow:
+      inset 0 1px 0 var(--shelf-shine),
+      inset 0 -1px 0 var(--shelf-underside),
+      1px 3px 3px -2px rgb(var(--shelf-shadow-rgb) / var(--shelf-drop-1)),
+      3px 10px 16px -8px rgb(var(--shelf-shadow-rgb) / var(--shelf-drop-2)),
+      6px 24px 34px -18px rgb(var(--shelf-shadow-rgb) / var(--shelf-drop-3));
+  }
+  .shelf__plank::before,
+  .shelf__plank::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+  }
+  .shelf__plank::before {
+    top: -6px;
+    height: 6px;
+    clip-path: polygon(0.8% 0, 99.2% 0, 100% 100%, 0 100%);
+    background:
+      radial-gradient(ellipse 28% 70% at 23% 45%, transparent 0 90%, var(--shelf-wood-grain) 91% 93%, transparent 94%),
+      linear-gradient(91deg, transparent 0 16%, var(--shelf-wood-grain) 25%, transparent 34% 67%, var(--shelf-wood-grain) 75%, transparent 83%),
+      linear-gradient(180deg, var(--shelf-wood-top-front), var(--shelf-wood-top-back));
+    box-shadow: inset 0 1px 0 var(--shelf-shine-top), inset 0 -1px 0 var(--shelf-underside-top);
+  }
+  .shelf__plank::after {
+    bottom: -2px;
+    height: 2px;
+    border-radius: 0 0 2px 2px;
+    background: linear-gradient(180deg,
+      rgb(var(--shelf-shadow-rgb) / 0.24),
+      rgb(var(--shelf-shadow-rgb) / 0.08));
+  }
+
+  .shelf__caption {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.75rem;
+    max-width: calc(100% - 2rem);
+    margin: 0.375rem auto 0;
+    font-size: var(--step-small);
+    line-height: 1;
+    color: var(--fg-dim);
+    text-align: center;
+  }
+  .shelf__caption a { color: inherit; }
+  .shelf__caption a:hover { color: var(--accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .book__btn { transition: none; }
+    .book__btn[data-hover] { transform: none; }
+  }
+</style>
+
+<script>
+  import { layoutShelf, openState, leanState, shelfWidth, type ShelfBook } from '../data/books';
+
+  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+  function initShelf(shelf: HTMLElement) {
+    const books: ShelfBook[] = JSON.parse(shelf.dataset.books ?? '[]');
+    const viewport = shelf.querySelector<HTMLElement>('[data-viewport]')!;
+    const row = shelf.querySelector<HTMLElement>('[data-row]')!;
+    const caption = shelf.querySelector<HTMLElement>('[data-caption]')!;
+    const frames = [...row.querySelectorAll<HTMLElement>('[data-book]')];
+    const btns = [...row.querySelectorAll<HTMLButtonElement>('[data-book-btn]')];
+    const inners = [...row.querySelectorAll<HTMLElement>('[data-book-inner]')];
+    const DUR = parseFloat(getComputedStyle(shelf).getPropertyValue('--dur-book')) || 650;
+    const width = shelfWidth(books);
+
+    let current = 0;
+    let open = openState(books, 0);
+    let lean = leanState(books, 0);
+    let raf = 0;
+    let pointerX: number | null = null;
+    let hovered: number | null = null;
+    const spans: { left: number; right: number }[] = [];
+
+    const draw = (o: number[], l: number[]) => {
+      let x = 0;
+      layoutShelf(books, o, l).forEach((p, i) => {
+        spans[i] = { left: x, right: x + p.width };
+        x += p.width + 1;
+        frames[i].style.zIndex = o[i] > 0.01 ? '2' : '1';
+        frames[i].style.transform = `translateX(${p.frameX.toFixed(2)}px)`;
+        frames[i].style.setProperty('--contact-scale', (p.width / books[i].cover).toFixed(4));
+        inners[i].style.transform =
+          `translateX(${p.offsetX.toFixed(2)}px) rotate(${p.lean.toFixed(3)}deg) rotateY(${p.turn.toFixed(3)}deg)`;
+      });
+      if (pointerX !== null) setHover(bookAt(pointerX));
+    };
+
+    // Nearest book footprint to an x in row coordinates.
+    const nearest = (x: number, fallback = 0) => {
+      let best = fallback;
+      let dist = Infinity;
+      spans.forEach((s, i) => {
+        const d = x < s.left ? s.left - x : x > s.right ? x - s.right : 0;
+        if (d < dist) { best = i; dist = d; }
+      });
+      return best;
+    };
+    const bookAt = (x: number) => {
+      const a = spans[0];
+      const b = spans[spans.length - 1];
+      if (!a || !b || x < a.left - 22 || x > b.right + 22) return null;
+      return nearest(x);
+    };
+    const toRowX = (clientX: number) => {
+      const r = row.getBoundingClientRect();
+      return (clientX - r.left) / (r.width / row.offsetWidth || 1);
+    };
+    function setHover(i: number | null) {
+      const next = i === current ? null : i;
+      if (next === hovered) return;
+      hovered = next;
+      btns.forEach((b, j) => b.toggleAttribute('data-hover', j === next));
+    }
+
+    // Skipped while the column has no width yet (before first layout) —
+    // a 0 scale would also collapse the viewport, which is sized off it.
+    const fit = () => {
+      if (!viewport.clientWidth) return;
+      shelf.style.setProperty('--shelf-scale', Math.min(1, viewport.clientWidth / width).toFixed(4));
+    };
+
+    const updateLabels = () => {
+      btns.forEach((b, i) => {
+        const on = i === current;
+        b.setAttribute('aria-pressed', String(on));
+        b.tabIndex = on ? 0 : -1;
+        b.setAttribute('aria-label', `${b.dataset.title} by ${b.dataset.author}${on ? ' (shown)' : ''}`);
+      });
+      const btn = btns[current];
+      caption.textContent = '';
+      if (btn.dataset.url) {
+        const a = document.createElement('a');
+        a.href = btn.dataset.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = btn.dataset.title ?? '';
+        const sr = document.createElement('span');
+        sr.className = 'sr-only';
+        sr.textContent = ' (opens in a new tab)';
+        a.append(sr);
+        caption.append(a);
+      } else {
+        caption.textContent = btn.dataset.title ?? '';
+      }
+    };
+
+    const select = (n: number, instant = false) => {
+      if (n === current && !raf) return;
+      cancelAnimationFrame(raf);
+      raf = 0;
+      current = n;
+      updateLabels();
+      const fromO = open.slice();
+      const fromL = lean.slice();
+      const toO = openState(books, n);
+      const toL = leanState(books, n);
+      const settle = () => { open = toO; lean = toL; draw(open, lean); raf = 0; };
+      if (instant || reduced.matches) return settle();
+      const start = performance.now();
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / DUR);
+        const k = ease(t);
+        open = fromO.map((v, i) => v + (toO[i] - v) * k);
+        lean = fromL.map((v, i) => v + (toL[i] - v) * k);
+        draw(open, lean);
+        if (t < 1) raf = requestAnimationFrame(step);
+        else settle();
+      };
+      raf = requestAnimationFrame(step);
+    };
+
+    // A click lands on whichever 3D box the browser hit-tests; redirect it
+    // to the book whose footprint is under the pointer.
+    row.addEventListener('click', (e) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>('[data-book-btn]');
+      if (!btn) return;
+      const own = btns.indexOf(btn);
+      const target = e.detail === 0 ? own : nearest(toRowX(e.clientX), own);
+      select(target, e.detail === 0);
+      if (target !== own) btns[target].focus();
+    });
+
+    row.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch' || !(e.target as Element).closest('[data-book-btn]')) {
+        pointerX = null;
+        return setHover(null);
+      }
+      pointerX = toRowX(e.clientX);
+      setHover(bookAt(pointerX));
+    });
+    row.addEventListener('pointerleave', () => { pointerX = null; setHover(null); });
+
+    row.addEventListener('keydown', (e) => {
+      const i = btns.indexOf(e.target as HTMLButtonElement);
+      if (i < 0) return;
+      let n: number | null = null;
+      if (e.key === 'ArrowLeft') n = (i - 1 + books.length) % books.length;
+      if (e.key === 'ArrowRight') n = (i + 1) % books.length;
+      if (e.key === 'Home') n = 0;
+      if (e.key === 'End') n = books.length - 1;
+      if (n === null) return;
+      e.preventDefault();
+      select(n, true);
+      btns[n].focus();
+    });
+
+    draw(open, lean);
+    fit();
+    new ResizeObserver(fit).observe(viewport);
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-bookshelf]').forEach(initShelf);
+</script>

@@ -1,0 +1,110 @@
+---
+/* CursorLamp.astro — a soft pool of light under the pointer, dark mode
+   only. After studio-nikita.com, which does the same with one full-page
+   radial gradient whose centre follows the mouse.
+
+   Why it's here: dark mode lights the hero as a late-night scene (NIGHT
+   LIGHT in tokens.css); this carries that scene down the page — the
+   visitor's pointer is the lamp. It sits alongside CursorTrail on
+   request (the trail draws the path, this lights the room).
+
+   How: one small round element the size of the pool, moved with a
+   transform so the browser only re-composites it, never repaints the
+   page (the first pass moved a full-screen gradient, which repainted the
+   whole blended layer every move and stuttered). It glides after the
+   pointer, closing --lamp-follow of the gap each frame, and stops its
+   loop once it has caught up. It lives inside <main>, so the page's
+   curved end clips it off the black footer, and is screen-blended over
+   the content because <Section> bands paint their own ground, which
+   would cover a layer placed behind them. Values live under CURSOR LAMP
+   in tokens.css; strength is --hero-night, so it is zero in light mode
+   and fades with the theme over --dur-night.
+
+   Off, not just invisible: under prefers-reduced-motion, and on devices
+   without hover (no pointer to follow). Takes no pointer events. */
+---
+<div class="lamp" id="cursor-lamp" aria-hidden="true"></div>
+
+<style>
+  .lamp {
+    position: fixed; top: 0; left: 0;
+    z-index: 50;
+    width: calc(var(--lamp-size) * 2);
+    height: calc(var(--lamp-size) * 2);
+    margin: calc(var(--lamp-size) * -1) 0 0 calc(var(--lamp-size) * -1);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    /* Eased falloff: a plain two-stop fade drops off linearly and leaves
+       a visible rim; these stops trace a smooth bell instead. */
+    background: radial-gradient(
+      closest-side,
+      var(--lamp-colour),
+      color-mix(in srgb, var(--lamp-colour) 70%, transparent) calc(var(--lamp-reach) * 0.25),
+      color-mix(in srgb, var(--lamp-colour) 35%, transparent) calc(var(--lamp-reach) * 0.5),
+      color-mix(in srgb, var(--lamp-colour) 12%, transparent) calc(var(--lamp-reach) * 0.75),
+      transparent var(--lamp-reach)
+    );
+    transform: translate3d(-100vw, -100vh, 0);
+    will-change: transform;
+    opacity: 0;
+    transition: opacity var(--dur-night) var(--ease-out);
+  }
+  .lamp.is-on { opacity: var(--hero-night); }
+
+  @media (prefers-reduced-motion: reduce) { .lamp { display: none; } }
+  @media (hover: none) { .lamp { display: none; } }
+</style>
+
+<script>
+  (() => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (matchMedia('(hover: none)').matches) return;
+
+    const lamp = document.getElementById('cursor-lamp');
+    if (!lamp) return;
+
+    const follow = () =>
+      Number(getComputedStyle(lamp).getPropertyValue('--lamp-follow')) || 0.22;
+    let k = follow();
+
+    const target = { x: 0, y: 0 };
+    const pos = { x: 0, y: 0 };
+    let seeded = false;
+    let looping = false;
+
+    const place = () => {
+      lamp.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`;
+    };
+
+    const tick = () => {
+      pos.x += (target.x - pos.x) * k;
+      pos.y += (target.y - pos.y) * k;
+      place();
+      if (Math.hypot(target.x - pos.x, target.y - pos.y) > 0.3) {
+        requestAnimationFrame(tick);
+      } else {
+        looping = false;
+      }
+    };
+
+    addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      target.x = e.clientX;
+      target.y = e.clientY;
+      if (!seeded) {
+        // Start under the pointer rather than gliding in from the corner.
+        pos.x = target.x; pos.y = target.y;
+        place();
+        seeded = true;
+      }
+      lamp.classList.add('is-on');
+      if (!looping) { looping = true; requestAnimationFrame(tick); }
+    }, { passive: true });
+
+    addEventListener('resize', () => { k = follow(); });
+
+    document.documentElement.addEventListener('mouseleave', () => {
+      lamp.classList.remove('is-on');
+    });
+  })();
+</script>

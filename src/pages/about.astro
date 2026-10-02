@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 import Section from '../components/Section.astro';
+import Bookshelf from '../components/Bookshelf.astro';
+import { books } from '../data/books';
 import { site } from '../data/site';
 
 /* Pinned rail + rolling title, structured like /work/[slug]'s own
@@ -30,7 +32,7 @@ import { site } from '../data/site';
    CaseRail.astro already uses. "About me" never moves; only the masked
    title stack inside it does, via a scroll-linked transform.
 
-   THE ROLL. Which of the six stages is "current" is answered by
+   THE ROLL. Which of the seven stages is "current" is answered by
    IntersectionObserver, not a scroll-position probe — the same call
    CaseRail.astro's own section-spy already makes, same rootMargin (a band
    a quarter down from the nav to 60% up from the bottom counts as
@@ -47,7 +49,7 @@ import { site } from '../data/site';
    sitewide reduced-motion rule in global.css, same as Reveal.astro. The
    rail is `aria-hidden` (it's a visual echo of whichever heading is
    current, not itself content); each stage keeps a real, visually-hidden
-   `<h2>` so a screen-reader user still gets all six section headings in
+   `<h2>` so a screen-reader user still gets all seven section headings in
    document order. Below 900px the rail is dropped entirely and that
    visually-hidden heading becomes a plain, visible one instead — a sticky
    title rail next to single-column stacked content doesn't hold together
@@ -57,19 +59,11 @@ const stages = [
   { id: 'intro', num: '00', label: 'It’s me' },
   { id: 'approach', num: '01', label: 'My approach' },
   { id: 'worked', num: '02', label: 'Work experience' },
-  { id: 'stack', num: '03', label: 'Tech stack' },
+  { id: 'build', num: '03', label: 'How I build' },
   { id: 'writing', num: '04', label: 'My writing' },
-  { id: 'contact', num: '05', label: 'Connect' },
+  { id: 'books', num: '05', label: 'Books I love' },
+  { id: 'contact', num: '06', label: 'Connect' },
 ] as const;
-
-// Same bracket convention as the timeline below — categories and the one
-// confirmed talk are real, specific tool names and venues aren't.
-const stack = [
-  { group: 'Design & prototyping', items: '[Figma], [Figma prototyping], [ProtoPie]' },
-  { group: 'Systems', items: 'Design tokens, component libraries, [Storybook]' },
-  { group: 'Research', items: '[Dovetail], [UserTesting]' },
-  { group: 'Collaboration', items: '[Jira], [Notion], [FigJam]' },
-];
 
 // The contact form's two custom dropdowns — each option carries a swatch
 // key (src/styles/tokens.css, "OPTION SWATCHES") so the open popup reads
@@ -89,6 +83,65 @@ const needOptions = [
   { value: 'mentorship', swatch: 'teal' },
   { value: 'something else', swatch: 'clay' },
 ] as const;
+
+// "How I build" — DRAFT PLACEHOLDER. Pasted verbatim, on request, from
+// abstract.systems/stack: another designer's own first-person write-up,
+// not Anupama's. It names tools and an employer (Lovable) that aren't
+// hers. Rewrite in her own words and facts before this page goes live.
+const buildIntro = [
+  'Not long ago, Figma was my primary work surface. Today, most of my hands-on work happens through AI coding agents, with Lovable increasingly becoming part of the process too. Yes, we’re using Lovable to build and improve itself.',
+  'Trippy, I know.',
+  'The tools matter less than the framework around them: what agents can do, what they need to prove, and what remains my responsibility. That framework lives in a private Git repo shared by all my agents. This page explains how it all works.',
+];
+const buildTldr = [
+  'Every feature gets its own worktree, agent session, and PR. The lifecycle is encoded in versioned skills with explicit gates: adversarial reviews surround every build, a second model reviews the work before a PR opens, and the two decisions that matter most, local review and merge, remain mine.',
+  'Claude Code and Codex are the two harnesses. cmux is the console. Paper is the design canvas, and Playwright captures the evidence. Graphite manages stacked PRs, Linear handles tracking, and a Nix devenv runs the local services.',
+];
+const buildConsole = [
+  'I work in parallel. One repo checkout stays read-only, running shared local services and hosting planning sessions. Every feature gets its own Git worktree, branch, agent session, and, eventually, pull request.',
+  'One feature equals one worktree equals one PR. The main checkout reads, while worktrees write. This is enforced mechanically, not from memory. Guard hooks block edits and commits in the main checkout and direct the agent back to /start.',
+  'cmux is the console: a sidebar group for each workstream and a row for every running session. I can brief an agent, step away, and return when a decision is ready. Each worktree runs a thin service slice built on shared machinery that starts once, and every branch gets a readable local URL. Reviewing a change is as simple as opening a page.',
+  'That 15-second review loop is what makes the workflow viable. More on that below.',
+];
+const buildLifecycleIntro = 'The feature lifecycle is encoded as skills: versioned prompt programmes with explicit gates, not vibes. The spine:';
+const buildSteps = [
+  { name: 'Start', text: [
+    '/start bootstraps a worktree from trunk, reads the workstream’s memory log, and captures “before” screenshots of the affected UI before the first edit. A fresh worktree still serves trunk, so this is the actual before state. Before and after screenshots are eventually added to the PR, which makes capturing them at this stage important.',
+    'Tiny visual papercuts can take a shorter path, but only through an explicit gate that allows them to skip the middle phases.',
+    '/start --from riffs on an existing branch instead of trunk: it picks up a colleague’s branch or PR and stacks a design pass on top. Committing directly to their branch happens only by invitation.',
+  ] },
+  { name: 'Explore', text: [
+    'When the direction is unresolved, three tools are available, chosen according to the question:',
+    '/grill-with-docs is an interview that stress-tests a plan against the project’s domain language and recorded decisions. Terminology is settled in a glossary, while hard-to-reverse decisions become one-paragraph records. Credit to Matt Pocock.',
+    '/paper-prototype produces two or three structurally distinct directions on a Paper canvas. The variants must disagree about structure, hierarchy, or flow.',
+    '/prototype trades fidelity for speed: five throwaway, single-file HTML implementations in a side-by-side gallery. It identifies a quiet favourite but never chooses a winner.',
+  ] },
+  { name: 'Build', text: [
+    '/build is implementation bracketed by two reviews. An adversarial pre-build review must return Go before any code is written. Blockers are routed back to the stage that owns them.',
+    'A read-only post-build review then runs the checks and opens the preview in a real browser. Any check that cannot run is recorded as “not run”, never assumed to have passed.',
+    'When the context runs long, /handoff compacts the unfinished work into a document that any future session can resume from. Every decision is recorded, so speculation cannot masquerade as something settled.',
+  ] },
+  { name: 'My review', text: [
+    'This is the first of two human gates. I inspect the change running locally before a PR exists.',
+  ] },
+  { name: 'Ship', text: [
+    '/ship verifies that the reviewed state has not changed, runs the quality and policy checks, and launches an adversarial review by the other model. Codex reviews Claude’s work, or vice versa, while remaining blind to the session’s reasoning. A reviewer who has been told why an approach is right cannot properly question whether it is.',
+    'Every finding must be fixed or rebutted with evidence before the PR opens. Before and after screenshots at 2x are included with the PR, and a babysitter loop drives it through CI and review comments.',
+    'The merge button is the second human gate, and it is always mine.',
+  ] },
+  { name: 'Wrap up', text: [
+    '/wrapup runs after the merge. It verifies that the deployment rolled out, tears down the worktree, and retros the workstream’s log.',
+  ] },
+];
+const buildMeta = [
+  'All of this lives in one private Git repo: a single, harness-neutral instruction file that serves as both Claude Code’s and Codex’s global configuration through symlinks, alongside 20 shared skills and a handful of scripts.',
+  'A sync script generates the host-specific projections and runs automatically at the start and end of every session. A doctor script enforces parity after configuration changes and fails loudly when it detects drift. Genuine host differences are quarantined in a single directory.',
+  'The point is that the workflow itself is under version control. When a retro promotes a lesson, it becomes a diff to a skill, not a note I hope to remember.',
+];
+const buildMine = [
+  'Design judgement, taste, and the two human gates remain mine. Agents propose, verify, and prove. They never reduce a set of options to a single winner, approve their own work, or merge anything.',
+  'The retro loop follows the same discipline: a correction becomes a standing rule when it recurs, not simply because I said it once.',
+];
 
 const writing = [
   { title: 'The Saga of Accessibility', meta: 'Talk — [conference], [year]',
@@ -215,13 +268,28 @@ const timeline = [
                 </ul>
               )}
               {i === 3 && (
-                <div class="stack__list">
-                  {stack.map((s) => (
-                    <div class="stack__row">
-                      <h3>{s.group}</h3>
-                      <p>{s.items}</p>
-                    </div>
-                  ))}
+                <div class="build">
+                  {buildIntro.map((t) => <p>{t}</p>)}
+                  <div class="build__tldr">
+                    <span class="u-label">tldr;</span>
+                    {buildTldr.map((t) => <p>{t}</p>)}
+                  </div>
+                  <h3 class="build__head">The console</h3>
+                  {buildConsole.map((t) => <p>{t}</p>)}
+                  <h3 class="build__head">The lifecycle</h3>
+                  <p>{buildLifecycleIntro}</p>
+                  <ol class="build__steps">
+                    {buildSteps.map((st, n) => (
+                      <li class="build__step">
+                        <span class="u-label build__num">{String(n + 1).padStart(2, '0')} · {st.name}</span>
+                        {st.text.map((t) => <p>{t}</p>)}
+                      </li>
+                    ))}
+                  </ol>
+                  <h3 class="build__head">The meta-layer</h3>
+                  {buildMeta.map((t) => <p>{t}</p>)}
+                  <h3 class="build__head">What stays mine</h3>
+                  {buildMine.map((t) => <p>{t}</p>)}
                 </div>
               )}
               {i === 4 && (
@@ -235,7 +303,8 @@ const timeline = [
                   ))}
                 </ul>
               )}
-              {i === 5 && (
+              {i === 5 && <Bookshelf books={books} />}
+              {i === 6 && (
                 <>
                   <p class="u-measure aboutfoot__body">
                     {site.ask}. The fastest way to find out if it fits is a
@@ -482,17 +551,29 @@ const timeline = [
   .path__role { display: block; margin-bottom: 0.35rem; }
   .path__note { margin: 0; max-width: 42ch; }
 
-  .stack__list { display: flex; flex-direction: column; gap: 1.25rem; }
-  .stack__row h3 {
+
+  /* How I build — DRAFT text (see the note on buildIntro), laid out
+     after abstract.systems/stack: subheads, a tldr block, numbered
+     lifecycle steps in the same hairline rows as the timeline. */
+  .build__tldr {
+    margin: 0 0 1.25rem;
+    padding: 1rem 0 1rem 1rem;
+    border-left: 2px solid var(--rule);
+  }
+  .build__tldr .u-label { display: block; margin-bottom: 0.35rem; }
+  .build__head {
     font-family: var(--font-serif);
     font-size: var(--step-title);
     font-weight: var(--weight-serif);
     letter-spacing: var(--tracking-serif);
     color: var(--fg);
-    margin: 0 0 0.35rem;
+    margin: 2.25rem 0 0.6rem;
   }
-  .stack__row p { margin: 0; }
-
+  .build__steps { list-style: none; margin: 1.25rem 0 0; padding: 0; }
+  .build__step { padding: 1rem 0; border-top: 1px solid var(--rule); }
+  .build__num { display: block; margin-bottom: 0.5rem; color: var(--fg); }
+  .build__step p { margin: 0 0 0.75rem; }
+  .build__step p:last-child { margin-bottom: 0; }
   .writing__list { list-style: none; margin: 0; padding: 0; }
   .writing__row { padding: 1.1rem 0; border-top: 1px solid var(--rule); }
   .writing__row:first-child { border-top: none; padding-top: 0; }
