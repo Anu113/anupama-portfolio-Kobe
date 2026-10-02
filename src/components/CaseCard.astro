@@ -19,7 +19,11 @@
    rather than stopping dead at the media's own edge; it still gets the
    project's own colour, just copied off the media element by its own
    script instead of inherited through the cascade, since it no longer sits
-   inside that scope. See HoverLabel's header comment for why. */
+   inside that scope. See HoverLabel's header comment for why.
+
+   `labels` puts the domain/discipline chips in one row with the company —
+   `PAYPAL · FINTECH · PRODUCT DESIGN` — after carlthomasiv.com, matching
+   ProjectCard on the home page. The page passes labelsFor(w). */
 import HoverLabel from './HoverLabel.astro';
 import LockIcon from './LockIcon.astro';
 import { hueFor } from '../data/work';
@@ -28,6 +32,7 @@ import type { HoverState } from '../data/hoverState';
 interface Props {
   title: string; href: string; image: string; alt?: string;
   company?: string; role?: string; impact?: string;
+  labels?: string[];
   theme?: string; ratio?: string;
   locked?: boolean;
   hoverState?: HoverState;
@@ -35,6 +40,7 @@ interface Props {
 const {
   title, href, image, alt = '',
   company, role, impact,
+  labels = [],
   theme, ratio = '4 / 3',
   locked = false,
   hoverState = 'case-study',
@@ -45,7 +51,19 @@ const {
     <img src={image} alt={alt} loading="lazy" decoding="async" />
   </div>
   <HoverLabel state={hoverState} />
-  {company && <p class="card__co u-label">{company}</p>}
+  {company && (
+    <div class="card__meta">
+      <p class="card__co u-label">{company}</p>
+      {labels.length > 0 && (
+        <>
+          <span class="card__dot u-label" aria-hidden="true">·</span>
+          <ul class="card__tags" aria-label="Domain and discipline">
+            {labels.map((t) => <li class="u-label">{t}</li>)}
+          </ul>
+        </>
+      )}
+    </div>
+  )}
   <h2 class="card__title">
     {title}
     {locked && <LockIcon class="card__lock" size="0.6em" />}
@@ -76,7 +94,20 @@ const {
   .card:hover .card__media img,
   .card:focus-visible .card__media img { transform: scale(1.04); }
 
-  .card__co { color: var(--fg-dim); margin: 0 0 0.5rem; }
+  .card__meta {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.75rem;
+  }
+  .card__co, .card__dot { color: var(--fg-dim); margin: 0; }
+  /* Same chip as ProjectCard's: hairline box, square, tracked caps. */
+  .card__tags { display: contents; list-style: none; margin: 0; padding: 0; }
+  .card__tags li {
+    color: var(--fg-dim);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 0.25rem 0.55rem;
+  }
   .card__title {
     font-family: var(--font-serif);
     font-size: var(--step-title);

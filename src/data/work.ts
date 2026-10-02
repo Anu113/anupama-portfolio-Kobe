@@ -49,6 +49,17 @@
 // gets a single sentence instead of the full paragraph. `role` still feeds
 // CaseCard.astro on /work — the home page band no longer shows it at all,
 // per the "movie trailer, not the full movie" brief.
+//
+// Card labels, after carlthomasiv.com: one row above the title reading
+// `COMPANY · [domain] [discipline]…`. The domain chips come from
+// `categories` (the same ones /work filters by, fintech first), the
+// discipline chips from `tags`; `labelsFor()` joins them. Four chips is
+// the most a case carries (the two Okta cases); past that the row stops
+// being skimmable. "Product Design" was dropped on request — on a product
+// designer's portfolio it's implied, and it sat on five of seven cards.
+// Growth is on Chase Pay only (its job was winning back Walmart Pay
+// adoption); add it elsewhere only where the case is about adoption or
+// conversion.
 export const work = [
   { company: 'Okta', theme: 'coral', device: 'desktop',
     title: 'Rebuilding IAM for enterprise admins',
@@ -57,7 +68,7 @@ export const work = [
     role: 'Staff Product Designer · IAM + Developer Tools · Led 6 designers',
     impact: 'Admin task time down [X]% across the four highest-volume flows',
     hoverState: 'case-study',
-    tags: ['Product Strategy', 'UX', 'Design Systems', '0→1'], categories: ['enterprise', '0-1', 'design-systems'],
+    tags: ['Product Strategy', 'Design Systems', '0→1'], categories: ['devtools', '0-1', 'design-systems'],
     href: '/work/okta-iam', image: '/images/placeholder-1.svg', alt: 'Okta IAM admin console' },
   { company: 'PayPal', theme: 'lilac', device: 'phone',
     title: 'Privacy settings people can read',
@@ -66,7 +77,7 @@ export const work = [
     role: 'Design lead · iOS, Android, desktop · Motion and illustration',
     impact: 'Comprehension up [X]% in unmoderated testing',
     hoverState: 'case-study',
-    tags: ['UX', 'UI', 'Design Systems'], categories: ['fintech', 'consumer'],
+    tags: ['Design Systems'], categories: ['fintech'],
     href: '/work/paypal-privacy', image: '/images/placeholder-2.svg', alt: 'PayPal privacy settings' },
   { company: 'Walmart Labs', theme: 'sage', device: 'phone',
     title: 'Scan & Go, in-store',
@@ -75,7 +86,7 @@ export const work = [
     role: 'End-to-end designer · Product strategy through interaction design',
     impact: 'Ethnographic research to shipped pilot in [X] stores',
     hoverState: 'case-study',
-    tags: ['Product Strategy', 'UX', '0→1'], categories: ['consumer', '0-1'],
+    tags: ['Product Strategy', '0→1'], categories: ['0-1'],
     href: '/work/walmart-scan-go', image: '/images/placeholder-3.svg', alt: 'Scan & Go' },
 
   // TODO: `company` here is an inference, not a fact. The live site's tile for
@@ -90,7 +101,7 @@ export const work = [
     role: 'Product strategy · End-to-end visual and interaction design',
     impact: 'Access request turnaround down from [X] to [X]',
     hoverState: 'case-study',
-    tags: ['Product Strategy', 'UX'], categories: ['fintech', 'enterprise'],
+    tags: ['Product Strategy'], categories: ['fintech'],
     href: '/work/paypal-data-access', image: '/images/placeholder-4.svg', alt: 'Data access automation' },
   { company: 'Walmart Labs', theme: 'ink', device: 'phone',
     title: 'Chase Pay inside Walmart Pay',
@@ -99,7 +110,7 @@ export const work = [
     role: 'Product designer, Walmart Pay · Sole designer · 5 Chase stakeholders',
     impact: 'Shipped on iOS Feb 2020 and Android Jun 2020',
     hoverState: 'case-study',
-    tags: ['UX', 'UI'], categories: ['fintech', 'consumer'],
+    tags: [], categories: ['fintech', 'growth'],
     href: '/work/walmart-chase-pay',
     // `image` is the /work tile (a landscape crop). The home-page band puts
     // the actual prototype recording in the phone instead — the GIF from the
@@ -123,7 +134,7 @@ export const work = [
     role: 'Staff Product Designer · Integration Platform + Developer Ecosystem',
     impact: 'Submission cycle time down [X]%, on one framework instead of four',
     hoverState: 'case-study',
-    tags: ['Design Systems', 'Design Engineering', '0→1'], categories: ['enterprise', 'design-systems', '0-1'],
+    tags: ['Design Systems', 'Design Engineering', '0→1'], categories: ['devtools', 'design-systems', '0-1'],
     href: '/work/okta-oin', image: '/images/placeholder-5.svg', alt: 'The Okta Integration Network submission framework' },
 
   // Skeleton case — see the header comment on `paypal-unified-card-system`
@@ -140,7 +151,7 @@ export const work = [
     role: '[Product Designer — confirm title and stream]',
     impact: '[Outcome specific to her stream — confirm]',
     hoverState: 'case-study',
-    tags: ['UX', 'Design Systems'], categories: ['fintech', 'design-systems'],
+    tags: ['Design Systems'], categories: ['fintech', 'design-systems'],
     href: '/work/paypal-unified-card-system', image: '/images/placeholder-7.svg', alt: 'Unified card management surface' },
 ] as const;
 
@@ -209,4 +220,16 @@ export function hueFor(company?: string): Hue | undefined {
   if (c.startsWith('paypal')) return 'paypal';
   if (c.startsWith('walmart')) return 'walmart';
   return undefined;
+}
+
+// The domain half of a card's label row. 0-1 and design-systems are
+// categories too, but they're disciplines, so they come through `tags`.
+// Enterprise and Consumer were dropped on request (labels and filters).
+export const DOMAIN_LABEL: Record<string, string> = {
+  fintech: 'Fintech', devtools: 'Developer Tools', growth: 'Growth',
+};
+const DOMAIN_ORDER = ['fintech', 'devtools', 'growth'];
+export function labelsFor(w: { categories?: readonly string[]; tags?: readonly string[] }): string[] {
+  const domains = DOMAIN_ORDER.filter((d) => w.categories?.includes(d)).map((d) => DOMAIN_LABEL[d]);
+  return [...domains, ...(w.tags ?? [])];
 }

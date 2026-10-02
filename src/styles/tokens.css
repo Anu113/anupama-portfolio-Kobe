@@ -228,6 +228,24 @@
      (un-mixing the white), not trimming the art. */
   --hero-night: 0;
   --dur-night: var(--dur-reveal);
+  /* CURSOR LAMP (CursorLamp.astro) — dark mode only: a soft pool of
+     light under the pointer, after studio-nikita.com. Same idea as the
+     night lighting around her: in the late-night scene, the visitor's
+     pointer is a lamp. Screen-blended over the page, so it lifts the
+     dark ground without washing out text. Strength rides --hero-night,
+     so it's off in light mode and fades with the theme. */
+  --lamp-size: 14rem;                                            /* the pool's radius */
+  /* Quiet on purpose: felt more than seen. Candle — a faint warm white
+     — picked from a mockup of fourteen lights and shades. Earlier tries,
+     dropped on request: 12% white (drew the eye), a warm grey (dull), a
+     deep blue (foreign to the palette), a dark "dent", and dark umber.
+     Warm enough to belong to the room, pale enough to read as light
+     rather than colour. The falloff eases out over several stops so
+     there's no visible rim. */
+  --lamp-hue: rgb(255 214 170);                                   /* candle */
+  --lamp-colour: color-mix(in srgb, var(--lamp-hue) 10%, transparent);  /* at the centre */
+  --lamp-reach: 70%;                                             /* where it has faded out */
+  --lamp-follow: 0.22;                                           /* share of the gap to the pointer closed per frame */
   --hero-lamp: rgb(255 168 96 / 0.34);   /* warm room pool, centre */
   --hero-lamp-mid: rgb(255 168 96 / 0.12); /* ...and its falloff */
   --hero-lamp-spread: 20%;               /* how far it reaches past the figure */
@@ -378,6 +396,84 @@
 [data-hue='okta'] { --hue: var(--hue-okta); }
 [data-hue='paypal'] { --hue: var(--hue-paypal); }
 [data-hue='walmart'] { --hue: var(--hue-walmart); }
+
+/* ============================================================
+   BOOKSHELF (Bookshelf.astro, About page) — added on request, after
+   cali.so's "Books I love". The books are objects, so like the project
+   hues their colours belong to the things themselves, not the chrome:
+   one tone per spine, never on page text or bands. The wood is the
+   shelf's own material; it darkens in dark mode so it doesn't glow.
+   Spine text pairs (--book-ink-light / -dark per TONE_INK in
+   data/books.ts) clear 4.5:1 on every tone.
+   ============================================================ */
+:root {
+  --book-red: #b8442f;
+  --book-coral: #e8735a;
+  --book-orange: #e58a3c;
+  --book-mustard: #d9a63a;
+  --book-yellow: #ecd040;
+  --book-cream: #e7e1d3;
+  --book-white: #f3f1ec;
+  --book-tan: #d2b48a;
+  --book-brown: #8a5236;
+  --book-olive: #5f6239;
+  --book-green: #3d6656;
+  --book-sage: #9db596;
+  --book-teal: #2f6a70;
+  --book-sky: #6ea6dc;
+  --book-blue: #2b5884;
+  --book-navy: #2b3550;
+  --book-purple: #5a3f80;
+  --book-plum: #5c1f35;
+  --book-magenta: #b91f5b;
+  --book-pink: #e9b4b7;
+  --book-grey: #66645f;
+  --book-black: #262626;
+  --book-ink-light: #f7f4ed;
+  --book-ink-dark: #1f1e1c;
+
+  --book-radius: 2px 4px 4px 2px;    /* a hardback's rounded fore-edge */
+  --book-lift: -5px;                  /* hover: the book under the pointer rises */
+  --step-spine: 0.8125rem;            /* 13px spine title, up to two lines */
+  --step-spine-author: 0.5625rem;     /* 9px author, mono */
+  --book-author-h: 3.6rem;            /* author column height on the spine */
+  --book-spine-radius: 3px;
+  --dur-book: 650ms;                  /* one book turning out, the next turning in */
+  --dur-book-lift: 180ms;
+  --ease-book-lift: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --shelf-h: 216px;
+
+  --shelf-shadow-rgb: 27 22 17;
+  --shelf-wood-front-top: #ceb698;
+  --shelf-wood-front-bottom: #9f7b5a;
+  --shelf-wood-top-front: #d9c8ae;
+  --shelf-wood-top-back: #c6b195;
+  --shelf-wood-grain: rgb(71 42 17 / 0.08);
+  --shelf-shine: rgb(255 255 255 / 0.28);
+  --shelf-shine-top: rgb(255 255 255 / 0.32);
+  --shelf-underside: rgb(51 28 10 / 0.2);
+  --shelf-underside-top: rgb(52 29 11 / 0.18);
+  --book-edge: rgb(0 0 0 / 0.09);
+  --shelf-drop-1: 0.24;               /* the plank's three stacked shadows */
+  --shelf-drop-2: 0.34;
+  --shelf-drop-3: 0.28;
+  --book-spine-shade: linear-gradient(to right, rgb(0 0 0 / 0.12), transparent 35%, rgb(255 255 255 / 0.12) 75%, rgb(0 0 0 / 0.08));
+}
+:root[data-mode='dark'] {
+  --shelf-shadow-rgb: 0 0 0;
+  --shelf-wood-front-top: #614b3a;
+  --shelf-wood-front-bottom: #3a261c;
+  --shelf-wood-top-front: #6a5747;
+  --shelf-wood-top-back: #513e30;
+  --shelf-wood-grain: rgb(0 0 0 / 0.15);
+  --shelf-shine: rgb(255 255 255 / 0.1);
+  --shelf-shine-top: rgb(255 255 255 / 0.1);
+  --shelf-underside: rgb(0 0 0 / 0.48);
+  --shelf-underside-top: rgb(0 0 0 / 0.4);
+  --shelf-drop-1: 0.45;
+  --shelf-drop-2: 0.62;
+  --shelf-drop-3: 0.5;
+}
 
 /* ============================================================
    PIXEL'S OWN TYPE — held as it was before the allierho.com pass, so the

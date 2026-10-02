@@ -104,8 +104,21 @@ effect:
   hover system. It keeps its existing constraints unchanged: hover devices
   only, no pointer events, `display: none` under `prefers-reduced-motion`,
   draws in the theme colour under the pointer, suppressed sitewide only on
-  `/playground` (see the dedicated section on it further down). Don't add a
-  second cursor effect alongside it.
+  `/playground` (see the dedicated section on it further down). Its one
+  companion is `CursorLamp` (below); don't add a third cursor effect.
+- **`CursorLamp`, approved on request** (after studio-nikita.com). In dark
+  mode only, a soft pool of light sits under the pointer and glides after
+  it. It runs alongside `CursorTrail`, by explicit choice over replacing
+  it. Its reason: dark mode lights the hero as a late-night scene, and
+  this carries the scene down the page, with the pointer as the lamp.
+  Its colour is "candle", a faint warm white (`--lamp-hue`), picked from
+  a mockup of fourteen; white, warm grey, deep blue, umber and a
+  darkening "dent" were tried and dropped. It's a small fixed,
+  screen-blended layer inside `<main>` (so the page's curve clips it off
+  the footer), moved by transform, its strength rides `--hero-night`,
+  it's off under reduced motion and on touch, and it shares
+  `CursorTrail`'s `/playground` opt-out. Values under CURSOR LAMP in
+  `tokens.css`.
 - **Moss, the "ask about my work" character (`AskBubble.astro`),
   approved on request.** Called Pixel in the code (`.pixel-*`, `pixelTree`,
   the "Pixel" block in `tokens.css`) — that's the internal name; the visitor
@@ -173,8 +186,19 @@ effect:
   text stays in the DOM throughout. One word only — don't spread it to
   other headings.
 
-Outside those six moments — hero shader, first-paint loader, the reused
-hover system, `CursorTrail`, Pixel, PixelBreak — the old rule still applies at full strength:
+- **`Bookshelf`, approved on request** (after cali.so's "Books I love").
+  The About page's "Books I love" stage: 3D books on a wooden plank,
+  spines out; clicking one turns it to its cover while the rest slide
+  and lean (650ms ease-in-out, geometry in `data/books.ts`). Spine tones
+  and wood live under BOOKSHELF in `tokens.css` and, like project hues,
+  belong to the objects, never to page chrome. Instant from the keyboard
+  and under reduced motion. The books are hers, read off photos of her
+  bookcase: ten picked at random from her photos, on one shelf (`books`
+  in `data/books.ts`). Spines follow a reference she sent: a short rule,
+  bold sans title, author in mono. About page only, one shelf.
+
+Outside those seven moments — hero shader, first-paint loader, the reused
+hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,
@@ -414,7 +438,11 @@ walked back. Concretely, in the current implementation:
   drawing; their artwork is not used; `smiley.webp`, a still
   frame, under reduced motion). Approved on request
   as the footer's one looping animation — an exception to the no-idle-
-  animation rule; don't add another; no link columns. Row 2 — the
+  animation rule; don't add another. Her pencil signature
+  (`public/images/footer/signature.webp`, her scribble re-inked in the
+  footer's ink, decorative) sits in row 1's right-hand corner, its foot on
+  the note's last line and its right edge on the icons' edge; under the
+  words on phones. No link columns. Row 2 — the
   base line, after carlthomasiv.com's footer: a full-width hairline, then
   three equal parts (after ozgur.design): "© year name · Built with Claude
   Code & Astro" in 11px mono (`--step-fine`; "Built with…" in the fainter

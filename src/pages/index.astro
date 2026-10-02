@@ -10,7 +10,7 @@ import PixelBreak from '../components/PixelBreak.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 
 import { site } from '../data/site';
-import { work } from '../data/work';
+import { work, labelsFor } from '../data/work';
 
 // The category filter tabs that used to live on this page moved to
 // /work — they were fighting the stacking-card effect below (hiding a
@@ -94,7 +94,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
           href={w.href}
           theme={w.theme}
           hoverState={w.hoverState}
-          tags={w.tags}
+          tags={labelsFor(w)}
           image={'video' in w ? undefined : w.image}
           alt={w.alt}
         >
@@ -265,13 +265,15 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   .hero__stage::before {
     inset: calc(-1 * var(--hero-lamp-spread));
     /* Not one circle: three overlapping soft pools, off-centre and of
-       different sizes, so the light reads as a room's uneven glow — fuller
-       low-left around the chair and table, a smaller lift up behind her
-       head — rather than a spotlight. The blur melts them into one. */
+       different sizes, so the light reads as a room's uneven glow — a lamp
+       up and to her right, fullest behind her head and shoulders, with a
+       softer spill down toward the table — rather than a spotlight. (Moved
+       up-right on request; it used to sit low-left around the chair.) The
+       blur melts them into one. */
     background:
-      radial-gradient(46% 40% at 42% 56%, var(--hero-lamp), var(--hero-lamp-mid) 50%, transparent 78%),
-      radial-gradient(34% 30% at 28% 70%, var(--hero-lamp-mid), transparent 75%),
-      radial-gradient(30% 26% at 60% 34%, var(--hero-lamp-mid), transparent 75%);
+      radial-gradient(46% 40% at 60% 38%, var(--hero-lamp), var(--hero-lamp-mid) 50%, transparent 78%),
+      radial-gradient(34% 30% at 46% 56%, var(--hero-lamp-mid), transparent 75%),
+      radial-gradient(30% 26% at 74% 22%, var(--hero-lamp-mid), transparent 75%);
     filter: blur(var(--hero-light-blur));
   }
   .hero__stage::after {
