@@ -414,7 +414,11 @@ walked back. Concretely, in the current implementation:
   drawing; their artwork is not used; `smiley.webp`, a still
   frame, under reduced motion). Approved on request
   as the footer's one looping animation — an exception to the no-idle-
-  animation rule; don't add another; no link columns. Row 2 — the
+  animation rule; don't add another. Her pencil signature
+  (`public/images/footer/signature.webp`, her scribble re-inked in the
+  footer's ink, decorative) sits in row 1's right-hand corner, its foot on
+  the note's last line and its right edge on the icons' edge; under the
+  words on phones. No link columns. Row 2 — the
   base line, after carlthomasiv.com's footer: a full-width hairline, then
   three equal parts (after ozgur.design): "© year name · Built with Claude
   Code & Astro" in 11px mono (`--step-fine`; "Built with…" in the fainter
