@@ -151,6 +151,15 @@
   --dur-hover: 320ms;
   --dur-micro: 150ms;
   --dur-micro-move: 180ms;
+  /* Archive rows (ArchiveList): the name lightens a little on hover, after
+     danield.design's archive. 0.65 keeps the ink at ~4.8:1 on the ground
+     in both modes, so the hovered name still passes AA. Its own softer
+     curve and a longer duration: on --ease-out (which does most of its
+     change in the first few frames) at --dur-micro the fade read as a
+     snap rather than a fade. */
+  --hover-fade: 0.65;
+  --dur-hover-fade: 400ms;
+  --ease-fade: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* PIXEL BREAK (PixelBreak.astro) — "pixel" in the hero sentence,
      breaking into dots under the pointer, pushed away from it while it
