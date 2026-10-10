@@ -72,6 +72,8 @@ h1, h2, h3, h4, h5, h6 {
      .u-label    labels, captions — Manrope 600, 12px, uppercase
      .u-nav      the name and nav links — Manrope 600, 14px, uppercase
      .u-mono     ticking numbers, arrows — Azeret Mono 400
+     .u-label-mono  case-study labels, captions — Azeret Mono 400, 11px,
+                 uppercase, tracked; grey
    Inside any serif role, <em> (or .u-accent) is the same face in italic:
    that roman/italic switch mid-line is the system's only emphasis. */
 .u-display,
@@ -115,6 +117,15 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-mono);
   font-weight: var(--weight-mono);
   letter-spacing: 0;
+}
+.u-label-mono {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-mono);
+  font-size: var(--step-fine);
+  line-height: 1.5;
+  letter-spacing: var(--tracking-mono-label);
+  text-transform: uppercase;
+  color: var(--fg-dim);
 }
 .u-measure { max-width: var(--measure); }
 

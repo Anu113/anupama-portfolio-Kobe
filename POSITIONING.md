@@ -244,13 +244,6 @@ the enterprise version was.
 Note this fixes `location: '[City]'` in `site.ts:22` — the resume says
 **Bangalore, India**, and `Asia/Kolkata` in `site.ts:23` is already correct.
 
-### The career break
-
-The resume ends at Mar 2025; it is now Jul 2026. That gap is visible on any
-timeline and reads worse unexplained than explained. One sentence, placed after
-the timeline rather than in the intro — it should not be the first thing a
-recruiter meets.
-
 ### The timeline (`about.astro:10–21`) — corrected
 
 | Years | Org | Role | Note |
@@ -367,10 +360,9 @@ line. It stops being the first thing anyone reads.
    recommendations, risk scoring, or automated review? See §0c.
 4. **The `[X]` numbers in `cases.ts`.** Three real numbers now exist (−40%,
    −40%, −35%). The rest still need her.
-5. **The break since Mar 2025** — how does she want it stated?
-6. **Zomato.** The resume's Zomato bullet reads "across a portfolio of
+5. **Zomato.** The resume's Zomato bullet reads "across a portfolio of
    **financial products**." Zomato is food delivery — this looks like a
    paste error from another draft and should be corrected.
-7. **"10+ years."** The listed roles total roughly 8.5 years (2015, then
+6. **"10+ years."** The listed roles total roughly 8.5 years (2015, then
    2017–2025). If there's unlisted experience it should appear; if not, "10+"
    invites a question she'd rather not be asked.

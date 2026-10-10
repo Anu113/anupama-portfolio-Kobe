@@ -113,7 +113,7 @@ export const pixelTree: Record<string, PixelNode> = {
     say: [
       'Pick one. She has a habit of arguing for the slower option.',
       'At Okta: one framework for every kind of integration, instead of four quick fixes. Nobody shipped anything for a quarter. Four impatient teams watched each other wait.',
-      'At Walmart: six weeks on store floors, then she argued to keep a staffed exit on a product funded to remove it. Three executive reviews.',
+      'At Walmart: testing showed the always-on scanner was double-scanning. She kept it on — speed was the point — and gave people a switch and the last item on screen instead.',
     ],
     cards: [
       { ...oin, sub: 'The hard call' },

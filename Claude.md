@@ -5,7 +5,7 @@ Context for Claude Code working in this repo.
 ## What this is
 
 The portfolio site for **Anupama Mishra**, a product designer with 10+
-years' experience returning to work after a career break. Most recently Staff
+years' experience. Most recently Staff
 Product Designer at Okta on Identity & Access Management, where she also led a
 team of six. Earlier: PayPal, Walmart Labs, Deloitte Digital, Zomato. Her domain is
 **fintech first**, then enterprise software and developer tools — lead with
@@ -353,12 +353,13 @@ walked back. Concretely, in the current implementation:
 
 - **Design system = allierho.com's, measured off the live site.** Three
   faces, one weight each: Crimson Pro 300 (roman + italic) for headlines,
-  Manrope 600 for everything else, Azeret Mono 400 for ticking numbers.
+  Manrope 600 for everything else, Azeret Mono 400 for ticking numbers
+  and the case-study labels, tags and captions (`.u-label-mono`).
   Scale: display 34→50px, heading 32→44px, nav 14px, label 12px uppercase;
   plus two steps the reference lacks (title 20→26px, body 15px) because it
   has no long copy. Emphasis is the serif turning italic mid-line, nothing
   else. One palette: `#fcfcfc` ground, `#262626` ink, one terracotta accent
-  (`#b4482a`, her own — the reference's purple was swapped out), square corners except pill buttons (and the two approved curves: Moss's
+  (`#b4482a`, her own — the reference's purple was swapped out), square corners except pill buttons and the 4px case tags (and the two approved curves: Moss's
   panel and the page's end over the black footer). Deliberate departures
   from the reference are commented in `tokens.css` (the reference's
   `#a8a8a8` grey fails AA and was darkened to `#707070`). Don't add a
@@ -402,9 +403,23 @@ walked back. Concretely, in the current implementation:
 - **Project hues** are the one place colour appears beyond the accent: one
   muted hue per company (Okta sky `#c9dcf2`, PayPal lilac `#e0d6ef`, Walmart
   butter `#f4dc9c`), only behind that company's screenshots — home card
-  media, /work thumbnail, case study cover. Set via `data-hue` from
+  stage, /work thumbnail, case study cover. Set via `data-hue` from
   `hueFor()` in `data/work.ts`; tokens in `tokens.css` (PROJECT HUES). Never
   on text, chrome or full-width bands.
+- **Case study type** (`work/[slug].astro`, `CaseBlocks.astro`), after
+  carlthomasiv.com/work/ona-conversations, chosen on request from a mock:
+  the title is the one large line (`--step-case-title`, 30→40px); section
+  heads drop to `--step-title`; each section opens on a hairline with
+  "01  THE SITUATION" in 11px mono caps; labels, row terms, captions and
+  citations are mono too. "What was broken"-style points are a numbered
+  13px list. The pull quote is roman serif on a 1px ink rule — no italic
+  and no accent, on request. Body stays Manrope 600.
+- **Case tags are lime** (CASE TAGS in `tokens.css`: `#d4ff3a` fill,
+  `#2b3600` ink, 11:1), picked on request from a round of neutral, neon
+  and red/brown mocks. The company in mono, then its tags as 10px mono
+  chips with 4px corners — the same labels as its card (`labelsFor()`).
+  A requested exception to rule 2: one hue, only on these tags; don't
+  spread it to other chips, text or chrome.
 - The old night mode, the named theme palettes, tints/swatches, and the one-off
   effect components (`OneWord`, `CaseDoodle`, `Testimonials`, `Marquee`,
   `Mosaic`, the footer's variable-weight wordmark, the section watermark
@@ -461,7 +476,22 @@ walked back. Concretely, in the current implementation:
   "Email" rather than printing the address; /contact is the one page
   that prints it in full.
 - The home page is now: hero → "Selected *work*" head + project cards →
-  one-line playground pointer → footer (which carries contact). Section
+  one-line playground pointer → footer (which carries contact).
+- **The project cards are stacked phone cards** (`ProjectCard.astro`,
+  on request): four full-width rows that pin and stack as you scroll
+  (sticky rows and the settle effect in `index.astro`), text on the
+  left, and on the right a stage on the project hue where, after
+  daneden.me, a phone runs the flow on its own — the Chase Pay
+  recording, Privacy screens in sequence (cut from her boards by
+  `scripts/phone-screens.py`), and the coded Debit Card sign-up
+  prototype on autopilot (`autoplay` prop). Okta IAM shows its
+  screenshot instead. Four cards only, on request: the list is
+  `homeCards` in `data/work.ts`; the rest live on /work. Phones move
+  only on screen and with motion allowed. There is no pause control
+  (removed on request, knowing WCAG 2.2.2 asks for one on motion over
+  five seconds) and no Screens/Prototype label on the stage. Its reason: a skimming
+  recruiter sees the product working, not a thumbnail. Sizes and
+  timing under PHONE CARDS in `tokens.css`. Section
   heads follow the reference: a centred serif line with an italic phrase,
   a label link under it.
 - `cases.ts` holds case-study content as structural prose with `[X]`
@@ -503,6 +533,9 @@ npm run preview   # serve the build
 ```
 
 ## Voice
+
+Never mention a career break, a gap, time off or "returning" anywhere on
+the site or in Moss's answers — her request.
 
 Her own writing is direct and task-oriented. Site copy should be plain,
 specific, and short — concrete numbers over adjectives, captions over

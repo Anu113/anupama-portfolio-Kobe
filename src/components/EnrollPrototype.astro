@@ -1,0 +1,365 @@
+---
+/* EnrollPrototype.astro — the PayPal Debit Card enrollment flow, rebuilt
+   as a phone you can click through. Used once, in the PayPal Debit Card
+   case study (the `prototype` block in data/cases.ts).
+
+   Why it exists: Anupama's deck showed this flow as static screens. A
+   reviewer who can actually go through it (identity check, address,
+   card set up, the Ordered state) sees the whole journey, not a hero shot.
+
+   Every screen, line of copy and branch comes from her Figma flow files:
+   Finances hub → value prop → (identity already verified? skip ahead) →
+   PayPal Balance account set-up with the fee list → confirm your info →
+   identity confirmed → shipping address → "Setting up your new card…" →
+   the hub with the card marked Ordered. The checkbox beside the phone is
+   the "CIP previously?" branch from the flow file.
+
+   Two behaviours are the prototype's, not her spec, because the screens
+   don't show them: Continue on "Confirm your info" outlines empty fields
+   and says "Required", and the waits on the two loading screens are fixed
+   (about a second). Rows her screens show as inert (fee rows, Edit
+   address, Add a new address, the "Why we ask" note) stay inert here, so
+   nothing invents what they'd open.
+
+   Spacing and corner values inside the phone are px on purpose: they're
+   the app's own layout at phone scale, not the site's spacing system.
+
+   A11y: every control is a real button or input. A live region announces
+   each step once ("Step 3 of 7: Confirm your info").
+   Focus moves to each new screen's heading, but only after the visitor
+   acts inside the prototype, so the page never jumps on load. Under
+   reduced motion, screens swap without the slide. Colours and sizes live
+   under PAYPAL PROTOTYPE in tokens.css; the shared phone styles are in
+   styles/pp-proto.css.
+
+   `autoplay` (the home page's phone card, ProjectCard.astro): the phone
+   alone, inert and hidden from screen readers (the card describes it),
+   tapping through the whole flow by itself — DOB and SSN typed in, the
+   default address confirmed — then starting again. phone-loop.ts runs
+   it only while the card is on screen and motion is allowed. */
+import '../styles/pp-proto.css';
+interface Props { caption?: string; autoplay?: boolean }
+const { caption, autoplay = false } = Astro.props;
+
+const steps = [
+  { id: 'hub', label: 'Finances hub' },
+  { id: 'value', label: 'Value prop' },
+  { id: 'account', label: 'Balance account', cip: true },
+  { id: 'identity', label: 'Confirm your info', cip: true },
+  { id: 'address', label: 'Shipping address' },
+  { id: 'setup', label: 'Setting up the card' },
+  { id: 'ordered', label: 'Card ordered' },
+];
+---
+<figure class:list={['proto', autoplay && 'proto--auto']} data-proto data-autoplay={autoplay ? '' : undefined} inert={autoplay} aria-hidden={autoplay ? 'true' : undefined}>
+  <div class="proto__stage" data-hue="paypal">
+    <div class="phone">
+      <div class="phone__screen">
+        <p class="sr-only" aria-live="polite" data-announce></p>
+
+        <!-- 1. Finances hub, before -->
+        <section class="scr scr--ground" data-screen="hub">
+          <div class="bar"><span>9:41</span></div>
+          <h3 class="scr__title-c" tabindex="-1">Finances</h3>
+          <div class="tabs" aria-hidden="true"><span class="tabs__on">Balance</span><span>Savings</span><span>Crypto</span></div>
+          <p class="dim sm">Total PayPal Balance</p>
+          <p class="balance">$151.00</p>
+          <span class="pp-btn pp-btn--static">Add Money</span>
+          <div class="promo">
+            <div>
+              <p class="promo__title">It’s a debit card that pays you</p>
+              <p class="sm dim">Use your balance anywhere. Earn cash back while you shop.</p>
+              <button class="pp-btn-outline" data-go="value">Meet the PayPal Debit Card</button>
+            </div>
+            <div class="promo__card" aria-hidden="true"><span class="mini-card"></span></div>
+          </div>
+          <p class="section-h">Transfer or add money</p>
+          <div class="quick" aria-hidden="true"><span>Transfer</span><span>Set up Direct Deposit</span><span>Cash a check</span></div>
+          <nav class="tabbar" aria-hidden="true"><span>Home</span><span>Deals</span><span>Menu</span><span class="tabbar__on">Finances</span><span>Payments</span></nav>
+        </section>
+
+        <!-- 2. Value prop -->
+        <section class="scr" data-screen="value" hidden>
+          <div class="hero-art" aria-hidden="true">
+            <span class="hill"></span>
+            <span class="card card--tilt"><span class="card__label">Debit Card</span><span class="card__p">P</span><span class="mc"></span></span>
+          </div>
+          <button class="icon-btn icon-btn--close" data-go="hub" aria-label="Close">✕</button>
+          <div class="pad">
+            <h3 class="scr__title" tabindex="-1">Use PayPal at all your favorite places</h3>
+            <ul class="bullets">
+              <li>Use PayPal at your favorite places</li>
+              <li>Spend from your PayPal balance</li>
+              <li>No monthly fees, no credit check</li>
+              <li>Includes access to Direct Deposit</li>
+            </ul>
+            <p class="legal">The PayPal Debit Mastercard® (“PayPal Debit Card”) is issued by The Bancorp Bank pursuant to a license by Mastercard International Incorporated. Mastercard is a registered trademark and the circles design is a trademark of Mastercard International Incorporated. This is a debit card linked to your PayPal Balance account and is not a credit card. The Bancorp Bank is issuer of the Card only and not responsible for the associated accounts or other products, services or offers from PayPal. Card may be used everywhere Mastercard is accepted.</p>
+            <p class="legal">The PayPal Debit Mastercard® provides cash back offers for all eligible purchases. Current offers are visible in the PayPal app and rotate on a regular basis. Each cash back offer is subject to additional terms and conditions.</p>
+            <p class="legal">By clicking on “Get Your PayPal Debit Card”, you agree to and accept the terms in the <span class="link">PayPal Debit MasterCard® Cardholder Agreement</span> and the <span class="link">Bancorp Bank Privacy Policy</span>.</p>
+          </div>
+          <div class="foot"><button class="pp-btn" data-go="after-value">Get a PayPal Debit Card</button></div>
+        </section>
+
+        <!-- 3. PayPal Balance account -->
+        <section class="scr" data-screen="account" hidden>
+          <div class="bar"><button class="icon-btn" data-back aria-label="Back">←</button></div>
+          <div class="pad">
+            <span class="logo" aria-hidden="true">P</span>
+            <h3 class="scr__title scr__title--c" tabindex="-1">To request your debit card, let’s set you up with a PayPal Balance account</h3>
+            <ul class="checks">
+              <li>Get a PayPal Debit Mastercard® to shop in stores and online.</li>
+              <li>Set up Direct Deposit to add your paychecks to PayPal.</li>
+              <li>Cash your checks using the PayPal app.</li>
+            </ul>
+            <p class="sm"><strong>$0</strong> fee to set it up, keep money in PayPal, or use most features.</p>
+            <p class="sm strong">List of all fees for PayPal Balance account</p>
+            <ul class="fees" aria-label="Fee categories">
+              <li>Spending or sending money</li>
+              <li>Adding money to your balance</li>
+              <li>Transferring money from your balance</li>
+              <li>Using the PayPal Debit MasterCard (optional)</li>
+            </ul>
+          </div>
+          <div class="foot"><button class="pp-btn" data-go="identity">Continue</button></div>
+        </section>
+
+        <!-- 4. Confirm your info -->
+        <section class="scr" data-screen="identity" hidden>
+          <div class="bar"><button class="icon-btn" data-back aria-label="Back">←</button></div>
+          <div class="pad">
+            <h3 class="scr__title" tabindex="-1">Confirm your info</h3>
+            <p class="xs dim">Legal name</p>
+            <p class="sm">Alisha A. <span class="i" aria-hidden="true">i</span></p>
+            <div class="field field--static"><span class="xs dim">Residential address (not PO box)</span><span class="sm">208 Copperhead Road, Hartford</span></div>
+            <p class="sm link">Edit address</p>
+            <label class="field">
+              <span class="xs dim">Date of birth</span>
+              <input data-dob inputmode="numeric" autocomplete="off" placeholder="MM/DD/YYYY" maxlength="10" />
+              <span class="field__err">Required</span>
+            </label>
+            <label class="field">
+              <span class="xs dim" data-id-label>Last 4 digits of SSN</span>
+              <input data-ssn inputmode="numeric" autocomplete="off" maxlength="4" />
+              <span class="field__err">Required</span>
+            </label>
+            <button class="text-btn" data-itin>Or use ITIN</button>
+            <p class="xs link"><span class="i" aria-hidden="true">i</span> Why we ask for your date of birth and SSN?</p>
+          </div>
+          <div class="foot">
+            <p class="legal">You confirm that you have read and agree to <span class="link">PayPal Balance Terms and Conditions</span>.</p>
+            <button class="pp-btn" data-submit-identity>Continue</button>
+          </div>
+        </section>
+
+        <!-- 4b. Identity confirmed -->
+        <section class="scr" data-screen="verifying" hidden>
+          <div class="toast" data-toast hidden><span aria-hidden="true">✓</span> Thanks! We’ve confirmed your identity.</div>
+          <div class="center"><span class="spinner" aria-hidden="true"></span><h3 class="sr-only" tabindex="-1">Confirming your identity</h3></div>
+        </section>
+
+        <!-- 5. Shipping address -->
+        <section class="scr" data-screen="address" hidden>
+          <div class="bar"><button class="icon-btn" data-back aria-label="Back">←</button><span class="bar__title">Confirm shipping address</span></div>
+          <div class="pad">
+            <h3 class="scr__title" tabindex="-1">Where we’ll ship your card</h3>
+            <fieldset class="addr">
+              <legend class="sr-only">Shipping address</legend>
+              <label class="addr__opt"><input type="radio" name="pp-addr" checked /><span>6537 Royal Glen Ct.<br />Lisle, IL 60532</span></label>
+              <label class="addr__opt"><input type="radio" name="pp-addr" /><span>1441 haverhill drive<br />unit c<br />wheaton, IL 60187</span></label>
+              <label class="addr__opt"><input type="radio" name="pp-addr" /><span>6537 Royal Glen Ct<br />Lisle, IL 60532-3321</span></label>
+            </fieldset>
+            <p class="sm link">+ Add a new address</p>
+          </div>
+          <div class="foot"><button class="pp-btn" data-go="setup">Confirm</button></div>
+        </section>
+
+        <!-- 6. Setting up -->
+        <section class="scr" data-screen="setup" hidden>
+          <div class="center">
+            <span class="card card--big" aria-hidden="true"><span class="card__label">Debit Card</span><span class="card__p">P</span><span class="mc"></span></span>
+            <h3 class="setup__t" tabindex="-1">Beautiful.<br />Setting up your new card…</h3>
+            <span class="spinner" aria-hidden="true"></span>
+          </div>
+        </section>
+
+        <!-- 7. Finances hub, after -->
+        <section class="scr scr--ground" data-screen="ordered" hidden>
+          <div class="bar"><span>9:41</span></div>
+          <h3 class="scr__title-c" tabindex="-1">Finances</h3>
+          <div class="tabs" aria-hidden="true"><span class="tabs__on">Balance</span><span>Savings</span><span>Crypto</span></div>
+          <p class="dim sm">Total PayPal Balance</p>
+          <p class="balance">$151.00</p>
+          <span class="pp-btn pp-btn--static">Add Money</span>
+          <div class="ordered">
+            <span class="mini-card" aria-hidden="true"></span>
+            <div><p class="sm strong">Debit Card ••2134</p><span class="badge">✓ Ordered</span></div>
+          </div>
+          <div class="promo promo--small">
+            <div>
+              <p class="promo__title">Love cash back?</p>
+              <p class="sm dim">Explore cash back offers for your PayPal Debit Card.</p>
+              <p class="sm link strong">Explore offers</p>
+            </div>
+          </div>
+          <nav class="tabbar" aria-hidden="true"><span>Home</span><span>Deals</span><span>Menu</span><span class="tabbar__on">Finances</span><span>Payments</span></nav>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="proto__side">
+    <p class="u-label">Try the flow</p>
+    <ol class="steps">
+      {steps.map((s, i) => (
+        <li><button class="step" data-jump={s.id} data-cip={s.cip ? '' : undefined}><span class="step__n">{i + 1}</span>{s.label}</button></li>
+      ))}
+    </ol>
+    <label class="cip"><input type="checkbox" data-cip-toggle /> Identity already verified <span class="cip__note">The flow’s “CIP previously?” branch skips steps 3 and 4.</span></label>
+    <button class="restart" data-restart>Start again</button>
+  </div>
+  {caption && <figcaption class="proto__cap">{caption}</figcaption>}
+</figure>
+
+<script>
+  import { phoneLoop } from '../scripts/phone-loop';
+  const ORDER = ['hub', 'value', 'account', 'identity', 'verifying', 'address', 'setup', 'ordered'];
+  const LABELS: Record<string, string> = {
+    hub: 'Finances hub', value: 'Value prop', account: 'Set up a PayPal Balance account',
+    identity: 'Confirm your info', verifying: 'Confirming your identity', address: 'Where we’ll ship your card',
+    setup: 'Setting up your new card', ordered: 'Finances hub, card ordered',
+  };
+  const STEP_OF: Record<string, string> = { verifying: 'identity' };
+  const STEPS = ['hub', 'value', 'account', 'identity', 'address', 'setup', 'ordered'];
+
+  document.querySelectorAll<HTMLElement>('[data-proto]').forEach((root) => {
+    const screens = new Map<string, HTMLElement>();
+    root.querySelectorAll<HTMLElement>('[data-screen]').forEach((s) => screens.set(s.dataset.screen!, s));
+    const announce = root.querySelector<HTMLElement>('[data-announce]')!;
+    const cip = root.querySelector<HTMLInputElement>('[data-cip-toggle]')!;
+    const dob = root.querySelector<HTMLInputElement>('[data-dob]')!;
+    const ssn = root.querySelector<HTMLInputElement>('[data-ssn]')!;
+    const idLabel = root.querySelector<HTMLElement>('[data-id-label]')!;
+    const itin = root.querySelector<HTMLButtonElement>('[data-itin]')!;
+    const toast = root.querySelector<HTMLElement>('[data-toast]')!;
+    let current = 'hub';
+    let history: string[] = [];
+    let timer = 0;
+
+    const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const wait = (ms: number) => (reduced() ? Math.min(ms, 600) : ms);
+
+    function show(id: string, opts: { back?: boolean; focus?: boolean; push?: boolean } = {}) {
+      clearTimeout(timer);
+      if (opts.push !== false && id !== current) history.push(current);
+      screens.forEach((el, key) => {
+        el.hidden = key !== id;
+        el.classList.toggle('is-back', !!opts.back);
+      });
+      current = id;
+      const scr = screens.get(id)!;
+      scr.scrollTop = 0;
+      const stepId = STEP_OF[id] ?? id;
+      const visible = STEPS.filter((s) => !(cip.checked && (s === 'account' || s === 'identity')));
+      const n = visible.indexOf(stepId) + 1;
+      announce.textContent = `Step ${n} of ${visible.length}: ${LABELS[id]}`;
+      root.querySelectorAll<HTMLButtonElement>('[data-jump]').forEach((b) => {
+        if (b.dataset.jump === stepId) b.setAttribute('aria-current', 'step');
+        else b.removeAttribute('aria-current');
+      });
+      if (opts.focus) scr.querySelector<HTMLElement>('h3')?.focus({ preventScroll: true });
+      if (id === 'verifying') {
+        toast.hidden = true;
+        timer = window.setTimeout(() => {
+          toast.hidden = false;
+          timer = window.setTimeout(() => show('address', { focus: true }), wait(1100));
+        }, wait(900));
+      }
+      if (id === 'setup') timer = window.setTimeout(() => show('ordered', { focus: true }), wait(1600));
+    }
+
+    function resetForm() {
+      [dob, ssn].forEach((i) => { i.value = ''; i.closest('.field')!.classList.remove('is-invalid'); i.removeAttribute('aria-invalid'); });
+      idLabel.textContent = 'Last 4 digits of SSN';
+      itin.textContent = 'Or use ITIN';
+      ssn.maxLength = 4;
+    }
+
+    root.addEventListener('click', (e) => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>('button');
+      if (!t || !root.contains(t)) return;
+      if (t.dataset.go) {
+        const to = t.dataset.go === 'after-value' ? (cip.checked ? 'address' : 'account') : t.dataset.go;
+        show(to, { focus: true });
+      } else if (t.hasAttribute('data-back')) {
+        let prev = history.pop() ?? 'hub';
+        if (prev === 'verifying') prev = 'identity';
+        show(prev, { back: true, focus: true, push: false });
+      } else if (t.hasAttribute('data-jump')) {
+        history = [];
+        show(t.dataset.jump!, { focus: true, push: false });
+      } else if (t.hasAttribute('data-restart')) {
+        history = [];
+        resetForm();
+        show('hub', { focus: true, push: false });
+      } else if (t.hasAttribute('data-itin')) {
+        const usingItin = idLabel.textContent!.includes('ITIN');
+        idLabel.textContent = usingItin ? 'Last 4 digits of SSN' : 'ITIN';
+        itin.textContent = usingItin ? 'Or use ITIN' : 'Use SSN instead';
+        ssn.maxLength = usingItin ? 4 : 9;
+        ssn.value = '';
+        ssn.focus();
+      } else if (t.hasAttribute('data-submit-identity')) {
+        const needed = idLabel.textContent!.includes('ITIN') ? 9 : 4;
+        const checks: [HTMLInputElement, boolean][] = [
+          [dob, dob.value.replace(/\D/g, '').length === 8],
+          [ssn, ssn.value.replace(/\D/g, '').length === needed],
+        ];
+        let first: HTMLInputElement | null = null;
+        for (const [input, ok] of checks) {
+          input.closest('.field')!.classList.toggle('is-invalid', !ok);
+          if (ok) input.removeAttribute('aria-invalid'); else { input.setAttribute('aria-invalid', 'true'); first ??= input; }
+        }
+        if (first) first.focus();
+        else show('verifying', { focus: true });
+      }
+    });
+
+    // Date of birth: digits only, slashes added as you type.
+    dob.addEventListener('input', () => {
+      const d = dob.value.replace(/\D/g, '').slice(0, 8);
+      dob.value = [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('/');
+    });
+    ssn.addEventListener('input', () => { ssn.value = ssn.value.replace(/\D/g, ''); });
+    [dob, ssn].forEach((i) => i.addEventListener('input', () => {
+      i.closest('.field')!.classList.remove('is-invalid');
+      i.removeAttribute('aria-invalid');
+    }));
+
+    cip.addEventListener('change', () => {
+      root.querySelectorAll<HTMLButtonElement>('[data-cip]').forEach((b) => { b.disabled = cip.checked; });
+      if (cip.checked && (current === 'account' || current === 'identity' || current === 'verifying')) show('value', { push: false });
+      else show(current, { push: false });
+    });
+
+    show('hub', { push: false });
+
+    if (root.hasAttribute('data-autoplay')) {
+      const tap = (sel: string) => () => root.querySelector<HTMLElement>(sel)?.click();
+      const type = (input: HTMLInputElement, text: string) => () => {
+        input.value = text;
+        input.dispatchEvent(new Event('input'));
+      };
+      phoneLoop(root, [
+        [2200, tap('[data-screen=hub] [data-go=value]')],
+        [2600, tap('[data-go=after-value]')],
+        [2400, tap('[data-screen=account] [data-go=identity]')],
+        [900, type(dob, '04121990')],
+        [700, type(ssn, '6789')],
+        [900, tap('[data-submit-identity]')],
+        // the identity check and its toast run on the prototype's own timers
+        [3000, tap('[data-screen=address] [data-go=setup]')],
+        [4200, tap('[data-restart]')],
+      ]);
+    }
+  });
+</script>

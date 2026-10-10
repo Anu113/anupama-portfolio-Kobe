@@ -19,7 +19,7 @@ Two audiences, in tension:
 ## Product Purpose
 
 The portfolio site for Anupama Mishra, a staff product designer with 10+
-years' experience returning to work after a career break. The site has one
+years' experience. The site has one
 job: land a **Staff Product Designer role, remote** (`site.ask` in
 `src/data/site.ts` — the single confirmed source; treat as authoritative over
 any older wording elsewhere in the repo).

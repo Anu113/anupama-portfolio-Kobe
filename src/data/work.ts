@@ -25,15 +25,12 @@
 // against its own section. Rather than claim a ninth palette, it now wears
 // `ink`, the one theme no other home-page card uses and the exact inverse
 // of the section it sits in.
-// The seventh, Unified Card System, is appended after OIN and reuses clay
-// (see the header comment on that case in cases.ts for why it's still a
-// skeleton) rather than claiming a ninth palette for one thin case.
+// The seventh, PayPal Debit Card, is appended after OIN and reuses clay
+// rather than claiming a ninth palette.
 //
-// `showOnHome: false` keeps a tile off the home page's ACT 2 (see the filter
-// in index.astro) while it still renders on /work — for a case that isn't
-// ready to represent the portfolio on the first thing a recruiter sees, but
-// is real enough to belong in the full list. Omit the flag and a tile shows
-// on both, same as the original six.
+// `showOnHome` is no longer read: the home page's cards are their own list,
+// `homeCards` (below `work`), because they are picked and shaped for the
+// phone-card grid rather than mirroring /work.
 //
 // `hoverState` drives the /work grid's card hover label (CaseCard.astro +
 // HoverLabel.astro) — one of the five states in `data/hoverState.ts`. Every
@@ -53,9 +50,8 @@
 // Card labels, after carlthomasiv.com: one row above the title reading
 // `COMPANY · [domain] [discipline]…`. The domain chips come from
 // `categories` (the same ones /work filters by, fintech first), the
-// discipline chips from `tags`; `labelsFor()` joins them. Four chips is
-// the most a case carries (the two Okta cases); past that the row stops
-// being skimmable. "Product Design" was dropped on request — on a product
+// discipline chips from `tags`; `labelsFor()` joins them and keeps the
+// first three (on request); past that the row stops being skimmable. "Product Design" was dropped on request — on a product
 // designer's portfolio it's implied, and it sat on five of seven cards.
 // Growth is on Chase Pay only (its job was winning back Walmart Pay
 // adoption); add it elsewhere only where the case is about adoption or
@@ -69,25 +65,25 @@ export const work = [
     impact: 'Admin task time down [X]% across the four highest-volume flows',
     hoverState: 'case-study',
     tags: ['Product Strategy', 'Design Systems', '0→1'], categories: ['devtools', '0-1', 'design-systems'],
-    href: '/work/okta-iam', image: '/images/placeholder-1.svg', alt: 'Okta IAM admin console' },
+    href: '/work/okta-iam', image: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" },
   { company: 'PayPal', theme: 'lilac', device: 'phone',
     title: 'Privacy settings people can read',
-    tagline: 'Data-sharing controls rebuilt around what people are actually deciding.',
-    summary: 'Data-sharing controls were legally complete and practically unreadable. We rebuilt the model around what a person is deciding, not what the policy document contains, and shipped it across iOS, Android and desktop.',
-    role: 'Design lead · iOS, Android, desktop · Motion and illustration',
-    impact: 'Comprehension up [X]% in unmoderated testing',
+    tagline: 'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.',
+    summary: 'PayPal\'s privacy settings had grown into a list of legal controls with no structure, and 75% of visitors stopped on the first page. I led the research and design of a new structure, tested it through card sorts and unmoderated prototypes, and it launched in early 2023 to more than 80 million people, under GDPR and CCPA.',
+    role: 'Lead product designer · PayPal app and web · Research through delivery',
+    impact: 'Privacy support calls down 60%',
     hoverState: 'case-study',
     tags: ['Design Systems'], categories: ['fintech'],
-    href: '/work/paypal-privacy', image: '/images/placeholder-2.svg', alt: 'PayPal privacy settings' },
+    href: '/work/paypal-privacy', image: '/images/paypal-privacy/hero.webp', alt: 'Redesigned PayPal Data and privacy screens' },
   { company: 'Walmart Labs', theme: 'sage', device: 'phone',
     title: 'Scan & Go, in-store',
-    tagline: 'Six weeks on the store floor turned a bet into a shipped product.',
-    summary: 'Six weeks of store-floor ethnography — watching how people actually scan and manage a cart — turned a checkout-replacement bet into a shipped product. The research set the scope, and the scope survived three rounds of executive review.',
-    role: 'End-to-end designer · Product strategy through interaction design',
-    impact: 'Ethnographic research to shipped pilot in [X] stores',
+    tagline: 'Scan as you shop, pay on your phone, skip the line. Research to store pilot in a year.',
+    summary: 'Walmart had no answer to the checkout queue, and in 2020 the queue became a health question. I designed Scan & Go end to end inside the Walmart app — scanning, cart, payment and exit — tested it in stores, and took it to a pilot that grew basket size 25%.',
+    role: 'Product designer · End-to-end flows · Team of 11',
+    impact: 'Basket size up 25% in the first pilot',
     hoverState: 'case-study',
     tags: ['Product Strategy', '0→1'], categories: ['0-1'],
-    href: '/work/walmart-scan-go', image: '/images/placeholder-3.svg', alt: 'Scan & Go' },
+    href: '/work/walmart-scan-go', image: '/images/scan-go/hero.webp', alt: 'Scan & Go screens: scanning, cart and self-checkout' },
 
   // TODO: `company` here is an inference, not a fact. The live site's tile for
   // this work links at the PayPal privacy page, and that page lists a focus
@@ -135,25 +131,60 @@ export const work = [
     impact: 'Submission cycle time down [X]%, on one framework instead of four',
     hoverState: 'case-study',
     tags: ['Design Systems', 'Design Engineering', '0→1'], categories: ['devtools', 'design-systems', '0-1'],
-    href: '/work/okta-oin', image: '/images/placeholder-5.svg', alt: 'The Okta Integration Network submission framework' },
+    href: '/work/okta-oin', image: '/images/okta/integrations.webp', alt: 'Auth0 onboarding screens: Applications, Organizations and Single Sign On Integrations' },
 
-  // Skeleton case — see the header comment on `paypal-unified-card-system`
-  // in cases.ts. A different workstream than the one a collaborator has
-  // published under his own name; her scope, role, timeline, the hard call
-  // and every metric are still unconfirmed brackets, not invented ones.
-  // `showOnHome: false`: real enough for the full /work list, not finished
-  // enough to be one of the projects a first-time visitor sees on the home
-  // page.
-  { company: 'PayPal', theme: 'clay', device: 'desktop', showOnHome: false,
-    title: 'Unifying card management across a fractured product line',
-    tagline: 'One workstream inside PayPal\'s effort to unify card management company-wide.',
-    summary: 'PayPal\'s card products — consumer and merchant, web and mobile — had grown up in isolation. This was one workstream inside the company-wide effort to bring them under a single, consistent management experience.',
-    role: '[Product Designer — confirm title and stream]',
-    impact: '[Outcome specific to her stream — confirm]',
+  // Written from her "PayPal Debit Card" deck — see the header comment on
+  // `paypal-debit-card` in cases.ts. Replaced the old Unified Card System
+  // skeleton. The abandonment result, the hard call and her exact hands-on
+  // scope are still brackets. `showOnHome: false` until they're filled.
+  { company: 'PayPal', theme: 'clay', device: 'phone', showOnHome: false,
+    title: 'A debit card people finish signing up for',
+    tagline: 'Card enrollment and cash back rebuilt inside the PayPal app.',
+    summary: '68% of people who started applying for the PayPal debit card gave up. I led the redesign of enrollment around identity checks and fee disclosure, gave people a digital card to use the same day, and added cash back offers.',
+    role: 'UX team lead · Enrollment, card home and rewards',
+    impact: 'Applications 20% faster, same-day activation up 18%',
     hoverState: 'case-study',
-    tags: ['Design Systems'], categories: ['fintech', 'design-systems'],
-    href: '/work/paypal-unified-card-system', image: '/images/placeholder-7.svg', alt: 'Unified card management surface' },
+    tags: ['Product Strategy'], categories: ['fintech'],
+    href: '/work/paypal-debit-card', image: '/images/paypal-debit/hero.webp', alt: 'PayPal Debit Card screens in the PayPal app' },
 ] as const;
+
+// The home page's "Selected work": four stacked cards (ProjectCard.astro),
+// each with the work running on its right-hand stage. Four, on request:
+// the Okta flagship, the two fintech cases with the strongest evidence
+// (Privacy, 80M+ people; Chase Pay, the real recording), and the Debit
+// Card's working sign-up prototype. The rest are on /work. Okta's work
+// is desktop, so it shows a screenshot instead of a phone.
+//
+// Each entry points at a `work` case by `href` and borrows its company,
+// title, tagline and labels; `title`/`tagline` here override them.
+//
+// Media:
+//   video     — a screen recording (the case's own `video`)
+//   screens   — single screens cut from her boards by
+//               scripts/phone-screens.py, shown in sequence
+//   prototype — a coded prototype on autopilot (EnrollPrototype /
+//               OffersPrototype, `autoplay` mode)
+//   desktop   — a desktop screenshot on its own (still placeholders
+//               until the Okta NDA check)
+// `alt` describes the whole stage, since the phone inside it is hidden
+// from screen readers.
+export type HomeMedia =
+  | { type: 'video'; alt: string }
+  | { type: 'screens'; screens: string[]; alt: string }
+  | { type: 'prototype'; name: 'paypal-enroll' | 'paypal-offers'; alt: string }
+  | { type: 'desktop'; image: string; alt: string };
+
+export const homeCards: { href: string; title?: string; tagline?: string; media: HomeMedia }[] = [
+  { href: '/work/okta-iam',
+    media: { type: 'desktop', image: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" } },
+  { href: '/work/paypal-privacy',
+    media: { type: 'screens', alt: 'PayPal app screens, one after another: Data and privacy, Deals and ads, Personalized deals and offers, and How it works',
+      screens: [1, 2, 3, 4].map((n) => `/images/paypal-privacy/phone-${n}.webp`) } },
+  { href: '/work/walmart-chase-pay',
+    media: { type: 'video', alt: 'Screen recording of the Chase Pay prototype: setting up Walmart Pay, choosing Add Chase Pay from the payment types, and completing the handoff to Chase and back' } },
+  { href: '/work/paypal-debit-card',
+    media: { type: 'prototype', name: 'paypal-enroll', alt: 'The PayPal Debit Card sign-up prototype running by itself: value prop, Balance account, confirming identity, shipping address, and the card marked Ordered' } },
+];
 
 // The archive tier on /work — the earlier projects, listed as text rows
 // rather than tiles (the reference does the same: a grid of selected work,
@@ -229,7 +260,11 @@ export const DOMAIN_LABEL: Record<string, string> = {
   fintech: 'Fintech', devtools: 'Developer Tools', growth: 'Growth',
 };
 const DOMAIN_ORDER = ['fintech', 'devtools', 'growth'];
+// Three labels at most, everywhere a case is labelled (home cards, /work,
+// the case study page) — on request. Domain first, then disciplines in
+// the order written, so trim a case's `tags` order to choose what shows.
+const MAX_LABELS = 3;
 export function labelsFor(w: { categories?: readonly string[]; tags?: readonly string[] }): string[] {
   const domains = DOMAIN_ORDER.filter((d) => w.categories?.includes(d)).map((d) => DOMAIN_LABEL[d]);
-  return [...domains, ...(w.tags ?? [])];
+  return [...domains, ...(w.tags ?? [])].slice(0, MAX_LABELS);
 }

@@ -18,8 +18,10 @@
               turns italic, same size, same weight (".u-display em").
        sans   Manrope 600. Everything that isn't a headline: nav,
               labels, buttons, captions, body copy.
-       mono   Azeret Mono 400. Numbers that tick (the footer clock) and
-              arrow glyphs. (Pixel pins its own mono — end of file.) */
+       mono   Azeret Mono 400. Numbers that tick (the footer clock),
+              arrow glyphs, and the case-study labels, tags and captions
+              (.u-label-mono, after carlthomasiv.com's case pages).
+              (Pixel pins its own mono — end of file.) */
   --font-serif: 'Crimson Pro', Georgia, serif;
   --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Azeret Mono', ui-monospace, monospace;
@@ -47,6 +49,12 @@
   --step-display: clamp(2.125rem, 1.754rem + 1.524vw, 3.125rem);
   --step-heading: clamp(2rem, 1.721rem + 1.143vw, 2.75rem);
   --step-title: clamp(1.25rem, 1.111rem + 0.571vw, 1.625rem);
+  /* 30 → 40px: a case study's title. Smaller than --step-heading on
+     purpose (after carlthomasiv.com/work/ona-conversations): on a case
+     page the title is the one large line, and section heads drop to
+     --step-title under it, so the page reads as a document, not a
+     stack of headlines. */
+  --step-case-title: clamp(1.875rem, 1.643rem + 0.952vw, 2.5rem);
   --step-body: 0.9375rem;
   --step-small: 0.8125rem;  /* 13px — the footer's one-line note, under body */
   --step-nav: 0.875rem;
@@ -60,6 +68,7 @@
   --tracking-nav: 0.086em;
   --tracking-label: 0.067em;
   --tracking-body: 0.03em;
+  --tracking-mono-label: 0.08em;   /* 11px mono caps (.u-label-mono) */
 
   --leading-display: 0.95;   /* 47.5 / 50 */
   --leading-heading: 1.15;   /* 50.6 / 44 */
@@ -104,7 +113,11 @@
      is inset by the same amount, so its text lines up with the text
      inside the cards rather than with their outer edge. */
   --card-pad: clamp(1.75rem, 3vw, 2.75rem);
-  --card-gap: clamp(1.5rem, 3vw, 2.5rem);   /* between a card's text and image columns */
+  --card-gap: clamp(1.5rem, 3vw, 2.5rem);   /* between a card's text and its stage */
+  /* Every row in the home stack is this height, whatever the copy, so
+     the stack reads evenly. 672px = 420px + 60%. */
+  --card-h: 672px;
+  --stack-end-hold: 25vh;   /* how long the finished stack holds before it scrolls away */
 
   --space-section: clamp(5rem, 10vw, 9rem);
   --space-band-tight: clamp(2rem, 4vw, 3.5rem);
@@ -128,6 +141,9 @@
      Square everywhere; the one round thing is the pill button. */
   --radius: 0px;
   --radius-pill: 999px;
+  /* Case-study tags (CASE TAGS, below): the reference's 4px. A small,
+     deliberate exception to square, like the pill. */
+  --radius-tag: 4px;
 
   /* --- MOTION ------------------------------------------- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -379,8 +395,9 @@
    PROJECT HUES — the site's "splash of colour", and the only colour
    besides the accent. One muted hue per company, taken from its own
    brand, used ONLY as the backdrop behind that company's screenshots:
-   the home card's media half (ProjectCard), the /work grid thumbnail
-   (CaseCard) and the case study cover frame ([slug].astro). Never on
+   the /work grid thumbnail (CaseCard) and the case study cover frame
+   ([slug].astro), and the stage behind each home card's phone
+   (ProjectCard). Never on
    text, chrome or full-width bands. No text sits on these, so no
    contrast pairing is needed; the screenshots carry their own.
    Components set data-hue (from hueFor() in data/work.ts); anything
@@ -396,6 +413,20 @@
 [data-hue='okta'] { --hue: var(--hue-okta); }
 [data-hue='paypal'] { --hue: var(--hue-paypal); }
 [data-hue='walmart'] { --hue: var(--hue-walmart); }
+
+/* ============================================================
+   CASE TAGS — the domain/discipline tags at the top of a case study
+   ([slug].astro), chosen on request from a round of mocks: electric
+   lime with a dark olive ink of the same hue. A requested exception to
+   rule 2 (colour belongs to the work): one hue, only on these tags,
+   never on text elsewhere, chrome or bands. Same values in both modes —
+   the fill carries its own ink, so it reads on either ground.
+   Contrast: --tag-fg on --tag-bg 11.1:1.
+   ============================================================ */
+:root {
+  --tag-bg: #d4ff3a;
+  --tag-fg: #2b3600;
+}
 
 /* ============================================================
    BOOKSHELF (Bookshelf.astro, About page) — added on request, after
@@ -473,6 +504,89 @@
   --shelf-drop-1: 0.45;
   --shelf-drop-2: 0.62;
   --shelf-drop-3: 0.5;
+}
+
+/* ============================================================
+   PHONE CARDS (ProjectCard.astro, home page "Selected work") — after
+   daneden.me: each stacked card holds a phone that runs the project's flow on
+   its own (a recording, her screens in sequence, or one of the coded
+   PayPal prototypes on autopilot). One phone for all of them: the
+   PayPal prototype's phone below reads these sizes, so the coded
+   prototypes and the screen phones are the same object. Like the
+   project hues, the device belongs to the work, so its rounded corners
+   are the phone's, not the site's (--radius stays square).
+   ============================================================ */
+:root {
+  --phone-w: 300px;
+  --phone-h: 620px;
+  --phone-bezel: #0e0e0f;
+  --phone-bezel-w: 10px;
+  --phone-screen: #ffffff;      /* the screen behind a recording or screens: the apps' own white */
+  --radius-phone: 44px;
+  --radius-phone-screen: 34px;
+  --phone-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.35);
+  --phone-scale: 0.8;          /* the phone as drawn in a card: 240 x 496 */
+  --phone-scale-narrow: 0.62;  /* stacked cards on narrow screens: 186 x 384 */
+  --phone-stage-pad: clamp(1.5rem, 3vw, 2.25rem);
+  --phone-lift: -6px;          /* hover: the phone rises a little */
+  --dur-phone-step: 700ms;     /* one screen sliding over the last */
+  --phone-parallax: -30%;      /* how far the outgoing screen drifts */
+}
+
+/* ============================================================
+   PAYPAL PROTOTYPE (EnrollPrototype.astro, OffersPrototype.astro, PayPal
+   Debit Card case) — the enrollment and cash back flows rebuilt as a working phone, from her screens.
+   Everything inside the phone is PayPal's UI, so like the project hues
+   and the book spines these colours belong to the work, never to page
+   chrome. The phone stays light in dark mode, like a screenshot would.
+   Its rounded corners and pill buttons are PayPal's, not the site's:
+   the square --radius rule is for the site's own surfaces.
+   Pairs checked for AA: --pp-ink and --pp-ink-dim on white and
+   --pp-ground, white on --pp-navy, --pp-blue on white, --pp-ok-ink on
+   --pp-ok and --pp-toast.
+   ============================================================ */
+:root {
+  --pp-navy: #142c8e;          /* buttons, card art */
+  --pp-blue: #0063c7;          /* links (PayPal blue, darkened a step for AA) */
+  --pp-ink: #001435;
+  --pp-ink-dim: #545d68;
+  --pp-ground: #f5f3ee;        /* the app's warm grey ground */
+  --pp-surface: #ffffff;
+  --pp-line: #d8d6d1;
+  --pp-sky: #cfe6f7;           /* the value prop's illustration panel */
+  --pp-hill: #5fae7f;
+  --pp-logo-light: #60cdff;
+  --pp-logo-yellow: #ffd140;
+  --pp-mc-red: #eb001b;
+  --pp-mc-orange: #f79e1b;
+  --pp-ok: #d4f3e6;            /* "Ordered" badge */
+  --pp-toast: #c4f0dd;
+  --pp-ok-ink: #0b5c44;
+  --pp-error: #c40000;
+  --pp-bezel: var(--phone-bezel);
+  --pp-shadow: var(--phone-shadow);
+  --pp-scrim: rgb(0 20 53 / 0.45);
+  --pp-coin-shade: inset -3px -3px 0 rgb(0 0 0 / 0.12);
+  --pp-tile-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+  --pp-card-shadow: 0 18px 30px -12px rgb(20 44 142 / 0.45);
+
+  --pp-phone-w: var(--phone-w);
+  --pp-phone-h: var(--phone-h);
+  --pp-radius-phone: var(--radius-phone);
+  --pp-radius-screen: var(--radius-phone-screen);
+  --pp-radius-field: 8px;
+  --pp-radius-tile: 12px;
+  --pp-radius-card: 10px;
+  --pp-radius-sheet: 18px;
+
+  --pp-text-xs: 0.625rem;      /* 10px legal copy */
+  --pp-text-sm: 0.75rem;       /* 12px */
+  --pp-text-md: 0.875rem;      /* 14px body */
+  --pp-text-lg: 1.125rem;      /* 18px screen titles */
+  --pp-text-xl: 1.75rem;       /* 28px balance */
+  --pp-font: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+
+  --dur-pp-step: 280ms;        /* one screen to the next */
 }
 
 /* ============================================================
