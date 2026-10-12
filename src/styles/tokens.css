@@ -248,9 +248,9 @@
      with it over --dur-night when the theme changes — the lights come
      on as the room goes dark — and switch instantly under reduced
      motion. Colours are bare "r g b" triples so the script can add
-     alpha; the -k values are the strengths at full night. If the edge
-     still shows, the next step is re-matting the sprite's edge
-     (un-mixing the white), not trimming the art. */
+     alpha; the -k values are the strengths at full night. The sprite's
+     edge is re-matted for the dark page (white un-mixed from the palest
+     strands) by scripts/hero-sprite.py. */
   --hero-night: 0;
   --dur-night: var(--dur-reveal);
   /* CURSOR LAMP (CursorLamp.astro) — dark mode only: a soft pool of
@@ -271,6 +271,35 @@
   --lamp-colour: color-mix(in srgb, var(--lamp-hue) 10%, transparent);  /* at the centre */
   --lamp-reach: 70%;                                             /* where it has faded out */
   --lamp-follow: 0.22;                                           /* share of the gap to the pointer closed per frame */
+  /* Text shadows from the lamp, dark mode only: text near the pointer
+     casts a short shadow away from it, as if lit by it. Fades out over
+     --lamp-size; alpha is scaled by --hero-night, so light mode has none. */
+  --lamp-cast-alpha: 0.9;        /* black, at the pointer */
+  --lamp-cast-length: 5;         /* px, how far the shadow falls */
+  --lamp-cast-blur: 3;           /* px */
+  --z-lamp: 50;                  /* the lamp's layer; the hero row sits just above it */
+  /* The lamp on her (HeroIllustration.astro) and Moss (AskBubble.astro).
+     The hero row sits above the lamp layer, so the lamp lights the
+     ground behind her and she is lit in her own canvas instead: light
+     multiplies her colour (screening it over her fogged her), the edge
+     facing the lamp catches a rim, her far side dims, and the laptop lid
+     takes a faint glint. Behind her, the floor near her gets a little more
+     of the lamp's light (the page lamp alone is too faint here for a
+     shadow to show), with her shadow cut out of it — a shadow is light
+     that didn't arrive — and contact pools under the legs that stay on
+     all night. All of it is
+     scaled by --hero-night and the lamp's own falloff. Chosen on request
+     from round 2 of the mocks. */
+  --hero-lamp-gain: 0.24;        /* colour x light, at the lamp's centre (0.42 burned her skin orange) */
+  --hero-lamp-sat: 0.35;         /* saturation of that added light: keeps skin from going orange */
+  --hero-lamp-lift: 0.05;        /* even lift inside the pool, so dark pupils don't go dead */
+  --hero-rim-k: 0.75;            /* rim light strength */
+  --hero-rim-w: 3;               /* rim width, px */
+  --hero-form-k: 0.4;            /* how much the far side dims */
+  --hero-glint-k: 0.3;           /* laptop lid highlight */
+  --hero-floor-k: 0.18;          /* extra lamp light on the floor around her */
+  --hero-cast-k: 0.9;            /* share of that light her shadow takes away */
+  --hero-contact-k: 0.55;        /* contact pools under the legs */
   --hero-lamp: rgb(255 168 96 / 0.34);   /* warm room pool, centre */
   --hero-lamp-mid: rgb(255 168 96 / 0.12); /* ...and its falloff */
   --hero-lamp-spread: 20%;               /* how far it reaches past the figure */

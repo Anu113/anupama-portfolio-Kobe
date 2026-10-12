@@ -190,6 +190,12 @@ const cards = homeCards.map((c) => {
      matching a reference, and reverted ("too big") back to this
      side-by-side card layout — see git history if it comes back. */
   .hero__row {
+    /* Above the cursor lamp's layer (CursorLamp.astro): the lamp lights
+       the ground behind the hero, not the hero itself. She is lit in her
+       own canvas (HeroIllustration), and the headline's text shadows
+       fall on the lamp's light instead of being re-lit by it. */
+    position: relative;
+    z-index: calc(var(--z-lamp) + 1);
     display: flex;
     /* flex-end, not flex-start — the illustration used to hang from the
        row's top edge, vertically centred against a copy column whose
@@ -213,7 +219,10 @@ const cards = homeCards.map((c) => {
      way round (image at a fixed share, copy getting the remainder) left
      the copy at ~200px on laptop-width screens once the left rail for the
      fixed menu (--gutter-start) came in. */
-  .hero__copy { flex: 0 0 var(--hero-copy-w); min-width: 0; }
+  /* Positioned above the portrait so the floor light and shadow drawn
+     behind her (HeroIllustration's ground canvas, which reaches past
+     her box) can never sit over the copy. */
+  .hero__copy { flex: 0 0 var(--hero-copy-w); min-width: 0; position: relative; z-index: 1; }
   /* The portrait's Reveal wrapper is the actual flex item; a class passed
      into a component doesn't carry this page's scope, hence :global. */
   /* Sized to the illustration, not flex: 1 — space-between hands the

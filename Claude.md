@@ -117,8 +117,18 @@ effect:
   screen-blended layer inside `<main>` (so the page's curve clips it off
   the footer), moved by transform, its strength rides `--hero-night`,
   it's off under reduced motion and on touch, and it shares
-  `CursorTrail`'s `/playground` opt-out. Values under CURSOR LAMP in
-  `tokens.css`.
+  `CursorTrail`'s `/playground` opt-out. On request, text near it casts
+  a short shadow away from the pointer, as if lit by it (`--lamp-cast-*`);
+  the trail line itself casts none. In the hero (chosen from round 2 of
+  the shadow mocks, on request) the row sits above the lamp's layer
+  (`--z-lamp`), so the lamp lights the ground behind her instead of
+  fogging her, and the headline's shadows fall on its light. She is lit
+  in `HeroIllustration`'s canvas from the lamp's `cursor-lamp` event:
+  colour × light (never a screen blend), a rim on the edge facing it,
+  her far side dimmed, a faint glint on the laptop lid, and behind her
+  a little extra floor light with her shadow cut out of it plus contact
+  pools under the legs (all night). Moss gets the same light, rim and
+  contact pool. Values under CURSOR LAMP in `tokens.css`.
 - **Moss, the "ask about my work" character (`AskBubble.astro`),
   approved on request.** Called Pixel in the code (`.pixel-*`, `pixelTree`,
   the "Pixel" block in `tokens.css`) — that's the internal name; the visitor
@@ -384,9 +394,10 @@ walked back. Concretely, in the current implementation:
   against white, and on the dark ground its edge read as a pale cut-out
   outline. It fades in and out with the theme over `--dur-night`
   (instant under reduced motion); otherwise static apart from following
-  the scrub; one place only. If the
-  edge still shows, the next step is re-matting the sprite's edge
-  (un-mixing the white), not trimming the art.
+  the scrub; one place only. The sprite's edge has since been re-matted
+  (white un-mixed from the palest hair strands) by
+  `scripts/hero-sprite.py`; re-run it from her source clip rather than
+  editing the webp.
 - **The nav is one line** (`Nav.astro`): the name on the left (14px,
   ink); on the right, the four links (12px, grey, current page in ink),
   a hairline and the Light/Dark theme toggle. Links fold into Menu below

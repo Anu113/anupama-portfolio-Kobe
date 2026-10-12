@@ -20,6 +20,19 @@
    in tokens.css; strength is --hero-night, so it is zero in light mode
    and fades with the theme over --dur-night.
 
+   Text casts shadows from it: headings, paragraphs and list items within
+   the pool get a short black text-shadow pointing away from the lamp,
+   stronger the closer they are (the CursorTrail line itself casts none,
+   on request). Only text on screen is measured, tracked with an
+   IntersectionObserver; shadows are cleared as text leaves the pool.
+   Values under CURSOR LAMP (--lamp-cast-*); also scaled by --hero-night.
+
+   It also announces where it is: every move dispatches a `cursor-lamp`
+   event on window ({ x, y, on, radius }, viewport px), which
+   HeroIllustration and AskBubble use to light her and Moss. The hero
+   row sits above this layer (--z-lamp), so the lamp lights the ground
+   behind her and the hero's text shadows fall on that light.
+
    Off, not just invisible: under prefers-reduced-motion, and on devices
    without hover (no pointer to follow). Takes no pointer events. */
 ---
@@ -28,7 +41,7 @@
 <style>
   .lamp {
     position: fixed; top: 0; left: 0;
-    z-index: 50;
+    z-index: var(--z-lamp);
     width: calc(var(--lamp-size) * 2);
     height: calc(var(--lamp-size) * 2);
     margin: calc(var(--lamp-size) * -1) 0 0 calc(var(--lamp-size) * -1);
@@ -50,6 +63,9 @@
     transition: opacity var(--dur-night) var(--ease-out);
   }
   .lamp.is-on { opacity: var(--hero-night); }
+  /* The text shadows are inherited from the caster; a filled button
+     inside it (the hero's Resume pill) would smudge, so buttons opt out. */
+  :global(.btn) { text-shadow: none; }
 
   @media (prefers-reduced-motion: reduce) { .lamp { display: none; } }
   @media (hover: none) { .lamp { display: none; } }
@@ -67,19 +83,83 @@
       Number(getComputedStyle(lamp).getPropertyValue('--lamp-follow')) || 0.22;
     let k = follow();
 
+    // Text that can cast a shadow, and which of it is on screen now.
+    const CASTERS = 'main :is(h1, h2, h3, h4, p, li, dt, dd, blockquote, figcaption)';
+    const onScreen = new Set();
+    const lit = new Set();
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) onScreen.add(e.target);
+        else { onScreen.delete(e.target); e.target.style.textShadow = ''; lit.delete(e.target); }
+      }
+    });
+    document.querySelectorAll(CASTERS).forEach((el) => io.observe(el));
+
+    let cast = { alpha: 0, length: 0, blur: 0 };
+    const readCast = () => {
+      const cs = getComputedStyle(document.documentElement);
+      const n = (name) => Number(cs.getPropertyValue(name)) || 0;
+      cast = {
+        alpha: n('--lamp-cast-alpha') * n('--hero-night'),
+        length: n('--lamp-cast-length'),
+        blur: n('--lamp-cast-blur'),
+      };
+    };
+    readCast();
+
+    const clearCast = () => {
+      for (const el of lit) el.style.textShadow = '';
+      lit.clear();
+    };
+
+    // Each caster's shadow points from the lamp to the caster's centre;
+    // strength falls off with the distance from the lamp to the nearest
+    // edge of its box, reaching zero at the pool's edge.
+    const castShadows = () => {
+      if (!cast.alpha || !lamp.classList.contains('is-on')) { clearCast(); return; }
+      const reach = lamp.offsetWidth / 2;
+      for (const el of onScreen) {
+        const r = el.getBoundingClientRect();
+        const nx = Math.max(r.left, Math.min(pos.x, r.right));
+        const ny = Math.max(r.top, Math.min(pos.y, r.bottom));
+        const d = Math.hypot(nx - pos.x, ny - pos.y);
+        if (d >= reach) {
+          if (lit.has(el)) { el.style.textShadow = ''; lit.delete(el); }
+          continue;
+        }
+        const f = (1 - d / reach) ** 2;
+        const dx = (r.left + r.right) / 2 - pos.x;
+        const dy = (r.top + r.bottom) / 2 - pos.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const ox = (dx / len) * cast.length;
+        const oy = (dy / len) * cast.length;
+        el.style.textShadow =
+          `${ox.toFixed(1)}px ${oy.toFixed(1)}px ${cast.blur}px rgb(0 0 0 / ${(cast.alpha * f).toFixed(3)})`;
+        lit.add(el);
+      }
+    };
+
     const target = { x: 0, y: 0 };
     const pos = { x: 0, y: 0 };
     let seeded = false;
     let looping = false;
 
+    const announce = (on) => {
+      dispatchEvent(new CustomEvent('cursor-lamp', {
+        detail: { x: pos.x, y: pos.y, on, radius: lamp.offsetWidth / 2 },
+      }));
+    };
+
     const place = () => {
       lamp.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`;
+      announce(true);
     };
 
     const tick = () => {
       pos.x += (target.x - pos.x) * k;
       pos.y += (target.y - pos.y) * k;
       place();
+      castShadows();
       if (Math.hypot(target.x - pos.x, target.y - pos.y) > 0.3) {
         requestAnimationFrame(tick);
       } else {
@@ -102,9 +182,18 @@
     }, { passive: true });
 
     addEventListener('resize', () => { k = follow(); });
+    // The page moves under a still pointer, and the theme switches the
+    // strength.
+    addEventListener('scroll', castShadows, { passive: true });
+    addEventListener('theme:changed', () => {
+      // --hero-night is read after the tokens re-ink this frame.
+      requestAnimationFrame(() => { readCast(); castShadows(); });
+    });
 
     document.documentElement.addEventListener('mouseleave', () => {
       lamp.classList.remove('is-on');
+      clearCast();
+      announce(false);
     });
   })();
 </script>

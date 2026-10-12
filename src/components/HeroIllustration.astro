@@ -34,38 +34,18 @@
    so bottom-aligning it puts the chair legs on the CTA row's line.
    AskBubble's launcher position is measured in this same 700x980 frame.
 
-   The source backdrop is off-white (247-253, never pure). Export first
-   lifts only the highlights — levels 200-247 stretched to 200-255,
-   darker values untouched — so the backdrop is exactly white without
-   shifting the figure's colours. Then a soft matte: alpha ramps from 0
-   at white to 1 at 40 levels below it (on each pixel's darkest channel),
-   colour left as is. No flood fill, so the watercolour edges stay soft;
-   it sits cleanly on any light ground and still holds up on a dark one.
+   Export: scripts/hero-sprite.py, from the source clip. The source
+   backdrop is off-white (247-253, never pure); the script lifts only
+   the highlights so it becomes exactly white, mattes with a soft ramp
+   (alpha 0 at white to 1 at 40 levels below), and then, near the edge
+   and only where the art around it is dark, un-mixes the white from
+   the palest strands so her hair doesn't wear a pale cut-out outline
+   on the dark page. No flood fill, so the watercolour edges stay soft.
    (mix-blend-mode: multiply on an opaque sprite was tried first and is
    smaller, but any fading ancestor — the Reveal wrapper — isolates the
    blend and flashes a white box on load. Colour-to-alpha against white
    was exact but 12-15MB.)
 
-   Export recipe (from the source .mp4):
-     ffmpeg -i clip.mp4 -vf "select='not(mod(n\,4))'" -vsync vfr frames/f%03d.png
-     python3 -c "
-from PIL import Image
-import numpy as np, glob
-lut = np.arange(256, dtype=float)
-lut = np.where(lut <= 200, lut, 200 + (lut - 200) * 55 / 47)
-lut = np.clip(np.round(lut), 0, 255).astype(np.uint8)
-def frame(f):
-    rgb = lut[np.array(Image.open(f).convert('RGB')
-              .crop((40, 374, 1080, 1830)).resize((700, 980), Image.LANCZOS))]
-    a = np.clip((255 - rgb.min(2).astype(float)) / 40, 0, 1)
-    return Image.fromarray(np.dstack([rgb, np.round(a * 255).astype(np.uint8)]), 'RGBA')
-imgs = [frame(f) for f in sorted(glob.glob('frames/*.png'))]
-sprite = Image.new('RGBA', (700 * 8, 980 * 6), (255, 255, 255, 0))
-for i, im in enumerate(imgs):
-    sprite.paste(im, ((i % 8) * 700, (i // 8) * 980))
-sprite.save('public/images/hero-sprite.webp', 'WEBP', quality=80, alpha_quality=80, method=6)
-imgs[0].save('public/images/hero-idle.webp', 'WEBP', quality=88, alpha_quality=90, method=6)
-"
    public/images/hero-idle.webp (frame 0) is what non-JS, reduced-motion
    and coarse-pointer visitors see.
 
@@ -99,7 +79,29 @@ imgs[0].save('public/images/hero-idle.webp', 'WEBP', quality=88, alpha_quality=9
    hero section, via its data-themeband), and its x/y across that band
    picks the frame: she responds as soon as the cursor is anywhere in the
    hero, and Moss, being inside the band, never counts as leaving it.
-   Leaving the band eases her back to frame 0. */
+   Leaving the band eases her back to frame 0.
+
+   The cursor lamp (dark mode; CursorLamp.astro announces where it is
+   with a `cursor-lamp` event). The hero row sits above the page's
+   screen-blended lamp, so the lamp lights the ground behind her and
+   she is lit here instead, from the frame on screen (values under
+   CURSOR LAMP in tokens.css):
+     - colour x light: a light map of the lamp, multiplied by her
+       colours and added, so dark hair stays dark and the red gets
+       richer. (Screening the lamp over her fogged her: it lifts the
+       darks most.)
+     - form shade: her side away from the lamp dims a little.
+     - rim: the strip of her edge facing the lamp, lit by its pool, so
+       the edge catches the light and travels round her as it moves.
+     - glint: a faint highlight on the laptop lid, sliding with it.
+   And on a second canvas behind her, reaching past her box: contact
+   pools under the legs and slippers (all night, lamp or not), and the
+   lamp's light on the floor around her with her shadow cut out of it,
+   skewed away from the lamp and longer the lower it is — a shadow is
+   light that didn't arrive, and the page lamp alone is too faint on
+   this ground to show one. All of it scales with `lit` and the lamp's falloff.
+   Chosen on request from the round-2 mocks. The sprite was re-exported
+   with its white edge un-mixed for the dark page: scripts/hero-sprite.py. */
 interface Props {
   alt: string;
   size?: number;
@@ -107,6 +109,7 @@ interface Props {
 const { alt, size = 480 } = Astro.props;
 ---
 <figure class="hero-scrub" style={`--size:${size}px`} tabindex="0">
+  <canvas class="hero-scrub__ground" aria-hidden="true"></canvas>
   <canvas class="hero-scrub__canvas" aria-label={alt} role="img"></canvas>
   <img class="hero-scrub__still" src="/images/hero-idle.webp" alt={alt} />
 </figure>
@@ -130,7 +133,16 @@ const { alt, size = 480 } = Astro.props;
     line-height: 0;
     outline: none;
     border-radius: var(--radius);
-    overflow: hidden;
+  }
+  /* Her floor shadow and contact pools: behind her, reaching past her
+     box sideways (the shadow swings away from the lamp), above her head
+     and a little below her feet, so the light drawn here has room to
+     fade out before any edge. */
+  .hero-scrub__ground {
+    position: absolute;
+    left: -60%; right: -60%; top: -35%; bottom: -8%;
+    width: 220%; height: 143%;
+    pointer-events: none;
   }
   .hero-scrub:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
 
@@ -200,6 +212,37 @@ const { alt, size = 480 } = Astro.props;
       ms: num('--dur-night'),    // "900ms" → 900
     };
   };
+  // The lamp on her (CURSOR LAMP in tokens.css).
+  type LampK = { gain: number; sat: number; lift: number; rimK: number; rimW: number; formK: number; glintK: number; floorK: number; castK: number; contactK: number; hue: string; reach: number };
+  const readLampK = (): LampK => {
+    const cs = getComputedStyle(document.documentElement);
+    const num = (n: string) => parseFloat(cs.getPropertyValue(n)) || 0;
+    const hue = cs.getPropertyValue('--lamp-hue').trim().match(/[\d.]+/g)?.slice(0, 3).join(' ') ?? '255 214 170';
+    return {
+      gain: num('--hero-lamp-gain'), sat: num('--hero-lamp-sat'), lift: num('--hero-lamp-lift'), rimK: num('--hero-rim-k'), rimW: num('--hero-rim-w'),
+      formK: num('--hero-form-k'), glintK: num('--hero-glint-k'),
+      floorK: num('--hero-floor-k'), castK: num('--hero-cast-k'), contactK: num('--hero-contact-k'),
+      hue, reach: (num('--lamp-reach') || 70) / 100,
+    };
+  };
+  // The page lamp's falloff (CursorLamp.astro's gradient stops), as
+  // fractions of its reach.
+  const FALLOFF: [number, number][] = [[0, 1], [0.25, 0.7], [0.5, 0.35], [0.75, 0.12], [1, 0]];
+  const falloffAt = (t: number) => {
+    for (let i = 1; i < FALLOFF.length; i++) if (t <= FALLOFF[i][0]) {
+      const [a0, v0] = FALLOFF[i - 1], [a1, v1] = FALLOFF[i];
+      return v0 + (v1 - v0) * (t - a0) / (a1 - a0);
+    }
+    return 0;
+  };
+  const pool = (c: CanvasRenderingContext2D, x: number, y: number, reach: number, rgb: string, a: number) => {
+    const g = c.createRadialGradient(x, y, 0, x, y, Math.max(1, reach));
+    for (const [t, v] of FALLOFF) g.addColorStop(t, `rgb(${rgb} / ${Math.min(1, a * v)})`);
+    return g;
+  };
+  // The laptop lid in the 700x980 frame (it doesn't move across frames).
+  const LID: [number, number][] = [[250, 377], [492, 377], [473, 515], [220, 515]];
+
   // Close to the sitewide --ease-out (cubic-bezier(.16, 1, .3, 1)).
   const easeOut = (x: number) => 1 - Math.pow(1 - x, 4);
 
@@ -211,7 +254,7 @@ const { alt, size = 480 } = Astro.props;
     // them too. The <img> stays as the fallback if the canvas fails.
     const still = reduceMotion || noFinePointer;
 
-    const canvas = figure.querySelector('canvas')!;
+    const canvas = figure.querySelector<HTMLCanvasElement>('.hero-scrub__canvas')!;
     // The sprite is matted (transparent backdrop), so the canvas needs
     // alpha; clearRect each frame leaves nothing behind.
     const ctx = canvas.getContext('2d', { alpha: true });
@@ -219,7 +262,16 @@ const { alt, size = 480 } = Astro.props;
     // then blended onto the first.
     const fxCanvas = document.createElement('canvas');
     const fx = fxCanvas.getContext('2d', { alpha: true });
-    if (!ctx || !fx) {
+    // Floor shadow and contact pools, behind her (CSS px, it's all blur).
+    const ground = figure.querySelector<HTMLCanvasElement>('.hero-scrub__ground')!;
+    const gctx = ground.getContext('2d');
+    const silCanvas = document.createElement('canvas');
+    const sil = silCanvas.getContext('2d');
+    const tmpCanvas = document.createElement('canvas');
+    const tmp = tmpCanvas.getContext('2d');
+    const lightCanvas = document.createElement('canvas');
+    const lctx = lightCanvas.getContext('2d');
+    if (!ctx || !fx || !gctx || !sil || !tmp || !lctx) {
       figure.classList.add('no-js-scrub');
       return;
     }
@@ -244,6 +296,19 @@ const { alt, size = 480 } = Astro.props;
     // eases towards it when the theme changes.
     let lit = night.on;
     let fadeRaf = 0;
+    let lk = readLampK();
+    // Where the cursor lamp is (viewport px), from its `cursor-lamp` event.
+    let lamp = { x: 0, y: 0, on: false, radius: 0 };
+    let lampDirty = false;
+    // Whether the lamp reached her (or her shadow) on the last paint, so
+    // a lamp moving away still gets one repaint to clear its light.
+    let lampWasNear = false;
+    const lampNear = () => {
+      if (!lamp.on) return false;
+      const r = figure.getBoundingClientRect();
+      const m = lamp.radius * lk.reach + r.width * 0.6;
+      return lamp.x > r.left - m && lamp.x < r.right + m && lamp.y > r.top - m && lamp.y < r.bottom + m;
+    };
 
     const sizeCanvas = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -251,6 +316,11 @@ const { alt, size = 480 } = Astro.props;
       canvas.width = fxCanvas.width = Math.round(rect.width * dpr);
       canvas.height = fxCanvas.height = Math.round(rect.height * dpr);
       fx.imageSmoothingEnabled = ctx.imageSmoothingEnabled = false;
+      const gr = ground.getBoundingClientRect();
+      ground.width = tmpCanvas.width = lightCanvas.width = Math.round(gr.width);
+      ground.height = tmpCanvas.height = lightCanvas.height = Math.round(gr.height);
+      silCanvas.width = Math.round(rect.width);
+      silCanvas.height = Math.round(rect.height);
       drawnFrame = -1;
     };
 
@@ -313,6 +383,189 @@ const { alt, size = 480 } = Astro.props;
       }
     };
 
+    // The lamp in this canvas's pixels, and how strongly it's on.
+    const lampHere = () => {
+      const r = canvas.getBoundingClientRect();
+      const s = r.width > 0 ? W() / r.width : 1;
+      const reach = lamp.radius * lk.reach * s;
+      const x = (lamp.x - r.left) * s, y = (lamp.y - r.top) * s;
+      // Distance from the lamp to the nearest point of her box.
+      const nx = Math.max(0, Math.min(W(), x)), ny = Math.max(0, Math.min(H(), y));
+      const near = Math.hypot(x - nx, y - ny) < reach;
+      return { x, y, reach, s, amt: lamp.on && near ? lit : 0 };
+    };
+
+    const frameAt = (c: CanvasRenderingContext2D, src: [number, number], dx = 0, dy = 0) =>
+      c.drawImage(sprite, src[0], src[1], CROP_W, CROP_H, dx, dy, W(), H());
+
+    const lampLight = (src: [number, number]) => {
+      const L = lampHere();
+      if (L.amt <= 0) return;
+      const { hue } = lk;
+      const cx = W() * 0.5, cy = H() * 0.45;
+      const dx = cx - L.x, dy = cy - L.y, d = Math.hypot(dx, dy) || 1;
+
+      // Form shade: the side away from the lamp dims.
+      const nearK = Math.max(0, 1 - d / (L.reach * 1.6));
+      if (lk.formK > 0 && nearK > 0) {
+        const half = W() * 0.5;
+        const g = ctx.createLinearGradient(cx - dx / d * half, cy - dy / d * half, cx + dx / d * half, cy + dy / d * half);
+        g.addColorStop(0, `rgb(${night.shade} / 0)`);
+        g.addColorStop(0.5, `rgb(${night.shade} / 0)`);
+        g.addColorStop(1, `rgb(${night.shade} / ${lk.formK * nearK * L.amt})`);
+        ctx.globalCompositeOperation = 'source-atop';
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W(), H());
+      }
+
+      // Colour x light: a light map on black, times her colours, added.
+      // On its own that brightens light colours most and near-black ones
+      // not at all: her skin went orange and her pupils read as black
+      // holes. So the added light is desaturated (--hero-lamp-sat) and
+      // carries a small even lift (--hero-lamp-lift) that reaches the
+      // darks too, the way a soft lamp fills an eye.
+      fx.globalCompositeOperation = 'source-over';
+      fx.fillStyle = '#000'; fx.fillRect(0, 0, W(), H());
+      fx.globalCompositeOperation = 'lighter';
+      fx.fillStyle = pool(fx, L.x, L.y, L.reach, hue, lk.gain * L.amt); fx.fillRect(0, 0, W(), H());
+      fx.globalCompositeOperation = 'multiply'; frameAt(fx, src);
+      if (lk.lift > 0) {
+        fx.globalCompositeOperation = 'lighter';
+        fx.fillStyle = pool(fx, L.x, L.y, L.reach, hue, lk.lift * L.amt); fx.fillRect(0, 0, W(), H());
+      }
+      fx.globalCompositeOperation = 'destination-in'; frameAt(fx, src);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.filter = `saturate(${lk.sat})`;
+      ctx.drawImage(fxCanvas, 0, 0);
+      ctx.filter = 'none';
+
+      // Rim: her edge facing the lamp, lit by its pool. Fades out when
+      // the lamp is over her, where there's no edge to face it.
+      const over = Math.min(1, Math.max(0, (d - W() * 0.15) / (W() * 0.35)));
+      if (lk.rimK > 0 && over > 0) {
+        const w = lk.rimW * L.s;
+        fx.globalCompositeOperation = 'source-over';
+        fx.clearRect(0, 0, W(), H());
+        frameAt(fx, src);
+        fx.globalCompositeOperation = 'destination-out'; frameAt(fx, src, dx / d * w, dy / d * w);
+        fx.globalCompositeOperation = 'source-in';
+        fx.fillStyle = pool(fx, L.x, L.y, L.reach * 1.15, hue, lk.rimK * L.amt * over); fx.fillRect(0, 0, W(), H());
+        ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(fxCanvas, 0, 0);
+      }
+
+      // Glint on the laptop lid, nudged toward the lamp.
+      if (lk.glintK > 0) {
+        const pts = LID.map(([x, y]) => [x / FRAME_W * W(), y / FRAME_H * H()]);
+        const lx = pts.reduce((a, p) => a + p[0], 0) / 4, ly = pts.reduce((a, p) => a + p[1], 0) / 4;
+        const amt = falloffAt(Math.hypot(L.x - lx, L.y - ly) / L.reach) * lk.glintK * L.amt;
+        if (amt > 0.005) {
+          const gx = lx + (L.x - lx) * 0.12, gy = ly + (L.y - ly) * 0.08;
+          ctx.save();
+          ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath(); ctx.clip();
+          const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, W() * 0.16);
+          g.addColorStop(0, `rgb(255 240 225 / ${amt})`); g.addColorStop(1, 'rgb(255 240 225 / 0)');
+          ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.fillRect(0, 0, W(), H());
+          ctx.restore();
+        }
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    };
+
+    // Behind her: contact pools (all night) and the floor shadow (only
+    // in the lamp's light). In the ground canvas's CSS px; her box sits
+    // at (bx, by) inside it.
+    const drawGround = (src: [number, number], frameChanged: boolean) => {
+      const GW = ground.width, GH = ground.height;
+      gctx.setTransform(1, 0, 0, 1, 0, 0);
+      gctx.clearRect(0, 0, GW, GH);
+      if (lit <= 0 || GW === 0) return;
+      const fr = figure.getBoundingClientRect(), gr = ground.getBoundingClientRect();
+      const bx = fr.left - gr.left, by = fr.top - gr.top, fw = fr.width, fh = fr.height;
+      if (frameChanged) {
+        sil.globalCompositeOperation = 'source-over';
+        sil.clearRect(0, 0, silCanvas.width, silCanvas.height);
+        sil.drawImage(sprite, src[0], src[1], CROP_W, CROP_H, 0, 0, silCanvas.width, silCanvas.height);
+        sil.globalCompositeOperation = 'source-in';
+        sil.fillStyle = '#000'; sil.fillRect(0, 0, silCanvas.width, silCanvas.height);
+      }
+      const y0 = by + fh * 0.988;   // the floor: her chair legs and slippers
+
+      // The lamp's light on the floor around her, with her shadow cut out
+      // of it. The page lamp alone is too faint on this ground for a
+      // shadow to show (a shadow can only take away light that's there),
+      // so the floor near her gets a little more, faded out well inside
+      // this canvas's edges. Floor shadow: a point z above the floor moves
+      // sideways by z * (base - lamp) / lampHeight, and back (up the
+      // screen) by z * depth / lampHeight; it fades from the legs to the
+      // tip and only exists where this light falls.
+      if (lampNear() && lk.floorK > 0) {
+        const lx = lamp.x - gr.left, ly = lamp.y - gr.top;
+        // Wider than the page lamp's pool: the floor is lit at a grazing
+        // angle, and a shadow needs light around it to read.
+        const reach = lamp.radius * lk.reach * 1.8;
+        lctx.setTransform(1, 0, 0, 1, 0, 0);
+        lctx.globalCompositeOperation = 'source-over';
+        lctx.clearRect(0, 0, GW, GH);
+        lctx.fillStyle = pool(lctx, lx, ly, reach, lk.hue, lk.floorK * lit);
+        lctx.fillRect(0, 0, GW, GH);
+        if (lk.castK > 0) {
+          const cx = bx + fw / 2;
+          const h = Math.max(y0 - ly, 30);
+          const a = Math.max(-2.2, Math.min(2.2, (cx - lx) / h));
+          const b = Math.max(0.06, Math.min(0.75, (fh * 0.2) / h));
+          tmp.globalCompositeOperation = 'source-over';
+          tmp.setTransform(1, 0, 0, 1, 0, 0);
+          tmp.clearRect(0, 0, GW, GH);
+          tmp.filter = `blur(${Math.max(3, fh * 0.012)}px)`;
+          tmp.setTransform(1, 0, -a, b, a * y0, y0 * (1 - b));
+          tmp.drawImage(silCanvas, bx, by, fw, fh);
+          tmp.setTransform(1, 0, 0, 1, 0, 0);
+          tmp.filter = 'none';
+          const tx = cx + a * fh, ty = y0 - b * fh;
+          const m = tmp.createLinearGradient(cx, y0, tx, ty);
+          m.addColorStop(0, 'rgb(0 0 0 / 1)'); m.addColorStop(0.55, 'rgb(0 0 0 / 0.6)'); m.addColorStop(1, 'rgb(0 0 0 / 0)');
+          tmp.globalCompositeOperation = 'destination-in';
+          tmp.fillStyle = m; tmp.fillRect(0, 0, GW, GH);
+          tmp.globalCompositeOperation = 'source-over';
+          lctx.globalCompositeOperation = 'destination-out';
+          lctx.globalAlpha = lk.castK;
+          lctx.drawImage(tmpCanvas, 0, 0);
+          lctx.globalAlpha = 1;
+        }
+        // Fade to nothing before this canvas's edges (an ellipse touching
+        // all four sides, so even the corners are clear), so the extra
+        // light never shows a cut line, wherever the lamp is.
+        lctx.globalCompositeOperation = 'destination-in';
+        lctx.save();
+        lctx.translate(GW / 2, GH / 2);
+        lctx.scale(GW / 2, GH / 2);
+        const v = lctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+        v.addColorStop(0, 'rgb(0 0 0 / 1)'); v.addColorStop(0.5, 'rgb(0 0 0 / 1)'); v.addColorStop(0.95, 'rgb(0 0 0 / 0)');
+        lctx.fillStyle = v; lctx.fillRect(-1, -1, 2, 2);
+        lctx.restore();
+        lctx.globalCompositeOperation = 'source-over';
+        gctx.drawImage(lightCanvas, 0, 0);
+      }
+
+      // Contact: her silhouette nudged down and blurred, kept only at the
+      // feet. All night, lamp or not.
+      if (lk.contactK > 0) {
+        tmp.setTransform(1, 0, 0, 1, 0, 0);
+        tmp.globalCompositeOperation = 'source-over';
+        tmp.clearRect(0, 0, GW, GH);
+        tmp.filter = `blur(${Math.max(2, fh * 0.009)}px)`;
+        tmp.drawImage(silCanvas, bx - fw * 0.03, by + fh * 0.012, fw * 1.06, fh);
+        tmp.filter = 'none';
+        const m = tmp.createLinearGradient(0, by + fh * 0.8, 0, y0 + fh * 0.02);
+        m.addColorStop(0, 'rgb(0 0 0 / 0)'); m.addColorStop(0.75, 'rgb(0 0 0 / 1)'); m.addColorStop(1, 'rgb(0 0 0 / 0.6)');
+        tmp.globalCompositeOperation = 'destination-in';
+        tmp.fillStyle = m; tmp.fillRect(0, 0, GW, GH);
+        tmp.globalCompositeOperation = 'source-over';
+        gctx.globalAlpha = lk.contactK * lit;
+        gctx.drawImage(tmpCanvas, 0, 0);
+        gctx.globalAlpha = 1;
+      }
+    };
+
     const draw = (index: number) => {
       if (!ready || canvas.width === 0) return;
       const frame = still ? 0 : Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(index)));
@@ -320,16 +573,21 @@ const { alt, size = 480 } = Astro.props;
         lastFrame = frame;
         figure.dispatchEvent(new CustomEvent('hero-scrub:frame', { detail: { frame, count: FRAME_COUNT }, bubbles: true }));
       }
-      // Only repaint when the picture changes: a new frame, a resize or
-      // a theme switch (which resets drawnFrame).
-      if (frame === drawnFrame) return;
+      // Only repaint when the picture changes: a new frame, a resize, a
+      // theme switch (which resets drawnFrame) or the lamp moving.
+      if (frame === drawnFrame && !lampDirty) return;
+      const frameChanged = frame !== drawnFrame;
       drawnFrame = frame;
+      lampDirty = false;
       const src: [number, number] = still ? [0, 0] : [(frame % COLS) * FRAME_W + CROP_X, Math.floor(frame / COLS) * FRAME_H + CROP_Y];
       // Box aspect matches the frame (5:7), so it maps straight onto the
       // canvas. Clear first so no previous frame shows through.
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(sprite, src[0], src[1], CROP_W, CROP_H, 0, 0, canvas.width, canvas.height);
       light(frame, src);
+      lampLight(src);
+      drawGround(src, frameChanged);
+      lampWasNear = lampNear();
     };
 
     sprite.decode().then(() => {
@@ -346,6 +604,7 @@ const { alt, size = 480 } = Astro.props;
     // reduced motion.
     new MutationObserver(() => {
       night = readNight();
+      lk = readLampK();
       cancelAnimationFrame(fadeRaf);
       const from = lit;
       const to = night.on;
@@ -363,6 +622,19 @@ const { alt, size = 480 } = Astro.props;
       fadeRaf = requestAnimationFrame(step);
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
     window.addEventListener('resize', () => { sizeCanvas(); draw(currentIndex); });
+
+    // The lamp moved (or the page moved under it): repaint if it lights
+    // her now, or did last time and needs clearing. The ground canvas
+    // also repaints for the floor shadow.
+    addEventListener('cursor-lamp', (e) => {
+      lamp = (e as CustomEvent<typeof lamp>).detail;
+      if (lit <= 0 || (!lampNear() && !lampWasNear)) return;
+      lampDirty = true;
+      if (still) draw(0);
+    });
+    addEventListener('scroll', () => {
+      if (lit > 0 && (lampNear() || lampWasNear)) lampDirty = true;
+    }, { passive: true });
 
     if (still) return;
 
