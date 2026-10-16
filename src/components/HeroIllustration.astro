@@ -50,9 +50,12 @@
    and coarse-pointer visitors see. Everyone else sees it first too: it
    is drawn as soon as it decodes, and the canvas swaps to the full
    sprite when that has loaded, so she never waits on 4.6MB to appear.
-   The sprite is then cut into its 48 frames once (createImageBitmap) and
-   every draw reads a frame's own bitmap: drawing out of the whole sheet
-   cost ~27ms a frame and made the scrub, Moss and the trail stutter.
+   The sprite is fetched, decoded once into a bitmap, then cut into its
+   48 frames (createImageBitmap) and every draw reads a frame's own
+   bitmap: drawing out of the whole sheet cost ~27ms a frame and made the
+   scrub, Moss and the trail stutter; cutting from an <img> rather than a
+   decoded bitmap froze the page for ~24s while it re-decoded the sheet
+   per cut.
    When the hero is complete it sets html[data-hero-ready] and fires
    `hero-scrub:ready` on window, which the first-paint loader waits for.
 
@@ -297,8 +300,12 @@ const { alt, size = 480 } = Astro.props;
     idle.src = '/images/hero-idle.webp';
     let sprite: CanvasImageSource = idle;
     let live = false;                    // drawing from the full sprite yet?
-    const full = still ? null : new Image();
-    if (full) full.src = '/images/hero-sprite.webp';
+    // The full sheet is fetched as a file and decoded once into a bitmap
+    // (off the main thread). Cutting frames from an <img> instead
+    // re-decoded the whole 4.6MB sheet for every cut, ~0.5s x 48: a 24s
+    // freeze during the first-paint loader. From the decoded bitmap all
+    // 48 cuts take ~75ms.
+    const full = still ? null : fetch('/images/hero-sprite.webp').then((r) => r.blob()).then((b) => createImageBitmap(b));
 
     let ready = false;
     let targetIndex = 0;
@@ -631,11 +638,10 @@ const { alt, size = 480 } = Astro.props;
     // budget, so the scrub, Moss and the cursor trail all dropped frames;
     // a pre-cut frame draws in ~1.5ms.
     let frames: ImageBitmap[] = [];
-    full?.decode().then(() => Promise.all(Array.from({ length: FRAME_COUNT }, (_, f) =>
-      createImageBitmap(full!, (f % COLS) * FRAME_W + CROP_X, Math.floor(f / COLS) * FRAME_H + CROP_Y, CROP_W, CROP_H),
-    ))).then((cut) => {
+    full?.then((sheet) => Promise.all(Array.from({ length: FRAME_COUNT }, (_, f) =>
+      createImageBitmap(sheet, (f % COLS) * FRAME_W + CROP_X, Math.floor(f / COLS) * FRAME_H + CROP_Y, CROP_W, CROP_H),
+    )).then((cut) => { sheet.close(); return cut; })).then((cut) => {   // the sheet itself is no longer needed
       frames = cut;
-      full!.src = '';           // the sheet itself is no longer needed
       sprite = frames[0];
       live = true;
       if (!ready) { ready = true; sizeCanvas(); }
