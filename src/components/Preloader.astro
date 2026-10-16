@@ -1,0 +1,441 @@
+---
+/* Preloader — the first-paint loader, chosen on request from rounds of
+   mocks. On the home page only, every time it's opened or refreshed (on
+   request); not when arriving from another page of the site, and not on
+   back/forward.
+
+   What it shows: a terracotta sheet with a faint grain. The cursor line,
+   in cream (the same spring chain as CursorTrail), sits as a dot in the
+   middle and only ever follows the visitor's own pointer (on request):
+   a still dot until they move it, and on touch it stays one. Under it,
+   centred: a mouse icon and "A line is a dot that went for a walk"
+   (Paul Klee) in mono caps, which starts as a row of dots, one per
+   letter, and turns into its letters as the page loads. The sentence is
+   the progress; there's no number (loader-motion.html: "No number",
+   "Dots become letters", 16px, medium spacing).
+
+   The exit (fluid.html, version 6): at 100% the words fade and the
+   terracotta shrinks, as a slowly lumping blob, into the orange dot
+   beside "Moss" in his card (AskBubble's .pixel-launcher__who), ending
+   at exactly that dot's size and place, so the loader becomes a piece
+   of the page. If that dot isn't on screen (a narrow layout, Moss below
+   the fold), the sheet lifts instead. Its reason: the one screen with
+   nothing else to show, and it hands the visitor over to the page, and
+   to Moss, instead of just leaving.
+
+   Pacing: the words follow the page's real (non-lazy) images and, on
+   the home page, the hero portrait's sprite (HeroIllustration announces
+   it with `hero-scrub:ready`), so it exits onto a complete hero. It
+   never runs ahead of a paced schedule of --dur-preloader-min, so it
+   reads as a short walk rather than a blink.
+
+   It never holds the page hostage: the page is fully there underneath
+   from the start; any key, click, tap or real scroll ends it at once
+   with the same exit, faster (--dur-preloader-skip), and clicks pass
+   through to the page during it; images still out after
+   --dur-preloader-max count as in; a CSS failsafe hides it after 10s
+   even if the script never runs; when it ends it removes itself from
+   the DOM. Decorative, so aria-hidden: screen readers get the page
+   straight away. Under reduced motion there's no line, the letters
+   simply appear, and the sheet fades.
+
+   Values: PRELOADER in tokens.css. The walking loader (Loader.astro) is
+   parked, not deleted. */
+const pages = ['/'];
+const sentence = 'A line is a dot that went for a walk';
+---
+<script is:inline define:vars={{ pages }}>
+  (() => {
+    try {
+      const p = location.pathname.replace(/index\.html$/, '').replace(/(.)\/$/, '$1');
+      if (!pages.includes(p)) return;
+      // Every time the home page is opened or refreshed, on request; not
+      // when arriving from another page of the site (a click on her name
+      // from a case study), and not on back/forward.
+      const nav = performance.getEntriesByType('navigation')[0];
+      const type = nav ? nav.type : 'navigate';
+      let internal = false;
+      try { internal = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) {}
+      if (type === 'back_forward' || (type === 'navigate' && internal)) return;
+    } catch (e) {
+      return;
+    }
+    document.documentElement.dataset.preloader = '';
+    window.__preloaderT0 = performance.now();
+  })();
+</script>
+<div class="preloader" aria-hidden="true" data-preloader-root>
+  <div class="preloader__sheet">
+    <div class="preloader__words">
+      <span class="preloader__hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect class="k" x="6.5" y="3" width="11" height="18" rx="5.5" />
+          <path class="g" d="M12 7v3" />
+        </svg>
+        <span class="preloader__text">{[...sentence].map((c) => (
+          <span class:list={['preloader__ch', 'is-dot', c === ' ' && 'is-space']} data-preloader-ch>{c}</span>
+        ))}</span>
+      </span>
+    </div>
+  </div>
+  <canvas class="preloader__line"></canvas>
+  <canvas class="preloader__blob"></canvas>
+</div>
+
+<script>
+  declare global {
+    interface Window { __preloaderT0?: number }
+  }
+
+  const html = document.documentElement;
+
+  function token(name: string) {
+    const raw = getComputedStyle(html).getPropertyValue(name).trim();
+    const n = parseFloat(raw);
+    return raw.endsWith('ms') ? n : raw.endsWith('s') ? n * 1000 : n;
+  }
+
+  // The site's cursor line, same model and constants as CursorTrail.astro:
+  // the head eases toward its target, each point toward the one ahead,
+  // with a sideways curl while moving.
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+  const clamp = (v: number) => Math.max(0, Math.min(1, v));
+  const hexToRgb = (h: string) => { const n = parseInt(h.slice(1), 16); return `rgb(${(n >> 16) & 255} ${(n >> 8) & 255} ${n & 255})`; };
+  const easeInOut = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+  type Pt = { x: number; y: number };
+  class Chain {
+    p: Pt[] = Array.from({ length: 12 }, () => ({ x: 0, y: 0 }));
+    speed = 0;
+    last: Pt | null = null;
+    seed(x: number, y: number) { for (const q of this.p) { q.x = x; q.y = y; } this.last = { x, y }; this.speed = 0; }
+    step(t: Pt) {
+      const d = this.last ? Math.hypot(t.x - this.last.x, t.y - this.last.y) : 0;
+      this.last = { x: t.x, y: t.y };
+      this.speed = Math.max(this.speed * 0.9, d);
+      const P = this.p;
+      P[0].x = lerp(P[0].x, t.x, 0.16); P[0].y = lerp(P[0].y, t.y, 0.16);
+      const curl = this.speed > 0.4 ? 4 * Math.min(this.speed / 16, 1) ** 1.5 : 0;
+      for (let i = 1; i < P.length; i++) {
+        const k = 0.28 - (i / P.length) * 0.06, prev = P[i - 1];
+        let tx = prev.x, ty = prev.y;
+        if (curl > 0) {
+          const dx = prev.x - P[i].x, dy = prev.y - P[i].y, len = Math.hypot(dx, dy) || 1, b = curl * (i / P.length);
+          tx += (-dy / len) * b; ty += (dx / len) * b;
+        }
+        P[i].x = lerp(P[i].x, tx, k); P[i].y = lerp(P[i].y, ty, k);
+      }
+    }
+    draw(c: CanvasRenderingContext2D, width: number, colour: string) {
+      const P = this.p, last = P.length - 1;
+      c.beginPath(); c.moveTo(P[0].x, P[0].y);
+      for (let i = 1; i < last - 1; i++) c.quadraticCurveTo(P[i].x, P[i].y, (P[i].x + P[i + 1].x) / 2, (P[i].y + P[i + 1].y) / 2);
+      c.quadraticCurveTo(P[last - 1].x, P[last - 1].y, P[last].x, P[last].y);
+      c.strokeStyle = colour; c.lineWidth = width; c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke();
+    }
+  }
+
+  // The paced schedule: uneven steps, a stall, a spurt, as the page's
+  // pieces arrive. Times are fractions of --dur-preloader-min.
+  const STEPS: [number, number][] = [[0, 0], [0.07, 7], [0.19, 18], [0.34, 31], [0.46, 38], [0.62, 59], [0.76, 72], [0.89, 86], [1, 100]];
+
+  // Where Moss's orange dot is (the ::before of his name in the card), if
+  // it's on screen: its centre and radius in viewport px.
+  function mossDot(): { x: number; y: number; r: number; colour: string } | null {
+    const who = document.querySelector<HTMLElement>('.pixel-launcher__who');
+    if (!who) return null;
+    const box = who.getBoundingClientRect();
+    if (!box.width || box.bottom < 0 || box.top > innerHeight || box.right < 0 || box.left > innerWidth) return null;
+    const before = getComputedStyle(who, '::before');
+    const size = parseFloat(before.width) || 6;
+    return { x: box.left + size / 2, y: box.top + box.height / 2, r: size / 2, colour: before.backgroundColor };
+  }
+
+  function run(root: HTMLElement) {
+    const chars = [...root.querySelectorAll<HTMLElement>('[data-preloader-ch]')];
+    const line = root.querySelector<HTMLCanvasElement>('.preloader__line')!;
+    const blob = root.querySelector<HTMLCanvasElement>('.preloader__blob')!;
+    const ctx = line.getContext('2d')!;
+    const bctx = blob.getContext('2d')!;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const inputs = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
+    const t0 = window.__preloaderT0 ?? performance.now();
+    const minDur = token('--dur-preloader-min');
+    const maxDur = token('--dur-preloader-max');
+    const ink = getComputedStyle(html).getPropertyValue('--preloader-ink').trim();
+    const ground = getComputedStyle(html).getPropertyValue('--preloader-ground').trim();
+    let ended = false;
+    let blobbing = false;
+    let raf = 0;
+
+    // Both canvases are sized to the window.
+    let W = 0, H = 0;
+    const size = () => {
+      if (W === innerWidth && H === innerHeight) return;
+      W = innerWidth; H = innerHeight;
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      for (const [c, g] of [[line, ctx], [blob, bctx]] as const) {
+        c.width = W * dpr; c.height = H * dpr;
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+    };
+    size();
+
+    const mouse = { x: 0, y: 0, seen: false };
+    const onMove = (e: PointerEvent) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.seen = true; };
+    addEventListener('pointermove', onMove, { passive: true });
+
+    const finish = () => {
+      cancelAnimationFrame(raf);
+      removeEventListener('pointermove', onMove);
+      root.remove();
+      delete html.dataset.preloader;
+    };
+
+    // The terracotta shrinks into Moss's dot as a slowly lumping blob:
+    // big, slow lumps bulging out on one side and in on another, the
+    // centre drifting a little, all of it settling to a round dot of
+    // exactly his dot's size as it arrives.
+    // rgb() strings to numbers, to blend the blob into the dot's colour
+    // (dark mode lifts the accent, so his dot is lighter than the sheet).
+    const rgb = (c: string) => (c.match(/[\d.]+/g) ?? ['0', '0', '0']).slice(0, 3).map(Number);
+    const shrinkInto = (dot: { x: number; y: number; r: number; colour: string }, ms: number) => {
+      const from = rgb(ground.startsWith('#') ? hexToRgb(ground) : ground), to = rgb(dot.colour);
+      const R0 = Math.max(
+        Math.hypot(dot.x, dot.y), Math.hypot(W - dot.x, dot.y),
+        Math.hypot(dot.x, H - dot.y), Math.hypot(W - dot.x, H - dot.y),
+      ) * 1.15;
+      const lumps = token('--preloader-blob-lumps');
+      const ph = [Math.random() * 6.28, Math.random() * 6.28, Math.random() * 6.28];
+      const start = performance.now();
+      const frame = (now: number) => {
+        const u = clamp((now - start) / ms), e = easeInOut(u), t = now / 1000;
+        const R = lerp(R0, dot.r, e);
+        const amp = lumps * Math.pow(1 - e, 0.7);
+        const drift = (1 - e) * R * 0.08;
+        const cx = dot.x + Math.cos(t * 1.1 + ph[0]) * drift, cy = dot.y + Math.sin(t * 0.9 + ph[1]) * drift;
+        bctx.clearRect(0, 0, W, H);
+        // Its own terracotta, easing into his dot's colour over the last
+        // third, so the hand-over doesn't change colour.
+        const m = clamp((e - 0.66) / 0.34);
+        bctx.fillStyle = `rgb(${from.map((v, i) => Math.round(lerp(v, to[i], m))).join(' ')})`;
+        bctx.beginPath();
+        for (let i = 0; i <= 120; i++) {
+          const a = (i / 120) * Math.PI * 2;
+          const r = R * (1 + amp * (Math.sin(2 * a + t * 1.4 + ph[0]) * 0.5 + Math.sin(3 * a - t * 1.1 + ph[1]) * 0.35 + Math.sin(a + t * 0.8 + ph[2]) * 0.3));
+          const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+          if (i) bctx.lineTo(x, y); else bctx.moveTo(x, y);
+        }
+        bctx.closePath(); bctx.fill();
+        if (u < 1) raf = requestAnimationFrame(frame);
+        else finish();   // the real dot is right underneath
+      };
+      raf = requestAnimationFrame(frame);
+    };
+
+    const end = (skipped = false) => {
+      if (ended) return;
+      ended = true;
+      inputs.forEach((e) => removeEventListener(e, skip, true));
+      root.classList.add('is-done');
+      const dot = reduce ? null : mossDot();
+      if (dot) {
+        cancelAnimationFrame(raf);
+        blobbing = true;
+        size();
+        root.classList.add('is-blobbing');
+        shrinkInto(dot, skipped ? token('--dur-preloader-skip') : token('--dur-preloader-blob'));
+        return;
+      }
+      // No dot on screen (or reduced motion): the sheet lifts (or fades).
+      const out = reduce ? token('--dur-preloader-fade') : skipped ? token('--dur-preloader-skip') : token('--dur-preloader-lift');
+      root.classList.add('is-lifting');
+      if (skipped) root.classList.add('is-skipped');
+      setTimeout(finish, out + 50);
+    };
+    // A trackpad resting under two fingers sends tiny wheel events; only a
+    // real scroll counts as wanting past.
+    const skip = (e: Event) => {
+      if (e instanceof WheelEvent && Math.abs(e.deltaX) + Math.abs(e.deltaY) < 4) return;
+      end(true);
+    };
+    inputs.forEach((e) => addEventListener(e, skip, { capture: true, passive: true }));
+
+    // Real progress: the images the page asks for straight away (lazy
+    // ones wait for scrolling, so counting them would never reach 100).
+    const imgs = [...document.images].filter((i) => i.loading !== 'lazy');
+    let loaded = imgs.filter((i) => i.complete).length;
+    imgs.forEach((i) => {
+      if (i.complete) return;
+      const done = () => { loaded++; };
+      i.addEventListener('load', done, { once: true });
+      i.addEventListener('error', done, { once: true });
+    });
+    // The hero portrait's 48-frame sprite (4.6MB) isn't an <img>, so it
+    // isn't counted above; HeroIllustration says when it's in. It weighs
+    // as much as all the page's images together, since it's most of the
+    // wait. Only fine pointers without reduced motion load it.
+    const heroWaits = !!document.querySelector('.hero-scrub')
+      && !matchMedia('(prefers-reduced-motion: reduce), (hover: none), (pointer: coarse)').matches;
+    let heroIn = 'heroReady' in html.dataset;
+    addEventListener('hero-scrub:ready', () => { heroIn = true; }, { once: true });
+    const real = (t: number) => {
+      if (t >= maxDur) return 100;
+      const parts = [imgs.length ? loaded / imgs.length : 1];
+      if (heroWaits) parts.push(heroIn ? 1 : 0);
+      return (parts.reduce((a, b) => a + b, 0) / parts.length) * 100;
+    };
+    const paced = (t: number) => { let v = 0; for (const [at, val] of STEPS) if (t >= at * minDur) v = val; return v; };
+
+    const chain = new Chain();
+    const home = { x: innerWidth / 2, y: innerHeight / 2 };
+    chain.seed(home.x, home.y);
+
+    let p = 0, last = performance.now(), doneAt = 0, shown = -1;
+    const tick = (now: number) => {
+      if (blobbing) return;   // the blob owns the frame from here
+      const t = now - t0, dt = Math.min(50, now - last);
+      last = now;
+      if (!doneAt) {
+        const target = Math.min(real(t), paced(t));
+        p += (target - p) * (1 - Math.exp(-dt / 380));
+        if (target === 100 && p > 99.6) {
+          p = 100;
+          doneAt = now;
+          root.classList.add('is-done');                       // the words fade
+          setTimeout(() => end(), token('--dur-preloader-hold'));
+        }
+      }
+      // Dots become letters: as many letters as the page is loaded.
+      const k = Math.round((p / 100) * chars.length);
+      if (k !== shown) {
+        shown = k;
+        chars.forEach((c, i) => c.classList.toggle('is-dot', i >= k));
+      }
+
+      if (!reduce) {
+        size();
+        // Only the visitor moves it; with no pointer yet it stays put.
+        chain.step(mouse.seen ? mouse : chain.last ?? home);
+        ctx.clearRect(0, 0, W, H);
+        chain.draw(ctx, 6.5, ink);
+      }
+      if (!ended || root.isConnected) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  }
+
+  const root = document.querySelector<HTMLElement>('[data-preloader-root]');
+  if (root && 'preloader' in html.dataset) run(root);
+  else root?.remove(); // not this visit: nothing left in the DOM
+</script>
+
+<style>
+  .preloader { display: none; }
+
+  :global(:root[data-preloader]) .preloader {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-loader);
+    /* Failsafe: if the script never runs, get out of the way anyway. */
+    animation: preloader-failsafe 0s 10s forwards;
+  }
+
+  .preloader__sheet {
+    position: absolute;
+    inset: 0;
+    background: var(--preloader-ground);
+    will-change: transform;
+  }
+  /* A faint grain, so the colour reads as paper rather than a fill. */
+  .preloader__sheet::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--preloader-grain) 0 0 / 260px;
+    mix-blend-mode: var(--preloader-grain-blend);
+    opacity: var(--preloader-grain-opacity);
+    pointer-events: none;
+  }
+
+  .preloader__line,
+  .preloader__blob {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .preloader__line { transition: opacity var(--dur-preloader-words) var(--ease-fade); }
+
+  .preloader__words {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    translate: 0 var(--preloader-offset);
+    display: flex;
+    justify-content: center;
+    padding: 0 var(--gutter);
+    transition: opacity var(--dur-preloader-words) var(--ease-fade);
+  }
+
+  .preloader__hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    font: 400 var(--preloader-hint-size) / 1.35 var(--font-mono);
+    letter-spacing: var(--preloader-hint-tracking);
+    text-transform: uppercase;
+    color: var(--preloader-ink-dim);
+    white-space: nowrap;
+  }
+  .preloader__hint svg { width: var(--preloader-icon-size); height: var(--preloader-icon-size); flex: none; }
+  .preloader__hint .k { stroke: var(--preloader-ink); }
+  .preloader__hint .g { stroke: var(--preloader-ink-dim); }
+
+  /* Dots become letters: a letter not yet reached is a dot in its place
+     (mono, so the sentence never shifts as letters arrive). */
+  .preloader__ch { position: relative; white-space: pre; transition: color var(--dur-micro) var(--ease-fade); }
+  .preloader__ch.is-dot { color: transparent; }
+  .preloader__ch.is-dot:not(.is-space)::before {
+    content: '·';
+    position: absolute;
+    inset: 0;
+    text-align: center;
+    color: var(--preloader-ink-dim);
+  }
+
+  /* On a phone the sentence is wider than the screen at 16px: it drops
+     a step there. */
+  @media (max-width: 560px) {
+    .preloader__hint { font-size: calc(var(--preloader-hint-size) * 0.72); }
+    .preloader__hint svg { width: calc(var(--preloader-icon-size) * 0.75); height: calc(var(--preloader-icon-size) * 0.75); }
+  }
+
+  .preloader.is-done .preloader__words,
+  .preloader.is-done .preloader__line { opacity: 0; }
+
+  /* The blob exit: the drawn blob takes over from the sheet at once. */
+  .preloader.is-blobbing { pointer-events: none; }
+  .preloader.is-blobbing .preloader__sheet { visibility: hidden; }
+
+  /* The fallback: the sheet lifts. Clicks go through while it does. */
+  .preloader.is-lifting { pointer-events: none; }
+  .preloader.is-lifting .preloader__sheet {
+    transform: translateY(-100%);
+    transition: transform var(--dur-preloader-lift) var(--ease-preloader-lift);
+  }
+  .preloader.is-skipped .preloader__sheet { transition-duration: var(--dur-preloader-skip); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .preloader__line { display: none; }
+    .preloader__ch { transition: none; }
+    .preloader.is-lifting .preloader__sheet { transform: none; }
+    .preloader.is-lifting { opacity: 0; transition: opacity var(--dur-preloader-fade) var(--ease-fade); }
+  }
+
+  @keyframes preloader-failsafe {
+    to { opacity: 0; visibility: hidden; }
+  }
+</style>

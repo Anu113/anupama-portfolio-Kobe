@@ -4,6 +4,7 @@ import Nav from '../components/Nav.astro';
 import CursorTrail from '../components/CursorTrail.astro';
 import CursorLamp from '../components/CursorLamp.astro';
 import Footer from '../components/Footer.astro';
+import Preloader from '../components/Preloader.astro';
 /* `trail` is the cursor line (and, in dark mode, the cursor lamp — see
    CursorLamp.astro). It is on everywhere except pages that own the
    cursor themselves — /playground puts a grab hand on its pannable field,
@@ -30,10 +31,11 @@ const {
     <meta property="og:type" content="website" />
     <!-- Light/dark is resolved before first paint so a returning visitor
          never sees the wrong palette flash: Light or Dark if they picked
-         one with the nav's theme toggle, otherwise their OS setting
-         (data-mode-pref 'system', which the toggle no longer offers as
-         a state — it's just "not chosen yet"). data-mode-pref is the choice, data-mode what the tokens
-         read. Runs inline on purpose; don't move it to a bundled script. -->
+         one with the nav's theme toggle, otherwise Light — the default,
+         on request, whatever the OS is set to (data-mode-pref 'system'
+         just means "not chosen yet"). data-mode-pref is the choice,
+         data-mode what the tokens read. Runs inline on purpose; don't
+         move it to a bundled script. -->
     <script is:inline>
       (() => {
         let stored = null;
@@ -41,9 +43,7 @@ const {
         const pref = stored === 'dark' || stored === 'light' ? stored : 'system';
         const root = document.documentElement;
         root.dataset.modePref = pref;
-        root.dataset.mode = pref === 'system'
-          ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-          : pref;
+        root.dataset.mode = pref === 'system' ? 'light' : pref;
       })();
     </script>
     <!-- Page scale (see html in global.css). The layout is composed for a
@@ -90,6 +90,8 @@ const {
     />
   </head>
   <body>
+    <!-- First, so it decides before anything paints (Preloader.astro). -->
+    <Preloader />
     <a href="#main" class="skip">Skip to content</a>
     <Nav />
     <main id="main"><slot />{trail && <CursorLamp />}</main>

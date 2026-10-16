@@ -650,3 +650,86 @@
   --pixel-step-small: 0.75rem;
   --pixel-leading: 1.55;
 }
+
+/* ============================================================
+   LOADER — the first-paint walk (Loader.astro, sprite in
+   data/loader.ts). Her character crosses the screen once per visit:
+   a steady walk, a short hurry in the middle, steady again, then the
+   ground fades to the page. Two separate controls: her legs (the stride
+   loop, --loader-pace, one cadence throughout) and her travel (the
+   speed profile, --loader-hurry*). The hurry moves her faster over the
+   ground and leaves her steps alone, so she never breaks into a run. The cream belongs to her watercolour paper, not the site:
+   it appears nowhere else. In dark mode the ground is the page's own, so
+   a night visitor isn't flashed with cream (the sprite is transparent,
+   so she sits on either).
+   Speed: her feet stay planted when the page moves her one stride per
+   stride cycle (--loader-stride). That crossing would take ~3.5s on a
+   phone and ~8s on a laptop, and a loader can't ask for that, so the
+   crossing is clamped (--dur-loader-walk-min/max) and she covers more
+   ground than her steps do. The clamp is the honest trade: the steps
+   read as a walk at this size and speed; the wait would not.
+   ============================================================ */
+:root {
+  --loader-cream: #f5f1e8;
+  --loader-ground: var(--loader-cream);
+  /* Her height: big enough to see the brushwork, small enough to cross
+     the screen rather than fill it. Capped by width on narrow phones. */
+  --loader-figure-h: min(42svh, 24rem, 110vw);
+  --loader-figure-floor: 18svh;      /* her feet, up from the bottom: lower-middle */
+  --loader-pace: 1.4;                /* her step cadence against the clip's (~1.06s a step, slow-motion on its own): ~0.76s a step, an ordinary office walk. Constant; the hurry doesn't touch it */
+  --loader-stride: 0.85;             /* ground one stride cycle (two steps) covers, in her heights, measured off the clip's planted foot */
+  --loader-hurry: 1.5;               /* the hurry: peak travel speed, as a multiple of her steady speed */
+  --loader-hurry-from: 0.36;         /* the hurry's window, as fractions of the crossing's time; */
+  --loader-hurry-to: 0.64;           /* speed rises and falls on a raised cosine between them */
+  --dur-loader-walk-min: 1400ms;     /* shortest crossing, so a phone still sees her walk */
+  --dur-loader-walk-max: 2400ms;     /* longest crossing, however wide the screen */
+  --dur-loader-still: 600ms;         /* reduced motion: she's simply there, this long */
+  --dur-loader-wait: 900ms;          /* longest the sprite may take to load before the loader gives up */
+  --dur-loader-fade: 450ms;          /* the ground fading off the page */
+  --z-loader: 10001;                 /* above everything, the cursor trail included */
+}
+:root[data-mode='dark'] {
+  --loader-ground: var(--paper);
+}
+
+/* ============================================================
+   PRELOADER — the first-paint loader (Preloader.astro), chosen on
+   request from rounds of mocks: a terracotta sheet with a faint grain;
+   the cursor line, in cream, sits as a dot in the middle and follows
+   only the visitor's pointer (a still dot until they move it); under
+   it, centred, a mouse icon and "A line is a dot that went for a walk"
+   in 16px mono caps, which starts as a row of dots, one per letter, and
+   turns into its letters as the page loads (the progress; there's no
+   number). At 100% the words fade and the terracotta shrinks, as a
+   slowly lumping blob, into the orange dot beside "Moss" in his card,
+   so the loader becomes a piece of the page. Where that dot isn't on
+   screen, the sheet lifts instead.
+   Colour: the light-mode accent, held in dark mode too (the dark
+   accent under cream text is 2.6:1; this is 4.9:1), and everything on
+   it is cream. A requested exception to rule 2's "no themed colour
+   band": it is on screen for a few seconds, on the home page only.
+   Pacing: the words follow the page's real images but never run ahead
+   of a paced schedule of --dur-preloader-min.
+   ============================================================ */
+:root {
+  --preloader-ground: #b4482a;           /* the light-mode accent, in both modes */
+  --preloader-ink: #f5f1e8;              /* cream (--loader-cream): 4.9:1 on the ground */
+  --preloader-ink-dim: rgb(245 241 232 / 0.78);   /* the words, the dots, the icon's detail */
+  --preloader-grain: url('/images/paper-grain.svg');
+  --preloader-grain-blend: soft-light;   /* lightens and darkens a little, so it reads on red */
+  --preloader-grain-opacity: 0.22;
+  --preloader-hint-size: 16px;
+  --preloader-hint-tracking: 0.05em;
+  --preloader-icon-size: 24px;
+  --preloader-offset: 4vh;               /* the words sit this far below the middle, where the dot starts */
+  --preloader-blob-lumps: 0.38;          /* how lumpy the shrinking blob is at full size (0 = a circle) */
+  --dur-preloader-min: 4000ms;           /* the shortest a full load takes */
+  --dur-preloader-max: 6000ms;           /* images still out by now count as in */
+  --dur-preloader-words: 300ms;          /* the words fading at 100% */
+  --dur-preloader-hold: 380ms;           /* from 100% to the exit */
+  --dur-preloader-blob: 1300ms;          /* the blob shrinking into Moss's dot */
+  --dur-preloader-lift: 1000ms;          /* the fallback lift, when his dot isn't on screen */
+  --ease-preloader-lift: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+  --dur-preloader-fade: 450ms;           /* reduced motion: fades instead */
+  --dur-preloader-skip: 600ms;           /* a key, click, tap or scroll: the same exit, faster */
+}

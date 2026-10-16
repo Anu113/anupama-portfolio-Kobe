@@ -82,13 +82,37 @@ effect:
   is the one place on the site allowed to be visibly "built," and it earns
   that by being the very first thing a visitor sees — it sets the design-eng
   claim before a word of copy does.
-- **A real loading sequence, once, on first paint.** A short (≈1–1.5s) branded
-  loader — a drawn mark plus a wordmark treatment — is allowed at the top of
-  the session, because it's the one moment where "nothing to look at yet" is
-  true and filling it well is itself a design decision. It must never block
-  or delay access to content beyond that first paint, must be skippable/instant
-  on repeat navigation within a session, and must resolve instantly (no
-  animation) under `prefers-reduced-motion`.
+- **The preloader, on the home page, on first paint** (`Preloader.astro`,
+  chosen on request from rounds of mocks): a terracotta sheet (the
+  light-mode accent, in both modes) with a faint grain, everything on it
+  cream. A requested exception to rule 2 and to "one dark band": it's
+  on screen for a few seconds, home page only. The cursor line, in
+  cream, the same spring chain as `CursorTrail`, sits as a dot in the
+  middle and follows only the visitor's pointer (a still dot until they
+  move it; never moves on its own, on request). Under it, centred: a
+  mouse icon and "A line is a dot that went for a walk" (Paul Klee) in
+  16px mono caps, medium tracking, which starts as a row of dots, one
+  per letter, and turns into its letters as the page loads. That is the
+  progress: there is no number, on request. At 100% the words fade and
+  the terracotta shrinks, as a slowly lumping blob, into the orange dot
+  beside "Moss" in his launcher card, ending at that dot's exact size
+  and place, so the loader becomes a piece of the page. Where his dot
+  isn't on screen, the sheet lifts instead. The words follow the page's
+  images but never run ahead of a paced ~4s schedule
+  (`--dur-preloader-min`), on request. Home page only, every time it's
+  opened or refreshed (on request); not when arriving from another page
+  of the site, nor on back/forward. It also waits for the hero
+  portrait's sprite (`hero-scrub:ready`, capped at 6s), and the portrait
+  shows its still frame until the sprite is in, so she appears with
+  Moss. Any key, click, tap or real scroll skips it with the same exit,
+  faster; a CSS failsafe hides it at 10s; it removes itself from the
+  DOM. Under reduced motion: no line, and a fade. Values under
+  PRELOADER in `tokens.css`. The walking loader (`Loader.astro`,
+  `data/loader.ts`, `scripts/walk-sprite.py`, LOADER tokens) is parked,
+  not deleted.
+  Its reason: the one screen with nothing else to show; it introduces
+  the line the visitor has on the rest of the site and hands them over
+  to the page, and to Moss.
 - **A consistent hover system on interactive surfaces**, not one bespoke
   effect per component. Work tiles, links, and cards get *the same* motion
   vocabulary reused everywhere: default state is quiet; hover reveals
@@ -379,8 +403,9 @@ walked back. Concretely, in the current implementation:
   only the palette tokens (ground `#1b1a19`, ink `#ecebe8`, grey
   `#a09d98`, accent lifted to `#e0714f` for AA), and every role colour
   follows. Switched from the theme button in the nav, a Light ↔ Dark
-  toggle (sun/moon); until a visitor presses it the page follows their
-  OS (inline script in `Base.astro`). A third System state was removed
+  toggle (sun/moon); until a visitor presses it the page is Light,
+  whatever their OS is set to (on request; inline script in
+  `Base.astro`). A third System state was removed
   on request — a press that changed nothing on the page felt dead.
   Any new colour must read through the role tokens or it won't follow.
   In dark mode only, the hero portrait is lit as a late-night scene
