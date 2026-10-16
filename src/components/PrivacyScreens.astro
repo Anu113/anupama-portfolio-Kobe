@@ -1,0 +1,334 @@
+---
+/* PrivacyScreens.astro — the PayPal Data & Privacy screens redrawn in
+   code, a row of three phones at a time, each in a DeviceBox (the
+   `screens` block in the "Privacy settings people can read" case; `set`
+   picks the row). The screens themselves are in PrivacyScreen.astro.
+
+   Why it exists: the case's screens were crops of a half-scale render
+   of her deck and read soft. Redrawn, they're sharp in either theme,
+   each row reads left to right as the flow (the old screen first where
+   there was one, pill "Before"), and the redesigned phones work: tap
+   through from where each starts, flip the switches, tick the data you
+   want, open "How it works". A skimming visitor still sees the three
+   screens at rest; one who taps gets the product.
+
+   How a phone works: it starts on its screen; a `data-go` clones that
+   screen's <template> on top (sheets slide over the screen they came
+   from, pages slide in), `data-back` and Escape step back, `data-home`
+   returns to the start. Each phone keeps its own state. Only the
+   screens a phone can reach are templated in it. A phone that starts on
+   a sheet (How it works, Delete your data, Shopping and Privacy) has the
+   page it belongs to underneath, so closing it lands on that page.
+
+   Every screen is drawn at --pp-screen-w and scaled to its phone by the
+   script, so the type and spacing stay the app's own at any phone size.
+   `offset` starts a phone scrolled down the same page.
+
+   A11y: "Before" phones are one role="img" each, with a label. Live
+   phones are labelled groups of real buttons; moving to a screen puts
+   focus on its title and announces it once (live region); toasts are
+   announced the same way. Motion is a 280ms slide, none under reduced
+   motion. Colours and type under PAYPAL PRIVACY SCREENS in tokens.css. */
+import DeviceBox from './DeviceBox.astro';
+import PrivacyScreen from './PrivacyScreen.astro';
+import '../styles/pp-sans.css';
+
+export type PrivacySet = 'hub' | 'shopping' | 'request' | 'delete' | 'contextual';
+interface Props { set: PrivacySet; caption?: string }
+const { set, caption } = Astro.props;
+
+interface Phone { id: string; label: string; alt?: string; before?: boolean; offset?: number }
+const sets: Record<PrivacySet, Phone[]> = {
+  hub: [
+    { id: 'hub', label: 'Data and privacy' },
+    { id: 'hub', label: 'Further down', offset: 586 },
+    { id: 'deals-ads', label: 'Deals & ads' },
+  ],
+  shopping: [
+    { id: 'shop-before', label: 'Before', before: true, alt: 'Before: Update PayPal Shopping, two bullet points, and a single button, Turn off PayPal Shopping.' },
+    { id: 'shop-offers', label: 'Personalized offers' },
+    { id: 'shop-how', label: 'How it works' },
+  ],
+  request: [
+    { id: 'req-before', label: 'Before', before: true, alt: 'Before: Get a copy of your data as one long checklist of data items under Personal info, Financial info and Usage info, then a file type and Continue.' },
+    { id: 'req', label: 'Get a copy' },
+    { id: 'req', label: 'File format', offset: 566 },
+  ],
+  delete: [
+    { id: 'del-before', label: 'Before', before: true, alt: 'Before: Delete your data and close account, the one path, with what happens to your data and to your account, and Continue.' },
+    { id: 'del-choice', label: 'Two ways to delete' },
+    { id: 'del-clean', label: 'Clean up your data' },
+  ],
+  contextual: [
+    { id: 'ctx-offers', label: 'In the offers' },
+    { id: 'ctx-card', label: 'In Deals & Offers' },
+    { id: 'ctx-sheet', label: 'Shopping and Privacy' },
+  ],
+};
+const phones = sets[set];
+
+// Where each screen's taps lead; a phone templates everything it can reach.
+const links: Record<string, string[]> = {
+  hub: ['shop-offers', 'deals-ads', 'req', 'del-choice'],
+  'shop-offers': ['shop-how'],
+  req: ['req-done'],
+  'del-choice': ['del-clean'],
+  'del-clean': ['del-done'],
+  'ctx-offers': ['ctx-sheet'],
+  'ctx-card': ['ctx-sheet'],
+};
+// A phone that starts on a sheet starts with the page the sheet belongs
+// to underneath it, so closing the sheet lands somewhere real.
+const parents: Record<string, string> = { 'shop-how': 'shop-offers', 'del-choice': 'hub', 'ctx-sheet': 'ctx-card' };
+const reach = (start: string) => {
+  const seen = new Set<string>(parents[start] ? [parents[start]] : []);
+  const walk = (id: string) => (links[id] ?? []).forEach((n) => { if (!seen.has(n) && n !== start) { seen.add(n); walk(n); } });
+  walk(start);
+  return [...seen];
+};
+const names: Record<string, string> = {
+  hub: 'Data and privacy', 'deals-ads': 'Deals & ads', 'shop-offers': 'Personalized deals and offers',
+  'shop-how': 'How it works', req: 'Get a copy of your data', 'req-done': 'Request submitted',
+  'del-choice': 'Delete your data', 'del-clean': 'Clean up your data', 'del-done': 'Request submitted',
+  'ctx-offers': 'Exclusive offers', 'ctx-card': 'Deals & Offers', 'ctx-sheet': 'Shopping and Privacy',
+};
+---
+<figure class="ps-set" data-ps>
+  <div class="ps-set__row" role="group" aria-label={`${phones.length} screens: ${phones.map((x) => x.label).join(', ')}`}>
+    {phones.map((p) => (
+      <DeviceBox label={p.label}>
+        <div
+          class:list={['ps', p.before && 'ps--before']}
+          role={p.before ? 'img' : 'group'}
+          aria-label={p.before ? p.alt : `${p.label}, a working screen. Tap through it.`}
+          data-phone={p.before ? undefined : ''}
+          data-offset={p.offset}
+          data-parent={p.before ? undefined : parents[p.id]}
+        >
+          <div class="ps__draw">
+            <div class="sb" aria-hidden="true"><span>9:41</span><span class="sb__icons"><i></i><i></i><i></i></span></div>
+            <div class="ps__screens" data-stack data-names={JSON.stringify(names)}>
+              <PrivacyScreen id={p.id} />
+            </div>
+            {!p.before && reach(p.id).map((id) => (
+              <template data-tpl={id}><PrivacyScreen id={id} /></template>
+            ))}
+            {!p.before && <p class="ps__toast" data-toast hidden></p>}
+            {!p.before && <p class="u-sr-only" aria-live="polite" data-announce></p>}
+          </div>
+        </div>
+      </DeviceBox>
+    ))}
+  </div>
+  {caption && <figcaption class="ps-set__cap u-label-mono">{caption}</figcaption>}
+</figure>
+
+<style>
+  /* Three phones side by side where they fit at near full size; where
+     they don't, one row you swipe or scroll (arrow keys once it has
+     focus), each phone at full size, rather than an uneven 2 + 1 wrap. */
+  .ps-set { margin: 0; display: grid; gap: 1rem; container-type: inline-size; }
+  .ps-set__row {
+    display: grid; gap: 1rem;
+    grid-auto-flow: column; grid-auto-columns: min(19rem, 86%);
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+  }
+  .ps-set__row > :global(*) { scroll-snap-align: start; }
+  @container (min-width: 50rem) {
+    .ps-set__row { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; }
+  }
+  .ps-set__row :global(.device-box) { padding-inline: 1rem; }
+  .ps-set__cap { max-width: var(--measure); color: var(--fg-dim); margin: 0; }
+
+  /* The screen: drawn at a fixed size, scaled to the phone by the script. */
+  .ps { position: absolute; inset: 0; overflow: hidden; background: var(--pp-surface); }
+  .ps__draw {
+    width: var(--pp-screen-w); height: var(--pp-screen-h); overflow: hidden; position: relative;
+    display: flex; flex-direction: column;
+    transform: scale(var(--ps-k, 1)); transform-origin: 0 0;
+    color: var(--pp-ink); font-family: var(--pp-sans); font-size: var(--pp-text-md); font-weight: var(--pp-w-reg); line-height: 1.35;
+  }
+  .ps--before { pointer-events: none; }
+  .ps__screens { position: relative; flex: 1; overflow: hidden; }
+
+  .sb { position: relative; z-index: 3; background: var(--pp-surface); display: flex; justify-content: space-between; align-items: center; padding: 14px 24px 4px; font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); flex: none; }
+  .sb__icons { display: flex; gap: 4px; align-items: flex-end; }
+  .sb__icons i { display: block; width: 4px; height: 6px; background: var(--pp-ink); border-radius: 1px; }
+  .sb__icons i:nth-child(2) { height: 8px; }
+  .sb__icons i:nth-child(3) { width: 18px; height: 8px; border-radius: 2px; }
+
+  .ps__toast {
+    position: absolute; left: 14px; right: 14px; bottom: 22px; z-index: 4; margin: 0;
+    padding: 10px 12px; border-radius: var(--pp-radius-field);
+    background: var(--pp-ink); color: var(--pp-surface); font-size: var(--pp-text-sm); text-align: center;
+    box-shadow: var(--pp-tile-shadow);
+  }
+  .ps__toast[hidden] { display: none; }
+
+  /* Moving between screens: pages slide in from the right, sheets rise;
+     a sheet's own drawn backdrop gives way to the real page under it. */
+  .ps__screens :global(.scr.is-in) { animation: ps-in var(--dur-pp-step) var(--ease-out); }
+  .ps__screens :global(.scr--sheet.is-in) { animation: ps-fade var(--dur-pp-step) var(--ease-out); }
+  .ps__screens :global(.scr--sheet:is(.is-in, .is-over)) { background: transparent; }
+  .ps__screens :global(.scr--sheet:is(.is-in, .is-over) .sheeted) { background: transparent; }
+  .ps__screens :global(.scr--sheet:is(.is-in, .is-over) .behind) { visibility: hidden; }
+  .ps__screens :global(.scr--sheet.is-in .sheet) { animation: ps-up var(--dur-pp-step) var(--ease-out); }
+  .ps__screens :global(.scr[hidden]) { display: none; }
+  @keyframes ps-in { from { transform: translateX(100%); } }
+  @keyframes ps-up { from { transform: translateY(100%); } }
+  @keyframes ps-fade { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .ps__screens :global(.scr.is-in),
+    .ps__screens :global(.scr--sheet.is-in),
+    .ps__screens :global(.scr--sheet.is-in .sheet) { animation: none; }
+  }
+</style>
+
+<script>
+  // Scale each drawn screen to its phone, so its type and spacing stay
+  // the app's own at any phone size.
+  const fit = (el: HTMLElement) => {
+    const draw = el.querySelector<HTMLElement>('.ps__draw');
+    if (draw) el.style.setProperty('--ps-k', String(el.clientWidth / draw.offsetWidth));
+  };
+  const ro = new ResizeObserver((entries) => entries.forEach((e) => fit(e.target as HTMLElement)));
+  document.querySelectorAll<HTMLElement>('[data-ps] .ps').forEach((el) => { fit(el); ro.observe(el); });
+
+  // The row takes keyboard focus only while it scrolls, so arrow keys
+  // can move it; side by side it's no extra tab stop.
+  const rows = new ResizeObserver((entries) => entries.forEach(({ target }) => {
+    const row = target as HTMLElement;
+    if (row.scrollWidth > row.clientWidth + 1) row.tabIndex = 0;
+    else row.removeAttribute('tabindex');
+  }));
+  document.querySelectorAll<HTMLElement>('[data-ps] .ps-set__row').forEach((row) => rows.observe(row));
+
+  // --- one phone ----------------------------------------------------
+  const live = (scr: HTMLElement) => {
+    // switches; one may govern the checkboxes beside it
+    scr.querySelectorAll<HTMLElement>('[data-switch]').forEach((sw) => {
+      const label = sw.closest('.switch-row, .card')?.querySelector<HTMLElement>('[data-switch-label]');
+      const apply = () => {
+        const on = sw.getAttribute('aria-checked') === 'true';
+        if (label) label.textContent = (on ? label.dataset.on : label.dataset.off) ?? '';
+        if (sw.hasAttribute('data-controls-checks')) {
+          sw.closest('[data-master]')?.querySelectorAll<HTMLElement>('[data-check]').forEach((c) => {
+            if (on) c.removeAttribute('aria-disabled'); else c.setAttribute('aria-disabled', 'true');
+          });
+        }
+      };
+      sw.addEventListener('click', () => { sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true')); apply(); });
+    });
+
+    // checkbox groups with a count, Select all and a submit that needs one
+    scr.querySelectorAll<HTMLElement>('[data-checks]').forEach((group) => {
+      const boxes = [...group.querySelectorAll<HTMLElement>('[data-check]')];
+      const count = group.querySelector<HTMLElement>('[data-count]');
+      const all = group.querySelector<HTMLElement>('[data-all]');
+      const submit = group.querySelector<HTMLElement>('[data-submit]');
+      const sync = () => {
+        const n = boxes.filter((b) => b.getAttribute('aria-checked') === 'true').length;
+        if (count) count.innerHTML = `<b>${n}</b> of ${boxes.length} selected`;
+        if (all) all.textContent = n === boxes.length ? 'Unselect all' : 'Select all';
+        if (submit) { if (n) submit.removeAttribute('aria-disabled'); else submit.setAttribute('aria-disabled', 'true'); }
+      };
+      all?.addEventListener('click', () => {
+        const every = boxes.every((b) => b.getAttribute('aria-checked') === 'true');
+        boxes.forEach((b) => b.setAttribute('aria-checked', String(!every)));
+        sync();
+      });
+      boxes.forEach((b) => b.addEventListener('click', sync));
+      sync();
+    });
+    scr.querySelectorAll<HTMLElement>('[data-check]').forEach((b) => b.addEventListener('click', (e) => {
+      if (b.getAttribute('aria-disabled') === 'true') { e.stopImmediatePropagation(); return; }
+      b.setAttribute('aria-checked', String(b.getAttribute('aria-checked') !== 'true'));
+    }, { capture: true }));
+
+    scr.querySelectorAll<HTMLElement>('[data-disclose]').forEach((btn) => btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', String(open));
+      const list = btn.nextElementSibling as HTMLElement | null;
+      if (list) list.hidden = !open;
+    }));
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-phone]').forEach((phone) => {
+    const stack = phone.querySelector<HTMLElement>('[data-stack]')!;
+    const names = JSON.parse(stack.dataset.names ?? '{}') as Record<string, string>;
+    const toast = phone.querySelector<HTMLElement>('[data-toast]');
+    const announce = phone.querySelector<HTMLElement>('[data-announce]');
+    const screens = () => [...stack.children] as HTMLElement[];
+    const top = () => screens()[screens().length - 1];
+    let toastTimer = 0;
+
+    const say = (text: string) => { if (announce) announce.textContent = text; };
+    const showToast = (text: string) => {
+      if (!toast) return;
+      toast.textContent = text; toast.hidden = false; say(text);
+      clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => { toast.hidden = true; }, 2200);
+    };
+    const focusTop = () => top().querySelector<HTMLElement>('[data-focus]')?.focus({ preventScroll: true });
+    // Back controls only show when there's somewhere to go back to.
+    const syncBack = () => {
+      const deep = screens().length > 1;
+      top().querySelectorAll<HTMLElement>('[data-back]').forEach((b) => { b.style.visibility = deep ? '' : 'hidden'; });
+    };
+
+    const go = (id: string) => {
+      const tpl = phone.querySelector<HTMLTemplateElement>(`template[data-tpl="${id}"]`);
+      const next = tpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+      if (!next) return;
+      const sheet = next.hasAttribute('data-sheet');
+      const prev = top();
+      next.classList.add('is-in');
+      stack.append(next);
+      live(next);
+      // Hide the page underneath once the new one has slid over it.
+      if (!sheet) {
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.setTimeout(() => { if (next.isConnected) prev.hidden = true; }, reduce ? 0 : 320);
+      }
+      syncBack(); focusTop(); say(names[id] ?? '');
+    };
+    const back = () => {
+      const all = screens();
+      if (all.length < 2) return;
+      all[all.length - 1].remove();
+      const now = top(); now.hidden = false;
+      syncBack(); focusTop(); say(names[now.dataset.screen ?? ''] ?? '');
+    };
+    const home = () => {
+      const [first, ...rest] = screens();
+      rest.forEach((s) => s.remove());
+      first.hidden = false;
+      syncBack(); focusTop(); say(names[first.dataset.screen ?? ''] ?? '');
+    };
+
+    phone.addEventListener('click', (e) => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>('[data-go], [data-back], [data-home], [data-stub], [data-dismiss]');
+      if (!t || !phone.contains(t)) return;
+      if (t.getAttribute('aria-disabled') === 'true') return;
+      if (t.dataset.go) go(t.dataset.go);
+      else if (t.hasAttribute('data-back')) back();
+      else if (t.hasAttribute('data-home')) home();
+      else if (t.hasAttribute('data-dismiss')) {
+        const card = t.closest<HTMLElement>('[data-card]');
+        if (card) { card.hidden = true; showToast('Got it. We won’t show this again.'); top().querySelector<HTMLElement>('[data-focus]')?.focus({ preventScroll: true }); }
+      } else if (t.dataset.stub) showToast(`${t.dataset.stub} isn’t part of this prototype.`);
+    });
+    phone.addEventListener('keydown', (e) => { if (e.key === 'Escape' && screens().length > 1) { e.preventDefault(); back(); } });
+
+    const first = top();
+    live(first);
+    const parentId = phone.dataset.parent;
+    const parentTpl = parentId && phone.querySelector<HTMLTemplateElement>(`template[data-tpl="${parentId}"]`);
+    const under = parentTpl ? parentTpl.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined : undefined;
+    if (under) { stack.prepend(under); live(under); first.classList.add('is-over'); }
+    syncBack();
+    const offset = Number(phone.dataset.offset);
+    if (offset) requestAnimationFrame(() => { first.scrollTop = offset; });
+  });
+</script>

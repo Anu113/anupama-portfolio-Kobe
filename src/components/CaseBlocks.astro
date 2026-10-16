@@ -2,7 +2,8 @@
 /* CaseBlocks.astro — renders the body of one case-study section.
    Takes the `blocks` array from a section in data/cases.ts and lays each
    kind out. Six kinds, deliberately: prose, points, rows, figure, quote,
-   metrics — plus `prototype`, a working flow rebuilt from her screens. That set covers the reference layout
+   metrics — plus `prototype`, a working flow rebuilt from her screens, and
+   `screens`, a row of phone screens redrawn in code. That set covers the reference layout
    (rachelchen.tech/projects/openai), which alternates statement copy with
    small titled grids and captioned figures.
 
@@ -25,6 +26,7 @@ import Reveal from './Reveal.astro';
 import EnrollPrototype from './EnrollPrototype.astro';
 import OffersPrototype from './OffersPrototype.astro';
 import AdsConsentPrototype from './AdsConsentPrototype.astro';
+import PrivacyScreens from './PrivacyScreens.astro';
 
 interface Props { blocks: CaseBlock[] }
 const { blocks } = Astro.props;
@@ -90,6 +92,9 @@ const { blocks } = Astro.props;
     )}
     {block.kind === 'prototype' && block.name === 'paypal-ads-consent' && (
       <AdsConsentPrototype caption={block.caption} />
+    )}
+    {block.kind === 'screens' && (
+      <PrivacyScreens set={block.set} caption={block.caption} />
     )}
 
     {block.kind === 'metrics' && (

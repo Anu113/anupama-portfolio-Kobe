@@ -1,0 +1,234 @@
+---
+/* PrivacyIllo.astro — the flat illustrations and row icons inside the
+   PayPal Data & Privacy screens (PrivacyScreens.astro). Drawn here in
+   PayPal's illustration style (flat shapes, a soft disc behind, a few
+   sparkles) to stand in for the app's own art, which isn't ours to
+   copy; each one keeps the idea of the original: a woman with a lock
+   for Data and privacy, a folder for Get a copy, a flask and set square
+   on a book for How it works. Decorative: the screen's role="img" label
+   says what's on it. Colours under PAYPAL PRIVACY SCREENS in tokens.css. */
+interface Props { name: string; size?: number }
+const { name, size } = Astro.props;
+const big = !name.startsWith('i-') && !['shoe', 'shirt', 'jacket', 'sneaker'].includes(name);
+const s = size ?? (big ? 120 : 20);
+---
+<svg class="illo" width={s} height={s} viewBox={big || ['shoe', 'shirt', 'jacket', 'sneaker'].includes(name) ? '0 0 120 120' : '0 0 24 24'} aria-hidden="true" focusable="false">
+  {name === 'lock-person' && (
+    <g>
+      <circle class="glow" cx="58" cy="66" r="44" />
+      <circle class="f-sky" cx="20" cy="40" r="2" /><circle class="f-yellow" cx="16" cy="84" r="2.2" /><circle class="f-sky" cx="98" cy="48" r="1.8" />
+      <path class="s-deep" d="M34 58 V44 a18 18 0 0 1 36 0 V58" fill="none" stroke-width="9" stroke-linecap="round" />
+      <rect class="f-blue" x="24" y="54" width="56" height="48" rx="10" />
+      <circle class="f-sky" cx="40" cy="70" r="5" /><circle class="f-sky" cx="56" cy="70" r="5" />
+      <circle class="f-sky" cx="40" cy="86" r="5" /><rect class="f-sky" x="51" y="83" width="12" height="5" rx="2.5" />
+      <path class="f-teal-lt" d="M78 112 L84 64 L92 64 L96 112 Z" />
+      <path class="f-sky-dk" d="M84 112 L90 70 L100 112 Z" />
+      <path class="f-skin" d="M80 50 Q74 44 70 40 L72 36 Q80 40 86 46 Z" />
+      <rect class="f-ink" x="66" y="28" width="9" height="14" rx="2" transform="rotate(-14 70 35)" />
+      <rect class="f-white" x="67.6" y="30" width="5.8" height="9" rx="1" transform="rotate(-14 70 35)" />
+      <circle class="f-skin" cx="92" cy="42" r="7" />
+      <path class="f-yellow" d="M84 40 a8 7 0 0 1 16 -2 l-2 3 h-12 z" />
+      <circle class="f-hair" cx="98" cy="34" r="3.4" />
+      <path class="f-teal" d="M84 52 Q92 48 99 54 L100 70 L84 70 Z" />
+    </g>
+  )}
+
+  {name === 'reminder-shield' && (
+    <g>
+      <path class="f-sky" d="M60 14 L96 26 V58 C96 82 80 98 60 106 C40 98 24 82 24 58 V26 Z" />
+      <path class="f-white" d="M60 24 L88 33 V58 C88 77 76 90 60 96 C44 90 32 77 32 58 V33 Z" />
+      <circle class="f-ink" cx="60" cy="54" r="9" />
+      <path class="f-ink" d="M55 58 h10 l-2 18 h-6 z" />
+    </g>
+  )}
+
+  {name === 'bags' && (
+    <g>
+      <circle class="glow" cx="60" cy="64" r="40" />
+      <path class="f-yellow" d="M92 22 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 z" />
+      <path class="f-yellow" d="M22 44 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 z" />
+      <path class="s-ink" d="M50 44 V36 a10 10 0 0 1 20 0 V44" fill="none" stroke-width="4" />
+      <rect class="f-purple" x="60" y="48" width="34" height="42" rx="3" />
+      <rect class="f-blue" x="34" y="42" width="40" height="46" rx="3" />
+      <rect class="f-yellow" x="24" y="64" width="28" height="30" rx="3" />
+      <circle class="f-teal" cx="58" cy="90" r="13" />
+      <path class="s-white" d="M53 95 L63 85" stroke-width="2.6" stroke-linecap="round" />
+      <circle class="f-white" cx="54" cy="86" r="2" /><circle class="f-white" cx="62" cy="94" r="2" />
+    </g>
+  )}
+
+  {name === 'laptop-person' && (
+    <g>
+      <circle class="glow" cx="60" cy="64" r="38" />
+      <circle class="f-teal" cx="40" cy="48" r="12" />
+      <path class="f-yellow" d="M58 30 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 z" />
+      <rect class="f-blue" x="22" y="58" width="44" height="28" rx="2" />
+      <rect class="f-yellow" x="16" y="86" width="56" height="5" rx="2" />
+      <circle class="f-skin-lt" cx="86" cy="46" r="10" />
+      <path class="f-orange" d="M76 44 a10 10 0 0 1 20 0 v-2 a10 6 0 0 0 -20 0z" />
+      <path class="f-blue" d="M72 62 Q86 54 100 62 L102 104 L74 104 Z" />
+      <path class="f-skin-lt" d="M74 68 L60 76 L62 80 L78 74 Z" />
+    </g>
+  )}
+
+  {name === 'offers-person' && (
+    <g>
+      <circle class="f-page" cx="60" cy="62" r="44" />
+      <path class="f-yellow" d="M104 18 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 z" />
+      <path class="f-yellow" d="M96 34 l1 3 3 1 -3 1 -1 3 -1 -3 -3 -1 3 -1 z" />
+      <rect class="f-deep" x="56" y="16" width="38" height="70" rx="7" />
+      <rect class="f-blue" x="59" y="20" width="32" height="62" rx="5" />
+      <rect class="f-white" x="62" y="26" width="34" height="18" rx="3" />
+      <circle class="f-yellow" cx="69" cy="35" r="5" />
+      <rect class="f-ink" x="77" y="31" width="15" height="2.4" rx="1" /><rect class="f-ink" x="77" y="36" width="10" height="2.4" rx="1" />
+      <rect class="f-white" x="62" y="48" width="26" height="12" rx="3" />
+      <circle class="f-yellow" cx="68" cy="54" r="3.5" />
+      <rect class="f-grey" x="74" y="52.5" width="11" height="2" rx="1" />
+      <rect class="f-white" x="62" y="64" width="20" height="6" rx="2" />
+      <path class="f-sky" d="M24 112 Q26 80 40 76 Q52 80 54 112 Z" />
+      <circle class="f-skin" cx="38" cy="58" r="11" />
+      <path class="f-hair" d="M26 56 a12 12 0 0 1 24 -2 c-4 -2 -8 -1 -12 -4 c-4 3 -8 4 -12 6 z" />
+      <circle class="f-hair" cx="25" cy="50" r="5" />
+      <path class="f-skin" d="M46 86 Q52 70 58 62 L62 64 Q58 76 52 90 Z" />
+    </g>
+  )}
+
+  {name === 'how-it-works' && (
+    <g>
+      <rect class="f-book" x="20" y="88" width="84" height="12" rx="3" />
+      <rect class="f-page" x="22" y="90" width="76" height="4" />
+      <path class="f-sky" d="M38 24 h14 v18 l14 36 a6 6 0 0 1 -6 8 h-30 a6 6 0 0 1 -6 -8 l14 -36 z" opacity=".55" />
+      <rect class="f-teal-lt" x="36" y="20" width="18" height="5" rx="2" />
+      <path class="f-purple" d="M30 62 h30 l6 16 a6 6 0 0 1 -6 8 h-30 a6 6 0 0 1 -6 -8 z" />
+      <rect class="f-white" x="30" y="66" width="10" height="2.4" rx="1" opacity=".8" /><rect class="f-white" x="28" y="72" width="8" height="2.4" rx="1" opacity=".8" />
+      <path class="f-yellow" d="M66 86 L100 86 L100 30 Z" />
+      <path class="f-white" d="M80 78 L94 78 L94 60 Z" />
+    </g>
+  )}
+
+  {name === 'folder' && (
+    <g>
+      <path class="f-blue" d="M18 34 a6 6 0 0 1 6 -6 h22 l8 8 h42 a6 6 0 0 1 6 6 v46 a6 6 0 0 1 -6 6 h-72 a6 6 0 0 1 -6 -6 z" />
+      <rect class="f-white" x="56" y="50" width="40" height="40" rx="8" />
+      <circle class="s-deep" cx="76" cy="70" r="9" fill="none" stroke-width="5" />
+      <path class="s-deep" d="M76 54 v6 M76 80 v6 M60 70 h6 M86 70 h6 M65 59 l4 4 M83 77 l4 4 M65 81 l4 -4 M83 63 l4 -4" stroke-width="4" stroke-linecap="round" />
+    </g>
+  )}
+
+  {name === 'cleanup' && (
+    <g>
+      <rect class="f-pink" x="40" y="40" width="54" height="54" rx="6" />
+      <rect class="f-sky-dk" x="26" y="24" width="54" height="54" rx="6" />
+      <path class="s-deep" d="M64 44 a14 14 0 1 0 4 12" fill="none" stroke-width="6" stroke-linecap="round" />
+      <path class="f-deep" d="M60 36 L72 42 L62 50 Z" />
+    </g>
+  )}
+
+  {name === 'shield-check' && (
+    <g>
+      <circle class="glow" cx="60" cy="60" r="44" />
+      <path class="f-blue" d="M60 22 L88 32 V58 C88 78 76 90 60 98 C44 90 32 78 32 58 V32 Z" />
+      <path class="f-deep" d="M60 22 L88 32 V58 C88 78 76 90 60 98 Z" opacity=".35" />
+      <path class="s-white" d="M46 60 L56 70 L76 48" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+  )}
+
+  {name === 'shoe' && (
+    <g>
+      <path class="f-teal" d="M16 80 Q14 62 24 52 Q30 46 36 50 Q44 60 56 62 Q78 64 94 70 Q106 74 106 82 Z" />
+      <path class="f-white" d="M24 52 Q30 46 36 50 Q44 60 56 62 L50 72 Q34 70 24 62 Z" opacity=".55" />
+      <path class="f-orange" d="M46 74 Q66 64 92 72 L90 76 Q68 70 48 78 Z" />
+      <path class="s-ink" d="M50 58 l6 -6 M58 61 l6 -6 M66 63 l5 -5" stroke-width="2" stroke-linecap="round" />
+      <path class="f-pink" d="M14 80 H106 Q108 86 102 90 H18 Q12 88 14 80 Z" />
+    </g>
+  )}
+  {name === 'sneaker' && (
+    <g>
+      <path class="f-ink" d="M14 74 Q18 58 32 56 L54 52 Q64 62 82 62 Q102 64 106 78 L106 86 L14 86 Z" />
+      <path class="f-orange" d="M50 66 Q70 60 92 70 L88 74 Q70 68 52 72 Z" />
+      <path class="f-white" d="M14 80 L106 80 L106 86 L14 86 Z" />
+    </g>
+  )}
+  {name === 'shirt' && (
+    <g>
+      <path class="f-white s-grey" stroke-width="1.5" d="M40 22 L52 18 Q60 26 68 18 L80 22 L98 38 L88 50 L80 44 L80 98 L40 98 L40 44 L32 50 L22 38 Z" />
+      <circle class="f-orange" cx="60" cy="52" r="10" />
+      <circle class="f-yellow" cx="60" cy="52" r="5" />
+      <path class="f-orange" d="M40 98 h40 v12 h-40 z" opacity=".8" />
+    </g>
+  )}
+  {name === 'jacket' && (
+    <g>
+      <path class="f-sage" d="M40 24 L52 18 Q60 24 68 18 L80 24 L96 44 L94 100 L26 100 L24 44 Z" />
+      <path class="s-sage-dk" d="M60 26 V100" stroke-width="2" />
+      <circle class="f-skin" cx="60" cy="14" r="8" />
+    </g>
+  )}
+
+  {/* row icons, 24px grid */}
+  {name === 'i-search' && (<g><circle class="f-glow-sm" cx="12" cy="12" r="12" /><circle class="s-blue" cx="11" cy="11" r="5" fill="none" stroke-width="2.4" /><path class="s-deep" d="M15 15 l4 4" stroke-width="2.8" stroke-linecap="round" /></g>)}
+  {name === 'i-blocked' && (<g><circle class="f-glow-sm" cx="12" cy="12" r="12" /><circle class="s-red" cx="12" cy="12" r="6" fill="none" stroke-width="2" /><path class="s-red" d="M8 16 L16 8" stroke-width="2" /></g>)}
+  {name === 'i-lock' && (<g><circle class="f-glow-sm" cx="12" cy="12" r="12" /><path class="s-deep" d="M9 11 V9 a3 3 0 0 1 6 0 V11" fill="none" stroke-width="2" /><rect class="f-blue" x="7.5" y="10.5" width="9" height="7.5" rx="1.5" /></g>)}
+  {name === 'i-cookie' && (<g><circle class="f-glow-sm" cx="12" cy="12" r="12" /><rect class="f-sky-dk" x="7" y="6" width="9" height="11" rx="1.5" /><circle class="f-blue" cx="15" cy="15" r="3.6" /><circle class="f-white" cx="15" cy="15" r="1.2" /></g>)}
+  {name === 'i-deals' && (<g><circle class="f-glow-sm" cx="12" cy="12" r="12" /><rect class="f-purple" x="7" y="9" width="10" height="9" rx="1.5" /><path class="s-ink" d="M9.5 9.5 V8 a2.5 2.5 0 0 1 5 0 v1.5" fill="none" stroke-width="1.4" /></g>)}
+  {name === 'i-download' && (<g><circle class="f-glow-sm" cx="12" cy="12" r="12" /><path class="s-blue" d="M12 6 V14 M8.5 11 L12 14.5 L15.5 11" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><path class="s-deep" d="M7 17.5 H17" stroke-width="2.2" stroke-linecap="round" /></g>)}
+  {name === 'i-edit' && (<g><circle class="f-glow-sm" cx="12" cy="12" r="12" /><path class="f-blue" d="M7 17 L7.8 13.6 L14.6 6.8 L17.2 9.4 L10.4 16.2 Z" /><path class="f-yellow" d="M7 17 L7.8 13.6 L10.4 16.2 Z" /></g>)}
+  {name === 'i-trash' && (<g><circle class="f-glow-sm" cx="12" cy="12" r="12" /><rect class="f-deep" x="7" y="7" width="10" height="2" rx="1" /><path class="f-blue" d="M8 10 h8 l-0.8 8 h-6.4 z" /><rect class="f-deep" x="10.5" y="5.5" width="3" height="2" rx="1" /></g>)}
+  {name === 'i-bell' && (<g><circle class="f-glow-sm" cx="12" cy="12" r="12" /><path class="f-ink" d="M7.5 15.5 Q8.5 14 8.5 11 a3.5 3.5 0 0 1 7 0 Q15.5 14 16.5 15.5 Z" /><circle class="f-ink" cx="12" cy="17.3" r="1.4" /></g>)}
+  {name === 'i-mail' && (<g><rect class="f-glow-sm" x="0" y="0" width="24" height="24" rx="12" /><rect class="f-blue" x="6" y="8" width="12" height="9" rx="1.5" /><path class="s-white" d="M6.5 9 L12 13 L17.5 9" fill="none" stroke-width="1.4" /></g>)}
+  {name === 'i-heart' && (<g><circle class="f-glow-sm" cx="12" cy="12" r="12" /><path class="f-ink" d="M12 17 C6 13 6.5 8.5 9.2 8.2 C10.6 8 11.5 9 12 10 C12.5 9 13.4 8 14.8 8.2 C17.5 8.5 18 13 12 17 Z" /></g>)}
+  {name === 'i-person' && (<path class="f-deep" d="M12 4 a3.4 3.4 0 1 1 0 6.8 a3.4 3.4 0 0 1 0 -6.8 Z M5.5 19 Q6 12.5 12 12.5 Q18 12.5 18.5 19 Z" />)}
+  {name === 'i-megaphone' && (<path class="f-deep" d="M5 10 h3 l8 -4 v12 l-8 -4 h-3 z M8 14 l1.5 5 h2 l-1.2 -4.6 Z" />)}
+  {name === 'i-apps' && (<g><rect class="f-deep" x="5" y="5" width="6" height="6" rx="1.5" /><rect class="f-blue" x="13" y="5" width="6" height="6" rx="3" /><rect class="f-blue" x="5" y="13" width="6" height="6" rx="3" /><rect class="f-deep" x="13" y="13" width="6" height="6" rx="1.5" /></g>)}
+  {name === 'i-face' && (<path class="s-blue" d="M5 9 V6 a1 1 0 0 1 1 -1 h3 M15 5 h3 a1 1 0 0 1 1 1 v3 M19 15 v3 a1 1 0 0 1 -1 1 h-3 M9 19 H6 a1 1 0 0 1 -1 -1 v-3 M9.5 10 v1 M14.5 10 v1 M9.5 15 q2.5 2 5 0" fill="none" stroke-width="1.8" stroke-linecap="round" />)}
+  {name === 'i-bag' && (<g><path class="f-deep" d="M6 9 h12 l-1 11 h-10 z" /><path class="s-deep" d="M9 10 V8 a3 3 0 0 1 6 0 v2" fill="none" stroke-width="1.6" /></g>)}
+  {name === 'i-truck' && (<g><rect class="f-blue" x="3" y="7" width="11" height="9" rx="1" /><path class="f-deep" d="M14 10 h4 l3 3 v3 h-7 z" /><circle class="f-ink" cx="7" cy="17" r="2" /><circle class="f-ink" cx="17" cy="17" r="2" /></g>)}
+  {name === 'i-store' && (<g><path class="f-blue" d="M4 9 L5.5 5 h13 L20 9 Z" /><rect class="f-deep" x="5" y="9" width="14" height="10" rx="1" /><rect class="f-white" x="8" y="12" width="3" height="3" /><rect class="f-white" x="13" y="12" width="3" height="7" /></g>)}
+  {name === 'i-sparkle' && (<path d="M10 3 l1.6 4.4 4.4 1.6 -4.4 1.6 -1.6 4.4 -1.6 -4.4 -4.4 -1.6 4.4 -1.6 z M17 13 l.9 2.1 2.1 .9 -2.1 .9 -.9 2.1 -.9 -2.1 -2.1 -.9 2.1 -.9 z M5 18 L13 10" class="f-ink s-ink" stroke-width="1.6" />)}
+  {name === 'i-shield' && (<g><path class="f-teal" d="M12 3 L19 6 V11 C19 16 16 19 12 21 C8 19 5 16 5 11 V6 Z" /><rect class="f-white" x="9.5" y="11" width="5" height="4" rx="0.8" /><path class="s-white" d="M10.5 11 V10 a1.5 1.5 0 0 1 3 0 v1" fill="none" stroke-width="1.2" /></g>)}
+  {name === 'i-shield-blue' && (<g><path class="f-blue" d="M12 3 L19 6 V11 C19 16 16 19 12 21 C8 19 5 16 5 11 V6 Z" /><path class="s-white" d="M8.8 12 L11 14.2 L15.5 9.6" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></g>)}
+  {name === 'i-warn' && (<path class="s-ink-dim" d="M12 5 L20 19 H4 Z M12 10 v4 M12 16.2 v.4" fill="none" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" />)}
+  {name === 'i-id' && (<g><rect class="s-ink-dim" x="4" y="6" width="16" height="12" rx="1.5" fill="none" stroke-width="1.5" /><circle class="f-ink-dim" cx="9" cy="11" r="1.8" /><path class="s-ink-dim" d="M13 10 h4 M13 13 h3" stroke-width="1.4" /></g>)}
+  {name === 'i-home' && (<path class="s-ink-dim" d="M5 11 L12 5 L19 11 V19 H5 Z" fill="none" stroke-width="1.5" stroke-linejoin="round" />)}
+  {name === 'i-envelope' && (<g><rect class="s-ink-dim" x="4" y="7" width="16" height="11" rx="1.5" fill="none" stroke-width="1.5" /><path class="s-ink-dim" d="M4.5 8 L12 13 L19.5 8" fill="none" stroke-width="1.5" /></g>)}
+  {name === 'i-phone' && (<rect class="s-ink-dim" x="8" y="4" width="8" height="16" rx="1.5" fill="none" stroke-width="1.5" />)}
+  {name === 'i-bank' && (<path class="s-ink-dim" d="M4 9 L12 5 L20 9 Z M6 10 v6 M10 10 v6 M14 10 v6 M18 10 v6 M4 18.5 H20" fill="none" stroke-width="1.5" stroke-linejoin="round" />)}
+  {name === 'i-card' && (<g><rect class="s-ink-dim" x="4" y="7" width="16" height="11" rx="1.5" fill="none" stroke-width="1.5" /><path class="s-ink-dim" d="M4 10.5 H20" stroke-width="1.5" /></g>)}
+  {name === 'i-xoom' && (<path class="s-blue" d="M6 6 L18 18 M18 6 L6 18" stroke-width="2.6" stroke-linecap="round" />)}
+  {name === 'i-venmo' && (<path class="f-blue" d="M5 6 h4 l2 9 l4 -9 h4 l-6.5 12 h-4 Z" />)}
+  {name === 'i-honey' && (<path class="f-orange" d="M8 19 V9 a4 4 0 0 1 8 0 V12 h-3 V9 a1 1 0 0 0 -2 0 V19 Z M13 13 h3 v6 h-3 z" />)}
+</svg>
+
+<style>
+  .illo { display: block; flex: none; overflow: visible; }
+  .glow { fill: var(--pp-illo-glow); }
+  .f-glow-sm { fill: var(--pp-illo-glow); }
+  .f-blue { fill: var(--pp-illo-blue); }
+  .f-deep { fill: var(--pp-illo-deep); }
+  .f-sky { fill: var(--pp-logo-light); }
+  .f-sky-dk { fill: var(--pp-sky); }
+  .f-yellow { fill: var(--pp-logo-yellow); }
+  .f-teal { fill: var(--pp-illo-teal); }
+  .f-teal-lt { fill: var(--pp-hill); }
+  .f-skin { fill: var(--pp-illo-skin); }
+  .f-skin-lt { fill: var(--pp-illo-skin-lt); }
+  .f-hair { fill: var(--pp-illo-hair); }
+  .f-purple { fill: var(--pp-illo-purple); }
+  .f-pink { fill: var(--pp-illo-pink); }
+  .f-orange { fill: var(--pp-illo-orange); }
+  .f-book { fill: var(--pp-illo-book); }
+  .f-page { fill: var(--pp-illo-page); }
+  .f-grey { fill: var(--pp-illo-grey); }
+  .f-sage { fill: var(--pp-ok); }
+  .f-white { fill: var(--pp-surface); }
+  .f-ink { fill: var(--pp-ink); }
+  .f-ink-dim { fill: var(--pp-ink-dim); }
+  .s-deep { stroke: var(--pp-illo-deep); }
+  .s-blue { stroke: var(--pp-illo-blue); }
+  .s-red { stroke: var(--pp-illo-red); }
+  .s-ink { stroke: var(--pp-ink); }
+  .s-ink-dim { stroke: var(--pp-ink-dim); }
+  .s-white { stroke: var(--pp-surface); }
+  .s-grey { stroke: var(--pp-illo-grey); }
+  .s-sage-dk { stroke: var(--pp-hill); }
+</style>

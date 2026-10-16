@@ -1,0 +1,615 @@
+---
+/* PrivacyScreen.astro — one PayPal Data & Privacy screen, by id. Drawn
+   inside a phone by PrivacyScreens.astro, which also clones these into
+   the phone as you tap through (each `data-go` names the next screen,
+   `data-back` steps back, `data-home` returns to where the phone
+   started).
+
+   The "Before" screens are pictures: nothing in them is a control. The
+   redesigned ones are live: switches are role="switch", checkboxes are
+   role="checkbox" with a live "N of M selected" count, "What's
+   included" is a disclosure, and rows lead to their screens. Rows with
+   no screen built say so in a toast rather than doing nothing.
+
+   Copy is hers, read off the deck's frames, except where marked "ours"
+   — confirm those with her:
+   - the Update your data, Delete your data, Deals & ads and "Emails and
+     notifications" row lines; the Ads on other sites line; the
+     Third-party profile data line (FPO in her frame)
+   - the switch's On line in Personalized deals and offers
+   - Financial info and Usage info as data types (named on the old
+     screen), and every "What's included" list
+   - both "Request submitted" screens.
+   Styles are PayPal's: PayPal Sans Big, light / regular / medium, never
+   bold (styles/pp-sans.css); colours under PAYPAL PRIVACY SCREENS. */
+import Illo from './PrivacyIllo.astro';
+
+interface Props { id: string }
+const { id } = Astro.props;
+
+const hubGroups = [
+  { h: 'Profile privacy', rows: [
+    { i: 'i-search', t: 'Search privacy', d: 'Manage how someone finds your profile on PayPal.' },
+    { i: 'i-blocked', t: 'Blocked profiles', d: 'Manage who can find you on PayPal.' },
+  ] },
+  { h: 'Permissions and shared data', rows: [
+    { i: 'i-lock', t: 'Permissions', d: 'Manage access you’ve given to other sites and apps.' },
+    { i: 'i-cookie', t: 'Cookies', d: 'Control how PayPal.com uses your internet cookies.' },
+    { i: 'i-deals', t: 'Deals & ads', d: 'Choose the deals and ads you see.', go: 'deals-ads' },
+  ] },
+  { h: 'Your data rights', rows: [
+    { i: 'i-download', t: 'Get a copy of your data', d: 'Get a copy of your account data.', go: 'req' },
+    { i: 'i-edit', t: 'Update your data', d: 'Fix info that’s wrong or out of date.' },
+    { i: 'i-trash', t: 'Delete your data', d: 'Clean up some of your data, or close your account.', go: 'del-choice' },
+  ] },
+];
+
+const reqBefore = [
+  { h: 'Personal info', d: 'We use this info to keep your account safe, personalize your experience and contact you when needed.', items: [
+    { i: 'i-id', t: 'Name, date of birth, and government ID info' }, { i: 'i-home', t: 'Addresses' }, { i: 'i-envelope', t: 'Emails' }, { i: 'i-phone', t: 'Phone numbers' } ] },
+  { h: 'Financial info', d: 'We use this info to enable you to checkout faster, and send or receive money, in just a few clicks.', items: [
+    { i: 'i-bank', t: 'Bank accounts' }, { i: 'i-card', t: 'Debit or credit cards' } ] },
+];
+
+const dataTypes = [
+  { i: 'i-person', t: 'Personal info', d: 'This helps us keep your account safe, personalize your experience, and contact you when needed.', inc: ['Name, date of birth and government ID info', 'Addresses', 'Emails', 'Phone numbers'], on: true },
+  { i: 'i-card', t: 'Financial info', d: 'This lets you check out faster, and send or receive money in just a few clicks.', inc: ['Bank accounts', 'Debit or credit cards'], on: true },
+  { i: 'i-megaphone', t: 'Marketing', d: 'This info helps us personalize your experience and provide relevant ads and offers.', inc: ['Your shopping interests', 'The offers we’ve shown you'], on: true },
+  { i: 'i-phone', t: 'Usage info', d: 'Your location, the type of device you use and your mobile network.', inc: ['Location', 'Device type', 'Mobile network'], on: false },
+];
+const apps = [{ i: 'i-xoom', t: 'Xoom' }, { i: 'i-venmo', t: 'Venmo' }, { i: 'i-honey', t: 'Honey' }];
+
+const cleanRows = [
+  { i: 'i-face', t: 'Face scan data', d: 'Delete your face scan data. To use services such as ID verification you’ll need to re-upload it.' },
+  { i: 'i-bag', t: 'Marketing data', d: 'Delete the info on your shopping interests. This reduces the relevance of ads and offers shown to you.' },
+  { i: 'i-truck', t: 'Package tracking info', d: 'Delete all your package tracking history. You’ll no longer be able to access it on PayPal.' },
+  { i: 'i-store', t: 'Third-party acquired profile data', d: 'Delete profile info we got from other companies.' },
+];
+
+const products = [
+  { art: 'shoe', off: '14% Off', brand: 'Nike', price: '$136', was: '$160', cash: '$2.00 Cash Back', pts: '(200 points)', left: '2h left' },
+  { art: 'shirt', off: '', brand: 'Nike', price: '$40', was: '', cash: '$1.80 Cash Back', pts: '(180 points)', left: '40m left' },
+];
+
+const OFFERS_OFF = 'Personalized deals and offers is turned off. Turn it on to get money saving deals that are personalized to you.';
+const OFFERS_ON = 'Personalized deals and offers is on. We’ll show you deals based on where you’ve used PayPal.';
+
+const sheets = ['shop-how', 'del-choice', 'ctx-sheet'];
+const isSheet = sheets.includes(id);
+---
+<section class:list={['scr', isSheet && 'scr--sheet']} data-screen={id} data-sheet={isSheet ? '' : undefined}>
+
+  {/* ---------- Data and privacy ---------- */}
+  {id === 'hub' && (
+    <div class="hub">
+      <div class="hub__top">
+        <span class="back" aria-hidden="true">←</span>
+        <div class="art"><Illo name="lock-person" size={124} /></div>
+        <p class="title title--c" data-focus tabindex="-1">Data and privacy</p>
+        <p class="sub">Set your privacy controls and manage your data.</p>
+      </div>
+      <div class="ground">
+        <button class="b remind" data-go="shop-offers">
+          <span>
+            <span class="remind__t">You haven’t accessed privacy settings in the past year.</span>
+            <span class="remind__d">Are you still happy getting shopping deals?</span>
+            <span class="remind__a">Review your settings</span>
+          </span>
+          <Illo name="reminder-shield" size={58} />
+        </button>
+        {hubGroups.map((g) => (
+          <div class="group">
+            <p class="group__h">{g.h}</p>
+            {g.rows.map((r) => (
+              <button class="b tile" data-go={r.go} data-stub={r.go ? undefined : r.t}>
+                <Illo name={r.i} size={34} />
+                <span><span class="tile__t">{r.t}</span><span class="tile__d">{r.d}</span></span>
+              </button>
+            ))}
+          </div>
+        ))}
+        <button class="b tile tile--link" data-stub="Emails and notifications">
+          <Illo name="i-mail" size={34} />
+          <span><span class="tile__t">Emails and notifications</span><span class="tile__d">Choose the marketing emails and notifications you get.</span></span>
+          <span class="chev" aria-hidden="true">›</span>
+        </button>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Deals & ads ---------- */}
+  {id === 'deals-ads' && (
+    <div class="plain">
+      <div class="nav"><button class="b back" data-back aria-label="Back">←</button><span class="nav__t" data-focus tabindex="-1">Deals &amp; ads</span><span></span></div>
+      <div class="ground ground--tight">
+        <div class="block block--c">
+          <div class="art"><Illo name="bags" size={104} /></div>
+          <p class="title-sm">Deals on PayPal</p>
+          <p class="sub">See relevant deals on PayPal based on what you browse or buy on or off PayPal.</p>
+          <div class="card card--left" data-master>
+            <div class="switch-row">
+              <span class="sm" data-switch-label data-on="Deals on PayPal is ON" data-off="Deals on PayPal is OFF">Deals on PayPal is ON</span>
+              <button class="b switch" role="switch" aria-checked="true" aria-label="Deals on PayPal" data-switch data-controls-checks><i></i></button>
+            </div>
+            <button class="b check-row" role="checkbox" aria-checked="true" data-check><span class="box"></span><span class="sm">Based on PayPal activity</span></button>
+            <button class="b check-row" role="checkbox" aria-checked="true" data-check><span class="box"></span><span class="sm">Based on online activity with our partners</span></button>
+          </div>
+        </div>
+        <div class="block block--c">
+          <div class="art"><Illo name="laptop-person" size={96} /></div>
+          <p class="title-sm">Ads on other sites</p>
+          <p class="sub">Choose whether we use your info to show you PayPal ads on other sites.</p>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Shopping: before ---------- */}
+  {id === 'shop-before' && (
+    <div class="old">
+      <span class="close close--r">✕</span>
+      <p class="old__title">Update PayPal Shopping</p>
+      <p class="old__p">Money-saving offers and helpful services make shopping at participating online stores even better.</p>
+      <ul class="old__list">
+        <li>Get Exclusive Store Cash offers from participating stores in PayPal’s extensive network</li>
+        <li>Automatically keep track of the things you left in shopping carts at participating stores</li>
+      </ul>
+      <span class="old__btn">Turn off PayPal Shopping</span>
+      <span class="old__logo">P</span>
+    </div>
+  )}
+
+  {/* ---------- Shopping: personalized offers ---------- */}
+  {id === 'shop-offers' && (
+    <div class="plain">
+      <div class="nav"><button class="b back" data-back aria-label="Back">←</button></div>
+      <div class="pad">
+        <p class="title" data-focus tabindex="-1">Personalized deals and offers</p>
+        <div class="art art--pad"><Illo name="offers-person" size={140} /></div>
+        <p class="sub sub--ink">Get offers from PayPal to save at your favorite online stores.</p>
+      </div>
+      <div class="ground ground--tight">
+        <div class="card">
+          <div class="switch-row switch-row--top">
+            <span>
+              <span class="card__t">Get personalized offers</span>
+              <span class="tile__d" data-switch-label data-on={OFFERS_ON} data-off={OFFERS_OFF}>{OFFERS_OFF}</span>
+            </span>
+            <button class="b switch" role="switch" aria-checked="false" aria-label="Get personalized offers" data-switch><i></i></button>
+          </div>
+          <button class="b link link--rule" data-go="shop-how">Learn how it works</button>
+        </div>
+        <div class="never"><Illo name="i-shield" size={26} /><p class="sm dim">We never sell your personal information.</p></div>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Shopping: how it works (sheet) ---------- */}
+  {id === 'shop-how' && (
+    <div class="sheeted">
+      <div class="behind"><span class="back" aria-hidden="true">←</span></div>
+      <div class="sheet sheet--tall" role="dialog" aria-label="How it works">
+        <button class="b close close--r" data-back aria-label="Close">✕</button>
+        <div class="art"><Illo name="how-it-works" size={104} /></div>
+        <p class="title title--c" data-focus tabindex="-1">How it works</p>
+        <p class="h-sm">Purchases through PayPal</p>
+        <p class="p">We know where you have used PayPal and can help you save at those same stores.</p>
+        <p class="h-sm">Stores you have visited</p>
+        <p class="p">Participating stores within the PayPal network may ask PayPal to send you exclusive offers to save when you shop there.</p>
+        <p class="p">For example: you browse on abcshoes.com but don’t buy anything. ABCshoes may ask PayPal to send you a special offer for the next time you shop there and use PayPal.</p>
+        <button class="b btn btn--foot" data-back>Got it</button>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Get a copy: before ---------- */}
+  {id === 'req-before' && (
+    <div class="old old--dense">
+      <span class="back">←</span>
+      <p class="old__title old__title--l">Get a copy of your data</p>
+      <p class="xs dim">Request to download a copy of your data to create a backup or know what info is stored with us.</p>
+      <p class="old__note">For a copy of your transaction activity, <span class="link">go to activity download</span></p>
+      <div class="old__head"><span class="sm strong">What data should we include?</span><span class="xs link">Unselect all</span></div>
+      {reqBefore.map((g) => (
+        <div class="old__group">
+          <p class="xs strong">{g.h}</p>
+          <p class="xxs dim">{g.d}</p>
+          {g.items.map((it) => (
+            <div class="old__item"><Illo name={it.i} size={14} /><span class="xs">{it.t}</span><span class="box box--sm is-on"></span></div>
+          ))}
+        </div>
+      ))}
+      <div class="old__group">
+        <div class="old__item old__item--top old__item--plain"><div><p class="xs strong">Usage info</p><p class="xxs dim">Includes info about your location, the type of device you use and your mobile network.</p></div><span class="box box--sm is-on"></span></div>
+      </div>
+      <p class="sm strong">Choose file type</p>
+      <div class="select select--sm"><span class="xxs dim">File type</span><span class="xs">PDF</span><span class="select__c">⌄</span></div>
+      <span class="old__btn old__btn--sm">Continue</span>
+    </div>
+  )}
+
+  {/* ---------- Get a copy: after ---------- */}
+  {id === 'req' && (
+    <div class="plain" data-checks>
+      <div class="nav"><button class="b back" data-back aria-label="Back">←</button></div>
+      <div class="pad pad--c pad--top0">
+        <div class="art"><Illo name="folder" size={70} /></div>
+        <p class="title title--c" data-focus tabindex="-1">Get a copy of your data</p>
+        <p class="sub">Choose what data you want to download.</p>
+      </div>
+      <div class="pad">
+        <p class="h-sm">Data types</p>
+        <div class="count"><button class="b link" data-all>Select all</button><span class="xs dim" data-count aria-live="polite"></span></div>
+        {dataTypes.map((d) => (
+          <div class="dtype">
+            <button class="b dtype__h" role="checkbox" aria-checked={d.on ? 'true' : 'false'} data-check><Illo name={d.i} size={16} /><span class="sm strong">{d.t}</span><span class="box"></span></button>
+            <p class="tile__d">{d.d}</p>
+            <button class="b link xs inc-btn" aria-expanded="false" data-disclose>What’s included <span class="inc-btn__c" aria-hidden="true">⌄</span></button>
+            <ul class="inc" hidden>{d.inc.map((x) => <li>{x}</li>)}</ul>
+          </div>
+        ))}
+        <div class="dtype">
+          <div class="dtype__h"><Illo name="i-apps" size={16} /><span class="sm strong">Other connected apps</span><span></span></div>
+          <p class="tile__d">You also have data related to these PayPal services.</p>
+          {apps.map((a) => (
+            <button class="b app" role="checkbox" aria-checked="true" data-check><Illo name={a.i} size={14} /><span class="sm">{a.t}</span><span class="box"></span></button>
+          ))}
+        </div>
+        <p class="h-sm h-sm--gap">Choose file format</p>
+        <div class="select"><span class="xxs dim">File type</span><span class="sm strong">PDF</span><span class="select__c" aria-hidden="true">⌄</span></div>
+        <p class="xxs dim">PDF files can be easily opened on any computer.</p>
+        <button class="b btn" data-go="req-done" data-submit>Submit a Request</button>
+        <div class="never never--row"><Illo name="i-shield-blue" size={16} /><p class="xs dim">Your info is safely encrypted.</p></div>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Request submitted (ours) ---------- */}
+  {(id === 'req-done' || id === 'del-done') && (
+    <div class="plain done">
+      <div class="done__body">
+        <Illo name="shield-check" size={96} />
+        <p class="title title--c" data-focus tabindex="-1">Request submitted</p>
+        <p class="sub">{id === 'req-done'
+          ? 'We’ll email you when your file is ready to download. You can check its status in Data and privacy.'
+          : 'We’ll let you know when your data has been cleaned up. Your account stays open.'}</p>
+      </div>
+      <div class="foot foot--white"><button class="b btn" data-home>Done</button></div>
+    </div>
+  )}
+
+  {/* ---------- Delete: before ---------- */}
+  {id === 'del-before' && (
+    <div class="old old--dense">
+      <span class="back">←</span>
+      <p class="old__title old__title--l">Delete your data and close account</p>
+      <p class="xs dim">Learn about our deletion process before you submit this request.</p>
+      <div class="old__box">
+        <p class="xs strong">What happens to your data?</p>
+        <p class="xxs dim">When you request deletion of data if eligible, your account will be closed, and your data will be deleted from our systems within 30 days of this request.</p>
+        <p class="xxs dim">We may retain some of your data to comply with legal and regulatory requirements, and prevent fraud and abuse.</p>
+        <p class="xxs dim">To learn more about when, and what data is retained, you can read our <span class="link">retention policy</span>.</p>
+      </div>
+      <p class="xs strong">What happens when your account is closed?</p>
+      <div class="old__item old__item--top"><Illo name="i-warn" size={14} /><p class="xxs dim">You’ll not be able to use any of PayPal services like send or receive money, faster checkout and touchless payments.</p><span></span></div>
+      <div class="old__item old__item--top"><Illo name="i-warn" size={14} /><p class="xxs dim">Your subscriptions with PayPal on third-party services like Spotify or Netflix will be invalid.</p><span></span></div>
+      <p class="xs strong">Account deletion is permanent and cannot be reversed. Are you sure you want to close this account?</p>
+      <span class="old__btn old__btn--sm">Continue</span>
+    </div>
+  )}
+
+  {/* ---------- Delete: two ways (sheet) ---------- */}
+  {id === 'del-choice' && (
+    <div class="sheeted">
+      <div class="behind behind--grey"></div>
+      <div class="sheet" role="dialog" aria-label="Delete your data">
+        <div class="sheet__head"><span></span><span class="nav__t" data-focus tabindex="-1">Delete your data</span><button class="b close" data-back aria-label="Close">✕</button></div>
+        <button class="b choice is-on" data-go="del-clean">
+          <span class="choice__h"><Illo name="i-sparkle" size={16} /><span class="card__t">Clean up your data</span><span class="new">New</span></span>
+          <span class="tile__d">Delete your non-essential data such as marketing data, face scan etc., without closing your account.</span>
+        </button>
+        <button class="b choice" data-stub="Closing your account">
+          <span class="choice__h"><Illo name="i-trash" size={16} /><span class="card__t">Delete your data and close this account</span></span>
+          <span class="tile__d">Once you delete this data, your account will be closed permanently.</span>
+        </button>
+        <button class="b link link--c" data-back>Cancel</button>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Delete: clean up ---------- */}
+  {id === 'del-clean' && (
+    <div class="plain plain--ground plain--footed" data-checks>
+      <div class="nav"><button class="b back" data-back aria-label="Back">←</button><span></span><span></span></div>
+      <div class="pad pad--c pad--top0">
+        <div class="art"><Illo name="cleanup" size={66} /></div>
+        <p class="title title--c" data-focus tabindex="-1">Clean up your data</p>
+        <p class="sub">Improve your experience by deleting these. You’ll remove over-retained, outdated and irrelevant data.</p>
+      </div>
+      <div class="pad pad--flush">
+        <div class="count"><span class="xs dim" data-count aria-live="polite"></span><button class="b link" data-all>Select all</button></div>
+        <div class="list">
+          {cleanRows.map((r) => (
+            <button class="b list__row" role="checkbox" aria-checked="false" data-check><Illo name={r.i} size={18} /><span><span class="sm strong">{r.t}</span><span class="tile__d">{r.d}</span></span><span class="box"></span></button>
+          ))}
+        </div>
+      </div>
+      <div class="foot"><button class="b btn" data-go="del-done" data-submit>Submit a Request</button></div>
+    </div>
+  )}
+
+  {/* ---------- Contextual: in the offers ---------- */}
+  {id === 'ctx-offers' && (
+    <div class="plain plain--ground plain--footed-app">
+      <div class="pad">
+        <p class="title-sm title-sm--l" data-focus tabindex="-1">Exclusive offers just for you</p>
+        <div class="prods">
+          {products.map((p) => (
+            <div class="prod">
+              <div class="prod__art">{p.off && <span class="prod__off">{p.off}</span>}<Illo name={p.art} size={92} /></div>
+              <p class="xxs dim">{p.brand}</p>
+              <p class="sm strong">{p.price} {p.was && <s class="xxs dim">{p.was}</s>}</p>
+              <p class="xxs">{p.cash}</p>
+              <p class="xxs dim">{p.pts}<br />{p.left}</p>
+            </div>
+          ))}
+        </div>
+        <button class="b link link--c" data-stub="More offers">Show more</button>
+        <button class="b personal is-hl" data-go="ctx-sheet"><Illo name="i-shield-blue" size={18} /><span class="sm">Personalize your experience</span><span class="chev" aria-hidden="true">›</span></button>
+      </div>
+      <div class="legal-band"><p class="xxs">Select PayPal option at checkout to earn Cash Back. <span class="link">Terms apply. PayPal exclusions may apply.</span></p></div>
+      <div class="pad">
+        <p class="title-sm title-sm--l">Earn cash back at our top stores</p>
+        <div class="stores"><span><b class="dot dot--red"></b>Uniqlo</span><span><b class="dot"></b>Postmates</span></div>
+      </div>
+      <div class="foot foot--app" aria-hidden="true">
+        <div class="btns"><span class="btn">Send</span><span class="btn">Request</span></div>
+        <div class="tabbar"><span class="is-on">Home</span><span>Deals</span><span>Menu</span><span>Finances</span><span>Payments</span></div>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Contextual: Deals & Offers card ---------- */}
+  {id === 'ctx-card' && (
+    <div class="plain plain--ground">
+      <div class="nav nav--white"><span></span><span class="nav__t" data-focus tabindex="-1">Deals &amp; Offers</span><span></span></div>
+      <div class="pad">
+        <p class="sm dim">Pay with PayPal to save instantly</p>
+        <div class="coupon"><span class="coupon__brand">CVS</span><span class="coupon__amt">$5 off</span><span class="xxs">Dec 1 – 31</span><span class="coupon__add" aria-hidden="true">+</span></div>
+        <button class="b link link--c" data-stub="All offers">Show all</button>
+        <div class="card is-hl" data-card>
+          <div class="card__brand"><Illo name="i-shield-blue" size={22} /><span class="sm">Shopping and Privacy</span><button class="b close" data-dismiss aria-label="Dismiss Shopping and Privacy">✕</button></div>
+          <p class="big">Get top deals inspired by your shopping activity</p>
+          <button class="b xs dim learn" data-go="ctx-sheet">Learn more</button>
+        </div>
+        <p class="sm strong">Today’s top deals</p>
+        <div class="stores"><span><b class="dot dot--red"></b>Uniqlo</span><span><b class="dot"></b>Postmates</span></div>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Contextual: Shopping and Privacy sheet ---------- */}
+  {id === 'ctx-sheet' && (
+    <div class="sheeted">
+      <div class="behind behind--grey"><span class="nav__t">Deals &amp; Offers</span></div>
+      <div class="sheet sheet--tall" role="dialog" aria-label="Shopping and Privacy">
+        <button class="b close close--r" data-back aria-label="Close">✕</button>
+        <div class="art"><Illo name="shield-check" size={92} /></div>
+        <p class="title title--c" data-focus tabindex="-1">Shopping and Privacy</p>
+        <div class="why"><Illo name="i-heart" size={30} /><div><p class="sm strong">Deals inspired by you</p><p class="tile__d">We’ll feature deals, products, and stores that we think you’ll like, based on where you shop and what you buy.</p></div></div>
+        <div class="why"><Illo name="i-bell" size={30} /><div><p class="sm strong">Sent straight to you</p><p class="tile__d">We’ll send you exclusive offers from your favorite stores. Change your <button class="b link" data-stub="Notification settings">notification settings</button> anytime.</p></div></div>
+        <p class="sm dim center">Your info is securely encrypted. We never sell it, and won’t share it without your permission.</p>
+        <button class="b btn btn--foot" data-back>Got it</button>
+      </div>
+    </div>
+  )}
+</section>
+
+<style>
+  /* Every button in a screen starts from nothing and takes the app's look. */
+  .b {
+    appearance: none; margin: 0; padding: 0; border: 0; background: none; color: inherit;
+    font: inherit; letter-spacing: inherit; text-transform: none; text-align: inherit; cursor: pointer;
+    display: block; width: auto;
+  }
+  .b:focus-visible, [data-focus]:focus-visible { outline: 2px solid var(--pp-blue); outline-offset: 2px; }
+  [data-focus]:focus { outline: none; }
+  span.card__t, span.tile__d { display: block; }
+  .tile > span > span, .remind > span > span, .choice > span:not(.choice__h), .list__row > span > span { display: block; }
+
+  /* A screen fills the phone under the status bar and scrolls on its own. */
+  .scr {
+    position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+    display: flex; flex-direction: column; background: var(--pp-surface); scrollbar-width: none;
+  }
+  .scr::-webkit-scrollbar { display: none; }
+  .scr--sheet { overflow: hidden; }
+  .scr > * { flex: 1 0 auto; }
+  .scr p { margin: 0; }
+  .scr b { font-weight: var(--pp-w-med); }
+  .scr :is(p, span, s, b, li, button) { font-family: var(--pp-sans); letter-spacing: normal; font-synthesis: none; }
+  /* type */
+  .title { font-size: var(--pp-text-title); line-height: 1.2; font-weight: var(--pp-w-reg); letter-spacing: var(--pp-tracking-title) !important; }
+  .title--c { text-align: center; }
+  .title-sm { font-size: var(--pp-text-md); font-weight: var(--pp-w-med); text-align: center; }
+  .title-sm--l { text-align: left; font-weight: var(--pp-w-reg); font-size: var(--pp-text-md); margin-bottom: 8px !important; }
+  .sub { font-size: var(--pp-text-sm); color: var(--pp-ink-dim); text-align: center; margin-top: 6px !important; }
+  .sub--ink { color: var(--pp-ink); }
+  .h-sm { font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); margin-top: 12px !important; }
+  .h-sm--gap { margin-top: 18px !important; }
+  .p { font-size: var(--pp-text-sm); margin-top: 6px !important; }
+  .sm { font-size: var(--pp-text-sm); }
+  .xs { font-size: var(--pp-text-xs); }
+  .xxs { font-size: var(--pp-text-2xs); line-height: 1.4; }
+  .strong { font-weight: var(--pp-w-med); }
+  .dim { color: var(--pp-ink-dim); }
+  .center { text-align: center; }
+  .link { color: var(--pp-blue); font-weight: var(--pp-w-med); font-size: var(--pp-text-sm); }
+  :is(.xxs, .xs, .tile__d) .link { font-size: inherit; }
+  .link.xs { font-size: var(--pp-text-xs); margin-top: 4px !important; }
+  .link--c { text-align: center; margin: 10px 0 !important; }
+  .link--rule { width: 100%; text-align: left; border-top: 1px solid var(--pp-line); margin-top: 12px !important; padding-top: 10px; }
+  .back { font-size: var(--pp-text-lg); line-height: 1; }
+  .close { font-size: var(--pp-text-sm); color: var(--pp-ink); }
+  .close--r { position: absolute; top: 14px; right: 16px; }
+  .chev { color: var(--pp-ink-dim); font-size: var(--pp-text-md); }
+  .art { display: grid; place-items: center; }
+  .art--pad { margin: 6px 0; }
+
+  /* layout pieces */
+  .plain { display: flex; flex-direction: column; flex: 1; }
+  .plain--ground { background: var(--pp-ground); }
+  .nav { display: grid; grid-template-columns: 24px 1fr 24px; align-items: center; padding: 8px 16px; min-height: 36px; }
+  .nav--white { background: var(--pp-surface); }
+  .nav__t { text-align: center; font-size: var(--pp-text-md); }
+  .pad { padding: 8px 16px; display: flex; flex-direction: column; }
+  .pad--c { align-items: center; text-align: center; padding-top: 22px; }
+  .pad--flush { padding-inline: 12px; }
+  .ground { background: var(--pp-ground); padding: 14px 12px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .ground--tight { gap: 12px; }
+  .block { background: var(--pp-surface); padding: 14px; }
+  .block--c { text-align: center; margin-inline: -12px; }
+  .card { background: var(--pp-surface); border-radius: var(--pp-radius-tile); padding: 14px; box-shadow: var(--pp-tile-shadow); }
+  .card--left { text-align: left; margin-top: 12px; background: var(--pp-ground); box-shadow: none; }
+  .card__t { font-size: var(--pp-text-md); }
+  .is-hl { box-shadow: 0 0 0 2px var(--pp-logo-yellow), var(--pp-tile-shadow); }
+
+  /* Data and privacy */
+  .hub__top { position: relative; padding: 6px 18px 18px; text-align: center; }
+  .hub__top .back { position: absolute; left: 16px; top: 6px; }
+  .hub__top .art { margin: 4px 0 6px; }
+  .remind { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 8px; padding: 14px; border-radius: 6px; background: var(--pp-illo-deep); color: var(--pp-surface); }
+  .remind__t { font-size: var(--pp-text-lg); line-height: 1.2; font-weight: var(--pp-w-light); }
+  .remind__d { font-size: var(--pp-text-xs); margin-top: 6px !important; }
+  .remind__a { font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); margin-top: 14px !important; }
+  .group { display: flex; flex-direction: column; gap: 8px; }
+  .group__h { font-size: var(--pp-text-md); font-weight: var(--pp-w-med); margin: 10px 0 2px !important; }
+  .tile { width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; padding: 12px; background: var(--pp-surface); border-radius: var(--pp-radius-field); box-shadow: var(--pp-tile-shadow); }
+  .tile--link { grid-template-columns: auto 1fr auto; margin-top: 10px; }
+  .tile__t { font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); }
+  .tile__d { font-size: var(--pp-text-xs); color: var(--pp-ink-dim); margin-top: 2px !important; line-height: 1.4; }
+
+  /* controls (drawn, not real) */
+  .switch-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--pp-line); }
+  .switch-row--top { align-items: flex-start; border: 0; padding: 0; }
+  .switch { flex: none; position: relative; width: 40px; height: 22px; border-radius: var(--radius-pill); background: var(--pp-line); }
+  .switch i { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--pp-surface); box-shadow: var(--pp-tile-shadow); }
+  .switch[aria-checked='true'] { background: var(--pp-illo-deep); }
+  .switch[aria-checked='true'] i { left: 20px; }
+  .switch, .switch i { transition: background-color var(--dur-micro) var(--ease-out), left var(--dur-micro) var(--ease-out); }
+  .check-row { display: flex; gap: 10px; align-items: center; padding-top: 10px; width: 100%; }
+  [aria-disabled='true'] { opacity: 0.4; cursor: default; }
+  .box { flex: none; width: 16px; height: 16px; border-radius: 3px; border: 1.5px solid var(--pp-ink-dim); position: relative; }
+  :is(.box.is-on, [aria-checked='true'] .box) { background: var(--pp-illo-deep); border-color: var(--pp-illo-deep); }
+  :is(.box.is-on, [aria-checked='true'] .box)::after { content: ''; position: absolute; left: 4.5px; top: 1.5px; width: 4px; height: 8px; border: solid var(--pp-surface); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .box--sm { width: 12px; height: 12px; }
+  .box--sm.is-on::after { left: 3px; top: 0.5px; width: 3px; height: 6px; }
+  .btn { display: block; width: 100%; text-align: center; padding: 12px 14px; border-radius: var(--radius-pill); background: var(--pp-illo-deep); color: var(--pp-surface); font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); margin-top: 12px; }
+  .btn--foot { position: absolute; left: 16px; right: 16px; bottom: 18px; margin: 0; }
+  .never { display: grid; justify-items: center; gap: 6px; margin-top: 28px; text-align: center; }
+  .never--row { display: flex; justify-content: center; align-items: center; margin: 10px 0 0; }
+
+  /* sheets */
+  /* A sheet: the page behind under a dim layer, the sheet on top. */
+  .sheeted { position: absolute; inset: 0; background: var(--pp-ground); }
+  .sheeted::after { content: ''; position: absolute; inset: 0; background: var(--pp-dim-overlay); }
+  .behind { height: 64px; padding: 14px 16px; background: var(--pp-surface); position: relative; display: grid; place-items: center; }
+  .behind .back { position: absolute; left: 16px; top: 22px; }
+  .behind--grey { height: 100%; place-items: start center; background: var(--pp-ground); }
+  .sheet { z-index: 1; position: absolute; left: 0; right: 0; bottom: 0; padding: 16px; background: var(--pp-surface); border-radius: var(--pp-radius-sheet) var(--pp-radius-sheet) 0 0; display: flex; flex-direction: column; gap: 10px; }
+  .sheet--tall { top: 54px; padding: 22px 18px 80px; gap: 4px; }
+  .sheet__head { display: grid; grid-template-columns: 24px 1fr 24px; align-items: center; margin-bottom: 4px; }
+  .choice { width: 100%; padding: 12px; border-radius: var(--pp-radius-field); box-shadow: var(--pp-tile-shadow); }
+  .choice.is-on { box-shadow: 0 0 0 2px var(--pp-illo-blue); }
+  .choice__h { display: flex; gap: 8px; align-items: flex-start; }
+  .choice__h .card__t { flex: 1; font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); }
+  .new { padding: 1px 6px; border-radius: 4px; background: var(--pp-new); color: var(--pp-surface); font-size: var(--pp-text-xs); font-weight: var(--pp-w-med); }
+  .choice .tile__d { padding-left: 24px; }
+  .why { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; margin: 8px 0 4px; }
+  .sheet .center { margin-top: 12px !important; }
+
+  /* Get a copy */
+  .count { display: flex; justify-content: space-between; align-items: baseline; margin: 6px 0 8px; }
+  .dtype { padding: 10px; border-radius: var(--pp-radius-field); box-shadow: var(--pp-tile-shadow); margin-bottom: 8px; }
+  .dtype__h { width: 100%; display: grid; grid-template-columns: auto 1fr auto; gap: 6px; align-items: center; margin-bottom: 4px; }
+  .app { width: 100%; display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 9px 0 0; }
+  .select { position: relative; display: grid; padding: 6px 10px; border: 1px solid var(--pp-ink-dim); border-radius: 6px; margin: 6px 0 4px; }
+  .select__c { position: absolute; right: 10px; top: 50%; translate: 0 -50%; }
+  .select--sm { width: 62%; padding: 4px 8px; border-color: var(--pp-line); }
+
+  /* Clean up */
+  .list { background: var(--pp-surface); border-radius: var(--pp-radius-field); }
+  .list__row { width: 100%; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; padding: 12px; }
+  .list__row + .list__row { border-top: 1px solid var(--pp-line); }
+  .foot { position: sticky; bottom: 0; z-index: 1; margin-top: auto; padding: 10px 12px 16px; background: var(--pp-ground); box-shadow: 0 -1px 0 var(--pp-line); }
+  .foot .btn { margin: 0; }
+
+  /* Offers */
+  .prods { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .prod { display: grid; gap: 1px; }
+  .prod__art { position: relative; display: grid; place-items: center; height: 96px; background: var(--pp-surface); border-radius: 6px; margin-bottom: 4px; }
+  .prod__off { position: absolute; top: 6px; left: 6px; padding: 1px 5px; border-radius: 3px; background: var(--pp-illo-glow); color: var(--pp-new); font-size: var(--pp-text-2xs); font-weight: var(--pp-w-med); }
+  .personal { width: 100%; display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 8px 10px; background: var(--pp-surface); border-radius: var(--pp-radius-field); }
+  .legal-band { background: var(--pp-surface); padding: 10px 16px; margin-top: 8px; }
+  .foot--app { padding: 10px 12px 14px; background: var(--pp-surface); }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btns .btn { margin: 0; }
+  .tabbar { display: flex; justify-content: space-between; padding: 10px 4px 0; font-size: var(--pp-text-2xs); color: var(--pp-ink-dim); }
+  .tabbar .is-on { color: var(--pp-illo-deep); font-weight: var(--pp-w-med); }
+
+  /* Deals & Offers */
+  .coupon { position: relative; display: grid; gap: 4px; margin-top: 8px; padding: 12px; border-radius: var(--pp-radius-tile); background: var(--pp-illo-purple); color: var(--pp-surface); }
+  .coupon__brand { font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); }
+  .coupon__amt { font-size: var(--pp-text-xl); line-height: 1.1; font-weight: var(--pp-w-light); }
+  .coupon__add { position: absolute; right: 12px; bottom: 12px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--pp-surface); color: var(--pp-illo-purple); font-weight: var(--pp-w-med); }
+  .card__brand { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; }
+  .big { font-size: var(--pp-text-lg); line-height: 1.25; font-weight: var(--pp-w-light); margin: 10px 0 8px !important; }
+  .card.is-hl { margin-bottom: 14px; }
+  .stores { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .stores span { display: grid; gap: 8px; padding: 12px; background: var(--pp-surface); border-radius: var(--pp-radius-field); font-size: var(--pp-text-xs); color: var(--pp-ink-dim); }
+  .dot { display: block; width: 28px; height: 28px; border-radius: 50%; background: var(--pp-illo-deep); }
+  .dot--red { background: var(--pp-illo-red); }
+
+  /* The old screens: flatter, greyer, as they were. */
+  .ps--before .ps__draw { color: var(--pp-ink); }
+  .old { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 18px 22px; flex: 1; }
+  .old__title { font-size: var(--pp-text-title); text-align: center; margin: 28px 0 4px !important; }
+  .old__title--l { text-align: left; font-size: var(--pp-text-lg); margin: 8px 0 0 !important; }
+  .old__p { font-size: var(--pp-text-sm); color: var(--pp-before-ink); line-height: 1.6; }
+  .old__list { list-style: disc; margin: 0; padding-left: 18px; display: grid; gap: 10px; font-size: var(--pp-text-sm); color: var(--pp-before-ink); line-height: 1.6; }
+  .old__btn { margin-top: 8px; padding: 12px; border-radius: var(--radius-pill); background: var(--pp-before-btn); color: var(--pp-surface); text-align: center; font-size: var(--pp-text-sm); }
+  .old__btn--sm { align-self: flex-start; padding: 7px 34px; font-size: var(--pp-text-xs); }
+  .old__logo { align-self: center; margin-top: 30px; font-size: var(--pp-text-lg); font-weight: var(--pp-w-med); font-style: italic; color: var(--pp-illo-deep); }
+  .old--dense { gap: 7px; padding: 6px 18px 18px; }
+  .old__note { padding: 6px 8px; background: var(--pp-before); font-size: var(--pp-text-2xs); }
+  .old__note .link { font-size: var(--pp-text-2xs); }
+  .old__head { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; }
+  .old__group { display: grid; gap: 5px; padding-bottom: 6px; border-bottom: 1px solid var(--pp-line); }
+  .old__item { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center; }
+
+  /* live bits */
+  .tile:hover, .choice:hover, .personal:hover, .list__row:hover { box-shadow: 0 0 0 1px var(--pp-line), var(--pp-tile-shadow); }
+  .list__row:hover { box-shadow: none; background: var(--pp-ground); }
+  .remind:hover, .btn:hover { filter: brightness(1.12); }
+  .b:active { transform: scale(0.98); }
+  .switch:active, .close:active, .back:active { transform: none; }
+  .btn[aria-disabled='true'] { opacity: 0.35; filter: none; }
+  .back { width: 24px; height: 24px; text-align: left; }
+  .link--c { align-self: center; }
+  .pad--top0 { padding-top: 0; }
+  .inc-btn { display: inline-flex; gap: 4px; align-items: center; }
+  .inc-btn__c { transition: transform var(--dur-micro) var(--ease-out); }
+  .inc-btn[aria-expanded='true'] .inc-btn__c { transform: rotate(180deg); }
+  .inc { margin: 6px 0 0; padding: 8px 10px 8px 22px; list-style: disc; background: var(--pp-ground); border-radius: 6px; font-size: var(--pp-text-xs); color: var(--pp-ink-dim); display: grid; gap: 3px; }
+  .inc[hidden] { display: none; }
+  .learn { margin-top: 2px; }
+  .card[hidden] { display: none; }
+  .done { justify-content: space-between; }
+  .done__body { flex: 1; display: grid; place-content: center; justify-items: center; gap: 8px; padding: 24px; text-align: center; }
+  .foot--white { background: var(--pp-surface); box-shadow: none; }
+  .foot--app { position: sticky; bottom: 0; margin-top: auto; }
+  @media (prefers-reduced-motion: reduce) {
+    .switch, .switch i, .inc-btn__c { transition: none; }
+    .b:active { transform: none; }
+  }
+</style>

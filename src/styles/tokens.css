@@ -675,6 +675,44 @@
 }
 
 /* ============================================================
+   PAYPAL PRIVACY SCREENS (PrivacyScreens.astro, PrivacyIllo.astro) —
+   the Data & Privacy screens redrawn in code, with PayPal-style flat
+   illustrations in place of the app's own art. Like the prototype
+   above, the colours belong to the work. Pairs checked for AA: white on
+   --pp-new, --pp-ink-dim on --pp-before.
+   ============================================================ */
+:root {
+  --pp-screen-w: 288px;        /* every screen is drawn at this width, then scaled to its phone */
+  --pp-screen-h: 621px;        /* 300px phone at --device-ratio, less the bezel */
+  --pp-sans: 'PP Sans', 'PayPal Sans Big', 'Helvetica Neue', Helvetica, Arial, sans-serif; /* PayPal's type, see styles/pp-sans.css */
+  --pp-w-light: 300;           /* PayPal Sans Big Light: big numbers, the reminder and promo lines */
+  --pp-w-reg: 400;             /* titles and body */
+  --pp-w-med: 500;             /* row titles, buttons, links: PayPal never goes bolder */
+  --pp-tracking-title: -0.01em;
+  --pp-text-2xs: 0.5rem;       /* 8px fine print, as drawn in her frames */
+  --pp-text-title: 1.3rem;     /* 21px page titles */
+  --pp-before: #f7f7f7;        /* the old screens' flat grey ground */
+  --pp-before-ink: #6c6c6c;
+  --pp-before-btn: #2d6da3;
+  --pp-new: #6b3fd1;           /* the "New" badge */
+  --pp-dim-overlay: rgb(0 0 0 / 0.42); /* the page behind a sheet */
+  --pp-illo-glow: #e3f0fb;     /* the soft disc behind each illustration */
+  --pp-illo-blue: #1f6bff;
+  --pp-illo-deep: #1040c8;
+  --pp-illo-skin: #8b5a3c;
+  --pp-illo-skin-lt: #f0b48a;
+  --pp-illo-hair: #2b1a12;
+  --pp-illo-purple: #8a4fe0;
+  --pp-illo-pink: #f6a6c8;
+  --pp-illo-teal: #18a87b;
+  --pp-illo-orange: #ff8b3d;
+  --pp-illo-red: #e0412f;
+  --pp-illo-book: #2f8f6a;
+  --pp-illo-page: #f3efe4;
+  --pp-illo-grey: #b9bec6;
+}
+
+/* ============================================================
    PIXEL'S OWN TYPE — held as it was before the allierho.com pass, so the
    chat looks exactly as it did ("don't touch the chat yet"). AskBubble
    reads the shared names below; these pin them to the old values inside

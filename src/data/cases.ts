@@ -39,7 +39,10 @@ export type CaseBlock =
   | { kind: 'metrics'; label?: string; items: { value: string; label: string }[] }
   /** A working prototype, rebuilt in code from her screens. `name` picks
       the component in CaseBlocks.astro. Only for flows she designed. */
-  | { kind: 'prototype'; name: 'paypal-enroll' | 'paypal-offers' | 'paypal-ads-consent'; caption?: string };
+  | { kind: 'prototype'; name: 'paypal-enroll' | 'paypal-offers' | 'paypal-ads-consent'; caption?: string }
+  /** A row of phone screens redrawn in code (PrivacyScreens.astro), each in
+      a device box. `set` picks the row. Only for the Privacy case so far. */
+  | { kind: 'screens'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'contextual'; caption?: string };
 
 export interface CaseSection {
   /** Anchor id — also the rail's scroll-spy target. */
@@ -371,11 +374,12 @@ export const cases: CaseStudy[] = [
   // ==========================================================
   // Written from her Figma case-study deck ("PayPal's Privacy Settings
   // Redesign", 37 frames) and the live site's privacy page. Nothing here
-  // goes beyond those two sources. Screens in public/images/paypal-privacy/
-  // come from the live page's full-size images, except data-request,
-  // data-delete, contextual and subnav: those are crops of a half-scale
-  // render of the deck and look soft. Re-export those four frames from
-  // Figma at 2x and drop them in under the same names.
+  // goes beyond those two sources. The phone screens in The craft are
+  // redrawn in code (`screens` blocks, PrivacyScreens.astro), from the
+  // live page's images and the deck's frames. The images left in
+  // public/images/paypal-privacy/ are the hero, the two structure
+  // comparisons, the context map and subnav; subnav is a crop of a
+  // half-scale render and looks soft — re-export it from Figma at 2x.
   //
   // Still to confirm with Anupama:
   //  - Which modules were hers end to end. The deck's ownership map puts
@@ -582,39 +586,34 @@ export const cases: CaseStudy[] = [
         heading: 'Each setting says what it does, what it\'s set to, and what changes if you switch it.',
         blocks: [
           {
-            kind: 'figure',
-            src: '/images/paypal-privacy/shopping.webp',
-            alt: 'PayPal Shopping before and after: a screen with one "Turn off PayPal Shopping" button, then a Personalized deals and offers screen with a toggle, and a How it works explainer',
+            kind: 'screens',
+            set: 'hub',
             caption:
-              'PayPal Shopping. The old screen had one button: Turn off PayPal Shopping. The new one is a toggle that says what\'s on and what you get, explains how it works with an example, and ends on "We never sell your personal information."',
-            ratio: '1800 / 1230',
-            wide: true,
+              'The revised page. Every setting one tap away under three headings, each with a line saying what it does. The blue card at the top is a proposal: once a year, it asks whether your settings still suit you.',
           },
           {
-            kind: 'figure',
-            src: '/images/paypal-privacy/data-request.webp',
-            alt: 'Get a copy of your data, before and after: a long checklist, then data types grouped with what each is for, connected apps, and a file format',
+            kind: 'screens',
+            set: 'shopping',
             caption:
-              'Get a copy of your data. Data types are grouped, each says what it\'s for and what\'s included, connected apps (Xoom, Venmo, Honey) are listed, and the request ends on a note that your info is encrypted.',
-            ratio: '1800 / 1060',
+              'PayPal Shopping. The old screen had one button: Turn off PayPal Shopping. The new one is a switch that says what\'s on and what you get, explains how it works with an example, and ends on "We never sell your personal information."',
           },
           {
-            kind: 'figure',
-            src: '/images/paypal-privacy/data-delete.webp',
-            alt: 'Delete your data, before and after: one page about closing the account, then a sheet offering Clean up your data or Delete your data and close this account, and the clean-up list',
+            kind: 'screens',
+            set: 'request',
+            caption:
+              'Get a copy of your data. The old flow was one long checklist. Now data types are grouped, each says what it\'s for and what\'s included, connected apps (Xoom, Venmo, Honey) are listed, and the request ends on a note that your info is encrypted.',
+          },
+          {
+            kind: 'screens',
+            set: 'delete',
             caption:
               'Delete, split in two. The old flow had one path: delete your data and close the account. The new one offers "Clean up your data" first: face scan, marketing, package tracking and third-party profile data, each saying what you lose.',
-            ratio: '1620 / 1180',
-            wide: true,
           },
           {
-            kind: 'figure',
-            src: '/images/paypal-privacy/contextual.webp',
-            alt: 'Shopping screens with a Personalize your experience link under offers, and a Shopping and Privacy card that opens a sheet explaining deals and notifications',
+            kind: 'screens',
+            set: 'contextual',
             caption:
               'Privacy where the question comes up. Offers carry a "Personalize your experience" link, and a Shopping and Privacy card explains why you see these deals: "We never sell it, and won\'t share it without your permission."',
-            ratio: '1800 / 908',
-            wide: true,
           },
           {
             kind: 'figure',
@@ -624,14 +623,6 @@ export const cases: CaseStudy[] = [
               'Web settings. The old sub-navigation was blue on blue, and in baseline testing many people never saw it. The new one sits on white, with larger type and a clear current-page marker: up to 85% better on some tasks in unmoderated tests.',
             ratio: '1800 / 498',
             wide: true,
-          },
-          {
-            kind: 'figure',
-            src: '/images/paypal-privacy/reminder.webp',
-            alt: 'A proposed privacy reminder card, "You haven\'t accessed privacy settings in the past year", on the Data and privacy page and in Shopping',
-            caption:
-              'A proposal: once a year, a card on the privacy page and in Shopping asks whether your settings still suit you.',
-            ratio: '1800 / 1060',
           },
         ],
       },

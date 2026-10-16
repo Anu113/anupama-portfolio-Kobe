@@ -1,0 +1,21 @@
+/* pp-sans.css — PayPal's own type for the redrawn PayPal screens
+   (PrivacyScreens.astro). PayPal Sans Big is licensed to PayPal only
+   ("licensed for exclusive use by PayPal", KLIM), so no font file is
+   shipped with the site: these faces only point at a copy already
+   installed on the viewer's machine. Everyone else gets PayPal's own
+   web fallback, Helvetica Neue, then Arial (--pp-sans in tokens.css). */
+@font-face {
+  font-family: 'PP Sans';
+  font-weight: 300;
+  src: local('PayPal Sans Big Light'), local('PayPalSansBig-Light'), local('PayPalSansBigLight-Regular');
+}
+@font-face {
+  font-family: 'PP Sans';
+  font-weight: 400;
+  src: local('PayPal Sans Big Regular'), local('PayPalSansBig-Regular');
+}
+@font-face {
+  font-family: 'PP Sans';
+  font-weight: 500;
+  src: local('PayPal Sans Big Medium'), local('PayPalSansBig-Medium'), local('PayPalSansBigMedium-Regular');
+}
