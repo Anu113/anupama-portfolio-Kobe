@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Locked case — mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  /* Values copied from src/styles/tokens.css so the mocks read as the site. */
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --paper: #fcfcfc; --paper-2: #f7f7f7; --ink: #262626; --ink-dim: #707070;
+    --line: rgb(0 0 0 / 0.1); --line-strong: rgb(0 0 0 / 0.22);
+    --accent: #b4482a; --on-accent: #fff;
+    --hue-okta: #c9dcf2;
+    --redact: #262626;
+    --step-heading: clamp(2rem, 1.721rem + 1.143vw, 2.75rem);
+    --step-case-title: clamp(1.875rem, 1.643rem + 0.952vw, 2.5rem);
+    --step-title: clamp(1.25rem, 1.111rem + 0.571vw, 1.625rem);
+    --step-body: 0.9375rem; --step-small: 0.8125rem; --step-label: 0.75rem; --step-fine: 0.6875rem;
+    --tracking-serif: -0.03em; --tracking-label: 0.067em; --tracking-mono: 0.08em; --tracking-body: 0.03em;
+    --gutter: clamp(1.25rem, 0.786rem + 1.905vw, 2.5rem);
+    --ease: cubic-bezier(.16,1,.3,1);
+  }
+  :root[data-mode='dark'] {
+    --paper: #1b1a19; --paper-2: #252422; --ink: #ecebe8; --ink-dim: #a09d98;
+    --line: rgb(255 255 255 / 0.12); --line-strong: rgb(255 255 255 / 0.26);
+    --accent: #e0714f; --on-accent: #1b1a19;
+    --hue-okta: #2a3542; --redact: #ecebe8;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9e8e5; color: var(--ink); font-family: var(--font-sans); font-weight: 600;
+         font-size: var(--step-body); letter-spacing: var(--tracking-body); line-height: 1.7; }
+  :root[data-mode='dark'] body { background: #0f0f0e; }
+
+  /* ---------- the mock sheet ---------- */
+  .sheet-head { padding: 2rem var(--gutter) 1rem; display: flex; gap: 1rem; align-items: baseline; justify-content: space-between; flex-wrap: wrap; }
+  .sheet-head h1 { font: 300 var(--step-heading)/1.1 var(--font-serif); letter-spacing: var(--tracking-serif); margin: 0; }
+  .sheet-head h1 em { font-style: italic; }
+  .sheet-head p { margin: .25rem 0 0; color: var(--ink-dim); max-width: 62ch; }
+  .mode { font: 400 var(--step-fine)/1 var(--font-mono); letter-spacing: var(--tracking-mono); text-transform: uppercase;
+          border: 1px solid var(--line-strong); background: var(--paper); color: var(--ink); padding: .7rem 1rem; border-radius: 999px; cursor: pointer; }
+  .mock { padding: 1.5rem var(--gutter) 3rem; }
+  .mock__tag { display: flex; gap: 1rem; align-items: baseline; margin-bottom: .75rem; flex-wrap: wrap; }
+  .mock__tag b { font: 400 var(--step-fine)/1 var(--font-mono); letter-spacing: var(--tracking-mono); text-transform: uppercase;
+                 background: var(--ink); color: var(--paper); padding: .45rem .6rem; }
+  .mock__tag span { color: var(--ink-dim); font-size: var(--step-small); max-width: 90ch; }
+  .frame { background: var(--paper); border: 1px solid var(--line); overflow: hidden; }
+  .nav { height: 4rem; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gutter); }
+  .nav__name { font-size: .875rem; letter-spacing: .086em; text-transform: uppercase; }
+  .nav__links { display: flex; gap: 1.5rem; font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--ink-dim); }
+  .nav__links .on { color: var(--ink); }
+  @media (max-width: 700px) { .nav__links { display: none; } }
+
+  /* ---------- shared pieces ---------- */
+  .mono { font: 400 var(--step-fine)/1.4 var(--font-mono); letter-spacing: var(--tracking-mono); text-transform: uppercase; }
+  .dim { color: var(--ink-dim); }
+  .serif { font-family: var(--font-serif); font-weight: 300; letter-spacing: var(--tracking-serif); }
+  .serif em { font-style: italic; }
+  .lock { width: 1em; height: 1em; vertical-align: -0.12em; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  a { color: inherit; }
+  .link { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; transition: color .2s var(--ease), text-decoration-color .2s var(--ease); }
+  .link:hover { color: var(--accent); text-decoration-color: currentColor; }
+  .back { text-decoration: none; color: var(--ink-dim); transition: color .2s var(--ease); }
+  .back:hover { color: var(--ink); }
+
+  .input { font: inherit; color: var(--ink); background: var(--paper-2); border: 1px solid var(--line-strong);
+           border-radius: 999px; padding: .8rem 1.25rem; min-width: 0; width: 100%; }
+  .input::placeholder { color: var(--ink-dim); }
+  .input:focus-visible, .btn:focus-visible, .mode:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .input[aria-invalid='true'] { border-color: var(--accent); }
+  .btn { font: 600 var(--step-label)/1 var(--font-sans); letter-spacing: var(--tracking-label); text-transform: uppercase;
+         background: var(--ink); color: var(--paper); border: 0; border-radius: 999px; padding: 0 1.5rem; min-height: 2.9rem; cursor: pointer;
+         transition: background .2s var(--ease), transform .2s var(--ease); white-space: nowrap; }
+  .btn:hover { background: var(--accent); color: var(--on-accent); }
+  .btn:active { transform: scale(.97); }
+  .err { color: var(--accent); font-size: var(--step-small); margin: 0; min-height: 1.4em; }
+  .ok-state { display: none; }
+  form.is-ok .err { color: var(--ink); }
+
+  /* ======================= A — close to the reference ======================= */
+  .a { text-align: center; padding: clamp(3rem, 8vw, 6rem) var(--gutter) clamp(3rem, 7vw, 5rem); display: flex; flex-direction: column; align-items: center; }
+  .a__icon { width: 2.5rem; height: 2.5rem; border: 1px solid var(--line-strong); border-radius: 50%; display: grid; place-items: center; margin-bottom: 1.25rem; }
+  .a__head { font-size: var(--step-heading); line-height: 1.1; margin: .75rem 0 .75rem; }
+  .a__sub { color: var(--ink-dim); margin: 0 0 2rem; max-width: 66ch; text-wrap: balance; }
+  .strip { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line-strong); width: 100%; max-width: 56rem; text-align: left; margin-bottom: 2rem; }
+  .strip > div { padding: 1rem 1.25rem 1.15rem; }
+  .strip > div + div { border-left: 1px solid var(--line); }
+  .strip dt { margin-bottom: .4rem; }
+  .strip dd { margin: 0; line-height: 1.5; }
+  @media (max-width: 700px) { .strip { grid-template-columns: 1fr; } .strip > div + div { border-left: 0; border-top: 1px solid var(--line); } }
+  .a form { display: flex; gap: .5rem; width: 100%; max-width: 24rem; flex-wrap: wrap; justify-content: center; }
+  .a form .input { flex: 1 1 12rem; text-align: center; }
+  .a form .err { flex-basis: 100%; }
+  .a__help { color: var(--ink-dim); font-size: var(--step-small); margin: 1rem 0 2rem; }
+
+  /* ======================= B — the case page, closed ======================= */
+  .b { padding: clamp(2.5rem, 6vw, 4.5rem) var(--gutter) clamp(3rem, 6vw, 5rem); }
+  .b__top { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .chip { font: 400 .625rem/1 var(--font-mono); letter-spacing: var(--tracking-mono); text-transform: uppercase; padding: .35rem .5rem; border-radius: 4px; }
+  .chip--lime { background: #d4ff3a; color: #2b3600; }
+  .chip--lock { border: 1px solid var(--line-strong); display: inline-flex; gap: .35rem; align-items: center; }
+  .b__title { font-size: var(--step-case-title); line-height: 1.1; margin: 0 0 2.5rem; max-width: 22ch; }
+  .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; border-top: 1px solid var(--line); padding-top: 1.25rem; margin-bottom: clamp(3rem, 6vw, 4.5rem); }
+  .meta dt { margin-bottom: .35rem; } .meta dd { margin: 0; line-height: 1.5; }
+  @media (max-width: 800px) { .meta { grid-template-columns: 1fr 1fr; } }
+  .b__sec { border-top: 1px solid var(--line); padding-top: 1.25rem; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 2rem; }
+  @media (max-width: 800px) { .b__sec { grid-template-columns: 1fr; } }
+  .b__sec h2 { font-size: var(--step-title); line-height: 1.2; margin: .9rem 0 0; }
+  .b__sec p { margin: 0 0 1.25rem; color: var(--ink-dim); max-width: 52ch; }
+  .b form { display: flex; gap: .5rem; max-width: 30rem; flex-wrap: wrap; }
+  .b form .input { flex: 1 1 14rem; }
+  .b form .err { flex-basis: 100%; }
+
+  /* ======================= C — image, veiled ======================= */
+  .c { display: grid; grid-template-columns: 1.15fr 1fr; min-height: 36rem; }
+  @media (max-width: 900px) { .c { grid-template-columns: 1fr; } }
+  .c__stage { background: var(--hue-okta); position: relative; overflow: hidden; display: grid; place-items: center; padding: 3rem; }
+  .c__stage img { width: 100%; max-width: 34rem; filter: blur(5px) saturate(.7); opacity: .85; transform: scale(1.04); }
+  .c__veil { position: absolute; inset: auto 1.25rem 1.25rem auto; display: inline-flex; gap: .5rem; align-items: center;
+             background: var(--paper); color: var(--ink); padding: .55rem .8rem; border-radius: 999px; }
+  .c__text { padding: clamp(2rem, 5vw, 4rem) var(--gutter); display: flex; flex-direction: column; justify-content: center; }
+  .c__title { font-size: var(--step-case-title); line-height: 1.1; margin: .9rem 0 .75rem; }
+  .c__sub { color: var(--ink-dim); margin: 0 0 1.75rem; max-width: 42ch; }
+  .rows { margin: 0 0 2rem; }
+  .rows > div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 1rem; padding: .75rem 0; border-top: 1px solid var(--line); }
+  .rows > div:last-child { border-bottom: 1px solid var(--line); }
+  .rows dt { padding-top: .2rem; } .rows dd { margin: 0; line-height: 1.5; }
+  .c form label { display: block; margin-bottom: .5rem; }
+  .c form .row { display: flex; gap: .5rem; }
+  .c__help { margin: .75rem 0 0; font-size: var(--step-small); color: var(--ink-dim); }
+
+  /* ======================= D — the contents, redacted ======================= */
+  .d { padding: clamp(2.5rem, 6vw, 4.5rem) var(--gutter); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: clamp(2rem, 6vw, 5rem); }
+  @media (max-width: 900px) { .d { grid-template-columns: 1fr; } }
+  .d__title { font-size: var(--step-case-title); line-height: 1.1; margin: .9rem 0 1rem; }
+  .d__sub { color: var(--ink-dim); margin: 0 0 2rem; max-width: 40ch; }
+  .d form label { display: block; margin-bottom: .5rem; }
+  .d form .row { display: flex; gap: .5rem; max-width: 26rem; }
+  .toc { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+  .toc li { border-top: 1px solid var(--line); padding: 1rem 0; display: grid; grid-template-columns: 2.5rem 9rem 1fr; gap: 1rem; align-items: center; }
+  .toc li:last-child { border-bottom: 1px solid var(--line); }
+  @media (max-width: 600px) { .toc li { grid-template-columns: 2rem 1fr; } .toc .bars { grid-column: 2; } }
+  .toc .open { color: var(--ink); line-height: 1.5; font-size: var(--step-small); }
+  .bars { display: flex; flex-direction: column; gap: .4rem; }
+  .bar { height: .6rem; background: var(--redact); opacity: .88; }
+  .toc li:hover .bar { opacity: .7; }
+  .bar { transition: opacity .5s var(--ease); }
+
+  /* ======================= E — one line ======================= */
+  .e { padding: clamp(4rem, 10vw, 8rem) var(--gutter); max-width: 44rem; margin: 0 auto; }
+  .e__head { font-size: var(--step-heading); line-height: 1.1; margin: 1rem 0 .75rem; }
+  .e__sub { color: var(--ink-dim); margin: 0 0 2rem; }
+  .e form .field { position: relative; display: flex; align-items: center; border-bottom: 1px solid var(--ink); }
+  .e form .field:focus-within { border-bottom-color: var(--accent); }
+  .e .input { background: none; border: 0; border-radius: 0; padding: .9rem 0; font-size: 1.125rem; }
+  .e .input:focus-visible { outline: none; }
+  .e .go { background: none; border: 0; color: var(--ink); cursor: pointer; font: 400 var(--step-label)/1 var(--font-mono); letter-spacing: var(--tracking-mono); text-transform: uppercase; display: inline-flex; gap: .5rem; align-items: center; padding: .9rem 0 .9rem 1rem; transition: color .2s var(--ease); }
+  .e .go:hover { color: var(--accent); }
+  .e .go:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .e .go span { transition: transform .5s var(--ease); }
+  .e .go:hover span { transform: translateX(4px); }
+  .e__foot { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2.5rem; flex-wrap: wrap; font-size: var(--step-small); }
+
+  /* ======================= copy bank ======================= */
+  .bank { padding: 1.5rem var(--gutter) 4rem; }
+  .bank__grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 900px) { .bank__grid { grid-template-columns: 1fr; } }
+  .bank__col { background: var(--paper); padding: 1.25rem 1.25rem 1.5rem; }
+  .bank__col ol { margin: .75rem 0 0; padding-left: 1.4rem; }
+  .bank__col li { margin-bottom: .9rem; line-height: 1.5; }
+  .bank__col li::marker { font: 400 var(--step-fine) var(--font-mono); color: var(--ink-dim); }
+  .bank__col .serif { font-size: 1.35rem; line-height: 1.2; }
+  .bank__col small { display: block; color: var(--ink-dim); font-size: var(--step-small); margin-top: .2rem; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </symbol>
+</svg>
+
+<header class="sheet-head">
+  <div>
+    <h1>Locked case study — <em>five ways</em>, final copy</h1>
+    <p>Each mock uses the Okta case and the site's own type, palette and nav. Try any passcode for the error state; <span class="mono">okta2026</span> for the unlock. Copy options are at the bottom.</p>
+  </div>
+  <button class="mode" type="button" id="mode">Dark mode</button>
+</header>
+
+<!-- ============ A ============ -->
+<section class="mock">
+  <div class="mock__tag"><b>A · Your reference, in the site's type</b><span>Same order as the screenshot: icon, label, headline, two lines, three facts, passcode, a way to ask, a way back. The case title is added under the label so a visitor knows which case this is.</span></div>
+  <div class="frame">
+    <nav class="nav"><span class="nav__name">Anupama Mishra</span><span class="nav__links"><span class="on">Work</span><span>About me</span><span>Playground</span><span>Contact</span></span></nav>
+    <div class="a">
+      <span class="a__icon"><svg class="lock"><use href="#lock" /></svg></span>
+      <p class="mono dim" style="margin:0">Protected · NDA · Okta</p>
+      <h2 class="a__head serif">The interesting parts are <em>confidential</em>.</h2>
+      <p class="a__sub">The detailed process is protected, but here is the public version. Have the passcode? Step in for the full case study.</p>
+      <dl class="strip">
+        <div><dt class="mono dim">Role</dt><dd>Staff Product Designer, IAM + Developer Tools</dd></div>
+        <div><dt class="mono dim">Scope</dt><dd>Entitlements, role management, OIN publishing, developer onboarding</dd></div>
+        <div><dt class="mono dim">Team</dt><dd>6 designers across 4 squads</dd></div>
+      </dl>
+      <form data-gate>
+        <label class="sr" for="pa">Passcode</label>
+        <input class="input" id="pa" type="password" placeholder="Enter passcode" autocomplete="off" />
+        <button class="btn" type="submit">Unlock</button>
+        <p class="err" role="alert"></p>
+      </form>
+      <p class="a__help">No passcode? <a class="link" href="#">Email me</a> and I'll walk you through it.</p>
+      <a class="back mono" href="#">&larr; Back to work</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ B ============ -->
+<section class="mock">
+  <div class="mock__tag"><b>B · The case page, closed</b><span>Opens exactly like an unlocked case — company, tags, title, meta row — so the visitor gets level and scope before they hit the lock. The lock is one section, "01 The full case", in the case-study type. Reads as a document, not a wall.</span></div>
+  <div class="frame">
+    <nav class="nav"><span class="nav__name">Anupama Mishra</span><span class="nav__links"><span class="on">Work</span><span>About me</span><span>Playground</span><span>Contact</span></span></nav>
+    <div class="b">
+      <div class="b__top">
+        <span class="mono">Okta</span>
+        <span class="chip chip--lime">IAM</span><span class="chip chip--lime">Developer tools</span><span class="chip chip--lime">Enterprise</span>
+        <span class="chip chip--lock"><svg class="lock"><use href="#lock" /></svg>NDA</span>
+      </div>
+      <h2 class="b__title serif">Rebuilding IAM for enterprise admins</h2>
+      <dl class="meta">
+        <div><dt class="mono dim">Role</dt><dd>Staff Product Designer</dd></div>
+        <div><dt class="mono dim">Team</dt><dd>6 designers, 4 squads</dd></div>
+        <div><dt class="mono dim">Scope</dt><dd>Entitlements, roles, OIN, dev onboarding</dd></div>
+        <div><dt class="mono dim">Outcome</dt><dd>[One line, once confirmed]</dd></div>
+      </dl>
+      <div class="b__sec">
+        <div>
+          <p class="mono dim" style="margin:0">01&nbsp;&nbsp;The full case</p>
+          <h2 class="serif">The interesting parts are <em>confidential</em>.</h2>
+        </div>
+        <div>
+          <p>The detailed process is protected, but here is the public version. Have the passcode? Step in for the full case study.</p>
+          <form data-gate>
+            <label class="sr" for="pb">Passcode</label>
+            <input class="input" id="pb" type="password" placeholder="Passcode" autocomplete="off" />
+            <button class="btn" type="submit">Unlock</button>
+            <p class="err" role="alert"></p>
+          </form>
+          <p style="margin:.25rem 0 0;font-size:var(--step-small)" class="dim">No passcode? <a class="link" href="#">Email me</a> and I'll walk you through it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ C ============ -->
+<section class="mock">
+  <div class="mock__tag"><b>C · Image, veiled</b><span>Visual first: the case cover on the Okta hue, blurred so the product is felt but not readable. Facts as term/detail rows (the case-study scope table). Uses the one image already cleared for the home page.</span></div>
+  <div class="frame">
+    <nav class="nav"><span class="nav__name">Anupama Mishra</span><span class="nav__links"><span class="on">Work</span><span>About me</span><span>Playground</span><span>Contact</span></span></nav>
+    <div class="c">
+      <div class="c__stage">
+        <img src="img/my-apps.webp" alt="" />
+        <span class="c__veil mono"><svg class="lock"><use href="#lock" /></svg>Under NDA</span>
+      </div>
+      <div class="c__text">
+        <p class="mono dim" style="margin:0">Okta · IAM + Developer Tools</p>
+        <h2 class="c__title serif">Rebuilding IAM for enterprise <em>admins</em></h2>
+        <p class="c__sub">The detailed process is protected, but here is the public version. Have the passcode? Step in for the full case study.</p>
+        <dl class="rows">
+          <div><dt class="mono dim">Role</dt><dd>Staff Product Designer</dd></div>
+          <div><dt class="mono dim">Scope</dt><dd>Entitlements, role management, OIN publishing, developer onboarding</dd></div>
+          <div><dt class="mono dim">Team</dt><dd>6 designers across 4 squads</dd></div>
+        </dl>
+        <form data-gate>
+          <label class="mono dim" for="pc">Passcode</label>
+          <div class="row"><input class="input" id="pc" type="password" autocomplete="off" /><button class="btn" type="submit">Unlock</button></div>
+          <p class="err" role="alert"></p>
+        </form>
+        <p class="c__help">No passcode? <a class="link" href="#">Email me</a> and I'll walk you through it. &middot; <a class="back" href="#">&larr; All work</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ D ============ -->
+<section class="mock">
+  <div class="mock__tag"><b>D · The contents, redacted</b><span>Shows what's behind the lock instead of saying it: the case's seven sections with the first one readable and the rest blacked out. A hiring manager sees there's a real case here, structured the way they'd want it. Bars are flat ink, no animation.</span></div>
+  <div class="frame">
+    <nav class="nav"><span class="nav__name">Anupama Mishra</span><span class="nav__links"><span class="on">Work</span><span>About me</span><span>Playground</span><span>Contact</span></span></nav>
+    <div class="d">
+      <div>
+        <p class="mono dim" style="margin:0"><svg class="lock"><use href="#lock" /></svg>&nbsp; Okta · Under NDA</p>
+        <h2 class="d__title serif">Rebuilding IAM for enterprise admins</h2>
+        <p class="d__sub">The detailed process is protected, but here is the public version. Have the passcode? Step in for the full case study.</p>
+        <form data-gate>
+          <label class="mono dim" for="pd">Passcode</label>
+          <div class="row"><input class="input" id="pd" type="password" autocomplete="off" /><button class="btn" type="submit">Unlock</button></div>
+          <p class="err" role="alert"></p>
+        </form>
+        <p style="margin:.25rem 0 0;font-size:var(--step-small)" class="dim">No passcode? <a class="link" href="#">Email me</a> and I'll walk you through it.</p>
+      </div>
+      <ol class="toc" aria-label="Case contents">
+        <li><span class="mono dim">01</span><span class="mono">The situation</span><span class="open">Okta was closing enterprise deals on a console built for smaller companies.</span></li>
+        <li><span class="mono dim">02</span><span class="mono">My scope</span><span class="bars" aria-label="Redacted"><span class="bar" style="width:92%"></span><span class="bar" style="width:64%"></span></span></li>
+        <li><span class="mono dim">03</span><span class="mono">The hard call</span><span class="bars" aria-label="Redacted"><span class="bar" style="width:78%"></span><span class="bar" style="width:40%"></span></span></li>
+        <li><span class="mono dim">04</span><span class="mono">How it got made</span><span class="bars" aria-label="Redacted"><span class="bar" style="width:86%"></span></span></li>
+        <li><span class="mono dim">05</span><span class="mono">The craft</span><span class="bars" aria-label="Redacted"><span class="bar" style="width:70%"></span><span class="bar" style="width:88%"></span></span></li>
+        <li><span class="mono dim">06</span><span class="mono">Outcome</span><span class="bars" aria-label="Redacted"><span class="bar" style="width:55%"></span></span></li>
+        <li><span class="mono dim">07</span><span class="mono">Differently</span><span class="bars" aria-label="Redacted"><span class="bar" style="width:66%"></span></span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ E ============ -->
+<section class="mock">
+  <div class="mock__tag"><b>E · One line</b><span>The quietest one. No card, no strip: label, headline, a sentence that carries role and scope, and a single underlined field with the action inside it. Most restrained; least for a skimming recruiter.</span></div>
+  <div class="frame">
+    <nav class="nav"><span class="nav__name">Anupama Mishra</span><span class="nav__links"><span class="on">Work</span><span>About me</span><span>Playground</span><span>Contact</span></span></nav>
+    <div class="e">
+      <p class="mono dim" style="margin:0"><svg class="lock"><use href="#lock" /></svg>&nbsp; Okta · Rebuilding IAM for enterprise admins</p>
+      <h2 class="e__head serif">The interesting parts are <em>confidential</em>.</h2>
+      <p class="e__sub">The detailed process is protected, but here is the public version. Have the passcode? Step in for the full case study. Staff Product Designer on Okta's admin console, with a team of six.</p>
+      <form data-gate>
+        <label class="mono dim" for="pe">Passcode</label>
+        <div class="field"><input class="input" id="pe" type="password" autocomplete="off" /><button class="go" type="submit">Unlock <span aria-hidden="true">&rarr;</span></button></div>
+        <p class="err" role="alert" style="margin-top:.6rem"></p>
+      </form>
+      <div class="e__foot"><a class="back mono" href="#">&larr; All work</a><span class="dim">No passcode? <a class="link" href="#">Email me</a> and I'll walk you through it.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ copy bank ============ -->
+<section class="bank">
+  <div class="mock__tag"><b>Copy options</b><span>Any headline works with any layout. Short, plain, no emoji. Numbers are hers to confirm before an Outcome cell goes in.</span></div>
+  <div class="bank__grid">
+    <div class="bank__col">
+      <p class="mono dim" style="margin:0">Headline</p>
+      <ol>
+        <li><span class="serif">This work is under <em>wraps</em>.</span><small>Yours. Friendly, a little playful.</small></li>
+        <li><span class="serif">Under NDA, not <em>off limits</em>.</span><small>Turns the lock into an invitation.</small></li>
+        <li><span class="serif">Some work can't be posted. It can be <em>shown</em>.</span><small>Points at the live walkthrough.</small></li>
+        <li><span class="serif">The full story needs a <em>passcode</em>.</span><small>Plainest. Says exactly what to do.</small></li>
+        <li><span class="serif">The interesting parts are <em>confidential</em>.</span><small>Dry; promises there's more.</small></li>
+        <li><span class="serif">Rebuilding IAM for enterprise <em>admins</em></span><small>No lock headline at all — the case title leads (B, C, D).</small></li>
+      </ol>
+    </div>
+    <div class="bank__col">
+      <p class="mono dim" style="margin:0">Line under it</p>
+      <ol>
+        <li>The public version is below; the full case needs a passcode.</li>
+        <li>Here's the shape of it. The passcode opens the rest.</li>
+        <li>Screens, the hard calls and the numbers sit behind a passcode.</li>
+        <li>The detail is under NDA. The scope isn't.</li>
+        <li>I'd rather walk you through it than post it.</li>
+      </ol>
+    </div>
+    <div class="bank__col">
+      <p class="mono dim" style="margin:0">Without a passcode · error</p>
+      <ol>
+        <li>No passcode? Email me and I'll walk you through it.</li>
+        <li>No passcode? Ask — a 20-minute call covers it.</li>
+        <li>Recruiting for a Staff or Lead role? Ask me for the passcode.</li>
+        <li><em>Error:</em> That's not it. Try again, or email me.</li>
+        <li><em>Error:</em> Not quite. Passcodes aren't case-sensitive.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.documentElement, modeBtn = document.getElementById('mode');
+  modeBtn.addEventListener('click', () => {
+    const dark = root.dataset.mode !== 'dark';
+    root.dataset.mode = dark ? 'dark' : 'light';
+    modeBtn.textContent = dark ? 'Light mode' : 'Dark mode';
+  });
+  document.querySelectorAll('form[data-gate]').forEach((f) => {
+    const input = f.querySelector('input'), err = f.querySelector('.err');
+    f.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ok = input.value.trim().toLowerCase() === 'okta2026';
+      f.classList.toggle('is-ok', ok);
+      input.setAttribute('aria-invalid', String(!ok));
+      err.textContent = ok ? 'Unlocked. (In the build, the case opens here.)' : "That's not it. Try again.";
+    });
+  });
+</script>
+</body>
+</html>

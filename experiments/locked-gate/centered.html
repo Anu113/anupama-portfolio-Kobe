@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en" data-mode="light" data-p="13">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Locked case — centred</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --paper: #fcfcfc; --paper-2: #f7f7f7; --ink: #262626; --ink-dim: #707070;
+    --line: rgb(0 0 0 / 0.1); --accent: #b4482a;
+    --step-case-title: clamp(1.875rem, 1.643rem + 0.952vw, 2.5rem);
+    --gutter: clamp(1.25rem, 0.786rem + 1.905vw, 2.5rem);
+    --ease: cubic-bezier(.16,1,.3,1);
+    --p: 0.8125rem; --p-lh: 1.7;
+  }
+  [data-p='14'] { --p: 0.875rem; --p-lh: 1.7; }
+  [data-p='15'] { --p: 0.9375rem; --p-lh: 1.8; }
+  :root[data-mode='dark'] { --paper: #1b1a19; --paper-2: #252422; --ink: #ecebe8; --ink-dim: #a09d98; --line: rgb(255 255 255 / 0.12); --accent: #e0714f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 600 0.9375rem/1.8 var(--font-sans); letter-spacing: 0.03em; }
+  .mono { font: 400 0.6875rem/1.4 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+  .dim { color: var(--ink-dim); }
+
+  .controls { position: fixed; right: 1rem; bottom: 1rem; z-index: 5; display: flex; gap: .5rem; flex-wrap: wrap; background: var(--paper); border: 1px solid var(--line); padding: .5rem; border-radius: 999px; }
+  .controls button { font: 400 .6875rem/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; background: none; color: var(--ink-dim); border: 1px solid transparent; border-radius: 999px; padding: .55rem .8rem; cursor: pointer; }
+  .controls button[aria-pressed='true'] { color: var(--ink); border-color: var(--ink); }
+
+  .nav { height: 4rem; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gutter); }
+  .nav__name { font-size: .875rem; letter-spacing: .086em; text-transform: uppercase; }
+  .nav__links { display: flex; gap: 1.5rem; font-size: .75rem; letter-spacing: .067em; text-transform: uppercase; color: var(--ink-dim); }
+  .nav__links .on { color: var(--ink); }
+  @media (max-width: 700px) { .nav__links { display: none; } }
+
+  .locked { padding: clamp(3rem, 8vw, 6rem) var(--gutter) clamp(4rem, 8vw, 7rem); display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .eyebrow { display: inline-flex; align-items: center; gap: .5rem; margin: 0 0 1rem; }
+  .case { margin: 0 0 .4rem; font-size: var(--p); }
+  h1 { font: 300 var(--step-case-title)/1.1 var(--font-serif); letter-spacing: -0.03em; margin: 0 0 .9rem; text-wrap: balance; }
+  h1 em { font-style: italic; }
+  .body { font-size: var(--p); line-height: var(--p-lh); color: var(--ink-dim); max-width: 34rem; margin: 0 0 2.25rem; text-wrap: balance; }
+
+  .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 48rem; margin: 0 0 2.25rem; text-align: left; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .facts > div { padding: 1rem 1.25rem 1.1rem; }
+  .facts > div + div { border-left: 1px solid var(--line); }
+  .facts dt { margin-bottom: .4rem; }
+  .facts dd { margin: 0; font-size: var(--p); line-height: 1.55; }
+  @media (max-width: 700px) { .facts { grid-template-columns: 1fr; } .facts > div + div { border-left: 0; border-top: 1px solid var(--line); } .facts > div { padding-inline: 0; } }
+
+  form { width: 100%; max-width: 26rem; }
+  label { display: block; margin-bottom: .5rem; }
+  .row { display: flex; gap: .5rem; }
+  .input { flex: 1; min-width: 0; font: inherit; font-size: .9375rem; color: var(--ink); background: var(--paper-2); border: 1px solid var(--ink-dim); border-radius: 999px; padding: .7rem 1.2rem; text-align: center; }
+  .input:focus-visible, .btn:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn { font: 600 .75rem/1.2 var(--font-sans); letter-spacing: .067em; text-transform: uppercase; background: var(--ink); color: var(--paper); border: 1px solid var(--ink); border-radius: 999px; padding: .625rem 1.125rem; cursor: pointer; transition: background .32s var(--ease), border-color .32s var(--ease); }
+  .btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .err { color: var(--accent); font-size: .8125rem; margin: .6rem 0 0; min-height: 1.4em; }
+  .reach { font-size: .8125rem; color: var(--ink-dim); margin: .25rem 0 0; }
+  .reach a { color: var(--ink); text-underline-offset: 4px; text-decoration-color: var(--line); }
+  .reach a:hover { color: var(--accent); }
+
+  .toc { list-style: none; margin: clamp(3.5rem, 7vw, 5rem) 0 0; padding: 0; width: 100%; max-width: 48rem; text-align: left; }
+  .toc li { display: grid; grid-template-columns: 2rem 11rem minmax(0, 1fr); gap: 1rem; align-items: center; padding: .9rem 0; border-top: 1px solid var(--line); }
+  .toc li:last-child { border-bottom: 1px solid var(--line); }
+  @media (max-width: 600px) { .toc li { grid-template-columns: 2rem minmax(0, 1fr); row-gap: .5rem; } .toc .open, .toc .bars { grid-column: 2; } }
+  .toc .open { font-size: var(--p); line-height: 1.5; }
+  .bars { display: flex; flex-direction: column; gap: .4rem; }
+  .bar { display: block; height: .55rem; background: var(--ink); opacity: .85; }
+  .back { margin-top: 2.5rem; color: var(--ink-dim); text-decoration: none; }
+  .back:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="controls" role="group" aria-label="Mock controls">
+  <button type="button" data-set-p="13" aria-pressed="true">Para 13px</button>
+  <button type="button" data-set-p="14" aria-pressed="false">14px</button>
+  <button type="button" data-set-p="15" aria-pressed="false">15px (now)</button>
+  <button type="button" id="mode" aria-pressed="false">Dark</button>
+</div>
+
+<nav class="nav"><span class="nav__name">Anupama Mishra</span><span class="nav__links"><span class="on">Work</span><span>About me</span><span>Playground</span><span>Contact</span></span></nav>
+
+<main class="locked">
+  <p class="eyebrow mono dim">
+    <svg width="1.1em" height="1.1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+    Okta · Under NDA
+  </p>
+  <p class="case dim">Rebuilding IAM for enterprise admins</p>
+  <h1>The interesting parts are <em>confidential</em>.</h1>
+  <p class="body">The detailed process is protected, but here is the public version. Have the passcode? Step in for the full case study.</p>
+
+  <dl class="facts">
+    <div><dt class="mono dim">Role</dt><dd>Staff Product Designer, IAM + Developer Tools</dd></div>
+    <div><dt class="mono dim">Scope</dt><dd>Entitlements, role management, OIN publishing and developer onboarding</dd></div>
+    <div><dt class="mono dim">Outcome</dt><dd>Admin task time down [X]%, with no migration windows asked of customers</dd></div>
+  </dl>
+
+  <form id="f">
+    <label class="mono dim" for="pw">Passcode</label>
+    <div class="row"><input class="input" id="pw" type="password" autocomplete="off" /><button class="btn" type="submit">Unlock</button></div>
+    <p class="err" role="alert"></p>
+  </form>
+  <p class="reach">No passcode? <a href="#">Email me</a> and I'll walk you through it.</p>
+
+  <ol class="toc" aria-label="Case contents">
+    <li><span class="mono dim">01</span><span class="mono">The situation</span><span class="open">Okta was closing enterprise deals on a console built for smaller companies.</span></li>
+    <li><span class="mono dim">02</span><span class="mono">My scope</span><span class="bars"><span class="bar" style="width:92%"></span><span class="bar" style="width:64%"></span></span></li>
+    <li><span class="mono dim">03</span><span class="mono">The hard call</span><span class="bars"><span class="bar" style="width:78%"></span><span class="bar" style="width:40%"></span></span></li>
+    <li><span class="mono dim">04</span><span class="mono">How the work got made</span><span class="bars"><span class="bar" style="width:86%"></span></span></li>
+    <li><span class="mono dim">05</span><span class="mono">The craft</span><span class="bars"><span class="bar" style="width:70%"></span><span class="bar" style="width:88%"></span></span></li>
+    <li><span class="mono dim">06</span><span class="mono">Impact</span><span class="bars"><span class="bar" style="width:55%"></span></span></li>
+    <li><span class="mono dim">07</span><span class="mono">What I'd do differently</span><span class="bars"><span class="bar" style="width:66%"></span></span></li>
+  </ol>
+  <a class="back mono" href="#">&larr; All work</a>
+</main>
+
+<script>
+  const root = document.documentElement;
+  document.querySelectorAll('[data-set-p]').forEach((b) => b.addEventListener('click', () => {
+    root.dataset.p = b.dataset.setP;
+    document.querySelectorAll('[data-set-p]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+  const m = document.getElementById('mode');
+  m.addEventListener('click', () => { const d = root.dataset.mode !== 'dark'; root.dataset.mode = d ? 'dark' : 'light'; m.setAttribute('aria-pressed', String(d)); });
+  document.getElementById('f').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const i = document.getElementById('pw'), ok = i.value.trim().toLowerCase() === 'okta2026';
+    e.target.querySelector('.err').textContent = ok ? 'Unlocked.' : "That's not it. Try again.";
+  });
+</script>
+</body>
+</html>

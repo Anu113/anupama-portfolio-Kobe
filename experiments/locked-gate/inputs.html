@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Passcode inputs — mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --paper: #fcfcfc; --paper-2: #f7f7f7; --ink: #262626; --ink-dim: #707070;
+    --line: rgb(0 0 0 / 0.1); --accent: #b4482a; --on-accent: #fff;
+    --gutter: clamp(1.25rem, 0.786rem + 1.905vw, 2.5rem);
+    --ease: cubic-bezier(.16,1,.3,1); --dur: 320ms;
+  }
+  :root[data-mode='dark'] { --paper: #1b1a19; --paper-2: #252422; --ink: #ecebe8; --ink-dim: #a09d98; --line: rgb(255 255 255 / 0.12); --accent: #e0714f; --on-accent: #1b1a19; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 600 0.9375rem/1.8 var(--font-sans); letter-spacing: 0.03em; }
+  .mono { font: 400 0.6875rem/1.4 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+  .dim { color: var(--ink-dim); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  header { padding: 2.5rem var(--gutter) 1rem; text-align: center; }
+  header h1 { font: 300 2.5rem/1.1 var(--font-serif); letter-spacing: -0.03em; margin: 0 0 .5rem; }
+  header h1 em { font-style: italic; }
+  header p { margin: 0 auto; max-width: 56ch; font-size: .8125rem; }
+  .mode { position: fixed; right: 1rem; bottom: 1rem; z-index: 5; font: 400 .6875rem/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: .7rem 1rem; cursor: pointer; }
+
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border-block: 1px solid var(--line); margin-top: 2rem; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .cell { background: var(--paper); padding: 2.5rem var(--gutter) 3rem; display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 22rem; }
+  .cell__tag { align-self: stretch; display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 2.25rem; text-align: left; }
+  .cell__tag b { font-weight: 400; color: var(--ink); }
+  .cell__tag span { max-width: 34ch; text-align: right; }
+  /* the context each input sits in on the real page */
+  .ctx { font-size: .8125rem; color: var(--ink-dim); line-height: 1.7; max-width: 30rem; margin: 0 0 1.75rem; }
+  .reach { font-size: .8125rem; color: var(--ink-dim); margin: 1.25rem 0 0; }
+  .reach a { color: var(--ink); text-underline-offset: 4px; text-decoration-color: var(--line); }
+  .err { min-height: 1.3em; margin: .6rem 0 0; font-size: .8125rem; color: var(--accent); }
+  .ok .err { color: var(--ink); }
+
+  /* 1 — underline */
+  .v1 { width: 100%; max-width: 20rem; }
+  .v1 .field { display: flex; align-items: center; border-bottom: 1px solid var(--ink); transition: border-color var(--dur) var(--ease); }
+  .v1 .field:focus-within { border-bottom-color: var(--accent); }
+  .v1 input { flex: 1; min-width: 0; border: 0; background: none; font: inherit; color: var(--ink); padding: .55rem 0; }
+  .v1 input:focus-visible { outline: none; }
+  .v1 button { border: 0; background: none; color: var(--ink); cursor: pointer; padding: .55rem 0 .55rem .75rem; display: inline-flex; gap: .4rem; align-items: center; transition: color var(--dur) var(--ease); }
+  .v1 button:hover { color: var(--accent); }
+  .v1 button span { transition: transform var(--dur) var(--ease); }
+  .v1 button:hover span { transform: translateX(3px); }
+
+  /* 2 — compact pill, button inside */
+  .v2 .field { display: inline-flex; align-items: center; gap: .25rem; border: 1px solid var(--ink-dim); border-radius: 999px; padding: .2rem .2rem .2rem 1rem; background: var(--paper-2); transition: border-color var(--dur) var(--ease); }
+  .v2 .field:focus-within { border-color: var(--ink); }
+  .v2 input { width: 9.5rem; border: 0; background: none; font: inherit; font-size: .8125rem; color: var(--ink); padding: .35rem 0; }
+  .v2 input::placeholder { color: var(--ink-dim); }
+  .v2 input:focus-visible { outline: none; }
+  .v2 button { width: 2rem; height: 2rem; border-radius: 50%; border: 0; background: var(--ink); color: var(--paper); cursor: pointer; display: grid; place-items: center; transition: background var(--dur) var(--ease); }
+  .v2 button:hover { background: var(--accent); color: var(--on-accent); }
+
+  /* 3 — code boxes */
+  .v3 .boxes { position: relative; display: inline-flex; gap: .35rem; cursor: text; }
+  .v3 .box { width: 1.9rem; height: 2.4rem; border: 1px solid var(--line); border-bottom-color: var(--ink-dim); display: grid; place-items: center; font: 400 1rem var(--font-mono); background: var(--paper-2); transition: border-color var(--dur) var(--ease); }
+  .v3 .box.on { border-color: var(--ink); }
+  .v3 .box.filled::after { content: ''; width: .4rem; height: .4rem; border-radius: 50%; background: var(--ink); }
+  .v3 input { position: absolute; inset: 0; opacity: 0; width: 100%; font-size: 16px; }
+  .v3 .boxes:focus-within { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+  /* 4 — prompt line, mono */
+  .v4 { font: 400 .8125rem/1 var(--font-mono); letter-spacing: .06em; }
+  .v4 .field { display: inline-flex; align-items: center; gap: .6rem; padding: .7rem 1rem; border: 1px solid var(--line); background: var(--paper-2); }
+  .v4 .field:focus-within { border-color: var(--ink-dim); }
+  .v4 .prompt { color: var(--accent); }
+  .v4 input { width: 11ch; border: 0; background: none; font: inherit; color: var(--ink); padding: 0; caret-color: var(--accent); }
+  .v4 input:focus-visible { outline: none; }
+  .v4 button { border: 0; background: none; font: inherit; color: var(--ink-dim); cursor: pointer; padding: 0; transition: color var(--dur) var(--ease); }
+  .v4 button:hover { color: var(--ink); }
+
+  /* 5 — link that opens a field */
+  .v5 .open { font: 600 .75rem/1.2 var(--font-sans); letter-spacing: .067em; text-transform: uppercase; background: var(--ink); color: var(--paper); border: 1px solid var(--ink); border-radius: 999px; padding: .625rem 1.125rem; cursor: pointer; display: inline-flex; gap: .5rem; align-items: center; transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease); }
+  .v5 .open:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .v5 .reveal { display: inline-grid; grid-template-columns: 0fr; transition: grid-template-columns 500ms var(--ease); vertical-align: middle; }
+  .v5.is-open .reveal { grid-template-columns: 1fr; }
+  .v5 .reveal > div { overflow: hidden; }
+  .v5 .row { display: inline-flex; align-items: center; gap: .4rem; }
+  .v5 input { width: 10rem; border: 0; border-bottom: 1px solid var(--ink); background: none; font: inherit; font-size: .8125rem; color: var(--ink); padding: .45rem 0; margin-right: .5rem; }
+  .v5 input:focus-visible { outline: none; border-bottom-color: var(--accent); }
+  .v5.is-open .open .lbl-a, .v5:not(.is-open) .open .lbl-b { display: none; }
+
+  /* 6 — square field, site radius, text button */
+  .v6 .row { display: inline-flex; }
+  .v6 input { width: 13rem; border: 1px solid var(--ink-dim); border-right: 0; background: var(--paper-2); font: inherit; font-size: .8125rem; color: var(--ink); padding: .6rem .8rem; border-radius: 0; }
+  .v6 input:focus-visible { outline: none; border-color: var(--ink); }
+  .v6 button { border: 1px solid var(--ink); background: var(--ink); color: var(--paper); font: 400 .6875rem/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; padding: 0 1rem; cursor: pointer; transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease); }
+  .v6 button:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+</style>
+</head>
+<body>
+<button class="mode" id="mode" type="button">Dark mode</button>
+<header>
+  <p class="mono dim" style="margin-bottom:.75rem">Okta · Under NDA</p>
+  <h1>Six ways to <em>ask</em> for the passcode</h1>
+  <p class="dim">Each one in the same place on the page, under the Role / Scope / Outcome row. All work: try any word for the error, <span class="mono">okta2026</span> to unlock.</p>
+</header>
+
+<div class="grid">
+
+  <div class="cell">
+    <div class="cell__tag mono dim"><b>1 · Underline</b><span>No box at all. One line, the action inside it. Lightest; same as the old mock E.</span></div>
+    <form class="v1" data-gate>
+      <label class="sr" for="i1">Passcode</label>
+      <div class="field"><input id="i1" type="password" placeholder="Passcode" autocomplete="off" /><button class="mono" type="submit">Unlock <span aria-hidden="true">&rarr;</span></button></div>
+      <p class="err" role="alert"></p>
+    </form>
+    <p class="reach">No passcode? <a href="#">Email me</a> and I'll walk you through it.</p>
+  </div>
+
+  <div class="cell">
+    <div class="cell__tag mono dim"><b>2 · Small pill</b><span>About half the width and height of now. The button is a round arrow inside the pill.</span></div>
+    <form class="v2" data-gate>
+      <label class="sr" for="i2">Passcode</label>
+      <div class="field">
+        <input id="i2" type="password" placeholder="Passcode" autocomplete="off" />
+        <button type="submit" aria-label="Unlock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>
+      </div>
+      <p class="err" role="alert"></p>
+    </form>
+    <p class="reach">No passcode? <a href="#">Email me</a> and I'll walk you through it.</p>
+  </div>
+
+  <div class="cell">
+    <div class="cell__tag mono dim"><b>3 · Code boxes</b><span>Like a sign-in code: one box per character, unlocks on the last one, no button. Shows the length, so the passcode needs a fixed one (8 here).</span></div>
+    <form class="v3" data-gate data-auto="8">
+      <label class="mono dim" for="i3" style="display:block;margin-bottom:.6rem">Passcode</label>
+      <div class="boxes">
+        <span class="box" aria-hidden="true"></span><span class="box" aria-hidden="true"></span><span class="box" aria-hidden="true"></span><span class="box" aria-hidden="true"></span><span class="box" aria-hidden="true"></span><span class="box" aria-hidden="true"></span><span class="box" aria-hidden="true"></span><span class="box" aria-hidden="true"></span>
+        <input id="i3" type="password" maxlength="8" autocomplete="off" />
+      </div>
+      <p class="err" role="alert"></p>
+    </form>
+    <p class="reach">No passcode? <a href="#">Email me</a> and I'll walk you through it.</p>
+  </div>
+
+  <div class="cell">
+    <div class="cell__tag mono dim"><b>4 · Prompt line</b><span>Mono, like a command line: a terracotta prompt, the caret, "Enter ↵". Ties to the mono labels on case pages. Most "design-eng".</span></div>
+    <form class="v4" data-gate>
+      <label class="sr" for="i4">Passcode</label>
+      <div class="field"><span class="prompt" aria-hidden="true">&gt;</span><input id="i4" type="password" placeholder="passcode" autocomplete="off" /><button type="submit">Enter &crarr;</button></div>
+      <p class="err" role="alert" style="font-family:var(--font-sans);letter-spacing:.03em"></p>
+    </form>
+    <p class="reach">No passcode? <a href="#">Email me</a> and I'll walk you through it.</p>
+  </div>
+
+  <div class="cell">
+    <div class="cell__tag mono dim"><b>5 · Button first</b><span>At rest, only a button: "I have a passcode". Pressing it slides a small field open beside it. Quietest page for anyone without one.</span></div>
+    <form class="v5" data-gate>
+      <div class="row">
+        <span class="reveal"><div><label class="sr" for="i5">Passcode</label><input id="i5" type="password" placeholder="Passcode" autocomplete="off" tabindex="-1" /></div></span>
+        <button class="open" type="button"><span class="lbl-a">I have a passcode</span><span class="lbl-b">Unlock</span></button>
+      </div>
+      <p class="err" role="alert"></p>
+    </form>
+    <p class="reach">No passcode? <a href="#">Email me</a> and I'll walk you through it.</p>
+  </div>
+
+  <div class="cell">
+    <div class="cell__tag mono dim"><b>6 · Square field</b><span>The site's square corners instead of a pill: a small field joined to a mono "Unlock" block. Reads like the facts row above it.</span></div>
+    <form class="v6" data-gate>
+      <label class="sr" for="i6">Passcode</label>
+      <div class="row"><input id="i6" type="password" placeholder="Passcode" autocomplete="off" /><button type="submit">Unlock</button></div>
+      <p class="err" role="alert"></p>
+    </form>
+    <p class="reach">No passcode? <a href="#">Email me</a> and I'll walk you through it.</p>
+  </div>
+</div>
+
+<script>
+  const root = document.documentElement, m = document.getElementById('mode');
+  m.addEventListener('click', () => { const d = root.dataset.mode !== 'dark'; root.dataset.mode = d ? 'dark' : 'light'; m.textContent = d ? 'Light mode' : 'Dark mode'; });
+  const check = (f) => {
+    const i = f.querySelector('input'), ok = i.value.trim().toLowerCase() === 'okta2026';
+    f.classList.toggle('ok', ok);
+    f.querySelector('.err').textContent = ok ? 'Unlocked.' : "That's not it. Try again.";
+  };
+  document.querySelectorAll('form[data-gate]').forEach((f) => f.addEventListener('submit', (e) => { e.preventDefault(); check(f); }));
+
+  // 3: boxes follow the hidden input; checks on the last character
+  const f3 = document.querySelector('.v3'), i3 = f3.querySelector('input'), boxes = f3.querySelectorAll('.box');
+  const paint = () => boxes.forEach((b, n) => { b.classList.toggle('filled', n < i3.value.length); b.classList.toggle('on', document.activeElement === i3 && n === Math.min(i3.value.length, 7)); });
+  ['input', 'focus', 'blur'].forEach((ev) => i3.addEventListener(ev, () => { paint(); if (ev === 'input') { f3.querySelector('.err').textContent = ''; if (i3.value.length === 8) check(f3); } }));
+
+  // 5: first press opens the field, second submits
+  const f5 = document.querySelector('.v5'), b5 = f5.querySelector('.open'), i5 = f5.querySelector('input');
+  b5.addEventListener('click', () => {
+    if (!f5.classList.contains('is-open')) { f5.classList.add('is-open'); i5.tabIndex = 0; setTimeout(() => i5.focus(), 200); }
+    else check(f5);
+  });
+  i5.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); check(f5); } });
+</script>
+</body>
+</html>

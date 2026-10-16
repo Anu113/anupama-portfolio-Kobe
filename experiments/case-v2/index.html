@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Case study v2 mock</title>
+<!-- MOCKUP — PayPal Privacy rebuilt in rachelatwork.com/work/assistants's
+     structure: title → hero → lede + numbers beside a role sidebar → the
+     work moving → context → research whose findings name the features →
+     one band per feature with numbered "X replaced Y" decision rows →
+     impact by who it helped → reflections. Her strengths kept: the hard
+     call (as Feature 1's prototype testing), the section rail, the next
+     link. Only product media moves; there is no page motion at all.
+     Served from the repo root so it reads the real tokens and images. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" />
+<link rel="stylesheet" href="/src/styles/tokens.css" />
+<link rel="stylesheet" href="/src/styles/device-box.css" />
+<style>
+  * { box-sizing: border-box; }
+  html { scroll-behavior: auto; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--font-sans); font-weight: var(--weight-sans);
+    font-size: var(--step-body); line-height: 1.6;
+  }
+  img { display: block; max-width: 100%; }
+  .mono {
+    font-family: var(--font-mono); font-weight: var(--weight-mono);
+    font-size: var(--step-fine); letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .serif { font-family: var(--font-serif); font-weight: var(--weight-serif); letter-spacing: var(--tracking-serif); }
+  .dim { color: var(--fg-dim); }
+
+  .mocknote {
+    position: sticky; top: 0; z-index: 5; background: var(--fg); color: var(--bg);
+    padding: 0.55rem var(--gutter); display: flex; gap: 1.5rem; flex-wrap: wrap;
+  }
+
+  /* One grid: rail | content, as on the live case page. */
+  .page {
+    display: grid; grid-template-columns: 11rem minmax(0, 1fr); column-gap: var(--gutter);
+    padding: 4rem var(--gutter) var(--space-section); max-width: 82rem; margin-inline: auto;
+  }
+  .rail { position: sticky; top: 4rem; align-self: start; display: grid; gap: 0.55rem; font-size: var(--step-small); }
+  .rail a { color: var(--fg-dim); text-decoration: none; }
+  .rail a:hover, .rail a:focus-visible { color: var(--fg); }
+  .rail .mono { margin-bottom: 0.6rem; color: var(--fg); }
+
+  /* --- Opening ------------------------------------------------------- */
+  .eyebrow { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin: 0 0 1.25rem; }
+  .tags { display: flex; gap: 0.375rem; list-style: none; margin: 0; padding: 0; }
+  .tag { font-family: var(--font-mono); font-size: 0.625rem; line-height: 1rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tag-fg); background: var(--tag-bg); border-radius: var(--radius-tag); padding: 0.125rem 0.4375rem; }
+  h1 { font-size: var(--step-case-title); line-height: 1.1; margin: 0; max-width: 24ch; }
+  .hero { background: var(--hue-paypal); padding: clamp(1.25rem, 3vw, 2.5rem); margin-top: 2rem; }
+
+  .intro { display: grid; grid-template-columns: minmax(0, 1fr) 15rem; gap: var(--gutter); margin-top: 2.5rem; }
+  .lede { font-size: 1.25rem; line-height: 1.5; margin: 0 0 2rem; max-width: 36ch; }
+  .nums { margin: 0; }
+  .nums div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; border-top: 1px solid var(--rule); padding: 0.9rem 0; }
+  .nums dt { font-size: var(--step-title); line-height: 1; }
+  .nums dd { margin: 0; color: var(--fg-dim); font-size: var(--step-small); text-align: right; }
+  .side { margin: 0; display: grid; gap: 1.5rem; align-content: start; }
+  .side dt { color: var(--accent); margin-bottom: 0.35rem; }
+  .side dd { margin: 0; font-size: var(--step-small); line-height: 1.55; }
+
+  /* The work, moving: one loop per feature, right under the opening. */
+  .strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin-top: 3rem; }
+  .strip figure { margin: 0; }
+  .strip figcaption { margin-top: 0.6rem; }
+  .strip .device-box { --device-w: 150px; padding: 1.75rem 1rem; border-radius: 24px; }
+
+  /* --- Sections ------------------------------------------------------ */
+  section { margin-top: var(--space-case); scroll-margin-top: 4rem; }
+  .label { display: flex; gap: 0.9rem; border-top: 1px solid var(--rule); padding-top: 0.9rem; margin: 0 0 1.75rem; color: var(--fg-dim); }
+  .label b { color: var(--fg); font-weight: inherit; }
+  h2 { font-size: var(--step-title); line-height: 1.25; margin: 0; }
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gutter); }
+  .split p { margin: 0 0 1rem; }
+  .goal { text-align: center; font-size: var(--step-title); line-height: 1.35; max-width: 30ch; margin: 3rem auto 0; }
+
+  /* Research: evidence on the left, findings that name their feature on the right. */
+  .research { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 0.75rem; margin-top: 2rem; }
+  .panel { border: 1px solid var(--rule); padding: 1.5rem; }
+  .finding { border: 1px solid var(--rule); padding: 1.25rem 1.5rem; }
+  .finding + .finding { margin-top: 0.75rem; }
+  .finding .mono { color: var(--accent); }
+  .finding h3 { font-size: var(--step-body); margin: 0.5rem 0 0.35rem; }
+  .finding p { margin: 0; font-size: var(--step-small); color: var(--fg-dim); }
+  .bigline { display: flex; align-items: baseline; gap: 1rem; margin-top: 1.25rem; }
+  .bigline .serif { font-size: var(--step-heading); line-height: 1; }
+
+  /* Feature opener: big title + problem on the left, the feature's loop on
+     the project hue on the right (hue stays behind the work, not the text). */
+  .feature { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: var(--gutter); align-items: center; border-top: 1px solid var(--fg); padding-top: 2rem; }
+  .feature .mono { color: var(--accent); }
+  .feature h2 { font-size: var(--step-heading); line-height: 1.05; margin: 0.6rem 0 1rem; }
+  .feature .promise { margin: 0 0 1.5rem; }
+  .feature .problem { margin: 0; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: var(--step-small); color: var(--fg-dim); }
+  .feature .problem b { color: var(--fg); font-weight: inherit; }
+  .onhue { background: var(--hue-paypal); padding: clamp(1rem, 2.5vw, 2rem); }
+
+  .sub { margin-top: 3.5rem; }
+  .sub > .mono { color: var(--fg-dim); margin: 0 0 0.75rem; }
+  .sub > p.serif { font-size: var(--step-title); line-height: 1.3; margin: 0 0 1.5rem; max-width: 34ch; }
+  .tests { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gutter); margin-top: 1.5rem; }
+  .tests div { border-top: 1px solid var(--rule); padding-top: 0.75rem; }
+  .tests .serif { font-size: var(--step-title); }
+  .tests p { margin: 0.4rem 0 0; font-size: var(--step-small); color: var(--fg-dim); }
+  .tests .pass .serif { color: var(--fg); }
+  .tests .pass { border-top-color: var(--fg); }
+
+  /* Key decisions: media left, numbered claim right. */
+  .decisions h3.serif { font-size: var(--step-title); margin: 3.5rem 0 1.5rem; font-weight: var(--weight-serif); }
+  .row { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: var(--gutter); align-items: center; }
+  .row + .row { margin-top: 3rem; }
+  .row .claim { display: grid; grid-template-columns: auto 1fr; column-gap: 0.9rem; }
+  .row .num { font-family: var(--font-mono); font-size: var(--step-title); line-height: 1.2; color: var(--fg); }
+  .row h4 { font-family: var(--font-mono); font-weight: var(--weight-mono); font-size: var(--step-label); letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.5; margin: 0.2rem 0 0.6rem; }
+  .row p { grid-column: 2; margin: 0; font-size: var(--step-small); color: var(--fg-dim); }
+
+  /* A recording still to make: dashed, says exactly what to capture. */
+  .rec { border: 1px dashed var(--fg-dim); aspect-ratio: 16 / 10; display: grid; place-content: center; text-align: center; gap: 0.5rem; padding: 1.5rem; color: var(--fg-dim); background: var(--screen); }
+  .rec .mono { color: var(--accent); }
+  .rec p { margin: 0; font-size: var(--step-small); max-width: 34ch; }
+  .tagrec { margin-top: 0.5rem; color: var(--fg-dim); }
+  .tagrec b { color: var(--accent); font-weight: inherit; }
+
+  /* Impact by who it helped. */
+  .people { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gutter); margin-top: 2rem; }
+  .people .mono { color: var(--accent); }
+  .people .serif { font-size: var(--step-heading); line-height: 1; margin: 0.75rem 0 0.5rem; }
+  .people p { margin: 0; font-size: var(--step-small); color: var(--fg-dim); }
+
+  .reflect { display: grid; grid-template-columns: 12rem 1fr 1fr; gap: var(--gutter); }
+  .reflect h2 { font-size: var(--step-title); }
+  .reflect h3 { font-family: var(--font-mono); font-weight: var(--weight-mono); font-size: var(--step-label); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 0.5rem; }
+  .reflect p { margin: 0; font-size: var(--step-small); color: var(--fg-dim); }
+
+  .next { text-align: center; padding: var(--space-section) var(--gutter); border-top: 1px solid var(--rule); }
+  .next a { display: inline-block; margin-top: 0.75rem; font-family: var(--font-serif); font-weight: var(--weight-serif); font-size: var(--step-heading); color: var(--fg); text-decoration: none; }
+
+  /* Loop control: one small pause button per moving phone (WCAG 2.2.2). */
+  .loop { position: relative; }
+  .loop__btn {
+    position: absolute; right: 0.6rem; top: 0.6rem; z-index: 2;
+    width: 1.9rem; height: 1.9rem; border-radius: 999px; border: 1px solid var(--rule);
+    background: var(--bg); color: var(--fg); display: grid; place-items: center; cursor: pointer;
+  }
+  .loop__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .device__screen img { position: absolute; inset: 0; opacity: 0; }
+  .device__screen img.on { opacity: 1; }
+
+  @media (max-width: 960px) {
+    .page { grid-template-columns: 1fr; }
+    .rail { display: none; }
+    .intro, .split, .research, .feature, .row, .reflect { grid-template-columns: 1fr; }
+    .strip, .tests, .people { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<p class="mono mocknote">
+  <span>Mockup · PayPal Privacy in the new structure</span>
+  <span>Only the phones move · dashed boxes = recordings to make</span>
+</p>
+
+<div class="page">
+  <nav class="rail" aria-label="Sections">
+    <span class="mono">PayPal Privacy</span>
+    <a href="#context">Context</a>
+    <a href="#research">Research</a>
+    <a href="#f1">One page, three headings</a>
+    <a href="#f2">Settings that explain</a>
+    <a href="#f3">Data rights you can use</a>
+    <a href="#impact">Impact</a>
+    <a href="#reflect">Reflections</a>
+  </nav>
+
+  <main>
+    <!-- 1 · Title, hero ------------------------------------------------ -->
+    <div class="eyebrow">
+      <span class="mono">PayPal</span>
+      <ul class="tags"><li class="tag">Fintech</li><li class="tag">Privacy &amp; data</li><li class="tag">Information architecture</li></ul>
+    </div>
+    <h1 class="serif">Privacy settings people can read</h1>
+    <div class="hero"><img src="/public/images/paypal-privacy/hero.webp" alt="Four redesigned screens: the Data and privacy page, Deals & ads, Personalized deals and offers, and How it works" /></div>
+
+    <!-- 2 · Lede + numbers | role sidebar ------------------------------- -->
+    <div class="intro">
+      <div>
+        <p class="lede">PayPal's privacy settings were a list of legal controls most people never got past. I led the redesign into one page people can read, launched to more than 80 million people.</p>
+        <dl class="nums">
+          <div><dt class="serif">60%</dt><dd>fewer support calls about privacy settings</dd></div>
+          <div><dt class="serif">76%</dt><dd>faster data access</dd></div>
+          <div><dt class="serif">4.7/5</dt><dd>rating from 150 users</dd></div>
+        </dl>
+      </div>
+      <dl class="side">
+        <div><dt class="mono">Role</dt><dd>Lead product designer, one of four<br /><span class="dim">Research, concept, design, testing, delivery</span></dd></div>
+        <div><dt class="mono">Team</dt><dd>Content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers</dd></div>
+        <div><dt class="mono">Platforms</dt><dd>PayPal app, mobile first, and web</dd></div>
+        <div><dt class="mono">Timeline</dt><dd>March 2021 – January 2023</dd></div>
+      </dl>
+    </div>
+
+    <!-- 3 · The work, moving: one loop per feature ---------------------- -->
+    <div class="strip">
+      <figure>
+        <div class="device-box loop" data-loop>
+          <button class="loop__btn" type="button" aria-label="Pause">❚❚</button>
+          <div class="device"><div class="device__screen">
+            <img class="on" src="/public/images/paypal-privacy/phone-1.webp" alt="The new Data and privacy page" />
+            <img src="/public/images/paypal-privacy/phone-2.webp" alt="" />
+            <img src="/public/images/paypal-privacy/phone-3.webp" alt="" />
+            <img src="/public/images/paypal-privacy/phone-4.webp" alt="" />
+          </div></div>
+        </div>
+        <figcaption class="mono dim">01 · One page, three headings</figcaption>
+      </figure>
+      <figure>
+        <div class="rec" style="aspect-ratio:auto;height:100%;min-height:22rem"><span class="mono">Record · 8s</span><p>Shopping: open Personalized deals, read How it works, switch the toggle off.</p></div>
+        <figcaption class="mono dim">02 · Settings that explain</figcaption>
+      </figure>
+      <figure>
+        <div class="rec" style="aspect-ratio:auto;height:100%;min-height:22rem"><span class="mono">Record · 8s</span><p>Delete: open the sheet, pick Clean up your data, untick face scan.</p></div>
+        <figcaption class="mono dim">03 · Data rights you can use</figcaption>
+      </figure>
+    </div>
+
+    <!-- 4 · Context ---------------------------------------------------- -->
+    <section id="context">
+      <p class="mono label">Context</p>
+      <div class="split">
+        <h2 class="serif" style="font-size:var(--step-heading);line-height:1.1">The settings grew one control at a time.</h2>
+        <div>
+          <p>A list of controls in legal language, with no structure underneath. New features and new GDPR and CCPA requirements had nowhere to go, and customer service heard the same privacy questions again and again.</p>
+          <div class="bigline"><span class="serif">75%</span><span class="dim" style="font-size:var(--step-small)">of settings traffic stopped on the first page</span></div>
+        </div>
+      </div>
+      <p class="serif goal">Make managing your data easy, build trust, and meet the law, all on the same screens.</p>
+    </section>
+
+    <!-- 5 · Research: each finding names the feature it became ---------- -->
+    <section id="research">
+      <p class="mono label">Research</p>
+      <h2 class="serif" style="font-size:var(--step-heading);line-height:1.1;max-width:22ch">Three problems, and each one became a part of the redesign</h2>
+      <div class="research">
+        <div class="panel">
+          <p class="dim" style="margin:0 0 1rem;font-size:var(--step-small)">Four closed card sorts, a year of settings traffic, and sessions with customer service and the product teams that needed a setting here.</p>
+          <img src="/public/images/paypal-privacy/context-map.webp" alt="Map of four moments where privacy comes up, each leading to an explanation and a contextual setting" />
+          <p class="mono dim" style="margin-top:0.75rem">Where privacy questions come up</p>
+        </div>
+        <div>
+          <div class="finding"><span class="mono">Finding 1 → One page, three headings</span><h3>No structure, no room to grow</h3><p>Controls added one at a time, in jargon. New settings had nowhere to go.</p></div>
+          <div class="finding"><span class="mono">Finding 2 → Settings that explain</span><h3>No transparency</h3><p>People couldn't tell how their data was used, or which controls they had.</p></div>
+          <div class="finding"><span class="mono">Finding 3 → Data rights you can use</span><h3>Nothing explained</h3><p>Nothing told people what their data rights were, or how to use them.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · Feature 1 --------------------------------------------------- -->
+    <section id="f1">
+      <div class="feature">
+        <div>
+          <span class="mono">Feature 1</span>
+          <h2 class="serif">One page, three headings</h2>
+          <p class="promise">Every setting one tap away, under Profile privacy, Permissions and shared data, and Your data rights.</p>
+          <p class="problem"><b>Problem:</b> controls had been added one at a time, and GDPR and CCPA settings had nowhere to go.</p>
+        </div>
+        <div class="onhue"><img src="/public/images/paypal-privacy/evolution.webp" alt="The old list, the first layered version, and the revised single page" /></div>
+      </div>
+
+      <div class="sub">
+        <p class="mono">Prototype testing · the hard call</p>
+        <p class="serif">The first structure tested well and cost a tap. I kept the groups and dropped the extra layer.</p>
+        <div class="onhue"><img src="/public/images/paypal-privacy/layers.webp" alt="The first version: four tiles, with a sheet of settings behind each" /></div>
+        <div class="tests">
+          <div class="pass"><span class="serif">74%</span><p>Prototype 3, no one abandoned. Cleared the 70% bar.</p></div>
+          <div><span class="serif dim">68%</span><p>Prototype 1</p></div>
+          <div><span class="serif dim">67%</span><p>Prototype 2</p></div>
+        </div>
+      </div>
+
+      <div class="decisions">
+        <h3 class="serif">Key interface decisions</h3>
+        <div class="row">
+          <div><div class="rec"><span class="mono">Record · 6s</span><p>Scroll the revised page, tap one setting, back. Shows "one tap away".</p></div></div>
+          <div class="claim"><span class="num">01</span><div><h4>Headings replaced a layer of sheets</h4></div><p>In rapid research the groups worked and the sheets didn't: they added a tap before any real setting.</p></div>
+        </div>
+        <div class="row">
+          <div><div class="rec"><span class="mono">Record · 5s</span><p>Tap "Update your data", then the Emails link at the bottom.</p></div></div>
+          <div class="claim"><span class="num">02</span><div><h4>"Update your data" replaced "Correct your data"</h4></div><p>People read "Correct" as something other than updating their details. Marketing email got its own link, where people looked for it.</p></div>
+        </div>
+        <div class="row">
+          <div class="onhue"><img src="/public/images/paypal-privacy/subnav.webp" alt="Web settings sub-navigation, blue on blue before, white after" /></div>
+          <div class="claim"><span class="num">03</span><div><h4>A white sub-navigation replaced blue on blue</h4></div><p>Many people never saw the old one. Up to 85% better on some tasks in unmoderated tests.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 · Feature 2 --------------------------------------------------- -->
+    <section id="f2">
+      <div class="feature">
+        <div>
+          <span class="mono">Feature 2</span>
+          <h2 class="serif">Settings that explain</h2>
+          <p class="promise">Each setting says what it does, what it's set to, and what changes if you switch it.</p>
+          <p class="problem"><b>Problem:</b> people couldn't tell how their data was used, or which controls they had.</p>
+        </div>
+        <div class="onhue"><img src="/public/images/paypal-privacy/shopping.webp" alt="PayPal Shopping before and after" /><p class="mono tagrec"><b>Becomes a loop</b> · the 8s Shopping recording</p></div>
+      </div>
+      <div class="decisions">
+        <h3 class="serif">Key interface decisions</h3>
+        <div class="row">
+          <div class="onhue"><img src="/public/images/paypal-privacy/shopping.webp" alt="The old Turn off PayPal Shopping screen and the new toggle with How it works" /></div>
+          <div class="claim"><span class="num">01</span><div><h4>A toggle that says what's on replaced one "Turn off" button</h4></div><p>It explains how it works with an example, and ends on "We never sell your personal information."</p></div>
+        </div>
+        <div class="row">
+          <div class="onhue"><img src="/public/images/paypal-privacy/contextual.webp" alt="Offers with a Personalize your experience link, and a Shopping and Privacy card" /></div>
+          <div class="claim"><span class="num">02</span><div><h4>Explanations in place replaced a trip to settings</h4></div><p>Most privacy questions start mid-task. Offers carry a link to their setting, and a card explains why you see them.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 · Feature 3 --------------------------------------------------- -->
+    <section id="f3">
+      <div class="feature">
+        <div>
+          <span class="mono">Feature 3</span>
+          <h2 class="serif">Data rights you can use</h2>
+          <p class="promise">Get a copy, clean up, or delete, each saying what you'll get and what you'll lose.</p>
+          <p class="problem"><b>Problem:</b> nothing told people what their data rights were, or how to use them.</p>
+        </div>
+        <div class="onhue"><img src="/public/images/paypal-privacy/data-delete.webp" alt="Delete your data, before and after" /><p class="mono tagrec"><b>Becomes a loop</b> · the 8s clean-up recording</p></div>
+      </div>
+      <div class="decisions">
+        <h3 class="serif">Key interface decisions</h3>
+        <div class="row">
+          <div class="onhue"><img src="/public/images/paypal-privacy/data-delete.webp" alt="One delete path before; Clean up your data or Delete and close after" /></div>
+          <div class="claim"><span class="num">01</span><div><h4>"Clean up your data" came before "Delete and close"</h4></div><p>The old flow had one path. Now face scan, marketing, package tracking and third-party data can go one at a time.</p></div>
+        </div>
+        <div class="row">
+          <div class="onhue"><img src="/public/images/paypal-privacy/data-request.webp" alt="Get a copy of your data: a long checklist before, grouped data types after" /></div>
+          <div class="claim"><span class="num">02</span><div><h4>Grouped data types replaced a long checklist</h4></div><p>Each says what it's for and what's included, and connected apps (Xoom, Venmo, Honey) are listed.</p></div>
+        </div>
+        <div class="row">
+          <div><div class="rec"><span class="mono">Record · 5s</span><p>Reach the end of delete, hold on the line about what PayPal must keep.</p></div></div>
+          <div class="claim"><span class="num">03</span><div><h4>The delete screen says what the law keeps</h4></div><p>Deleting can't remove what regulation requires PayPal to retain, so the screen says so before you start.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 · Impact by who it helped ------------------------------------- -->
+    <section id="impact">
+      <p class="mono label">Impact</p>
+      <h2 class="serif" style="font-size:var(--step-heading);line-height:1.1">Launched in early 2023, used by more than 80 million people</h2>
+      <div class="people">
+        <div><span class="mono">Customer service</span><p class="serif">60%</p><p>fewer calls about privacy settings.</p></div>
+        <div><span class="mono">People asking for their data</span><p class="serif">76%</p><p>faster to get it.</p></div>
+        <div><span class="mono">150 users asked</span><p class="serif">4.7/5</p><p>average rating of the new settings.</p></div>
+      </div>
+    </section>
+
+    <!-- 10 · Reflections ------------------------------------------------ -->
+    <section id="reflect">
+      <div class="reflect">
+        <h2 class="serif">Reflections</h2>
+        <div><h3>Bring engineering and privacy in early</h3><p>What a setting can promise depends on the backend and on regulation. Both are cheaper to learn before the design is set.</p></div>
+        <div><h3>[Second point]</h3><p>[One honest point about the process or the release.]</p></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="next"><p class="mono dim">Next</p><a href="#">Scan &amp; Go, in-store</a></div>
+
+<script>
+  // The one thing that moves: product screens. Steps through the phone's
+  // screens only while it's on screen, never under reduced motion, and
+  // stops for good when the visitor presses pause.
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('[data-loop]').forEach((box) => {
+    const imgs = [...box.querySelectorAll('.device__screen img')];
+    const btn = box.querySelector('.loop__btn');
+    let i = 0, timer = null, paused = still, visible = false;
+    const step = () => { imgs[i].classList.remove('on'); i = (i + 1) % imgs.length; imgs[i].classList.add('on'); };
+    const sync = () => {
+      clearInterval(timer); timer = null;
+      if (visible && !paused) timer = setInterval(step, 1800);
+      btn.textContent = paused ? '▶' : '❚❚';
+      btn.setAttribute('aria-label', paused ? 'Play' : 'Pause');
+    };
+    btn.addEventListener('click', () => { paused = !paused; sync(); });
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }, { threshold: 0.4 }).observe(box);
+  });
+</script>
+</body>
+</html>
