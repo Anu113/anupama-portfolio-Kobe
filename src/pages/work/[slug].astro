@@ -386,7 +386,7 @@ const topImpact = useRefLayout
   .lede {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: var(--gutter);
+    column-gap: var(--col-gap);
     row-gap: clamp(1.75rem, 3vw, 2.5rem);
     align-items: start;
     margin-top: clamp(1.5rem, 3vw, 2.25rem);
@@ -440,7 +440,7 @@ const topImpact = useRefLayout
     margin: 2.5rem 0 var(--space-case);
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1.75rem var(--gutter);
+    gap: 1.75rem var(--col-gap);
   }
   .meta__cell { min-width: 0; }
   .meta__label { margin: 0 0 0.5rem; }
@@ -461,7 +461,7 @@ const topImpact = useRefLayout
   .banner {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 16rem;
-    column-gap: var(--gutter);
+    column-gap: var(--col-gap);
     align-items: start;
   }
   .banner { margin-top: clamp(1.5rem, 3vw, 2.25rem); }
@@ -486,7 +486,7 @@ const topImpact = useRefLayout
     margin: 0;
     display: grid;
     grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
-    gap: 2rem var(--gutter);
+    gap: 2rem var(--col-gap);
   }
   .impact-band__stat { border-top: 1px solid var(--rule); padding-top: 1rem; }
   .impact-band__value {
@@ -510,7 +510,7 @@ const topImpact = useRefLayout
     margin-inline: auto;
     display: grid;
     grid-template-columns: var(--rail-width) minmax(0, 1fr);
-    column-gap: var(--gutter);
+    column-gap: var(--col-gap);
     align-items: start;
   }
   .body__col { min-width: 0; }
@@ -629,7 +629,7 @@ const topImpact = useRefLayout
     /* The 16rem sidebar gets cramped against the title before the lede's
        own CTA breakpoint kicks in — stack it above the intro instead. */
     .banner { grid-template-columns: 1fr; row-gap: 2rem; }
-    .meta--sidebar { flex-direction: row; flex-wrap: wrap; gap: 1.75rem var(--gutter); }
+    .meta--sidebar { flex-direction: row; flex-wrap: wrap; gap: 1.75rem var(--col-gap); }
     .meta--sidebar .meta__cell { flex: 1 1 10rem; }
   }
   @media (max-width: 820px) {

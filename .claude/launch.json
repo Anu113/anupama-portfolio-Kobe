@@ -4,21 +4,112 @@
     {
       "name": "astro-dev",
       "runtimeExecutable": "/Users/bhaveshupadhyay/.nvm/versions/node/v22.23.1/bin/node",
-      "runtimeArgs": ["node_modules/astro/bin/astro.mjs", "dev", "--port", "4321"],
+      "runtimeArgs": [
+        "node_modules/astro/bin/astro.mjs",
+        "dev",
+        "--port",
+        "4321"
+      ],
       "port": 4321
     },
     {
       "name": "astro-dist",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory dist"],
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory dist"
+      ],
       "port": 4323,
       "autoPort": true
     },
     {
       "name": "astro-dev-alt",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "\"/Users/bhaveshupadhyay/.nvm/versions/node/v22.23.1/bin/node\" node_modules/astro/bin/astro.mjs dev --force --port \"$PORT\""],
+      "runtimeArgs": [
+        "-c",
+        "\"/Users/bhaveshupadhyay/.nvm/versions/node/v22.23.1/bin/node\" node_modules/astro/bin/astro.mjs dev --force --port \"$PORT\""
+      ],
       "port": 4325,
+      "autoPort": true
+    },
+    {
+      "name": "scratch-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory /private/tmp/claude-501/-Users-bhaveshupadhyay-Projects-anupama-portfolio/6c4d2be8-6fcd-421e-9743-8202ee8fcd8e/scratchpad"
+      ],
+      "port": 4329,
+      "autoPort": true
+    },
+    {
+      "name": "scratch-site",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory /private/tmp/claude-501/-Users-bhaveshupadhyay-Projects-anupama-portfolio/6c4d2be8-6fcd-421e-9743-8202ee8fcd8e/scratchpad/site"
+      ],
+      "port": 4331,
+      "autoPort": true
+    },
+    {
+      "name": "loader-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory /private/tmp/claude-501/-Users-bhaveshupadhyay-Projects-anupama-portfolio/91d44ce9-b848-4537-b2f1-031dc3759aaa/scratchpad/mockup"
+      ],
+      "port": 4333,
+      "autoPort": true
+    },
+    {
+      "name": "preloader-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory /private/tmp/claude-501/-Users-bhaveshupadhyay-Projects-anupama-portfolio/92d3f96e-3168-4985-bf00-6eafb390986e/scratchpad/preloader-mock"
+      ],
+      "port": 4335,
+      "autoPort": true
+    },
+    {
+      "name": "walk-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory /private/tmp/claude-501/-Users-bhaveshupadhyay-Projects-anupama-portfolio/2cca174b-1338-4f3b-bfbe-1538d4e8fdba/scratchpad/walk-mock"
+      ],
+      "port": 4337,
+      "autoPort": true
+    },
+    {
+      "name": "case-v2-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\""
+      ],
+      "port": 4345,
+      "autoPort": true
+    },
+    {
+      "name": "locked-gate-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/locked-gate"
+      ],
+      "port": 4343,
+      "autoPort": true
+    },
+    {
+      "name": "moss-walk-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory /private/tmp/claude-501/-Users-bhaveshupadhyay-Projects-anupama-portfolio/4d362ac0-801f-4c30-be28-9d1ce1cf95b6/scratchpad"
+      ],
+      "port": 4339,
       "autoPort": true
     }
   ]

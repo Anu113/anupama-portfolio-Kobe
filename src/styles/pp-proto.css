@@ -140,7 +140,7 @@
   .setup__t { font-size: var(--pp-text-lg); font-weight: 500; margin: 8px 0 0; }
 
   /* --- the side panel ---------------------------------------------- */
-  .proto__side { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem var(--gutter); align-content: start; align-items: start; }
+  .proto__side { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem var(--col-gap); align-content: start; align-items: start; }
   .proto__side > .u-label { grid-column: 1 / -1; margin: 0; }
   .proto__side > .steps { grid-column: 1; grid-row: 2 / span 3; }
   .proto__side > :not(.steps, .u-label) { grid-column: 2; }
