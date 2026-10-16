@@ -139,8 +139,11 @@ export const cases: CaseStudy[] = [
       password: 'okta2026',
       preview: 0,
       scope: 'Entitlements, role management, OIN publishing and developer onboarding',
-      // [Draft from the Impact section — confirm the number before sharing.]
-      outcome: 'Admin task time down [X]%, with no migration windows asked of customers',
+      /* Okta's public scale, not a claim of her impact (chosen on request
+         until she has a real number of her own): ~19,650 customers at the
+         end of FY2025 (Barchart) and 8,000+ OIN integrations
+         (okta.com/integrations). Swap for her own result once confirmed. */
+      outcome: 'Shipped to an admin console used by about 20,000 companies and an 8,000-app integration network',
     },
     sections: [
       {
