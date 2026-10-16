@@ -7,12 +7,18 @@
 
    1. The preview FLOATS OVER the list. It does not sit inside the row and it
       does not push the type sideways — the rows never move.
-   2. It FOLLOWS THE CURSOR, easing toward the pointer rather than snapping.
+   2. It FOLLOWS THE CURSOR, easing toward the pointer rather than snapping,
+      and hangs BELOW it, left edge on the pointer (flipping left or up near
+      the window's edges).
       This is the departure: the reference pins its preview to the centre of
       the list. Anupama asked for cursor-following, so the position comes from
       the pointer, which is the one thing here that needs script.
    3. The link label is hidden until hover (as the reference does, at
       opacity 0), so the right-hand column stays quiet.
+   4. On hover the project name lightens a little (--hover-fade), after
+      danield.design's archive: it confirms which row the pointer is on.
+      Only the name — fading the whole row would fade the preview too, and
+      the grey meta would drop below AA.
 
    The follow is a hand-rolled rAF that parks the moment the chase settles —
    same shape as CursorTrail, and the reason no animation library is needed.
@@ -71,8 +77,12 @@ const { items } = Astro.props;
 
 <style>
   .arch {
-    /* ~26% of the viewport on the reference, at the previews' own 760×460. */
-    --preview-w: clamp(15rem, 26vw, 22rem);
+    /* Smaller than the reference's ~26% of the viewport (on request), at the
+       previews' own 760×460. */
+    --preview-w: clamp(12rem, 20vw, 17rem);
+    /* Space between the pointer and the preview's top edge — clears the
+       arrow cursor's own height. */
+    --preview-gap: 1.25rem;
     position: relative;   /* the previews position against this, and only this */
     list-style: none;
     margin: 0;
@@ -113,16 +123,24 @@ const { items } = Astro.props;
          the hover that summons it. */
       pointer-events: none;
       opacity: 0;
-      /* Sits above and centred on the pointer, so the cursor stays on the row
-         it is previewing rather than behind the image. Positional only —
-         nothing transitions here, or the entrance would fight the follow. */
+      /* Hangs below the pointer like a tooltip, its left edge on the
+         pointer, so the cursor stays on the row it is previewing rather than
+         behind the image. Near the window's right edge the script sets
+         data-flip-x and the preview's right edge sits on the pointer instead;
+         near the bottom, data-flip-y lifts it above the pointer. Positional
+         only — nothing transitions here, or the entrance would fight the
+         follow. */
+      --ox: 0%;
+      --oy: var(--preview-gap);
       transform: translate3d(
-        calc(var(--px, 0px) - 50%),
-        calc(var(--py, 0px) - 100% - 1.25rem),
+        calc(var(--px, 0px) + var(--ox)),
+        calc(var(--py, 0px) + var(--oy)),
         0
       );
       transition: opacity var(--dur-hover) var(--ease-out);
     }
+    .arch[data-flip-x] .arch__preview { --ox: -100%; }
+    .arch[data-flip-y] .arch__preview { --oy: calc(-100% - var(--preview-gap) / 2); }
     .arch__row:hover .arch__preview,
     .arch__row:focus-visible .arch__preview { opacity: 1; }
   }
@@ -146,7 +164,10 @@ const { items } = Astro.props;
     min-width: 0;
     font-size: calc(var(--step-title) * 1.15);
     line-height: 1.1;
+    transition: opacity var(--dur-hover-fade) var(--ease-fade);
   }
+  .arch__row:hover .arch__name,
+  .arch__row:focus-visible .arch__name { opacity: var(--hover-fade); }
   .arch__meta { flex: 0 0 16rem; color: var(--fg-dim); }
   .arch__cta { flex: 0 0 auto; color: var(--accent-text); }
   .arch__row:hover .arch__cta { text-decoration: underline; text-underline-offset: 4px; }
@@ -201,6 +222,10 @@ const { items } = Astro.props;
     // converted to list-local only at the moment of writing.
     let tx = 0, ty = 0, cx = 0, cy = 0;
     let raf = 0, seeded = false, inside = false;
+    const preview = list.querySelector<HTMLElement>('.arch__preview');
+    // --preview-gap is in rem; the flip test needs it in pixels.
+    const gap = () => parseFloat(getComputedStyle(list).getPropertyValue('--preview-gap'))
+      * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
     const frame = () => {
       raf = 0;
@@ -212,6 +237,12 @@ const { items } = Astro.props;
       const box = list.getBoundingClientRect();
       list.style.setProperty('--px', `${(cx - box.left).toFixed(1)}px`);
       list.style.setProperty('--py', `${(cy - box.top).toFixed(1)}px`);
+      // Below and right of the pointer unless that would run past the
+      // window's right or bottom edge.
+      if (preview) {
+        list.toggleAttribute('data-flip-x', cx + preview.offsetWidth > innerWidth);
+        list.toggleAttribute('data-flip-y', cy + gap() + preview.offsetHeight > innerHeight);
+      }
       // Park once the chase has caught up; the next move restarts it.
       if (Math.abs(tx - cx) > 0.5 || Math.abs(ty - cy) > 0.5) {
         raf = requestAnimationFrame(frame);
@@ -237,14 +268,14 @@ const { items } = Astro.props;
     // cursor, so the local offset changes even though nothing was moved.
     addEventListener('scroll', () => { if (inside) queue(); }, { passive: true });
 
-    // Keyboard has no pointer to chase, so focus parks the preview over the
+    // Keyboard has no pointer to chase, so focus parks the preview under the
     // row itself rather than wherever the mouse was last left.
     list.addEventListener('focusin', (e) => {
       const row = (e.target as HTMLElement).closest<HTMLElement>('.arch__row');
       if (!row) return;
       const r = row.getBoundingClientRect();
       tx = cx = r.left + r.width / 2;
-      ty = cy = r.top;
+      ty = cy = r.bottom - gap();   // preview opens just under the row
       seeded = true;
       queue();
     });

@@ -5,7 +5,7 @@ Context for Claude Code working in this repo.
 ## What this is
 
 The portfolio site for **Anupama Mishra**, a product designer with 10+
-years' experience returning to work after a career break. Most recently Staff
+years' experience. Most recently Staff
 Product Designer at Okta on Identity & Access Management, where she also led a
 team of six. Earlier: PayPal, Walmart Labs, Deloitte Digital, Zomato. Her domain is
 **fintech first**, then enterprise software and developer tools — lead with
@@ -82,13 +82,40 @@ effect:
   is the one place on the site allowed to be visibly "built," and it earns
   that by being the very first thing a visitor sees — it sets the design-eng
   claim before a word of copy does.
-- **A real loading sequence, once, on first paint.** A short (≈1–1.5s) branded
-  loader — a drawn mark plus a wordmark treatment — is allowed at the top of
-  the session, because it's the one moment where "nothing to look at yet" is
-  true and filling it well is itself a design decision. It must never block
-  or delay access to content beyond that first paint, must be skippable/instant
-  on repeat navigation within a session, and must resolve instantly (no
-  animation) under `prefers-reduced-motion`.
+- **The preloader, on the home page, on first paint** (`Preloader.astro`,
+  chosen on request from rounds of mocks): a terracotta sheet (the
+  light-mode accent, in both modes) with a faint grain, everything on it
+  cream. A requested exception to rule 2 and to "one dark band": it's
+  on screen for a few seconds, home page only. The cursor line, in
+  cream, the same spring chain as `CursorTrail`, sits as a dot in the
+  middle and follows only the visitor's pointer (a still dot until they
+  move it; never moves on its own, on request). Under it, centred: a
+  mouse icon and "A line is a dot that went for a walk" (Paul Klee) in
+  16px mono caps, medium tracking, which starts as a row of dots, one
+  per letter, and turns into its letters as the page loads. That is the
+  progress: there is no number, on request. If it stalls (no new letter
+  for 0.7s), the next letter flicks through characters until the load
+  moves on, so a slow load reads as working, not frozen. At 100% the words fade and
+  the terracotta shrinks, as a slowly lumping blob, into the orange dot
+  beside "Moss" in his launcher card, ending at that dot's exact size
+  and place, so the loader becomes a piece of the page. Where his dot
+  isn't on screen, the sheet lifts instead. The words follow the page's
+  images but never run ahead of a paced ~4s schedule
+  (`--dur-preloader-min`), on request. Home page only, every time it's
+  opened or refreshed (on request); not when arriving from another page
+  of the site, nor on back/forward. It also waits for the hero
+  portrait's sprite (`hero-scrub:ready`, capped at 6s), and the portrait
+  shows its still frame until the sprite is in, so she appears with
+  Moss. A deliberate key, click, tap or real scroll skips it with the
+  same exit, faster (not in its first 1.2s, and never a shortcut such as
+  Cmd+R, so a refresh always shows it); a CSS failsafe hides it at 10s; it removes itself from the
+  DOM. Under reduced motion: no line, and a fade. Values under
+  PRELOADER in `tokens.css`. The walking loader (`Loader.astro`,
+  `data/loader.ts`, `scripts/walk-sprite.py`, LOADER tokens) is parked,
+  not deleted.
+  Its reason: the one screen with nothing else to show; it introduces
+  the line the visitor has on the rest of the site and hands them over
+  to the page, and to Moss.
 - **A consistent hover system on interactive surfaces**, not one bespoke
   effect per component. Work tiles, links, and cards get *the same* motion
   vocabulary reused everywhere: default state is quiet; hover reveals
@@ -104,8 +131,31 @@ effect:
   hover system. It keeps its existing constraints unchanged: hover devices
   only, no pointer events, `display: none` under `prefers-reduced-motion`,
   draws in the theme colour under the pointer, suppressed sitewide only on
-  `/playground` (see the dedicated section on it further down). Don't add a
-  second cursor effect alongside it.
+  `/playground` (see the dedicated section on it further down). Its one
+  companion is `CursorLamp` (below); don't add a third cursor effect.
+- **`CursorLamp`, approved on request** (after studio-nikita.com). In dark
+  mode only, a soft pool of light sits under the pointer and glides after
+  it. It runs alongside `CursorTrail`, by explicit choice over replacing
+  it. Its reason: dark mode lights the hero as a late-night scene, and
+  this carries the scene down the page, with the pointer as the lamp.
+  Its colour is "candle", a faint warm white (`--lamp-hue`), picked from
+  a mockup of fourteen; white, warm grey, deep blue, umber and a
+  darkening "dent" were tried and dropped. It's a small fixed,
+  screen-blended layer inside `<main>` (so the page's curve clips it off
+  the footer), moved by transform, its strength rides `--hero-night`,
+  it's off under reduced motion and on touch, and it shares
+  `CursorTrail`'s `/playground` opt-out. On request, text near it casts
+  a short shadow away from the pointer, as if lit by it (`--lamp-cast-*`);
+  the trail line itself casts none. In the hero (chosen from round 2 of
+  the shadow mocks, on request) the row sits above the lamp's layer
+  (`--z-lamp`), so the lamp lights the ground behind her instead of
+  fogging her, and the headline's shadows fall on its light. She is lit
+  in `HeroIllustration`'s canvas from the lamp's `cursor-lamp` event:
+  colour × light (never a screen blend), a rim on the edge facing it,
+  her far side dimmed, a faint glint on the laptop lid, and behind her
+  a little extra floor light with her shadow cut out of it plus contact
+  pools under the legs (all night). Moss gets the same light, rim and
+  contact pool. Values under CURSOR LAMP in `tokens.css`.
 - **Moss, the "ask about my work" character (`AskBubble.astro`),
   approved on request.** Called Pixel in the code (`.pixel-*`, `pixelTree`,
   the "Pixel" block in `tokens.css`) — that's the internal name; the visitor
@@ -173,8 +223,19 @@ effect:
   text stays in the DOM throughout. One word only — don't spread it to
   other headings.
 
-Outside those six moments — hero shader, first-paint loader, the reused
-hover system, `CursorTrail`, Pixel, PixelBreak — the old rule still applies at full strength:
+- **`Bookshelf`, approved on request** (after cali.so's "Books I love").
+  The About page's "Books I love" stage: 3D books on a wooden plank,
+  spines out; clicking one turns it to its cover while the rest slide
+  and lean (650ms ease-in-out, geometry in `data/books.ts`). Spine tones
+  and wood live under BOOKSHELF in `tokens.css` and, like project hues,
+  belong to the objects, never to page chrome. Instant from the keyboard
+  and under reduced motion. The books are hers, read off photos of her
+  bookcase: ten picked at random from her photos, on one shelf (`books`
+  in `data/books.ts`). Spines follow a reference she sent: a short rule,
+  bold sans title, author in mono. About page only, one shelf.
+
+Outside those seven moments — hero shader, first-paint loader, the reused
+hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,
@@ -329,12 +390,19 @@ walked back. Concretely, in the current implementation:
 
 - **Design system = allierho.com's, measured off the live site.** Three
   faces, one weight each: Crimson Pro 300 (roman + italic) for headlines,
-  Manrope 600 for everything else, Azeret Mono 400 for ticking numbers.
+  Manrope 600 for everything else, Azeret Mono 400 for ticking numbers
+  and the case-study labels, tags and captions (`.u-label-mono`).
   Scale: display 34→50px, heading 32→44px, nav 14px, label 12px uppercase;
-  plus two steps the reference lacks (title 20→26px, body 15px) because it
-  has no long copy. Emphasis is the serif turning italic mid-line, nothing
+  plus title 22px, body 14px, copy 12px. On request (2026-10-16), from a mock, the whole site
+  moved onto the reference's exact scale, measured across its pages: no
+  page scale (1x on every screen; it used to grow every rem with the
+  screen, up to 1.8x, and read as too big), reading copy 14px
+  (`--step-body`), short copy 12px (`--step-copy`), sub-heads 22px
+  (`--step-title`), project titles on cards as 12px caps, the footer
+  sign-off 32px (`--step-signoff`). The reference's 70px page titles were
+  not taken; ours stay at 44px. Emphasis is the serif turning italic mid-line, nothing
   else. One palette: `#fcfcfc` ground, `#262626` ink, one terracotta accent
-  (`#b4482a`, her own — the reference's purple was swapped out), square corners except pill buttons (and the two approved curves: Moss's
+  (`#b4482a`, her own — the reference's purple was swapped out), square corners except pill buttons and the 4px case tags (and the two approved curves: Moss's
   panel and the page's end over the black footer). Deliberate departures
   from the reference are commented in `tokens.css` (the reference's
   `#a8a8a8` grey fails AA and was darkened to `#707070`). Don't add a
@@ -344,8 +412,9 @@ walked back. Concretely, in the current implementation:
   only the palette tokens (ground `#1b1a19`, ink `#ecebe8`, grey
   `#a09d98`, accent lifted to `#e0714f` for AA), and every role colour
   follows. Switched from the theme button in the nav, a Light ↔ Dark
-  toggle (sun/moon); until a visitor presses it the page follows their
-  OS (inline script in `Base.astro`). A third System state was removed
+  toggle (sun/moon); until a visitor presses it the page is Light,
+  whatever their OS is set to (on request; inline script in
+  `Base.astro`). A third System state was removed
   on request — a press that changed nothing on the page felt dead.
   Any new colour must read through the role tokens or it won't follow.
   In dark mode only, the hero portrait is lit as a late-night scene
@@ -359,9 +428,10 @@ walked back. Concretely, in the current implementation:
   against white, and on the dark ground its edge read as a pale cut-out
   outline. It fades in and out with the theme over `--dur-night`
   (instant under reduced motion); otherwise static apart from following
-  the scrub; one place only. If the
-  edge still shows, the next step is re-matting the sprite's edge
-  (un-mixing the white), not trimming the art.
+  the scrub; one place only. The sprite's edge has since been re-matted
+  (white un-mixed from the palest hair strands) by
+  `scripts/hero-sprite.py`; re-run it from her source clip rather than
+  editing the webp.
 - **The nav is one line** (`Nav.astro`): the name on the left (14px,
   ink); on the right, the four links (12px, grey, current page in ink),
   a hairline and the Light/Dark theme toggle. Links fold into Menu below
@@ -378,9 +448,23 @@ walked back. Concretely, in the current implementation:
 - **Project hues** are the one place colour appears beyond the accent: one
   muted hue per company (Okta sky `#c9dcf2`, PayPal lilac `#e0d6ef`, Walmart
   butter `#f4dc9c`), only behind that company's screenshots — home card
-  media, /work thumbnail, case study cover. Set via `data-hue` from
+  stage, /work thumbnail, case study cover. Set via `data-hue` from
   `hueFor()` in `data/work.ts`; tokens in `tokens.css` (PROJECT HUES). Never
   on text, chrome or full-width bands.
+- **Case study type** (`work/[slug].astro`, `CaseBlocks.astro`), after
+  carlthomasiv.com/work/ona-conversations, chosen on request from a mock:
+  the title is the one large line (`--step-case-title`, 30→40px); section
+  heads drop to `--step-title`; each section opens on a hairline with
+  "01  THE SITUATION" in 11px mono caps; labels, row terms, captions and
+  citations are mono too. "What was broken"-style points are a numbered
+  13px list. The pull quote is roman serif on a 1px ink rule — no italic
+  and no accent, on request. Body stays Manrope 600.
+- **Case tags are lime** (CASE TAGS in `tokens.css`: `#d4ff3a` fill,
+  `#2b3600` ink, 11:1), picked on request from a round of neutral, neon
+  and red/brown mocks. The company in mono, then its tags as 10px mono
+  chips with 4px corners — the same labels as its card (`labelsFor()`).
+  A requested exception to rule 2: one hue, only on these tags; don't
+  spread it to other chips, text or chrome.
 - The old night mode, the named theme palettes, tints/swatches, and the one-off
   effect components (`OneWord`, `CaseDoodle`, `Testimonials`, `Marquee`,
   `Mosaic`, the footer's variable-weight wordmark, the section watermark
@@ -414,7 +498,11 @@ walked back. Concretely, in the current implementation:
   drawing; their artwork is not used; `smiley.webp`, a still
   frame, under reduced motion). Approved on request
   as the footer's one looping animation — an exception to the no-idle-
-  animation rule; don't add another; no link columns. Row 2 — the
+  animation rule; don't add another. Her pencil signature
+  (`public/images/footer/signature.webp`, her scribble re-inked in the
+  footer's ink, decorative) sits in row 1's right-hand corner, its foot on
+  the note's last line and its right edge on the icons' edge; under the
+  words on phones. No link columns. Row 2 — the
   base line, after carlthomasiv.com's footer: a full-width hairline, then
   three equal parts (after ozgur.design): "© year name · Built with Claude
   Code & Astro" in 11px mono (`--step-fine`; "Built with…" in the fainter
@@ -433,7 +521,33 @@ walked back. Concretely, in the current implementation:
   "Email" rather than printing the address; /contact is the one page
   that prints it in full.
 - The home page is now: hero → "Selected *work*" head + project cards →
-  one-line playground pointer → footer (which carries contact). Section
+  one-line playground pointer → footer (which carries contact).
+- **The project cards are stacked phone cards** (`ProjectCard.astro`,
+  on request): four full-width rows that pin and stack as you scroll
+  (sticky rows and the settle effect in `index.astro`), text on the
+  left, and on the right a stage on the project hue where, after
+  daneden.me, a phone runs the flow on its own — the Chase Pay
+  recording, Privacy screens in sequence (cut from her boards by
+  `scripts/phone-screens.py`), and the coded Debit Card sign-up
+  prototype on autopilot (`autoplay` prop). Okta IAM shows its
+  screenshot instead. Four cards only, on request: the list is
+  `homeCards` in `data/work.ts`; the rest live on /work. Phones move
+  only on screen and with motion allowed. There is no pause control
+  (removed on request, knowing WCAG 2.2.2 asks for one on motion over
+  five seconds) and no Screens/Prototype label on the stage. Its reason: a skimming
+  recruiter sees the product working, not a thumbnail. Sizes and
+  timing under PHONE CARDS in `tokens.css`.
+- **On case studies, a phone sits in a device box** (`DeviceBox.astro`,
+  `styles/device-box.css`, on request, measured off danield.design's
+  phone tiles): a plain white box (no colour behind the phone), 1px
+  hairline border, 48px corners, the phone centred with a thin dark
+  bezel and soft layered shadow, a label pill under it. It's the one way
+  to show a phone on a case study, reuse it; its corners are a requested
+  exception to the square `--radius` rule. The PayPal prototypes get the
+  same look in their case-study view; their home-page autoplay phones
+  keep PHONE CARDS. Values under DEVICE BOX in `tokens.css`. On the
+  PayPal Debit Card case the work (prototypes, then screens) comes first,
+  before the situation, on request. Section
   heads follow the reference: a centred serif line with an italic phrase,
   a label link under it.
 - `cases.ts` holds case-study content as structural prose with `[X]`
@@ -475,6 +589,9 @@ npm run preview   # serve the build
 ```
 
 ## Voice
+
+Never mention a career break, a gap, time off or "returning" anywhere on
+the site or in Moss's answers — her request.
 
 Her own writing is direct and task-oriented. Site copy should be plain,
 specific, and short — concrete numbers over adjectives, captions over

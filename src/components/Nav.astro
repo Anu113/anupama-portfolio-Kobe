@@ -266,13 +266,12 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     matchMedia('(min-width: 900px)').addEventListener('change', (e) => { if (e.matches) setOpen(false); });
 
     // Theme: Light ↔ Dark. A press stores the choice; with nothing
-    // stored the page follows the OS (data-mode-pref 'system').
+    // stored the page is Light, whatever the OS says (on request).
     // data-mode on <html> is what the tokens read. Base.astro applies
     // both before first paint.
     const btn2 = nav.querySelector<HTMLButtonElement>('[data-nav-mode]')!;
     const root = document.documentElement;
     type Mode = 'light' | 'dark';
-    const system = matchMedia('(prefers-color-scheme: dark)');
     const glyphs = new Map(
       [...btn2.querySelectorAll<HTMLElement>('[data-glyph]')].map((g) => [g.dataset.glyph as Mode, g]),
     );
@@ -319,14 +318,6 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       const next: Mode = prev === 'dark' ? 'light' : 'dark';
       try { localStorage.setItem('mode', next); } catch {}
       root.dataset.modePref = next;
-      apply(next); show(next, prev); label(next);
-    });
-    // Until a press, follow the OS as it changes (e.g. at sunset).
-    system.addEventListener('change', () => {
-      if (root.dataset.modePref !== 'system') return;
-      const prev = current();
-      const next: Mode = system.matches ? 'dark' : 'light';
-      if (next === prev) return;
       apply(next); show(next, prev); label(next);
     });
   }

@@ -1,0 +1,404 @@
+---
+/* AdsConsentPrototype.astro — PayPal interest-based ads consent, rebuilt
+   as a phone you can use. The prototype in the "Ads that ask first" case
+   (the `prototype` block, name 'paypal-ads-consent').
+
+   Why it exists: the case is about a default flipping from opted in to
+   asking first, and the Figma screens couldn't be read in. Using it
+   shows the three things that change for a customer: the setting (off
+   by default, with plain words for each state), the ask (two equal
+   answers, nothing pre-ticked), and what each answer did.
+
+   Rebuilt from her "Interest-based ads" file, frames "Online Ad
+   Preferences" and consent V3 — check against her final designs:
+   - Hers, word for word: the Off line, "When this is off, you may still
+     get a PayPal ad on other sites.", and the start of the On line,
+     "When this is on, we may tell you during the checkout".
+   - The prototype's, to confirm with her: the end of the On line (after
+     "checkout"), the ask's title and body, the four "How it works"
+     lines (what's shared is kept vague on purpose until she names the
+     data types), both confirmation messages, and the toasts.
+   - Filler, not her spec: the other Data & Privacy rows, and the Privacy
+     checkup card (the Auto Privacy Advisor proposal, after Google's
+     Privacy Checkup: one suggestion at a time, with "Not now"). Starting
+     the checkup opens the same ask; that link between the two is ours.
+   Partners named are the ones in her project summary: Facebook, Google,
+   LinkedIn.
+
+   A11y: real buttons throughout; the setting is a role="switch" with
+   aria-checked, its state line wired through aria-describedby. The ask
+   is a dialog: focus moves in and stays in, Escape or ✕ closes it
+   without changing anything and returns focus. "How it works" is a
+   disclosure (aria-expanded). Toasts and screen changes are announced
+   once through a live region. Shared phone styles: styles/pp-proto.css. */
+import '../styles/pp-proto.css';
+import '../styles/device-box.css';
+interface Props { caption?: string }
+const { caption } = Astro.props;
+
+const steps = [
+  { id: 'privacy', label: 'Data & Privacy, checkup card' },
+  { id: 'ask', label: 'The ask' },
+  { id: 'learn', label: 'How it works' },
+  { id: 'allowed', label: 'After Allow' },
+  { id: 'declined', label: 'After Not now' },
+  { id: 'setting', label: 'Online ad preferences' },
+];
+
+const how = [
+  { term: 'What’s shared', detail: 'Some info about you and how you use PayPal.' },
+  { term: 'Who gets it', detail: 'Ad partners like Facebook, Google and LinkedIn.' },
+  { term: 'What you get', detail: 'PayPal ads on their sites that match your interests.' },
+  { term: 'Your choice', detail: 'It’s off unless you turn it on. Change it any time in Online ad preferences.' },
+];
+
+const ON_COPY = 'When this is on, we may tell you during the checkout about offers that suit you, and share some of your info with ad partners so PayPal ads on their sites match your interests.';
+const OFF_COPY = 'When this is off, you may still get a PayPal ad on other sites.';
+---
+<figure class="proto" data-adsconsent data-on-copy={ON_COPY} data-off-copy={OFF_COPY}>
+  <div class="proto__stage">
+    <div class="phone">
+      <div class="phone__screen">
+        <p class="sr-only" aria-live="polite" data-announce></p>
+
+        <!-- Data & Privacy -->
+        <section class="scr scr--ground" data-screen="privacy">
+          <div class="bar"><span class="icon-btn" aria-hidden="true">←</span></div>
+          <h3 class="scr__title" tabindex="-1">Data &amp; Privacy</h3>
+          <div class="toast toast--float" data-toast="privacy" hidden><span aria-hidden="true">✓</span> <span data-toast-text></span></div>
+
+          <div class="checkup" data-checkup>
+            <span class="checkup__icon" aria-hidden="true"></span>
+            <div>
+              <p class="sm strong">Review your privacy settings</p>
+              <p class="xs dim">A quick checkup. We’ll suggest one setting at a time.</p>
+              <div class="checkup__btns">
+                <button class="pp-btn-outline" data-checkup-start>Start checkup</button>
+                <button class="text-btn" data-checkup-skip>Not now</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="section-h">Manage your data</p>
+          <ul class="rows">
+            <li aria-hidden="true"><span class="rows__item"><span>Marketing preferences</span><span class="rows__end">›</span></span></li>
+            <li>
+              <button class="rows__item" data-go="ads" aria-describedby="ads-row-state">
+                <span>Online ad preferences</span>
+                <span class="rows__end"><span class="xs dim" id="ads-row-state" data-row-state>Off</span> ›</span>
+              </button>
+            </li>
+            <li aria-hidden="true"><span class="rows__item"><span>Cookies</span><span class="rows__end">›</span></span></li>
+            <li aria-hidden="true"><span class="rows__item"><span>Get a copy of your data</span><span class="rows__end">›</span></span></li>
+          </ul>
+        </section>
+
+        <!-- Online ad preferences -->
+        <section class="scr" data-screen="ads" hidden>
+          <div class="bar"><button class="icon-btn" data-go="privacy" data-dir="back" aria-label="Back to Data & Privacy">←</button></div>
+          <div class="pad">
+            <h3 class="scr__title" tabindex="-1">Online ad preferences</h3>
+            <p class="sm dim">Choose whether we share some of your info with our ad partners.</p>
+            <div class="toast toast--float" data-toast="ads" hidden><span aria-hidden="true">✓</span> <span data-toast-text></span></div>
+            <div class="setting">
+              <span class="sm strong" id="ads-switch-label">Share my info with ad partners</span>
+              <button class="switch" role="switch" aria-checked="false" aria-labelledby="ads-switch-label" aria-describedby="ads-switch-state" data-switch>
+                <span class="switch__knob" aria-hidden="true"></span>
+              </button>
+            </div>
+            <p class="sm" id="ads-switch-state" data-state-copy>{OFF_COPY}</p>
+            <button class="text-btn how-btn" aria-expanded="false" aria-controls="ads-how-setting" data-how-toggle>How it works <span class="how-btn__chev" aria-hidden="true">⌄</span></button>
+            <dl class="how" id="ads-how-setting" hidden>
+              {how.map((h) => (<div><dt>{h.term}</dt><dd>{h.detail}</dd></div>))}
+            </dl>
+          </div>
+        </section>
+
+        <!-- The ask -->
+        <div class="scrim" data-scrim hidden></div>
+        <div class="sheet" data-sheet role="dialog" aria-modal="true" aria-labelledby="ads-ask-title" hidden>
+          <button class="icon-btn sheet__close" data-close aria-label="Close">✕</button>
+          <div class="sheet__body" data-ask>
+            <p class="xs dim eyebrow" data-eyebrow hidden>Privacy checkup</p>
+            <span class="ask__art" aria-hidden="true"><span></span><span></span><span></span></span>
+            <h4 class="scr__title" id="ads-ask-title" tabindex="-1">Want PayPal ads that match your interests?</h4>
+            <p class="sm">If you allow it, we’ll share some of your info with ad partners like Facebook, Google and LinkedIn, so the PayPal ads you see on their sites fit what you’re into.</p>
+            <p class="sm dim">It stays off unless you turn it on. You can change it any time in Online ad preferences.</p>
+            <button class="text-btn how-btn" aria-expanded="false" aria-controls="ads-how-ask" data-how-toggle>Learn how it works <span class="how-btn__chev" aria-hidden="true">⌄</span></button>
+            <dl class="how" id="ads-how-ask" hidden>
+              {how.map((h) => (<div><dt>{h.term}</dt><dd>{h.detail}</dd></div>))}
+            </dl>
+            <div class="ask__btns">
+              <button class="ask-btn" data-choice="allow">Allow</button>
+              <button class="ask-btn" data-choice="decline">Not now</button>
+            </div>
+          </div>
+          <div class="sheet__body sheet__body--done" data-done hidden>
+            <span class="done__icon" aria-hidden="true">✓</span>
+            <h4 class="scr__title scr__title--c" id="ads-done-title" tabindex="-1" data-done-title></h4>
+            <p class="sm" data-done-body></p>
+            <button class="pp-btn" data-close>Done</button>
+            <button class="text-btn text-btn--c" data-go="ads">Go to Online ad preferences</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="device-box__pill" aria-hidden="true">Ad data sharing</span>
+  </div>
+
+  <div class="proto__side">
+    <p class="u-label">Try the flow</p>
+    <ol class="steps">
+      {steps.map((s, i) => (
+        <li><button class="step" data-jump={s.id}><span class="step__n">{i + 1}</span>{s.label}</button></li>
+      ))}
+    </ol>
+    <button class="restart" data-restart>Start again</button>
+  </div>
+  {caption && <figcaption class="proto__cap">{caption}</figcaption>}
+</figure>
+
+<style>
+  .scr--ground .scr__title { margin: 0 0 12px; }
+  /* Toasts float over the top of the screen, so nothing under the
+     pointer moves when one appears. */
+  .toast--float { position: absolute; top: 40px; left: 12px; right: 12px; z-index: 2; margin: 0; box-shadow: var(--pp-tile-shadow); }
+
+  /* the Privacy checkup card (Auto Privacy Advisor) */
+  .checkup { display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 14px; border-radius: var(--pp-radius-tile); background: var(--pp-surface); box-shadow: var(--pp-tile-shadow); }
+  .checkup[hidden] { display: none; }
+  .checkup__icon { width: 32px; height: 32px; border-radius: 50%; background: var(--pp-sky); position: relative; }
+  .checkup__icon::after { content: ''; position: absolute; inset: 9px 10px 8px; border: 2px solid var(--pp-navy); border-radius: 3px 3px 8px 8px; }
+  .checkup .xs { margin-top: 2px; }
+  .checkup__btns { display: flex; align-items: center; gap: 14px; }
+  .checkup__btns .text-btn { margin-top: 10px; }
+
+  /* settings rows */
+  .rows { list-style: none; margin: 0; padding: 0; border-radius: var(--pp-radius-tile); background: var(--pp-surface); overflow: hidden; }
+  .rows li + li { border-top: 1px solid var(--pp-line); }
+  .rows__item {
+    width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 13px 14px; border: 0; background: none; font: inherit; font-size: var(--pp-text-sm); color: var(--pp-ink); text-align: left;
+  }
+  button.rows__item { cursor: pointer; }
+  button.rows__item:focus-visible { outline-offset: -2px; }
+  .rows__end { display: inline-flex; align-items: center; gap: 6px; color: var(--pp-ink-dim); }
+
+  /* the switch */
+  .setting { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--pp-line); border-bottom: 1px solid var(--pp-line); margin-top: 4px; }
+  .switch {
+    position: relative; flex: none; width: 44px; height: 26px; padding: 0; cursor: pointer;
+    border: 0; border-radius: var(--radius-pill); background: var(--pp-ink-dim);
+    transition: background-color var(--dur-micro) var(--ease-out);
+  }
+  .switch__knob {
+    position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--pp-surface); box-shadow: var(--pp-tile-shadow);
+    transition: transform var(--dur-micro) var(--ease-out);
+  }
+  .switch[aria-checked='true'] { background: var(--pp-navy); }
+  .switch[aria-checked='true'] .switch__knob { transform: translateX(18px); }
+
+  .how-btn { display: inline-flex; align-items: center; gap: 4px; }
+  .how-btn__chev { transition: transform var(--dur-micro) var(--ease-out); }
+  .how-btn[aria-expanded='true'] .how-btn__chev { transform: rotate(180deg); }
+  .how { margin: 0; display: grid; gap: 8px; padding: 12px; border-radius: var(--pp-radius-field); background: var(--pp-ground); font-size: var(--pp-text-sm); }
+  .how[hidden] { display: none; }
+  .how dt { font-weight: 600; }
+  .how dd { margin: 0; color: var(--pp-ink-dim); }
+
+  /* the ask */
+  .scrim { position: absolute; inset: 0; z-index: 3; background: var(--pp-scrim); }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; max-height: 92%; overflow-y: auto;
+    padding: 18px 18px 16px;
+    background: var(--pp-surface); border-radius: var(--pp-radius-sheet) var(--pp-radius-sheet) 0 0;
+    animation: pp-sheet var(--dur-pp-step) var(--ease-out);
+  }
+  .sheet[hidden], .scrim[hidden], .sheet__body[hidden] { display: none; }
+  .sheet__body { display: grid; gap: 10px; }
+  .sheet__body--done { justify-items: center; text-align: center; padding-top: 8px; }
+  .sheet__close { position: absolute; top: 8px; right: 8px; font-size: var(--pp-text-sm); }
+  .sheet h4 { margin: 0; padding-right: 24px; }
+  .sheet__body--done h4 { padding-right: 0; }
+  .sheet h4:focus { outline: none; }
+  .eyebrow { font-weight: 600; }
+  .ask__art { display: flex; height: 40px; align-items: center; }
+  .ask__art span { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--pp-surface); background: var(--pp-sky); }
+  .ask__art span + span { margin-left: -8px; }
+  .ask__art span:nth-child(1) { background: var(--pp-navy); }
+  .ask__art span:nth-child(3) { background: var(--pp-logo-yellow); }
+  /* Two answers, one weight: same size, same style, side by side. */
+  .ask__btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 -16px; padding: 4px 0 16px; position: sticky; bottom: -16px; background: var(--pp-surface); }
+  .ask-btn {
+    padding: 10px 12px; border: 1.5px solid var(--pp-navy); border-radius: var(--radius-pill);
+    background: var(--pp-surface); color: var(--pp-navy); font: inherit; font-size: var(--pp-text-sm); font-weight: 600; cursor: pointer;
+    transition: transform var(--dur-micro) var(--ease-out), background-color var(--dur-micro) var(--ease-out);
+  }
+  .ask-btn:hover { background: var(--pp-ground); }
+  .ask-btn:active { transform: scale(0.98); }
+  .done__icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--pp-toast); color: var(--pp-ok-ink); font-size: var(--pp-text-lg); font-weight: 700; }
+  .text-btn--c { justify-self: center; }
+
+  @keyframes pp-sheet { from { transform: translateY(100%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet { animation: none; }
+    .switch, .switch__knob, .how-btn__chev { transition: none; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-adsconsent]').forEach((root) => {
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const screens = { privacy: $('[data-screen=privacy]'), ads: $('[data-screen=ads]') };
+    type Screen = keyof typeof screens;
+    const announce = $('[data-announce]');
+    const sheet = $('[data-sheet]'), scrim = $('[data-scrim]');
+    const ask = $('[data-ask]'), done = $('[data-done]');
+    const sw = $<HTMLButtonElement>('[data-switch]');
+    const ON = root.dataset.onCopy!, OFF = root.dataset.offCopy!;
+    let on = false;
+    let screen: Screen = 'privacy';
+    let result: 'allow' | 'decline' | null = null;
+    let fromCheckup = false;
+    let opener: HTMLElement | null = null;
+    let toastTimer = 0;
+
+    const say = (t: string) => { announce.textContent = ''; requestAnimationFrame(() => { announce.textContent = t; }); };
+    const sheetOpen = () => !sheet.hidden;
+
+    function setHow(btn: HTMLElement, open: boolean) {
+      btn.setAttribute('aria-expanded', String(open));
+      root.querySelector<HTMLElement>(`#${btn.getAttribute('aria-controls')}`)!.hidden = !open;
+    }
+
+    function render() {
+      sw.setAttribute('aria-checked', String(on));
+      $('[data-state-copy]').textContent = on ? ON : OFF;
+      $('[data-row-state]').textContent = on ? 'On' : 'Off';
+      const askHow = $('[data-ask] [data-how-toggle]').getAttribute('aria-expanded') === 'true';
+      const now = sheetOpen()
+        ? result === 'allow' ? 'allowed' : result === 'decline' ? 'declined' : askHow ? 'learn' : 'ask'
+        : screen === 'ads' ? 'setting' : 'privacy';
+      root.querySelectorAll<HTMLButtonElement>('[data-jump]').forEach((b) => {
+        if (b.dataset.jump === now) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+      });
+    }
+
+    function go(to: Screen, opts: { back?: boolean; focus?: boolean } = {}) {
+      closeSheet(false);
+      screen = to;
+      (Object.keys(screens) as Screen[]).forEach((k) => {
+        screens[k].hidden = k !== to;
+        screens[k].classList.toggle('is-back', !!opts.back);
+      });
+      screens[to].scrollTop = 0;
+      render();
+      say(to === 'ads' ? 'Online ad preferences' : 'Data & Privacy');
+      if (opts.focus) screens[to].querySelector<HTMLElement>('h3')?.focus({ preventScroll: true });
+    }
+
+    function openAsk(checkup: boolean, from: HTMLElement | null) {
+      if (screen !== 'privacy') go('privacy');
+      fromCheckup = checkup; result = null; opener = from;
+      $('[data-eyebrow]').hidden = !checkup;
+      setHow($('[data-ask] [data-how-toggle]'), false);
+      ask.hidden = false; done.hidden = true;
+      sheet.setAttribute('aria-labelledby', 'ads-ask-title');
+      scrim.hidden = false; sheet.hidden = false;
+      sheet.scrollTop = 0;
+      render();
+      $('#ads-ask-title').focus({ preventScroll: true });
+    }
+
+    function choose(c: 'allow' | 'decline') {
+      result = c; on = c === 'allow';
+      $('[data-done-title]').textContent = on ? 'Ad sharing is on' : 'Ad sharing stays off';
+      $('[data-done-body]').textContent = on
+        ? 'We’ll share some of your info with ad partners, so PayPal ads on their sites match your interests. Turn it off any time in Online ad preferences.'
+        : 'We won’t share your info with ad partners. You may still get a PayPal ad on other sites. Change this any time in Online ad preferences.';
+      ask.hidden = true; done.hidden = false;
+      sheet.setAttribute('aria-labelledby', 'ads-done-title');
+      sheet.scrollTop = 0;
+      if (fromCheckup) $('[data-checkup]').hidden = true;
+      render();
+      $('#ads-done-title').focus({ preventScroll: true });
+      say(`${$('[data-done-title]').textContent}. ${$('[data-done-body]').textContent}`);
+    }
+
+    function closeSheet(restore = true) {
+      if (!sheetOpen()) return;
+      sheet.hidden = true; scrim.hidden = true; result = null;
+      render();
+      if (restore) {
+        const back = opener && opener.isConnected && !opener.closest('[hidden]') ? opener : screens[screen].querySelector<HTMLElement>('h3');
+        back?.focus({ preventScroll: true });
+      }
+    }
+
+    function showToast(where: Screen, text: string) {
+      clearTimeout(toastTimer);
+      root.querySelectorAll<HTMLElement>('[data-toast]').forEach((t) => { t.hidden = true; });
+      const t = $(`[data-toast=${where}]`);
+      t.querySelector('[data-toast-text]')!.textContent = text;
+      t.hidden = false;
+      say(text);
+      toastTimer = window.setTimeout(() => { t.hidden = true; }, 3200);
+    }
+
+    function reset() {
+      on = false; result = null; fromCheckup = false;
+      clearTimeout(toastTimer);
+      root.querySelectorAll<HTMLElement>('[data-toast]').forEach((t) => { t.hidden = true; });
+      $('[data-checkup]').hidden = false;
+      root.querySelectorAll<HTMLElement>('[data-how-toggle]').forEach((b) => setHow(b, false));
+    }
+
+    root.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('button');
+      if (!b || !root.contains(b)) return;
+      if (b.dataset.go) go(b.dataset.go as Screen, { back: b.dataset.dir === 'back', focus: true });
+      else if (b.hasAttribute('data-close')) closeSheet();
+      else if (b.dataset.choice) choose(b.dataset.choice as 'allow' | 'decline');
+      else if (b.hasAttribute('data-how-toggle')) { setHow(b, b.getAttribute('aria-expanded') !== 'true'); render(); }
+      else if (b.hasAttribute('data-switch')) {
+        on = !on; render();
+        showToast('ads', on ? 'Ad sharing is on.' : 'Ad sharing is off.');
+      } else if (b.hasAttribute('data-checkup-start')) openAsk(true, b);
+      else if (b.hasAttribute('data-checkup-skip')) {
+        $('[data-checkup]').hidden = true;
+        showToast('privacy', 'Checkup skipped. Nothing changed.');
+        screens.privacy.querySelector<HTMLElement>('h3')?.focus({ preventScroll: true });
+      } else if (b.hasAttribute('data-restart')) {
+        reset(); go('privacy', { focus: true });
+      } else if (b.dataset.jump) {
+        const j = b.dataset.jump;
+        reset();
+        if (j === 'privacy') go('privacy', { focus: true });
+        if (j === 'setting') go('ads', { focus: true });
+        if (j === 'ask' || j === 'learn' || j === 'allowed' || j === 'declined') {
+          go('privacy');
+          openAsk(false, b);
+          if (j === 'learn') { setHow($('[data-ask] [data-how-toggle]'), true); render(); }
+          if (j === 'allowed') choose('allow');
+          if (j === 'declined') choose('decline');
+        }
+      }
+    });
+
+    root.addEventListener('keydown', (e) => {
+      if (!sheetOpen()) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeSheet(); }
+      // keep Tab inside the open sheet
+      if (e.key === 'Tab') {
+        const f = [...sheet.querySelectorAll<HTMLElement>('button')].filter((n) => !n.closest('[hidden]'));
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && (document.activeElement === first || !sheet.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && (document.activeElement === last || !sheet.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+      }
+    });
+    scrim.addEventListener('click', () => closeSheet());
+
+    go('privacy');
+  });
+</script>

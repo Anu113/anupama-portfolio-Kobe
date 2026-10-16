@@ -1,0 +1,61 @@
+/* device-box.css — a phone centred in a plain box, after danield.design's
+   phone tiles (values under DEVICE BOX in tokens.css). Used by
+   DeviceBox.astro for any phone shown on a case study, and by the
+   case-study view of the PayPal prototypes, whose `.phone` markup is
+   shared with the home page's autoplay cards — so `.proto--auto` is left
+   out here and keeps its PHONE CARDS phone. */
+
+.device-box,
+.proto:not(.proto--auto) .proto__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: var(--space-device-box) clamp(1rem, 4vw, 3rem);
+  background: var(--device-box-bg);
+  border: 1px solid var(--device-box-line);
+  border-radius: var(--radius-device-box);
+  overflow: hidden;
+}
+
+.device,
+.proto:not(.proto--auto) .phone {
+  width: min(var(--device-w), 100%);
+  height: auto;
+  aspect-ratio: var(--device-ratio);
+  padding: var(--device-bezel-w);
+  background: var(--device-bezel);
+  border-radius: var(--radius-device);
+  box-shadow: var(--device-shadow);
+}
+
+.device__screen,
+.proto:not(.proto--auto) .phone__screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--device-screen-edge);
+  border-radius: var(--radius-device-screen);
+  background: var(--phone-screen);
+}
+.device__screen > img,
+.device__screen > video { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* The label, always shown, in the gap under the phone. */
+.device-box__pill {
+  position: absolute;
+  left: 50%;
+  bottom: var(--device-pill-bottom);
+  transform: translateX(-50%);
+  padding: 0.85em 1.75em;
+  border-radius: var(--radius-pill);
+  background: var(--device-pill-bg);
+  color: var(--device-pill-ink);
+  box-shadow: var(--device-pill-shadow);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-sans);
+  font-size: var(--step-body);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+}

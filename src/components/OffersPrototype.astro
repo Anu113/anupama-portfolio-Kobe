@@ -1,0 +1,466 @@
+---
+/* OffersPrototype.astro — the PayPal Debit Card cash back offers flow,
+   rebuilt as a phone you can use. The second prototype in the PayPal
+   Debit Card case study (the `prototype` block, name 'paypal-offers').
+
+   Why it exists: rewards were half the brief (two of the four product
+   goals), and her deck showed them as screens in a row. Using it shows
+   the states those screens imply: activate, deactivate, expiring soon,
+   cash back earned, and the push notifications that close the loop.
+
+   From her Figma flow files and detail screens: the card page with
+   “Love cash back?” → the Cash Back Offers hub (“Activate. Shop. Earn.”)
+   → an offer’s half sheet → Activate → toast “Offer activated. You’re all
+   set to go shopping.” → activated offers as tiles on the hub and the
+   card page → an active offer’s sheet with Deactivate → “Offer
+   deactivated.” → “Expiring soon” → “$X cash back earned”, plus her two
+   push notifications (cash back earned, offer expired).
+
+   Three things are the prototype's, not her spec:
+   - The two “Simulate” buttons beside the phone (a purchase at Target,
+     an offer expiring). They're outside the phone and stand in for time
+     passing, so the earned and expired states can be reached at all.
+   - Offer terms. Her screens give terms for Target only (minimum $25,
+     up to $10, ends Wed, July 6, 2022). Other offers show How it works
+     but no Details list, rather than made-up numbers.
+   - Brand logos are drawn as monograms, not the real marks.
+   The earned amount ($5.00 on a $100 purchase) follows Target's terms.
+
+   A11y: real buttons throughout. The sheet is a dialog: focus moves in,
+   Escape or ✕ closes it and returns focus to the offer that opened it.
+   Toasts, pushes and screen changes are announced once through a live
+   region. Styles shared with EnrollPrototype are in styles/pp-proto.css.
+
+   `autoplay` (the home page's phone card, ProjectCard.astro): the phone
+   alone, inert and hidden from screen readers (the card describes it),
+   running the loop by itself — open the offers, activate Target and
+   Walmart, back to the card, a Target purchase lands as cash back —
+   then starting again. phone-loop.ts runs it only while the card is on
+   screen and motion is allowed. */
+import '../styles/pp-proto.css';
+import '../styles/device-box.css';
+interface Props { caption?: string; autoplay?: boolean }
+const { caption, autoplay = false } = Astro.props;
+
+const steps = [
+  { id: 'card', label: 'Card, first time' },
+  { id: 'hub', label: 'Cash Back Offers' },
+  { id: 'sheet', label: 'Offer details' },
+  { id: 'activated', label: 'Activated offers' },
+  { id: 'earned', label: 'Cash back earned' },
+];
+---
+<figure class:list={['proto', autoplay && 'proto--auto']} data-offers data-autoplay={autoplay ? '' : undefined} inert={autoplay} aria-hidden={autoplay ? 'true' : undefined}>
+  <div class="proto__stage">
+    <div class="phone">
+      <div class="phone__screen">
+        <p class="sr-only" aria-live="polite" data-announce></p>
+
+        <div class="push" data-push hidden>
+          <span class="push__app"><span class="push__icon" aria-hidden="true">P</span>PAYPAL<span class="push__now">now</span></span>
+          <p class="push__title" data-push-title></p>
+          <p class="push__body" data-push-body></p>
+        </div>
+
+        <!-- Card page -->
+        <section class="scr scr--ground" data-screen="card">
+          <div class="bar"><span class="icon-btn" aria-hidden="true">←</span><span class="bar__title bar__title--c">PayPal Debit Card</span></div>
+          <h3 class="sr-only" tabindex="-1">PayPal Debit Card</h3>
+          <div class="bigcard" aria-label="Debit card, $151.68 available PayPal balance, ending 2134" role="img">
+            <span class="bigcard__label">Debit Card</span>
+            <span class="bigcard__amt">$151.68</span>
+            <span class="bigcard__sub">Available PayPal balance</span>
+            <span class="bigcard__num">•• 2134</span>
+            <span class="card__p" aria-hidden="true">P</span>
+            <span class="mc" aria-hidden="true"></span>
+          </div>
+          <span class="pp-btn pp-btn--static">Add Money</span>
+          <div class="earned" data-earned hidden><span class="earned__icon" aria-hidden="true">★</span><span><strong data-earned-amt>$0.00</strong> cash back earned</span></div>
+          <div class="promo promo--small" data-promo>
+            <div>
+              <p class="promo__title">Love cash back?</p>
+              <p class="sm dim">Explore cash back offers for your PayPal Debit Card.</p>
+              <button class="text-btn" data-go="hub">Explore offers</button>
+            </div>
+          </div>
+          <div data-card-active hidden>
+            <p class="section-h">Activated offers</p>
+            <div class="tiles" data-tiles-card></div>
+            <button class="text-btn text-btn--c" data-go="hub">Go to all offers</button>
+          </div>
+          <div class="seg" aria-hidden="true"><span class="seg__on">Activity</span><span>Manage</span></div>
+          <ul class="activity" aria-label="Recent activity">
+            <li><span class="logo-dot" aria-hidden="true">S</span><span><span class="sm strong">Starbucks</span><span class="xs dim">Purchase · March 15</span></span><span class="sm">$14.92</span></li>
+            <li><span class="logo-dot" aria-hidden="true">N</span><span><span class="sm strong">Netflix</span><span class="xs dim">Purchase · March 12</span></span><span class="sm">$14.99</span></li>
+          </ul>
+        </section>
+
+        <!-- Offers hub -->
+        <section class="scr" data-screen="hub" hidden>
+          <div class="hubhead">
+            <div class="bar bar--inv"><button class="icon-btn icon-btn--inv" data-go="card" data-dir="back" aria-label="Back">←</button><span class="bar__title bar__title--c">Cash Back Offers</span></div>
+            <span class="coins" aria-hidden="true"><span></span><span></span><span></span></span>
+          </div>
+          <div class="toast toast--hub" data-toast hidden><span aria-hidden="true">✓</span> <span data-toast-text></span></div>
+          <div class="pad">
+            <h3 class="scr__title" tabindex="-1">Activate. Shop. Earn.</h3>
+            <p class="sm dim">Activate as many as you like. Shop with your PayPal Debit Card. Earn cash back.</p>
+            <div data-hub-active hidden>
+              <p class="section-h">Activated offers</p>
+              <div class="tiles" data-tiles-hub></div>
+            </div>
+            <div data-hub-expiring hidden>
+              <p class="section-h">Expiring soon</p>
+              <ul class="offers" data-list-expiring></ul>
+            </div>
+            <div data-hub-available>
+              <p class="section-h">Available offers</p>
+              <ul class="offers" data-list-available></ul>
+            </div>
+          </div>
+
+          <div class="scrim" data-scrim hidden></div>
+          <div class="sheet" data-sheet role="dialog" aria-modal="true" aria-labelledby="pp-sheet-title" hidden>
+            <button class="icon-btn sheet__close" data-close aria-label="Close">✕</button>
+            <div class="sheet__brand"><span class="logo-dot" data-sheet-logo aria-hidden="true"></span><span class="sm" data-sheet-brand></span></div>
+            <h4 class="scr__title" id="pp-sheet-title" tabindex="-1" data-sheet-title></h4>
+            <p class="sm" data-sheet-sub></p>
+            <div class="chips"><span class="chip chip--ok" data-sheet-active hidden>Active</span><span class="chip" data-sheet-days></span></div>
+            <div data-sheet-details-wrap>
+              <p class="sm strong">Details</p>
+              <ul class="bullets bullets--sm" data-sheet-details></ul>
+            </div>
+            <p class="sm strong">How it works</p>
+            <ol class="how">
+              <li>Activate this offer.</li>
+              <li data-sheet-how2></li>
+              <li>We’ll automatically add your cash back to your PayPal balance.</li>
+            </ol>
+            <button class="pp-btn" data-sheet-action></button>
+          </div>
+        </section>
+      </div>
+    </div>
+    {!autoplay && <span class="device-box__pill" aria-hidden="true">Cash back offers</span>}
+  </div>
+
+  <div class="proto__side">
+    <p class="u-label">Try the flow</p>
+    <ol class="steps">
+      {steps.map((s, i) => (
+        <li><button class="step" data-jump={s.id}><span class="step__n">{i + 1}</span>{s.label}</button></li>
+      ))}
+    </ol>
+    <div class="proto__sim">
+      <p class="u-label">Simulate time passing</p>
+      <button class="restart" data-sim-buy>Pay $100 at Target with the card</button>
+      <button class="restart" data-sim-expire>Let an active offer expire</button>
+      <p class="cip__note" data-sim-note>Activate the Target offer first.</p>
+    </div>
+    <button class="restart" data-restart>Start again</button>
+  </div>
+  {caption && <figcaption class="proto__cap">{caption}</figcaption>}
+</figure>
+
+<style>
+  .bar__title--c { flex: 1; text-align: center; margin-right: 32px; }
+  .bar--inv { color: var(--pp-surface); }
+  .icon-btn--inv { color: var(--pp-surface); }
+
+  .bigcard {
+    position: relative; display: block; height: 150px; margin-top: 6px; overflow: hidden;
+    border-radius: var(--pp-radius-card); background: var(--pp-navy); color: var(--pp-surface);
+  }
+  .bigcard__label { position: absolute; top: 12px; left: 14px; font-size: var(--pp-text-xs); }
+  .bigcard__amt { position: absolute; top: 46px; left: 14px; font-size: var(--pp-text-xl); font-weight: 600; z-index: 1; }
+  .bigcard__sub { position: absolute; top: 84px; left: 14px; font-size: var(--pp-text-xs); z-index: 1; }
+  .bigcard__num { position: absolute; bottom: 12px; left: 14px; font-size: var(--pp-text-xs); }
+  .bigcard .card__p { right: 10%; top: 12%; font-size: 4.5em; }
+
+  .earned { display: flex; align-items: center; gap: 10px; background: var(--pp-surface); border-radius: var(--pp-radius-tile); padding: 10px 12px; margin-bottom: 8px; font-size: var(--pp-text-sm); }
+  .earned strong { color: var(--pp-ok-ink); }
+  .earned__icon { color: var(--pp-logo-yellow); font-size: var(--pp-text-lg); }
+
+  .tiles { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  /* Tiles, offer rows and their parts are built by the script, so they
+     don't carry Astro's scope attribute: their rules go through :global(). */
+  .tiles :global(.tile) {
+    flex: none; width: 92px; display: grid; gap: 4px; justify-items: start; text-align: left;
+    padding: 10px; border: 0; border-radius: var(--pp-radius-field); background: var(--pp-surface);
+    box-shadow: var(--pp-tile-shadow); font: inherit; color: var(--pp-ink); cursor: pointer;
+  }
+  .tiles :global(.tile__check) { justify-self: end; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--pp-toast); color: var(--pp-ok-ink); font-size: var(--pp-text-xs); }
+  .text-btn--c { justify-self: center; display: block; margin: 8px auto 4px; }
+
+  .seg { display: grid; grid-template-columns: 1fr 1fr; margin: 12px 0 8px; padding: 3px; border-radius: var(--radius-pill); background: var(--pp-line); font-size: var(--pp-text-sm); text-align: center; }
+  .seg span { padding: 5px; border-radius: var(--radius-pill); }
+  .seg__on { background: var(--pp-surface); color: var(--pp-blue); font-weight: 600; }
+  .activity { list-style: none; margin: 0 -16px; padding: 0 16px; background: var(--pp-surface); }
+  .activity li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 0; }
+  .activity li > span:nth-child(2) { display: grid; }
+
+  .phone__screen :global(.logo-dot) { display: inline-grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%; background: var(--pp-ink); color: var(--pp-surface); font-size: var(--pp-text-sm); font-weight: 700; }
+
+  .hubhead { background: var(--pp-navy); padding-bottom: 14px; flex: none; }
+  .coins { display: flex; justify-content: center; gap: 0; height: 56px; align-items: center; }
+  .coins span { width: 26px; height: 26px; border-radius: 50%; background: var(--pp-logo-yellow); margin-left: -6px; box-shadow: var(--pp-coin-shade); }
+  .coins span:nth-child(2) { transform: translateY(-10px); }
+
+  .toast--hub { position: sticky; top: 8px; z-index: 2; margin: -22px 12px 0; }
+  .offers { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .offers :global(.offer) {
+    width: 100%; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; text-align: left;
+    padding: 10px; border: 0; border-radius: var(--pp-radius-field); background: var(--pp-surface); box-shadow: var(--pp-tile-shadow);
+    font: inherit; color: var(--pp-ink); cursor: pointer;
+  }
+  .offers :global(.offer > span:nth-child(2)) { display: grid; }
+  .offers :global(.offer__plus) { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--pp-ground); color: var(--pp-navy); font-size: var(--pp-text-lg); }
+  .phone__screen :global(.days) { font-size: var(--pp-text-xs); color: var(--pp-ink-dim); }
+  .phone__screen :global(.days--soon) { color: var(--pp-error); font-weight: 600; }
+
+  .scrim { position: absolute; inset: 0; z-index: 3; background: var(--pp-scrim); }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; max-height: 88%; overflow-y: auto;
+    display: grid; gap: 8px; padding: 18px 18px 16px;
+    background: var(--pp-surface); border-radius: var(--pp-radius-sheet) var(--pp-radius-sheet) 0 0;
+    animation: pp-sheet var(--dur-pp-step) var(--ease-out);
+  }
+  .sheet[hidden], .scrim[hidden] { display: none; }
+  .sheet__close { position: absolute; top: 8px; right: 8px; font-size: var(--pp-text-sm); }
+  .sheet__brand { display: flex; align-items: center; gap: 8px; }
+  .sheet h4 { margin: 4px 0 0; }
+  .sheet h4:focus { outline: none; }
+  .chips { display: flex; gap: 6px; }
+  .chip { padding: 2px 8px; border-radius: var(--radius-pill); background: var(--pp-sky); color: var(--pp-ink); font-size: var(--pp-text-xs); font-weight: 600; }
+  .chip--ok { background: var(--pp-ok); color: var(--pp-ok-ink); }
+  .bullets--sm { gap: 4px; }
+  .how { list-style: decimal; margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: var(--pp-text-sm); }
+  .sheet .pp-btn { margin-top: 6px; }
+
+  .push {
+    position: absolute; top: 10px; left: 10px; right: 10px; z-index: 6; padding: 10px 12px;
+    border-radius: var(--pp-radius-tile); background: var(--pp-ground); box-shadow: var(--pp-shadow);
+    animation: pp-push var(--dur-pp-step) var(--ease-out);
+  }
+  .push[hidden] { display: none; }
+  .push__app { display: flex; align-items: center; gap: 6px; font-size: var(--pp-text-xs); color: var(--pp-ink-dim); }
+  .push__icon { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 3px; background: var(--pp-navy); color: var(--pp-surface); font-size: 9px; font-weight: 800; font-style: italic; }
+  .push__now { margin-left: auto; }
+  .push__title { margin: 4px 0 0; font-size: var(--pp-text-sm); font-weight: 600; }
+  .push__body { margin: 0; font-size: var(--pp-text-sm); }
+
+  .proto__sim { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+  .restart:disabled { opacity: 0.4; cursor: default; }
+
+  @keyframes pp-sheet { from { transform: translateY(100%); } }
+  @keyframes pp-push { from { transform: translateY(-120%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet, .push { animation: none; }
+  }
+</style>
+
+<script>
+  import { phoneLoop } from '../scripts/phone-loop';
+  type Offer = { id: string; brand: string; pct: number; days: number; details?: string[] };
+  const OFFERS: Offer[] = [
+    { id: 'target', brand: 'Target', pct: 5, days: 7, details: ['Minimum purchase of $25', 'Earn up to $10', 'Ends Wed, July 6, 2022'] },
+    { id: 'walmart', brand: 'Walmart', pct: 8, days: 7 },
+    { id: 'starbucks', brand: 'Starbucks', pct: 5, days: 7 },
+    { id: 'sephora', brand: 'Sephora', pct: 3, days: 2 },
+    { id: 'wholefoods', brand: 'Whole Foods', pct: 5, days: 3 },
+  ];
+  const SOON = 2;
+
+  document.querySelectorAll<HTMLElement>('[data-offers]').forEach((root) => {
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const screens = { card: $('[data-screen=card]'), hub: $('[data-screen=hub]') };
+    const announce = $('[data-announce]');
+    const sheet = $('[data-sheet]'), scrim = $('[data-scrim]');
+    const toast = $('[data-toast]'), push = $('[data-push]');
+    let active: string[] = [];
+    let expired: string[] = [];
+    let earned = 0;
+    let screen: 'card' | 'hub' = 'card';
+    let sheetFor: string | null = null;
+    let opener: HTMLElement | null = null;
+    let toastTimer = 0, pushTimer = 0;
+
+    const say = (t: string) => { announce.textContent = ''; requestAnimationFrame(() => { announce.textContent = t; }); };
+    const find = (id: string) => OFFERS.find((o) => o.id === id)!;
+    const el = (tag: string, cls = '', text = '') => { const n = document.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
+
+    function tile(o: Offer) {
+      const b = el('button', 'tile') as HTMLButtonElement;
+      b.dataset.offer = o.id;
+      b.setAttribute('aria-label', `${o.brand}, ${o.pct}% cash back, active, ${o.days} days left`);
+      b.append(el('span', 'logo-dot', o.brand[0]), el('span', 'xs dim', o.brand), el('span', 'xs strong', `${o.pct}% Cash Back`), el('span', 'days', `${o.days}d left`), el('span', 'tile__check', '✓'));
+      return b;
+    }
+    function row(o: Offer) {
+      const li = el('li');
+      const b = el('button', 'offer') as HTMLButtonElement;
+      b.dataset.offer = o.id;
+      b.setAttribute('aria-label', `${o.brand}, ${o.pct}% cash back, ${o.days} days left. Open offer`);
+      const mid = el('span');
+      mid.append(el('span', 'xs dim', o.brand), el('span', 'sm strong', `${o.pct}% Cash Back`), el('span', o.days <= SOON ? 'days days--soon' : 'days', `${o.days}d left`));
+      b.append(el('span', 'logo-dot', o.brand[0]), mid, el('span', 'offer__plus', '+'));
+      li.append(b);
+      return li;
+    }
+
+    function render() {
+      const live = OFFERS.filter((o) => !expired.includes(o.id));
+      const act = live.filter((o) => active.includes(o.id));
+      const avail = live.filter((o) => !active.includes(o.id));
+      const soon = avail.filter((o) => o.days <= SOON);
+      const rest = avail.filter((o) => o.days > SOON);
+      $('[data-tiles-card]').replaceChildren(...act.map(tile));
+      $('[data-tiles-hub]').replaceChildren(...act.map(tile));
+      $('[data-list-expiring]').replaceChildren(...soon.map(row));
+      $('[data-list-available]').replaceChildren(...rest.map(row));
+      $('[data-card-active]').hidden = act.length === 0;
+      $('[data-promo]').hidden = act.length > 0;
+      $('[data-hub-active]').hidden = act.length === 0;
+      $('[data-hub-expiring]').hidden = soon.length === 0;
+      $('[data-hub-available]').hidden = rest.length === 0;
+      $('[data-earned]').hidden = earned === 0;
+      $('[data-earned-amt]').textContent = `$${earned.toFixed(2)}`;
+      const buy = $<HTMLButtonElement>('[data-sim-buy]'), exp = $<HTMLButtonElement>('[data-sim-expire]');
+      buy.disabled = !active.includes('target') || earned > 0;
+      exp.disabled = act.length === 0;
+      $('[data-sim-note]').textContent = earned > 0 ? 'Cash back earned. Start again to repeat.' : !active.includes('target') ? 'Activate the Target offer first.' : 'Target is active. Try a purchase.';
+      const stepNow = sheetFor ? 'sheet' : screen === 'hub' ? 'hub' : earned > 0 ? 'earned' : act.length ? 'activated' : 'card';
+      root.querySelectorAll<HTMLButtonElement>('[data-jump]').forEach((b) => {
+        if (b.dataset.jump === stepNow) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+      });
+    }
+
+    function go(to: 'card' | 'hub', opts: { back?: boolean; focus?: boolean } = {}) {
+      closeSheet(false);
+      screen = to;
+      (Object.keys(screens) as ('card' | 'hub')[]).forEach((k) => {
+        screens[k].hidden = k !== to;
+        screens[k].classList.toggle('is-back', !!opts.back);
+      });
+      screens[to].scrollTop = 0;
+      render();
+      say(to === 'hub' ? 'Cash Back Offers' : 'PayPal Debit Card');
+      if (opts.focus) screens[to].querySelector<HTMLElement>('h3')?.focus({ preventScroll: true });
+    }
+
+    function openSheet(id: string, from: HTMLElement | null) {
+      if (screen !== 'hub') go('hub');
+      const o = find(id), on = active.includes(id);
+      sheetFor = id; opener = from;
+      $('[data-sheet-logo]').textContent = o.brand[0];
+      $('[data-sheet-brand]').textContent = o.brand;
+      $('[data-sheet-title]').textContent = `${o.pct}% Cash Back`;
+      $('[data-sheet-sub]').textContent = on ? 'This offer is active. You’re all set to go shopping.' : 'when you pay with your PayPal Debit Card in-store or online.';
+      $('[data-sheet-active]').hidden = !on;
+      $('[data-sheet-days]').textContent = on ? `${o.days} days left` : `${o.days} days left to activate`;
+      $('[data-sheet-details-wrap]').hidden = !o.details;
+      $('[data-sheet-details]').replaceChildren(...(o.details ?? []).map((d) => el('li', '', d)));
+      $('[data-sheet-how2]').textContent = `Shop at ${o.brand} with your PayPal Debit Card. Terms apply.`;
+      $('[data-sheet-action]').textContent = on ? 'Deactivate' : 'Activate';
+      scrim.hidden = false; sheet.hidden = false;
+      render();
+      $('[data-sheet-title]').focus({ preventScroll: true });
+    }
+    function closeSheet(restore = true) {
+      if (sheet.hidden) return;
+      const id = sheetFor;
+      sheet.hidden = true; scrim.hidden = true; sheetFor = null;
+      render();
+      // render() rebuilds the lists, so find the offer's button again
+      // (same list it was opened from, if it's still there).
+      if (restore && id) {
+        const inTiles = !!opener?.classList.contains('tile');
+        const again = screens.hub.querySelector<HTMLElement>(`${inTiles ? '.tile' : '.offer'}[data-offer="${id}"]`)
+          ?? screens.hub.querySelector<HTMLElement>(`[data-offer="${id}"]`);
+        (again ?? screens.hub.querySelector<HTMLElement>('h3'))?.focus({ preventScroll: true });
+      }
+    }
+    function showToast(text: string) {
+      clearTimeout(toastTimer);
+      $('[data-toast-text]').textContent = text;
+      toast.hidden = false;
+      say(text);
+      toastTimer = window.setTimeout(() => { toast.hidden = true; }, 3200);
+    }
+    function showPush(title: string, body: string) {
+      clearTimeout(pushTimer);
+      $('[data-push-title]').textContent = title;
+      $('[data-push-body]').textContent = body;
+      push.hidden = false;
+      say(`Notification from PayPal. ${title} ${body}`);
+      pushTimer = window.setTimeout(() => { push.hidden = true; }, 4500);
+    }
+
+    function reset() {
+      active = []; expired = []; earned = 0;
+      toast.hidden = true; push.hidden = true;
+    }
+
+    root.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('button');
+      if (!b || !root.contains(b)) return;
+      if (b.dataset.offer) openSheet(b.dataset.offer, b);
+      else if (b.dataset.go) go(b.dataset.go as 'card' | 'hub', { back: b.dataset.dir === 'back', focus: true });
+      else if (b.hasAttribute('data-close')) closeSheet();
+      else if (b.hasAttribute('data-sheet-action') && sheetFor) {
+        const id = sheetFor, wasOn = active.includes(id);
+        active = wasOn ? active.filter((a) => a !== id) : [...active, id];
+        closeSheet(false);
+        showToast(wasOn ? 'Offer deactivated.' : 'Offer activated. You’re all set to go shopping.');
+        $('[data-screen=hub] h3').focus({ preventScroll: true });
+      } else if (b.hasAttribute('data-sim-buy')) {
+        earned = 5;
+        go('card');
+        showPush('Way to go. You just got $5.00 in cash back.', 'Use your PayPal Debit Card at Target. Get cash back. Repeat.');
+      } else if (b.hasAttribute('data-sim-expire')) {
+        const id = active[0];
+        active = active.filter((a) => a !== id); expired = [...expired, id];
+        render();
+        showPush('PayPal Debit Card - cash back offer expired', 'Thanks for participating. Be on the lookout for more PayPal Debit Card offers.');
+      } else if (b.hasAttribute('data-restart')) {
+        reset(); go('card', { focus: true });
+      } else if (b.dataset.jump) {
+        const j = b.dataset.jump;
+        reset();
+        if (j === 'card') go('card', { focus: true });
+        if (j === 'hub') go('hub', { focus: true });
+        if (j === 'sheet') { go('hub'); openSheet('target', null); }
+        if (j === 'activated') { active = ['target', 'walmart']; go('card', { focus: true }); }
+        if (j === 'earned') { active = ['target', 'walmart']; earned = 5; go('card', { focus: true }); }
+      }
+    });
+
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !sheet.hidden) { e.preventDefault(); closeSheet(); }
+      // keep Tab inside the open sheet
+      if (e.key === 'Tab' && !sheet.hidden) {
+        const f = [...sheet.querySelectorAll<HTMLElement>('button')];
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && (document.activeElement === first || !sheet.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+    scrim.addEventListener('click', () => closeSheet());
+
+    go('card');
+
+    if (root.hasAttribute('data-autoplay')) {
+      const tap = (sel: string) => () => root.querySelector<HTMLElement>(sel)?.click();
+      phoneLoop(root, [
+        [2200, tap('[data-promo] [data-go=hub]')],
+        [2000, tap('.offer[data-offer=target]')],
+        [2400, tap('[data-sheet-action]')],
+        [2000, tap('.offer[data-offer=walmart]')],
+        [1800, tap('[data-sheet-action]')],
+        [2200, tap('[data-screen=hub] [data-go=card]')],
+        [2000, tap('[data-sim-buy]')],
+        [4800, tap('[data-restart]')],
+      ]);
+    }
+  });
+</script>

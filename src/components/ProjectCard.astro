@@ -1,196 +1,133 @@
 ---
-/* ProjectCard.astro — the home page's "Selected work" row: one project,
-   one full-width card, text on the left and its media on the right.
-   Redesigned from an earlier stacked (hero-on-top) layout after review
-   against a reference row-card pattern: same two-column shape, numbered
-   index, pill role tags and an explicit "View case study" line, kept on
-   this site's own palette and typography rather than the reference's
-   colours.
+/* ProjectCard.astro — one row in the home page's "Selected work": a
+   full-width card that stacks over the one before it as you scroll
+   (the sticky rows and settle effect live in index.astro). Text on the
+   left — number, company and label chips, title (12px caps, after
+   allierho.com), one 12px line, "View case study" — and on the right a stage on the company's project hue
+   holding the work itself:
 
-   Colour: the card itself is the page's white; only the media half is
-   coloured, with the company's project hue (hueFor() in data/work.ts,
-   PROJECT HUES in tokens.css) — so every card reads the same and only
-   the picture changes. `theme` is still accepted but inert.
+   - a phone that runs the flow on its own (after daneden.me): a screen
+     recording, her screens in sequence (each sliding over the last, like
+     an app pushing a new screen), or a coded PayPal prototype on
+     autopilot;
+   - for Okta's desktop work, the screenshot on its own (a placeholder,
+     drawn as a browser window, until the NDA check).
 
-   Hard-edged (`border-radius: 0`), unlike every other card/image/button
-   on the site, which share --radius (20px) — see .pc's own inline
-   comment. Once these cards started stacking on scroll (see the sticky
-   rows in index.astro), a rounded corner peeking out from under the
-   next square-ish edge looked like a rendering glitch rather than an
-   intentional shingle; the flat edge reads as a deliberate stack.
+   Its UX reason: a recruiter skimming the stack sees the product
+   working, not a thumbnail of it.
 
-   The hero is a canvas, not a picture frame: its own background is a
-   muted step off the card's `--bg`, and whatever's pinned to it sits
-   inset via `object-fit: contain`, not `cover` — most of what lands
-   here (a browser window, a phone mockup, a floating UI piece) is a
-   transparent PNG meant to float on the wall, not a photo meant to
-   fill it. `image`/`alt` are the one-asset shorthand; pass
-   `slot="hero"` for anything richer (a layered composition, a video,
-   several mockups at once). No `ratio` prop — this card's row height
-   is fixed (see .pc's own height comment), unlike CaseCard.astro's
-   /work grid tiles, which do vary their media ratio per tile.
+   Motion: a phone moves only while its card is on screen, the tab is
+   visible and motion is allowed (no pause control, on request). Under
+   reduced motion each phone
+   shows its first screen and the recording its poster. The flows run on
+   phone-loop.ts, told when to go by this file's script. Hover (fine
+   pointers): the phone or screenshot rises by --phone-lift and the CTA's
+   arrow nudges.
 
-   The hover label is the same HoverLabel.astro every card uses,
-   rendered as a sibling of `.pc__hero`/`.pc__body` so its cursor-follow
-   pill can reach the whole card, not just the media half. `index` and
-   `tags` are new: the number is decorative (aria-hidden, the link
-   itself already names the project), the tags are real text — quiet
-   metadata about what she actually did on it, not another loud visual
-   element. */
-import type { HoverState } from '../data/hoverState';
-import HoverLabel from './HoverLabel.astro';
-import LockIcon from './LockIcon.astro';
-import { hueFor } from '../data/work';
+   The whole card is one link, made by stretching the title's link over
+   it, not by wrapping the card in <a>: the coded prototypes are real
+   buttons and inputs (inert here), which can't sit inside a link.
+
+   Hard-edged, like the rest of the site's cards; a sharp top edge also
+   reads as a deliberate shingle where one card slides over the next.
+   Only the phone is round (it's the device's, PHONE CARDS in
+   tokens.css). Fixed height, so every row in the stack is the same
+   size whatever the copy; on narrow screens it stacks, stage first. */
+import EnrollPrototype from './EnrollPrototype.astro';
+import OffersPrototype from './OffersPrototype.astro';
+import { hueFor, type HomeMedia } from '../data/work';
 
 interface Props {
   index: number;
   company: string; title: string; tagline: string; href: string;
   tags?: string[];
-  image?: string; alt?: string;
-  theme?: 'ink' | 'bone' | 'sand' | 'clay' | 'sage' | 'lilac' | 'coral' | 'ember';
-  hoverState?: HoverState;
-  locked?: boolean;
+  media: HomeMedia;
+  video?: { mp4: string; webm: string; poster: string };
 }
-const {
-  index,
-  company, title, tagline, href,
-  tags = [],
-  image, alt = '',
-  theme = 'ink',
-  hoverState = 'case-study',
-  locked = false,
-} = Astro.props;
+const { index, company, title, tagline, href, tags = [], media, video } = Astro.props;
 const num = String(index).padStart(2, '0');
 ---
-<a class={`pc ${hoverState === 'case-study' ? 'pc--no-pill' : ''}`} href={href} data-theme={theme} data-hover-trigger>
+<article class="pc">
   <div class="pc__body">
     <p class="pc__num" aria-hidden="true">{num}</p>
-    <p class="pc__co u-label">{company}</p>
-    <h2 class="pc__title">
-      {title}
-      {locked && <LockIcon class="pc__lock" size="0.6em" />}
-    </h2>
+    {/* COMPANY · [domain] [discipline]… — after carlthomasiv.com; the
+        chips come from labelsFor() in data/work.ts. */}
+    <div class="pc__meta">
+      <p class="pc__co u-label">{company}</p>
+      {tags.length > 0 && (
+        <>
+          <span class="pc__dot u-label" aria-hidden="true">·</span>
+          <ul class="pc__tags" aria-label="Domain and discipline">
+            {tags.map((t) => <li>{t}</li>)}
+          </ul>
+        </>
+      )}
+    </div>
+    <h3 class="pc__title"><a class="pc__link" href={href}>{title}</a></h3>
     <p class="pc__tagline">{tagline}</p>
-    {tags.length > 0 && (
-      <ul class="pc__tags">
-        {tags.map((t) => <li>{t}</li>)}
-      </ul>
+    <span class="pc__cta" aria-hidden="true">View case study <span class="pc__arrow">→</span></span>
+  </div>
+
+  <div class="pc__stage" data-hue={hueFor(company) ?? ''} data-phone role="img" aria-label={media.alt}>
+
+    {media.type === 'desktop' ? (
+      <img class="pc__desktop" src={media.image} alt="" loading="lazy" decoding="async" />
+    ) : (
+      <div class="pc__device" aria-hidden="true">
+        <div class="pc__device-inner">
+          {media.type === 'prototype' && media.name === 'paypal-enroll' && <EnrollPrototype autoplay />}
+          {media.type === 'prototype' && media.name === 'paypal-offers' && <OffersPrototype autoplay />}
+          {media.type !== 'prototype' && (
+            <div class="pc__phone">
+              <div class="pc__screen">
+                {media.type === 'video' && video && (
+                  <video poster={video.poster} muted loop playsinline preload="metadata" data-phone-video>
+                    <source src={video.webm} type="video/webm" />
+                    <source src={video.mp4} type="video/mp4" />
+                  </video>
+                )}
+                {media.type === 'screens' && media.screens.map((src, i) => (
+                  <img class:list={['pc__shot', i === 0 && 'is-on']} src={src} alt="" loading="lazy" decoding="async" data-phone-shot />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     )}
-    <span class="pc__cta">View case study <span class="pc__arrow" aria-hidden="true">→</span></span>
   </div>
-
-  <div class="pc__hero" data-hue={hueFor(company) ?? ''}>
-    {/* Both, not either/or: index.astro passes the hero slot inside a
-        `{'video' in w && …}` condition, and Astro counts that slot as
-        present even when the condition renders nothing — which left every
-        image card's media empty. The page passes `image` only when there's
-        no video, so at most one of these renders. */}
-    <slot name="hero" />
-    {image && <img src={image} alt={alt} loading="lazy" decoding="async" />}
-  </div>
-
-  {hoverState !== 'case-study' && <HoverLabel state={hoverState} />}
-</a>
+</article>
 
 <style>
   .pc {
+    position: relative;
     display: grid;
     grid-template-columns: 1.05fr 0.95fr;
-    /* minmax(0, 1fr), not the implicit auto row this used to have —
-       an auto row won't shrink below its content's own min-content
-       size even when the container has a definite height (a two-line
-       title makes the whole grid taller than a one-line title's,
-       overriding `height` below). minmax(0, ...) gives the row an
-       explicit floor of 0, so `height` actually wins and the taller
-       content clips via `overflow: hidden` instead. */
+    /* minmax(0, 1fr) so the fixed height below wins over a long title;
+       text that doesn't fit clamps instead of growing the row. */
     grid-template-rows: minmax(0, 1fr);
-    align-items: stretch;
     gap: var(--card-gap);
-    /* Fixed, not content-driven — every row in the list is this same
-       height regardless of title length or tag count, so the grid
-       reads as evenly composed instead of jumping card to card. Text
-       that doesn't fit clamps (below) rather than growing the row.
-       672px = 420px + 60%. A +20% (806px) pass was tried and reverted —
-       back to the original height; the sharp corners below stayed. */
-    height: 672px;
-    position: relative;   /* HoverLabel tracks the whole card */
-    cursor: none;         /* HoverLabel's pill is the cursor here */
-    text-decoration: none;
-    color: var(--fg);
-    background: var(--bg);
-    /* Hard-edged on purpose, unlike every other card/image/button on the
-       site (which share --radius, 20px) — the stacked "Selected work"
-       rows read better with a sharp edge where one card's top slides
-       under the next, so this is a deliberate, scoped exception rather
-       than a change to the sitewide --radius token. */
-    border-radius: 0;
+    height: var(--card-h);
     padding: var(--card-pad);   /* the footer insets by this too */
+    background: var(--bg);
+    color: var(--fg);
+    border-radius: var(--radius);
     overflow: hidden;
-    transition: transform var(--dur-hover) var(--ease-out);
-  }
-  /* case-study cards already show a static "View case study" line in
-     .pc__body (below) — HoverLabel's cursor-follow pill would just
-     repeat it, so it's left unrendered for this state (see the .astro
-     file's template) and the native pointer cursor comes back instead
-     of the `cursor: none` above, which otherwise assumes the pill is
-     standing in for the cursor. */
-  .pc.pc--no-pill {
-    cursor: pointer;
   }
 
   .pc__body { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .pc__num {
-    font-family: var(--font-sans); font-weight: var(--weight-sans);
-    font-size: var(--step-body);
+    font-size: var(--step-copy);
+    line-height: var(--leading-copy);
     color: var(--fg-dim);
     margin: 0 0 clamp(1rem, 2vw, 1.5rem);
   }
-  .pc__co {
-    color: var(--fg-dim);
-    margin: 0 0 0.6rem;
-    transition: color var(--dur-micro) var(--ease-out);
-  }
+  .pc__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0 0 0.9rem; }
+  .pc__dot { color: var(--fg-dim); }
+  .pc__co { color: var(--fg-dim); margin: 0; transition: color var(--dur-micro) var(--ease-out); }
   .pc:hover .pc__co { color: var(--fg); }
-  .pc__title {
-    font-family: var(--font-serif);
-    font-size: var(--step-heading);
-    line-height: 1.15;
-    letter-spacing: var(--tracking-serif);
-    font-weight: var(--weight-serif);
-    margin: 0 0 0.6rem;
-    text-wrap: balance;
-    /* Clamped, not left to grow — a longer title stays the same card
-       height as a short one; see .pc's own comment on why. */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .pc__lock { margin-left: 0.4em; color: var(--fg-dim); vertical-align: middle; }
-  .pc__tagline {
-    font-family: var(--font-serif); font-weight: var(--weight-serif); letter-spacing: var(--tracking-serif);
-    font-style: italic;
-    font-size: var(--step-body);
-    color: var(--fg-dim);
-    line-height: 1.4;
-    margin: 0 0 1.1rem;
-    max-width: 40ch;
-    text-wrap: pretty;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* Role tags — quiet metadata, not another loud element: a hairline
-     outline, no fill, small tracked caps. Height-capped for the same
-     reason the title/tagline clamp — four tags and two tags take the
-     same vertical space. */
-  .pc__tags {
-    display: flex; flex-wrap: wrap; gap: 0.5rem;
-    list-style: none; margin: 0 0 1.4rem; padding: 0;
-    max-height: 4.2rem; overflow: hidden;
-  }
+  /* Label chips: a hairline box, no fill, square. */
+  .pc__tags { display: contents; list-style: none; margin: 0; padding: 0; }
   .pc__tags li {
     font-family: var(--font-sans);
     font-size: var(--step-label);
@@ -198,17 +135,42 @@ const num = String(index).padStart(2, '0');
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--fg-dim);
-    border: 1px solid currentColor;
-    border-radius: 999px;
-    padding: 0.3rem 0.7rem;
-    opacity: 0.85;
+    border-radius: var(--radius);
+    padding: 0.25rem 0.55rem;
   }
-
+  /* Title as a 12px caps caption, the reference's project titles
+     (allierho.com): the big serif is kept for the page's own heads. */
+  .pc__title {
+    font-family: var(--font-sans);
+    font-size: var(--step-label);
+    line-height: var(--leading-label);
+    letter-spacing: var(--tracking-label);
+    font-weight: var(--weight-sans);
+    text-transform: uppercase;
+    margin: 0 0 0.6rem;
+    text-wrap: balance;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .pc__link { color: var(--fg); text-decoration: none; }
+  /* The title's link covers the whole card — see the header comment. */
+  .pc__link::after { content: ''; position: absolute; inset: 0; z-index: 2; }
+  .pc__link:focus-visible { outline: none; }
+  .pc:has(.pc__link:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .pc__tagline {
+    font-size: var(--step-copy);
+    line-height: var(--leading-copy);
+    letter-spacing: var(--tracking-copy);
+    color: var(--fg-dim);
+    margin: 0 0 1.1rem;
+    max-width: 40ch;
+    text-wrap: pretty;
+  }
   .pc__cta {
     margin-top: auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4em;
+    display: inline-flex; align-items: center; gap: 0.4em;
     font-family: var(--font-sans);
     font-size: var(--step-label);
     font-weight: var(--weight-sans);
@@ -221,53 +183,139 @@ const num = String(index).padStart(2, '0');
   .pc:hover .pc__cta { text-decoration-color: currentColor; }
   .pc__arrow {
     opacity: 0.7;
-    transition: opacity var(--dur-micro) var(--ease-out),
-                transform var(--dur-micro-move) var(--ease-out);
+    transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro-move) var(--ease-out);
   }
   .pc:hover .pc__arrow { opacity: 1; transform: translate(2px, -2px); }
 
-  /* The canvas — a wall, not a picture. The company's project hue
-     (tokens.css, PROJECT HUES; the only colour on the card), object-fit:
-     contain so a pinned asset centres and shows whole instead of
-     cropping to cover every edge. */
-  .pc__hero {
+  /* The stage: the project hue, the work standing on it. */
+  .pc__stage {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: var(--hue);
-    border-radius: 0; /* matches .pc's own hard edge — see its comment */
-    overflow: hidden;
-    padding: clamp(1.25rem, 3vw, 2.25rem);
-    /* Fills whatever height .pc's own fixed height leaves it via grid
-       stretch — `aspect-ratio` dropped since a fixed-height row can't
-       also honour an aspect ratio without one of the two losing. */
-    height: 100%;
     min-height: 0;
+    display: flex; justify-content: center; align-items: center;
+    overflow: hidden;
   }
-  .pc__hero img,
-  .pc__hero :global(img),
-  .pc__hero :global(video) {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
+
+  /* --- the phone ---------------------------------------------------
+     Drawn at full size (the PayPal prototypes' own size) and scaled
+     down as a whole, so the coded prototypes and the screen phones are
+     the same object at the same size. */
+  .pc__device {
+    flex: none;
+    width: calc(var(--phone-w) * var(--phone-scale));
+    height: calc(var(--phone-h) * var(--phone-scale));
+    border-radius: calc(var(--radius-phone) * var(--phone-scale));
+    box-shadow: var(--phone-shadow);
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .pc__device-inner {
+    width: var(--phone-w); height: var(--phone-h);
+    transform: scale(var(--phone-scale));
+    transform-origin: 0 0;
+  }
+  .pc__phone {
+    width: 100%; height: 100%;
+    padding: var(--phone-bezel-w);
+    background: var(--phone-bezel);
+    border-radius: var(--radius-phone);
+  }
+  .pc__screen {
+    position: relative; width: 100%; height: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-phone-screen);
+    background: var(--phone-screen);
+  }
+  /* The recording is wider than the screen; shown whole from the top,
+     its own white app ground carries on below it. */
+  .pc__screen video {
+    display: block; width: 100%; height: 100%;
+    object-fit: contain; object-position: top;
+  }
+  /* Screens in sequence: the incoming one slides in over the last, which
+     drifts a little the other way — an app pushing a new screen. Only
+     the two screens in motion transition; the rest jump back offstage
+     out of sight. */
+  .pc__shot {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: top;
+    transform: translateX(100%);
+  }
+  .pc__shot.is-on {
+    z-index: 1;
+    transform: none;
+    transition: transform var(--dur-phone-step) var(--ease-out);
+  }
+  .pc__shot.is-prev {
+    transform: translateX(var(--phone-parallax));
+    transition: transform var(--dur-phone-step) var(--ease-out);
+  }
+
+  /* --- desktop work ----------------------------------------------
+     The screenshot as given: the Okta placeholders draw their own window
+     on a transparent ground, so the hue shows round it. */
+  .pc__desktop {
+    max-width: calc(100% - 2 * var(--phone-stage-pad)); max-height: calc(100% - 2 * var(--phone-stage-pad));
     object-fit: contain;
     display: block;
     transition: transform var(--dur-hover) var(--ease-out);
   }
-  /* A one-pixel lift on the pinned asset itself, same idea as the CTA
-     arrow's nudge — a small, immediate sign the row is "live" under the
-     cursor, not a parallax effect. */
-  .pc:hover .pc__hero img,
-  .pc:hover .pc__hero :global(img),
-  .pc:hover .pc__hero :global(video) {
-    transform: translateY(-4px);
+
+  @media (hover: hover) {
+    .pc:hover .pc__device,
+    .pc:hover .pc__desktop { transform: translateY(var(--phone-lift)); }
   }
 
+  /* Narrow: one column, stage first, sized to the phone. */
   @media (max-width: 860px) {
-    .pc { grid-template-columns: 1fr; height: auto; }
-    .pc__hero { order: -1; height: 320px; }
+    .pc { grid-template-columns: 1fr; grid-template-rows: auto auto; height: auto; --phone-scale: var(--phone-scale-narrow); }
+    .pc__stage { order: -1; padding: var(--phone-stage-pad); }
     .pc__tagline { max-width: none; }
   }
 </style>
+
+<script>
+  import { phoneLoop } from '../scripts/phone-loop';
+
+  // Which phones may move: on screen, tab visible, no reduced motion. Each stage hears phone:play / phone:pause.
+  const stages = [...document.querySelectorAll<HTMLElement>('[data-phone]')];
+  if (stages.length) {
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    const inView = new Set<Element>();
+
+    const sync = () => {
+      for (const s of stages) {
+        const on = !reduced.matches && !document.hidden && inView.has(s);
+        if (s.dataset.playing === String(on)) continue;
+        s.dataset.playing = String(on);
+        s.dispatchEvent(new CustomEvent(on ? 'phone:play' : 'phone:pause'));
+      }
+    };
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) e.isIntersecting ? inView.add(e.target) : inView.delete(e.target);
+      sync();
+    }, { threshold: 0.35 });
+    stages.forEach((s) => io.observe(s));
+    document.addEventListener('visibilitychange', sync);
+    reduced.addEventListener('change', sync);
+
+    for (const s of stages) {
+      const v = s.querySelector<HTMLVideoElement>('[data-phone-video]');
+      if (v) {
+        s.addEventListener('phone:play', () => { v.play().catch(() => {}); });
+        s.addEventListener('phone:pause', () => v.pause());
+      }
+      const shots = [...s.querySelectorAll<HTMLElement>('[data-phone-shot]')];
+      if (shots.length > 1) {
+        let i = 0;
+        const next = () => {
+          shots.forEach((el) => el.classList.remove('is-prev'));
+          shots[i].classList.replace('is-on', 'is-prev');
+          i = (i + 1) % shots.length;
+          shots[i].classList.add('is-on');
+        };
+        phoneLoop(s, shots.map(() => [2400, next]));
+      }
+    }
+  }
+</script>

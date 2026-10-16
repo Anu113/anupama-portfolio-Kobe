@@ -43,7 +43,11 @@
 
    NIGHT LIGHT — in dark mode he's lit like her (warm shade, the
      laptop's blue on his left side), via two masked overlays on his
-     sprite; see the launcher styles. Fades with the theme.
+     sprite; see the launcher styles. Fades with the theme. The cursor
+     lamp lights him the way it lights her (HeroIllustration): his own
+     frame tinted by the lamp and added on inside its pool, a rim on the
+     edge facing it, and a contact pool under his feet on the book, all
+     night. The script follows the lamp's `cursor-lamp` event.
 
    PANEL — opens on click (not hover: it's a dialog with a scrim), fixed
      bottom-right, full-width bottom sheet under 640px. Moved to <body> on
@@ -84,7 +88,8 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
 ---
 <div class="pixel-launch">
   <button class="pixel-launcher" type="button" aria-label="Psst… Want the short version? Ask Moss about Anupama’s work" aria-expanded="false" aria-controls="pixel-panel" aria-haspopup="dialog">
-    <span class="pixel-launcher__moss"></span>
+    <span class="pixel-launcher__contact"></span>
+    <span class="pixel-launcher__moss"><span class="pixel-launcher__lamp"></span><span class="pixel-launcher__rim"></span></span>
     <span class="pixel-launcher__card" aria-hidden="true">
       <span class="pixel-launcher__who">Moss</span>
       <span class="pixel-launcher__first">Psst<span class="pixel-launcher__dots"><i></i><i></i><i></i></span></span>
@@ -148,6 +153,55 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
     --moss-img: url('/images/moss/moss-sprite.webp');
     --moss-size: 800% 600%;
     --moss-pos: calc(var(--moss-col, 0) * 100% / 7) calc(var(--moss-row, 0) * 100% / 5);
+    --moss-pos-shift: calc(var(--moss-col, 0) * 100% / 7 + var(--rim-dx, 0px)) calc(var(--moss-row, 0) * 100% / 5 + var(--rim-dy, 0px));
+  }
+  /* The cursor lamp on him (CURSOR LAMP in tokens.css). The script sets
+     --lamp-x/--lamp-y (the lamp, in his box), --lamp-r (its reach),
+     --lamp-on, --rim-dx/--rim-dy (away from the lamp) and --rim-over (0
+     when the lamp is over him). The pool's stops are CursorLamp's. */
+  .pixel-launcher__moss { --moss-pos-shift: var(--rim-dx, 0px) var(--rim-dy, 0px); }
+  .pixel-launcher__lamp,
+  .pixel-launcher__rim {
+    /* Defined here, not on the parent: it reads each layer's own --k. */
+    --pool: radial-gradient(circle var(--lamp-r, 0px) at var(--lamp-x, -999px) var(--lamp-y, -999px),
+      rgb(0 0 0 / var(--k)), rgb(0 0 0 / calc(var(--k) * 0.7)) 25%, rgb(0 0 0 / calc(var(--k) * 0.35)) 50%,
+      rgb(0 0 0 / calc(var(--k) * 0.12)) 75%, transparent);
+    position: absolute; inset: 0; z-index: 1;
+    pointer-events: none;
+    opacity: calc(var(--hero-night) * var(--lamp-on, 0));
+  }
+  /* Colour x light: his frame times the lamp colour, added, in its pool. */
+  .pixel-launcher__lamp {
+    --k: var(--hero-lamp-gain);
+    background: linear-gradient(var(--lamp-hue), var(--lamp-hue)), var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat;
+    background-blend-mode: multiply;
+    mix-blend-mode: plus-lighter;
+    -webkit-mask: var(--pool), var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat;
+    -webkit-mask-composite: source-in;
+    mask: var(--pool), var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat;
+    mask-composite: intersect;
+  }
+  /* Rim: his frame minus itself nudged away from the lamp, in its pool. */
+  .pixel-launcher__rim {
+    --k: calc(var(--hero-rim-k) * var(--rim-over, 0));
+    background: var(--lamp-hue);
+    mix-blend-mode: plus-lighter;
+    -webkit-mask: var(--pool), var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat, var(--moss-img) var(--moss-pos-shift) / var(--moss-size) no-repeat;
+    -webkit-mask-composite: source-in, source-out;
+    mask: var(--pool), var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat, var(--moss-img) var(--moss-pos-shift) / var(--moss-size) no-repeat;
+    mask-composite: intersect, subtract;
+  }
+  /* Contact: a soft pool under his feet on the top book, all night. */
+  .pixel-launcher__contact {
+    position: absolute; left: 53.3%; top: 95.4%;
+    width: 62%; height: 9%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.9), rgb(0 0 0 / 0));
+    filter: blur(2px);
+    opacity: calc(var(--hero-night) * var(--hero-contact-k));
+    transition: opacity var(--dur-night) var(--ease-out);
   }
   /* Night light (NIGHT LIGHT in tokens.css), so he sits in the same
      scene as her in dark mode: a warm shade (multiply) everywhere but his
@@ -399,6 +453,34 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
       moss.style.setProperty('--moss-col', String(frame % COLS));
       moss.style.setProperty('--moss-row', String(Math.floor(frame / COLS)));
     });
+
+    // The cursor lamp (CursorLamp.astro): where it is in his box, how far
+    // it reaches, and which way his rim faces. Only touched while it's
+    // near him, plus one update to switch it off as it leaves.
+    let lamp = { x: 0, y: 0, on: false, radius: 0 };
+    let wasNear = false;
+    const reach = () => lamp.radius * ((parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lamp-reach')) || 70) / 100);
+    const rimW = () => (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hero-rim-w')) || 3) * 0.7;
+    const light = () => {
+      const r = moss.getBoundingClientRect();
+      const R = reach();
+      const x = lamp.x - r.left, y = lamp.y - r.top;
+      const nx = Math.max(0, Math.min(r.width, x)), ny = Math.max(0, Math.min(r.height, y));
+      const near = lamp.on && Math.hypot(x - nx, y - ny) < R;
+      if (!near && !wasNear) return;
+      wasNear = near;
+      moss.style.setProperty('--lamp-on', near ? '1' : '0');
+      if (!near) return;
+      const dx = r.width / 2 - x, dy = r.height * 0.55 - y, d = Math.hypot(dx, dy) || 1;
+      moss.style.setProperty('--lamp-x', `${x}px`);
+      moss.style.setProperty('--lamp-y', `${y}px`);
+      moss.style.setProperty('--lamp-r', `${R}px`);
+      moss.style.setProperty('--rim-dx', `${(dx / d) * rimW()}px`);
+      moss.style.setProperty('--rim-dy', `${(dy / d) * rimW()}px`);
+      moss.style.setProperty('--rim-over', String(Math.min(1, Math.max(0, (d - r.width * 0.2) / (r.width * 0.4)))));
+    };
+    addEventListener('cursor-lamp', (e) => { lamp = (e as CustomEvent<typeof lamp>).detail; light(); });
+    addEventListener('scroll', light, { passive: true });
   }
 
   // The card opens to Moss's right when the open card stays clear of the

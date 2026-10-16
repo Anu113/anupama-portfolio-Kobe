@@ -5,7 +5,7 @@ Context for Codex working in this repo.
 ## What this is
 
 The portfolio site for **Anupama Mishra**, a staff product designer with 10+
-years' experience returning to work after a career break. Most recently Staff
+years' experience. Most recently Staff
 Product Designer at Okta on Identity & Access Management, where she also led a
 team of six. Earlier: PayPal, Walmart Labs, Deloitte Digital, Zomato.
 

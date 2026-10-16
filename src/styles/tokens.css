@@ -18,8 +18,10 @@
               turns italic, same size, same weight (".u-display em").
        sans   Manrope 600. Everything that isn't a headline: nav,
               labels, buttons, captions, body copy.
-       mono   Azeret Mono 400. Numbers that tick (the footer clock) and
-              arrow glyphs. (Pixel pins its own mono — end of file.) */
+       mono   Azeret Mono 400. Numbers that tick (the footer clock),
+              arrow glyphs, and the case-study labels, tags and captions
+              (.u-label-mono, after carlthomasiv.com's case pages).
+              (Pixel pins its own mono — end of file.) */
   --font-serif: 'Crimson Pro', Georgia, serif;
   --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Azeret Mono', ui-monospace, monospace;
@@ -35,19 +37,28 @@
        nav       14px        the name and nav links
        label     12px        labels, buttons, captions, card titles
        mono      18px        arrow glyphs
-     Two steps the reference doesn't have, because it has no long copy:
-       title     20 → 26px   sub-headings inside a page (case-study
-                             blocks, card titles that need to be read)
-       body      15px        paragraphs. The reference sets its one
-                             paragraph at 12px; case studies are read
-                             properly by a hiring manager, and 12px for
-                             hundreds of words is a legibility failure.
-                             Same face, weight, leading and tracking as
-                             the reference, just larger.               */
+       title     22px        sub-heads (case-study blocks, about)
+       body      14px        reading copy (case studies, about)
+       copy      12px        short copy: intro lines, card lines
+     Measured across the reference's home, work, about and case pages
+     (2026-10-16). Its page titles are 70px; ours stay at heading (44px),
+     because the site read as too big. No page scale: 1x everywhere. */
   --step-display: clamp(2.125rem, 1.754rem + 1.524vw, 3.125rem);
   --step-heading: clamp(2rem, 1.721rem + 1.143vw, 2.75rem);
-  --step-title: clamp(1.25rem, 1.111rem + 0.571vw, 1.625rem);
-  --step-body: 0.9375rem;
+  /* 22px — sub-heads: the reference's case-study and project-name h3. */
+  --step-title: 1.375rem;
+  /* 30 → 40px: a case study's title. Smaller than --step-heading on
+     purpose (after carlthomasiv.com/work/ona-conversations): on a case
+     page the title is the one large line, and section heads drop to
+     --step-title under it, so the page reads as a document, not a
+     stack of headlines. */
+  --step-case-title: clamp(1.875rem, 1.643rem + 0.952vw, 2.5rem);
+  /* 14px — reading copy: the reference's about bio and case-study text. */
+  --step-body: 0.875rem;
+  /* 12px — short copy: the reference's intro lines, card lines, meta. */
+  --step-copy: 0.75rem;
+  /* 32px — the footer's sign-off, as the reference's "Let's chat." */
+  --step-signoff: 2rem;
   --step-small: 0.8125rem;  /* 13px — the footer's one-line note, under body */
   --step-nav: 0.875rem;
   --step-label: 0.75rem;
@@ -55,16 +66,22 @@
   --step-mono: 1.125rem;
 
   /* Reference: -1.5px on 44/50px serif, 1.2px on 14px nav, 0.8px on
-     12px labels, 0.36px on 12px body. Stored in em so they scale. */
+     12px labels, 0.36px on 12px copy, 0.14px on 14px body, -0.5px on
+     22px titles. Stored in em so they scale. */
   --tracking-serif: -0.03em;
   --tracking-nav: 0.086em;
   --tracking-label: 0.067em;
-  --tracking-body: 0.03em;
+  --tracking-body: 0.01em;
+  --tracking-copy: 0.03em;
+  --tracking-title: -0.023em;
+  --tracking-mono-label: 0.08em;   /* 11px mono caps (.u-label-mono) */
 
   --leading-display: 0.95;   /* 47.5 / 50 */
   --leading-heading: 1.15;   /* 50.6 / 44 */
   --leading-label: 1.2;      /* 14.4 / 12 */
-  --leading-body: 1.8;       /* 21.6 / 12 */
+  --leading-body: 1.5;       /* 21 / 14 */
+  --leading-copy: 1.8;       /* 21.6 / 12 */
+  --leading-title: 1.25;     /* 27.5 / 22 */
 
   /* --- COLOUR -------------------------------------------
      One palette, plus a dark version of it (DARK MODE, below) switched
@@ -104,7 +121,11 @@
      is inset by the same amount, so its text lines up with the text
      inside the cards rather than with their outer edge. */
   --card-pad: clamp(1.75rem, 3vw, 2.75rem);
-  --card-gap: clamp(1.5rem, 3vw, 2.5rem);   /* between a card's text and image columns */
+  --card-gap: clamp(1.5rem, 3vw, 2.5rem);   /* between a card's text and its stage */
+  /* Every row in the home stack is this height, whatever the copy, so
+     the stack reads evenly. 672px = 420px + 60%. */
+  --card-h: 672px;
+  --stack-end-hold: 25vh;   /* how long the finished stack holds before it scrolls away */
 
   --space-section: clamp(5rem, 10vw, 9rem);
   --space-band-tight: clamp(2rem, 4vw, 3.5rem);
@@ -128,6 +149,9 @@
      Square everywhere; the one round thing is the pill button. */
   --radius: 0px;
   --radius-pill: 999px;
+  /* Case-study tags (CASE TAGS, below): the reference's 4px. A small,
+     deliberate exception to square, like the pill. */
+  --radius-tag: 4px;
 
   /* --- MOTION ------------------------------------------- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -135,6 +159,15 @@
   --dur-hover: 320ms;
   --dur-micro: 150ms;
   --dur-micro-move: 180ms;
+  /* Archive rows (ArchiveList): the name lightens a little on hover, after
+     danield.design's archive. 0.65 keeps the ink at ~4.8:1 on the ground
+     in both modes, so the hovered name still passes AA. Its own softer
+     curve and a longer duration: on --ease-out (which does most of its
+     change in the first few frames) at --dur-micro the fade read as a
+     snap rather than a fade. */
+  --hover-fade: 0.65;
+  --dur-hover-fade: 400ms;
+  --ease-fade: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* PIXEL BREAK (PixelBreak.astro) — "pixel" in the hero sentence,
      breaking into dots under the pointer, pushed away from it while it
@@ -223,11 +256,58 @@
      with it over --dur-night when the theme changes — the lights come
      on as the room goes dark — and switch instantly under reduced
      motion. Colours are bare "r g b" triples so the script can add
-     alpha; the -k values are the strengths at full night. If the edge
-     still shows, the next step is re-matting the sprite's edge
-     (un-mixing the white), not trimming the art. */
+     alpha; the -k values are the strengths at full night. The sprite's
+     edge is re-matted for the dark page (white un-mixed from the palest
+     strands) by scripts/hero-sprite.py. */
   --hero-night: 0;
   --dur-night: var(--dur-reveal);
+  /* CURSOR LAMP (CursorLamp.astro) — dark mode only: a soft pool of
+     light under the pointer, after studio-nikita.com. Same idea as the
+     night lighting around her: in the late-night scene, the visitor's
+     pointer is a lamp. Screen-blended over the page, so it lifts the
+     dark ground without washing out text. Strength rides --hero-night,
+     so it's off in light mode and fades with the theme. */
+  --lamp-size: 14rem;                                            /* the pool's radius */
+  /* Quiet on purpose: felt more than seen. Candle — a faint warm white
+     — picked from a mockup of fourteen lights and shades. Earlier tries,
+     dropped on request: 12% white (drew the eye), a warm grey (dull), a
+     deep blue (foreign to the palette), a dark "dent", and dark umber.
+     Warm enough to belong to the room, pale enough to read as light
+     rather than colour. The falloff eases out over several stops so
+     there's no visible rim. */
+  --lamp-hue: rgb(255 214 170);                                   /* candle */
+  --lamp-colour: color-mix(in srgb, var(--lamp-hue) 10%, transparent);  /* at the centre */
+  --lamp-reach: 70%;                                             /* where it has faded out */
+  --lamp-follow: 0.22;                                           /* share of the gap to the pointer closed per frame */
+  /* Text shadows from the lamp, dark mode only: text near the pointer
+     casts a short shadow away from it, as if lit by it. Fades out over
+     --lamp-size; alpha is scaled by --hero-night, so light mode has none. */
+  --lamp-cast-alpha: 0.9;        /* black, at the pointer */
+  --lamp-cast-length: 5;         /* px, how far the shadow falls */
+  --lamp-cast-blur: 3;           /* px */
+  --z-lamp: 50;                  /* the lamp's layer; the hero row sits just above it */
+  /* The lamp on her (HeroIllustration.astro) and Moss (AskBubble.astro).
+     The hero row sits above the lamp layer, so the lamp lights the
+     ground behind her and she is lit in her own canvas instead: light
+     multiplies her colour (screening it over her fogged her), the edge
+     facing the lamp catches a rim, her far side dims, and the laptop lid
+     takes a faint glint. Behind her, the floor near her gets a little more
+     of the lamp's light (the page lamp alone is too faint here for a
+     shadow to show), with her shadow cut out of it — a shadow is light
+     that didn't arrive — and contact pools under the legs that stay on
+     all night. All of it is
+     scaled by --hero-night and the lamp's own falloff. Chosen on request
+     from round 2 of the mocks. */
+  --hero-lamp-gain: 0.24;        /* colour x light, at the lamp's centre (0.42 burned her skin orange) */
+  --hero-lamp-sat: 0.35;         /* saturation of that added light: keeps skin from going orange */
+  --hero-lamp-lift: 0.05;        /* even lift inside the pool, so dark pupils don't go dead */
+  --hero-rim-k: 0.75;            /* rim light strength */
+  --hero-rim-w: 3;               /* rim width, px */
+  --hero-form-k: 0.4;            /* how much the far side dims */
+  --hero-glint-k: 0.3;           /* laptop lid highlight */
+  --hero-floor-k: 0.18;          /* extra lamp light on the floor around her */
+  --hero-cast-k: 0.9;            /* share of that light her shadow takes away */
+  --hero-contact-k: 0.55;        /* contact pools under the legs */
   --hero-lamp: rgb(255 168 96 / 0.34);   /* warm room pool, centre */
   --hero-lamp-mid: rgb(255 168 96 / 0.12); /* ...and its falloff */
   --hero-lamp-spread: 20%;               /* how far it reaches past the figure */
@@ -361,8 +441,9 @@
    PROJECT HUES — the site's "splash of colour", and the only colour
    besides the accent. One muted hue per company, taken from its own
    brand, used ONLY as the backdrop behind that company's screenshots:
-   the home card's media half (ProjectCard), the /work grid thumbnail
-   (CaseCard) and the case study cover frame ([slug].astro). Never on
+   the /work grid thumbnail (CaseCard) and the case study cover frame
+   ([slug].astro), and the stage behind each home card's phone
+   (ProjectCard). Never on
    text, chrome or full-width bands. No text sits on these, so no
    contrast pairing is needed; the screenshots carry their own.
    Components set data-hue (from hueFor() in data/work.ts); anything
@@ -378,6 +459,220 @@
 [data-hue='okta'] { --hue: var(--hue-okta); }
 [data-hue='paypal'] { --hue: var(--hue-paypal); }
 [data-hue='walmart'] { --hue: var(--hue-walmart); }
+
+/* ============================================================
+   CASE TAGS — the domain/discipline tags at the top of a case study
+   ([slug].astro), chosen on request from a round of mocks: electric
+   lime with a dark olive ink of the same hue. A requested exception to
+   rule 2 (colour belongs to the work): one hue, only on these tags,
+   never on text elsewhere, chrome or bands. Same values in both modes —
+   the fill carries its own ink, so it reads on either ground.
+   Contrast: --tag-fg on --tag-bg 11.1:1.
+   ============================================================ */
+:root {
+  --tag-bg: #d4ff3a;
+  --tag-fg: #2b3600;
+}
+
+/* ============================================================
+   BOOKSHELF (Bookshelf.astro, About page) — added on request, after
+   cali.so's "Books I love". The books are objects, so like the project
+   hues their colours belong to the things themselves, not the chrome:
+   one tone per spine, never on page text or bands. The wood is the
+   shelf's own material; it darkens in dark mode so it doesn't glow.
+   Spine text pairs (--book-ink-light / -dark per TONE_INK in
+   data/books.ts) clear 4.5:1 on every tone.
+   ============================================================ */
+:root {
+  --book-red: #b8442f;
+  --book-coral: #e8735a;
+  --book-orange: #e58a3c;
+  --book-mustard: #d9a63a;
+  --book-yellow: #ecd040;
+  --book-cream: #e7e1d3;
+  --book-white: #f3f1ec;
+  --book-tan: #d2b48a;
+  --book-brown: #8a5236;
+  --book-olive: #5f6239;
+  --book-green: #3d6656;
+  --book-sage: #9db596;
+  --book-teal: #2f6a70;
+  --book-sky: #6ea6dc;
+  --book-blue: #2b5884;
+  --book-navy: #2b3550;
+  --book-purple: #5a3f80;
+  --book-plum: #5c1f35;
+  --book-magenta: #b91f5b;
+  --book-pink: #e9b4b7;
+  --book-grey: #66645f;
+  --book-black: #262626;
+  --book-ink-light: #f7f4ed;
+  --book-ink-dark: #1f1e1c;
+
+  --book-radius: 2px 4px 4px 2px;    /* a hardback's rounded fore-edge */
+  --book-lift: -5px;                  /* hover: the book under the pointer rises */
+  --step-spine: 0.8125rem;            /* 13px spine title, up to two lines */
+  --step-spine-author: 0.5625rem;     /* 9px author, mono */
+  --book-author-h: 3.6rem;            /* author column height on the spine */
+  --book-spine-radius: 3px;
+  --dur-book: 650ms;                  /* one book turning out, the next turning in */
+  --dur-book-lift: 180ms;
+  --ease-book-lift: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --shelf-h: 216px;
+
+  --shelf-shadow-rgb: 27 22 17;
+  --shelf-wood-front-top: #ceb698;
+  --shelf-wood-front-bottom: #9f7b5a;
+  --shelf-wood-top-front: #d9c8ae;
+  --shelf-wood-top-back: #c6b195;
+  --shelf-wood-grain: rgb(71 42 17 / 0.08);
+  --shelf-shine: rgb(255 255 255 / 0.28);
+  --shelf-shine-top: rgb(255 255 255 / 0.32);
+  --shelf-underside: rgb(51 28 10 / 0.2);
+  --shelf-underside-top: rgb(52 29 11 / 0.18);
+  --book-edge: rgb(0 0 0 / 0.09);
+  --shelf-drop-1: 0.24;               /* the plank's three stacked shadows */
+  --shelf-drop-2: 0.34;
+  --shelf-drop-3: 0.28;
+  --book-spine-shade: linear-gradient(to right, rgb(0 0 0 / 0.12), transparent 35%, rgb(255 255 255 / 0.12) 75%, rgb(0 0 0 / 0.08));
+}
+:root[data-mode='dark'] {
+  --shelf-shadow-rgb: 0 0 0;
+  --shelf-wood-front-top: #614b3a;
+  --shelf-wood-front-bottom: #3a261c;
+  --shelf-wood-top-front: #6a5747;
+  --shelf-wood-top-back: #513e30;
+  --shelf-wood-grain: rgb(0 0 0 / 0.15);
+  --shelf-shine: rgb(255 255 255 / 0.1);
+  --shelf-shine-top: rgb(255 255 255 / 0.1);
+  --shelf-underside: rgb(0 0 0 / 0.48);
+  --shelf-underside-top: rgb(0 0 0 / 0.4);
+  --shelf-drop-1: 0.45;
+  --shelf-drop-2: 0.62;
+  --shelf-drop-3: 0.5;
+}
+
+/* ============================================================
+   PHONE CARDS (ProjectCard.astro, home page "Selected work") — after
+   daneden.me: each stacked card holds a phone that runs the project's flow on
+   its own (a recording, her screens in sequence, or one of the coded
+   PayPal prototypes on autopilot). One phone for all of them: the
+   PayPal prototype's phone below reads these sizes, so the coded
+   prototypes and the screen phones are the same object. Like the
+   project hues, the device belongs to the work, so its rounded corners
+   are the phone's, not the site's (--radius stays square).
+   ============================================================ */
+:root {
+  --phone-w: 300px;
+  --phone-h: 620px;
+  --phone-bezel: #0e0e0f;
+  --phone-bezel-w: 10px;
+  --phone-screen: #ffffff;      /* the screen behind a recording or screens: the apps' own white */
+  --radius-phone: 44px;
+  --radius-phone-screen: 34px;
+  --phone-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.35);
+  --phone-scale: 0.8;          /* the phone as drawn in a card: 240 x 496 */
+  --phone-scale-narrow: 0.62;  /* stacked cards on narrow screens: 186 x 384 */
+  --phone-stage-pad: clamp(1.5rem, 3vw, 2.25rem);
+  --phone-lift: -6px;          /* hover: the phone rises a little */
+  --dur-phone-step: 700ms;     /* one screen sliding over the last */
+  --phone-parallax: -30%;      /* how far the outgoing screen drifts */
+}
+
+/* ============================================================
+   DEVICE BOX (DeviceBox.astro, and the case-study view of the PayPal
+   prototypes) — added on request, measured off danield.design's phone
+   tiles: a phone centred in a plain white box with a hairline border and
+   48px corners, a label pill at the bottom, no colour behind the phone.
+   The one box for showing a phone on a case study; reuse it rather than
+   drawing another. Its rounded corners are a requested exception to the
+   square --radius rule, like Moss's panel and the page's curved end.
+   The home page's phone cards keep their own phone (PHONE CARDS above).
+   ============================================================ */
+:root {
+  --device-box-bg: #ffffff;
+  --device-box-line: #e9e9e9;
+  --radius-device-box: 48px;
+  --space-device-box: clamp(4.5rem, 9vw, 7rem);  /* above and below the phone */
+  --device-w: 300px;
+  --device-ratio: 76.7 / 161.9;                 /* the reference's phone */
+  --device-bezel: #1d1d1f;
+  --device-bezel-w: 6px;
+  --radius-device: 40px;
+  --radius-device-screen: 34px;
+  --device-screen-edge: rgb(0 0 0 / 0.1);
+  --device-shadow:
+    0 21px 6px 0 rgb(0 0 0 / 0), 0 14px 5px 0 rgb(0 0 0 / 0.01),
+    0 8px 5px 0 rgb(0 0 0 / 0.05), 0 3px 3px 0 rgb(0 0 0 / 0.09),
+    0 1px 2px 0 rgb(0 0 0 / 0.1);
+  --device-pill-bg: rgb(255 255 255 / 0.45);
+  --device-pill-ink: rgb(0 0 0 / 0.6);
+  --device-pill-shadow: 0 1px 3px rgb(0 0 0 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.5);
+  --device-pill-bottom: clamp(1rem, 3vw, 2.5rem);
+}
+:root[data-mode='dark'] {
+  --device-box-bg: #232220;
+  --device-box-line: rgb(255 255 255 / 0.08);
+  --device-pill-bg: rgb(255 255 255 / 0.06);
+  --device-pill-ink: rgb(255 255 255 / 0.72);
+  --device-pill-shadow: 0 1px 3px rgb(0 0 0 / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+/* ============================================================
+   PAYPAL PROTOTYPE (EnrollPrototype.astro, OffersPrototype.astro, PayPal
+   Debit Card case) — the enrollment and cash back flows rebuilt as a working phone, from her screens.
+   Everything inside the phone is PayPal's UI, so like the project hues
+   and the book spines these colours belong to the work, never to page
+   chrome. The phone stays light in dark mode, like a screenshot would.
+   Its rounded corners and pill buttons are PayPal's, not the site's:
+   the square --radius rule is for the site's own surfaces.
+   Pairs checked for AA: --pp-ink and --pp-ink-dim on white and
+   --pp-ground, white on --pp-navy, --pp-blue on white, --pp-ok-ink on
+   --pp-ok and --pp-toast.
+   ============================================================ */
+:root {
+  --pp-navy: #142c8e;          /* buttons, card art */
+  --pp-blue: #0063c7;          /* links (PayPal blue, darkened a step for AA) */
+  --pp-ink: #001435;
+  --pp-ink-dim: #545d68;
+  --pp-ground: #f5f3ee;        /* the app's warm grey ground */
+  --pp-surface: #ffffff;
+  --pp-line: #d8d6d1;
+  --pp-sky: #cfe6f7;           /* the value prop's illustration panel */
+  --pp-hill: #5fae7f;
+  --pp-logo-light: #60cdff;
+  --pp-logo-yellow: #ffd140;
+  --pp-mc-red: #eb001b;
+  --pp-mc-orange: #f79e1b;
+  --pp-ok: #d4f3e6;            /* "Ordered" badge */
+  --pp-toast: #c4f0dd;
+  --pp-ok-ink: #0b5c44;
+  --pp-error: #c40000;
+  --pp-bezel: var(--phone-bezel);
+  --pp-shadow: var(--phone-shadow);
+  --pp-scrim: rgb(0 20 53 / 0.45);
+  --pp-coin-shade: inset -3px -3px 0 rgb(0 0 0 / 0.12);
+  --pp-tile-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+  --pp-card-shadow: 0 18px 30px -12px rgb(20 44 142 / 0.45);
+
+  --pp-phone-w: var(--phone-w);
+  --pp-phone-h: var(--phone-h);
+  --pp-radius-phone: var(--radius-phone);
+  --pp-radius-screen: var(--radius-phone-screen);
+  --pp-radius-field: 8px;
+  --pp-radius-tile: 12px;
+  --pp-radius-card: 10px;
+  --pp-radius-sheet: 18px;
+
+  --pp-text-xs: 0.625rem;      /* 10px legal copy */
+  --pp-text-sm: 0.75rem;       /* 12px */
+  --pp-text-md: 0.875rem;      /* 14px body */
+  --pp-text-lg: 1.125rem;      /* 18px screen titles */
+  --pp-text-xl: 1.75rem;       /* 28px balance */
+  --pp-font: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+
+  --dur-pp-step: 280ms;        /* one screen to the next */
+}
 
 /* ============================================================
    PIXEL'S OWN TYPE — held as it was before the allierho.com pass, so the
@@ -401,4 +696,90 @@
   --pixel-step-body: 0.8125rem;
   --pixel-step-small: 0.75rem;
   --pixel-leading: 1.55;
+}
+
+/* ============================================================
+   LOADER — the first-paint walk (Loader.astro, sprite in
+   data/loader.ts). Her character crosses the screen once per visit:
+   a steady walk, a short hurry in the middle, steady again, then the
+   ground fades to the page. Two separate controls: her legs (the stride
+   loop, --loader-pace, one cadence throughout) and her travel (the
+   speed profile, --loader-hurry*). The hurry moves her faster over the
+   ground and leaves her steps alone, so she never breaks into a run. The cream belongs to her watercolour paper, not the site:
+   it appears nowhere else. In dark mode the ground is the page's own, so
+   a night visitor isn't flashed with cream (the sprite is transparent,
+   so she sits on either).
+   Speed: her feet stay planted when the page moves her one stride per
+   stride cycle (--loader-stride). That crossing would take ~3.5s on a
+   phone and ~8s on a laptop, and a loader can't ask for that, so the
+   crossing is clamped (--dur-loader-walk-min/max) and she covers more
+   ground than her steps do. The clamp is the honest trade: the steps
+   read as a walk at this size and speed; the wait would not.
+   ============================================================ */
+:root {
+  --loader-cream: #f5f1e8;
+  --loader-ground: var(--loader-cream);
+  /* Her height: big enough to see the brushwork, small enough to cross
+     the screen rather than fill it. Capped by width on narrow phones. */
+  --loader-figure-h: min(42svh, 24rem, 110vw);
+  --loader-figure-floor: 18svh;      /* her feet, up from the bottom: lower-middle */
+  --loader-pace: 1.4;                /* her step cadence against the clip's (~1.06s a step, slow-motion on its own): ~0.76s a step, an ordinary office walk. Constant; the hurry doesn't touch it */
+  --loader-stride: 0.85;             /* ground one stride cycle (two steps) covers, in her heights, measured off the clip's planted foot */
+  --loader-hurry: 1.5;               /* the hurry: peak travel speed, as a multiple of her steady speed */
+  --loader-hurry-from: 0.36;         /* the hurry's window, as fractions of the crossing's time; */
+  --loader-hurry-to: 0.64;           /* speed rises and falls on a raised cosine between them */
+  --dur-loader-walk-min: 1400ms;     /* shortest crossing, so a phone still sees her walk */
+  --dur-loader-walk-max: 2400ms;     /* longest crossing, however wide the screen */
+  --dur-loader-still: 600ms;         /* reduced motion: she's simply there, this long */
+  --dur-loader-wait: 900ms;          /* longest the sprite may take to load before the loader gives up */
+  --dur-loader-fade: 450ms;          /* the ground fading off the page */
+  --z-loader: 10001;                 /* above everything, the cursor trail included */
+}
+:root[data-mode='dark'] {
+  --loader-ground: var(--paper);
+}
+
+/* ============================================================
+   PRELOADER — the first-paint loader (Preloader.astro), chosen on
+   request from rounds of mocks: a terracotta sheet with a faint grain;
+   the cursor line, in cream, sits as a dot in the middle and follows
+   only the visitor's pointer (a still dot until they move it); under
+   it, centred, a mouse icon and "A line is a dot that went for a walk"
+   in 16px mono caps, which starts as a row of dots, one per letter, and
+   turns into its letters as the page loads (the progress; there's no
+   number). At 100% the words fade and the terracotta shrinks, as a
+   slowly lumping blob, into the orange dot beside "Moss" in his card,
+   so the loader becomes a piece of the page. Where that dot isn't on
+   screen, the sheet lifts instead.
+   Colour: the light-mode accent, held in dark mode too (the dark
+   accent under cream text is 2.6:1; this is 4.9:1), and everything on
+   it is cream. A requested exception to rule 2's "no themed colour
+   band": it is on screen for a few seconds, on the home page only.
+   Pacing: the words follow the page's real images but never run ahead
+   of a paced schedule of --dur-preloader-min.
+   ============================================================ */
+:root {
+  --preloader-ground: #b4482a;           /* the light-mode accent, in both modes */
+  --preloader-ink: #f5f1e8;              /* cream (--loader-cream): 4.9:1 on the ground */
+  --preloader-ink-dim: rgb(245 241 232 / 0.78);   /* the words, the dots, the icon's detail */
+  --preloader-grain: url('/images/paper-grain.svg');
+  --preloader-grain-blend: soft-light;   /* lightens and darkens a little, so it reads on red */
+  --preloader-grain-opacity: 0.22;
+  --preloader-hint-size: 16px;
+  --preloader-hint-tracking: 0.05em;
+  --preloader-icon-size: 24px;
+  --preloader-offset: 4vh;               /* the words sit this far below the middle, where the dot starts */
+  --preloader-blob-lumps: 0.38;          /* how lumpy the shrinking blob is at full size (0 = a circle) */
+  --dur-preloader-min: 4000ms;           /* the shortest a full load takes */
+  --dur-preloader-max: 6000ms;           /* images still out by now count as in */
+  --dur-preloader-words: 300ms;          /* the words fading at 100% */
+  --dur-preloader-hold: 380ms;           /* from 100% to the exit */
+  --dur-preloader-blob: 1300ms;          /* the blob shrinking into Moss's dot */
+  --dur-preloader-lift: 1000ms;          /* the fallback lift, when his dot isn't on screen */
+  --ease-preloader-lift: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+  --dur-preloader-fade: 450ms;           /* reduced motion: fades instead */
+  --dur-preloader-skip: 600ms;           /* a key, click, tap or scroll: the same exit, faster */
+  --dur-preloader-stall: 700ms;          /* no new letter for this long = stuck: the next letter starts trying characters */
+  --dur-preloader-try: 90ms;             /* how often a stuck letter changes */
+  --dur-preloader-skip-grace: 1200ms;    /* inputs this soon after load don't skip (a held Cmd+R, scroll momentum) */
 }

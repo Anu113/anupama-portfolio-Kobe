@@ -19,7 +19,12 @@
    rather than stopping dead at the media's own edge; it still gets the
    project's own colour, just copied off the media element by its own
    script instead of inherited through the cascade, since it no longer sits
-   inside that scope. See HoverLabel's header comment for why. */
+   inside that scope. See HoverLabel's header comment for why.
+
+   Laid out after carlthomasiv.com/work: the picture, then the company in
+   mono, the title, one short line (the impact) and the label chips last.
+   No role line and no paragraph, on request — every card is the same
+   four lines so the grid reads evenly. The page passes labelsFor(w). */
 import HoverLabel from './HoverLabel.astro';
 import LockIcon from './LockIcon.astro';
 import { hueFor } from '../data/work';
@@ -28,13 +33,15 @@ import type { HoverState } from '../data/hoverState';
 interface Props {
   title: string; href: string; image: string; alt?: string;
   company?: string; role?: string; impact?: string;
+  labels?: string[];
   theme?: string; ratio?: string;
   locked?: boolean;
   hoverState?: HoverState;
 }
 const {
   title, href, image, alt = '',
-  company, role, impact,
+  company, impact,
+  labels = [],
   theme, ratio = '4 / 3',
   locked = false,
   hoverState = 'case-study',
@@ -45,13 +52,17 @@ const {
     <img src={image} alt={alt} loading="lazy" decoding="async" />
   </div>
   <HoverLabel state={hoverState} />
-  {company && <p class="card__co u-label">{company}</p>}
+  {company && <p class="card__co u-label-mono">{company}</p>}
   <h2 class="card__title">
     {title}
     {locked && <LockIcon class="card__lock" size="0.6em" />}
   </h2>
-  {role && <p class="card__role u-label">{role}</p>}
   {impact && <p class="card__impact">{impact}</p>}
+  {labels.length > 0 && (
+    <ul class="card__tags" aria-label="Domain and discipline">
+      {labels.map((t) => <li class="u-label-mono">{t}</li>)}
+    </ul>
+  )}
 </a>
 
 <style>
@@ -66,7 +77,7 @@ const {
     /* Contained inside a margin of the hue, not cropped to cover it —
        same "wall, not a picture" treatment as ProjectCard's media. */
     padding: clamp(1rem, 2.5vw, 1.75rem);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
   .card__media img {
     width: 100%; height: 100%;
@@ -76,35 +87,36 @@ const {
   .card:hover .card__media img,
   .card:focus-visible .card__media img { transform: scale(1.04); }
 
-  .card__co { color: var(--fg-dim); margin: 0 0 0.5rem; }
+  .card__co { margin: 0 0 0.5rem; }
+  /* 12px caps, as the reference's project titles (and the home cards). */
   .card__title {
-    font-family: var(--font-serif);
-    font-size: var(--step-title);
-    line-height: 1.15;
-    letter-spacing: var(--tracking-serif);
-    font-weight: var(--weight-serif);
-    margin: 0 0 0.85rem;
-    max-width: 24ch;
+    font-family: var(--font-sans);
+    font-size: var(--step-label);
+    line-height: var(--leading-label);
+    letter-spacing: var(--tracking-label);
+    font-weight: var(--weight-sans);
+    text-transform: uppercase;
+    margin: 0 0 0.5rem;
     text-wrap: balance;
   }
-  .card__lock { margin-left: 0.4em; color: var(--fg-dim); vertical-align: middle; }
-  /* Scope and metric stay on the card face — a recruiter skimming for team
-     size shouldn't have to open the case study to find it. */
-  .card__role { color: var(--fg-dim); margin: 0 0 1rem; }
+  .card__title :global(.card__lock) { display: inline-block; margin-left: 0.4em; color: var(--fg-dim); vertical-align: middle; }
   .card__impact {
-    font-size: var(--step-body);
-    margin: 0;
-    padding-top: 1rem;
-    border-top: 1px solid var(--rule);
-    max-width: 30ch;
+    font-size: var(--step-copy);
+    line-height: var(--leading-copy);
+    letter-spacing: var(--tracking-copy);
+    color: var(--fg-dim);
+    margin: 0 0 1rem;
     text-wrap: pretty;
   }
-
-  /* /work's grid drops to a single column at this width — every card's
-     media matches the same landscape crop there instead of each keeping
-     its own staggered-grid ratio. */
-  @media (max-width: 900px) {
-    .card__media { aspect-ratio: 16 / 10; }
+  /* Same chip as ProjectCard's: hairline box, square, tracked caps. */
+  .card__tags {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+    list-style: none; margin: 0; padding: 0;
+  }
+  .card__tags li {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 0.2rem 0.5rem;
   }
 
   @media (prefers-reduced-motion: reduce) {

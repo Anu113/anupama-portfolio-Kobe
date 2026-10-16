@@ -1,0 +1,21 @@
+---
+/* DeviceBox.astro — a phone centred in a plain white box with a label
+   pill under it, after danield.design's phone tiles (on request). The one
+   way to show a phone on a case study: put a screenshot, a recording or
+   a coded screen in the slot and it gets the bezel, the hairline screen
+   edge and the soft shadow. No colour behind the phone, on purpose.
+
+   The PayPal prototypes don't use this component (their markup is shared
+   with the home page's autoplay cards), but they get the same look from
+   the same rules in styles/device-box.css. Values under DEVICE BOX in
+   tokens.css. */
+import '../styles/device-box.css';
+interface Props { label?: string }
+const { label } = Astro.props;
+---
+<div class="device-box">
+  <div class="device">
+    <div class="device__screen"><slot /></div>
+  </div>
+  {label && <span class="device-box__pill" aria-hidden="true">{label}</span>}
+</div>

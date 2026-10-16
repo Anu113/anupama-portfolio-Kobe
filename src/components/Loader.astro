@@ -1,0 +1,242 @@
+---
+/* Loader — the first-paint walk. Once per visit (sessionStorage), on
+   the home page only, her watercolour character crosses an empty
+   cream screen: in from past the left edge, a steady walk, a short hurry
+   in the middle (she covers ground faster; her steps keep their cadence,
+   so it never turns into a run), steady again, out past the right; then the ground fades to the
+   page. Its reason: the one screen with nothing else to show yet, filled
+   with her rather than a spinner.
+
+   Pieces:
+   - The sprite and its grid: data/loader.ts (the one place to swap her).
+     Cut from her clip by scripts/walk-sprite.py.
+   - Size, speed, hurry, timing, colours: LOADER in tokens.css.
+   - Below: an inline script at the top of <body> decides before first
+     paint whether to show (so the page never flashes first) and starts
+     the sprite downloading; the module script walks her and ends it.
+
+   It never holds the page hostage: the page is fully there underneath
+   from the start; any key, click, tap or wheel ends it at once (and the
+   key/click still goes through); if the sprite isn't in within
+   --dur-loader-wait it gives up and fades; a CSS failsafe hides it after
+   6s even if the script never runs; and when it ends it removes itself
+   from the DOM. Decorative, so aria-hidden: screen readers get the page
+   straight away. Under reduced motion she stands still (feet together,
+   loader.still) in the middle for
+   --dur-loader-still, then the ground fades.
+
+   If the sprite file is missing at build time, nothing renders at all. */
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { loader } from '../data/loader';
+
+const file = path.join(process.cwd(), 'public', loader.sprite);
+const ready = fs.existsSync(file);
+// The URL carries a hash of the sheet, so a re-cut sprite never meets a
+// cached old one: a different grid on a stale sheet cuts her into slices.
+const sprite = ready
+  ? `${loader.sprite}?v=${crypto.createHash('sha1').update(fs.readFileSync(file)).digest('hex').slice(0, 8)}`
+  : loader.sprite;
+const figureStyle = [
+  `--loader-sprite: url('${sprite}')`,
+  `--loader-cols: ${loader.cols}`,
+  `--loader-rows: ${loader.rows}`,
+  `--loader-aspect: ${loader.cellW} / ${loader.cellH}`,
+].join('; ');
+---
+{ready && (
+  <Fragment>
+    <script is:inline define:vars={{ sprite, pages: loader.pages }}>
+      (() => {
+        let show = false;
+        try {
+          const p = location.pathname.replace(/index\.html$/, '').replace(/(.)\/$/, '$1');
+          if (pages.includes(p) && !sessionStorage.getItem('loader-seen')) {
+            sessionStorage.setItem('loader-seen', '1');
+            show = true;
+          }
+        } catch (e) {
+          // no storage, no way to play it only once: skip it
+        }
+        if (!show) return;
+        document.documentElement.dataset.loader = '';
+        const img = new Image();
+        img.src = sprite;
+        window.__loader = { img, t0: performance.now() };
+      })();
+    </script>
+    <div class="loader" aria-hidden="true" data-loader-root>
+      <div class="loader__figure" style={figureStyle}></div>
+    </div>
+  </Fragment>
+)}
+
+<script>
+  import { loader } from '../data/loader';
+
+  declare global {
+    interface Window { __loader?: { img: HTMLImageElement; t0: number } }
+  }
+
+  const html = document.documentElement;
+
+  function token(name: string) {
+    const raw = getComputedStyle(html).getPropertyValue(name).trim();
+    const n = parseFloat(raw);
+    return raw.endsWith('ms') ? n : raw.endsWith('s') ? n * 1000 : n;
+  }
+
+  function run(root: HTMLElement, { img, t0 }: { img: HTMLImageElement; t0: number }) {
+    const fig = root.querySelector<HTMLElement>('.loader__figure')!;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const inputs = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
+    let ended = false;
+    let raf = 0;
+
+    const end = () => {
+      if (ended) return;
+      ended = true;
+      cancelAnimationFrame(raf);
+      inputs.forEach((e) => removeEventListener(e, end, true));
+      root.classList.add('is-done');
+      setTimeout(() => {
+        root.remove();
+        delete html.dataset.loader;
+      }, token('--dur-loader-fade') + 50);
+    };
+    inputs.forEach((e) => addEventListener(e, end, { capture: true, passive: true }));
+
+    const setFrame = (i: number) => {
+      const c = i % loader.cols;
+      const r = Math.floor(i / loader.cols);
+      fig.style.backgroundPosition =
+        `${(c / (loader.cols - 1)) * 100}% ${(r / (loader.rows - 1)) * 100}%`;
+    };
+
+    const start = () => {
+      if (ended) return;
+      const vw = root.clientWidth;
+      const { width: w, height: h } = fig.getBoundingClientRect();
+      setFrame(0);
+      fig.classList.add('is-on');
+
+      if (reduce) {
+        setFrame(loader.still);
+        fig.style.transform = `translateX(${(vw - w) / 2}px)`;
+        setTimeout(end, token('--dur-loader-still'));
+        return;
+      }
+
+      // Two separate controls. Her legs: the stride loops at one steady
+      // cadence, --loader-pace, start to finish. Her travel: a speed
+      // profile over the crossing that rises smoothly to --loader-hurry
+      // and back between --loader-hurry-from and -to (a raised cosine,
+      // so there's no jolt at either end). The hurry never touches the
+      // stride, so she hurries without breaking into a run.
+      const pace = token('--loader-pace');
+      const hurry = token('--loader-hurry');
+      const from = token('--loader-hurry-from');
+      const to = token('--loader-hurry-to');
+      const speed = (t: number) => {
+        if (t <= from || t >= to) return 1;
+        const u = (t - from) / (to - from);
+        return 1 + ((hurry - 1) * (1 - Math.cos(2 * Math.PI * u))) / 2;
+      };
+      const meanSpeed = 1 + ((hurry - 1) * (to - from)) / 2;
+
+      // How long a crossing with planted feet would take, clamped (see
+      // LOADER in tokens.css for why it's nearly always the clamp).
+      const travel = vw + w;
+      const cycle = loader.frames / loader.fps / pace; // seconds per stride
+      const planted = travel / ((meanSpeed * token('--loader-stride') * h) / cycle);
+      const dur = Math.min(token('--dur-loader-walk-max'),
+        Math.max(token('--dur-loader-walk-min'), planted * 1000));
+
+      // Position over time: the speed profile, integrated into a table.
+      const N = 120;
+      const pos = [0];
+      for (let k = 1; k <= N; k++) pos.push(pos[k - 1] + speed((k - 0.5) / N));
+      const at = (t: number) => {
+        const k = Math.min(N - 1, Math.floor(t * N));
+        return (pos[k] + (pos[k + 1] - pos[k]) * (t * N - k)) / pos[N];
+      };
+
+      // One clock moves her and steps her legs, so they can't drift
+      // apart; the legs read only the clock and the pace. The clock starts on the first frame's own timestamp: rAF
+      // times are the frame's start, which can be earlier than a
+      // performance.now() taken here, and a negative t froze her.
+      let begin = -1;
+      let phase = 0;
+      let last = 0;
+      const tick = (now: number) => {
+        if (begin < 0) begin = last = now;
+        const t = Math.min(1, Math.max(0, (now - begin) / dur));
+        phase += (Math.min(now - last, 100) / 1000) * loader.fps * pace;
+        last = now;
+        fig.style.transform = `translate3d(${-w + travel * at(t)}px, 0, 0)`;
+        setFrame(Math.floor(phase) % loader.frames);
+        if (t >= 1) return end();
+        raf = requestAnimationFrame(tick);
+      };
+      fig.style.transform = `translate3d(${-w}px, 0, 0)`;
+      raf = requestAnimationFrame(tick);
+    };
+
+    // The wait is measured from first paint, not from when this script
+    // runs: the sprite has usually been in for a while by then. If the
+    // script itself came very late (slow network), the page has been
+    // sitting under the ground long enough already — don't start a walk.
+    const wait = token('--dur-loader-wait');
+    const late = performance.now() - t0;
+    if (late > wait * 2) return end();
+    if (img.complete && img.naturalWidth) return start();
+    const left = Math.max(0, wait - late);
+    Promise.race([
+      img.decode(),
+      new Promise((_, reject) => setTimeout(reject, left)),
+    ]).then(start, end);
+  }
+
+  // Last, after everything above is defined: with the sprite cached,
+  // run() walks her synchronously, and reads the constants above.
+  const root = document.querySelector<HTMLElement>('[data-loader-root]');
+  if (root && 'loader' in html.dataset && window.__loader) run(root, window.__loader);
+  else root?.remove(); // not this visit: nothing left in the DOM
+</script>
+
+<style>
+  .loader { display: none; }
+
+  :global(:root[data-loader]) .loader {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-loader);
+    overflow: hidden;
+    background: var(--loader-ground);
+    transition: opacity var(--dur-loader-fade) var(--ease-fade);
+    /* Failsafe: if the script never runs, get out of the way anyway. */
+    animation: loader-failsafe 0s 6s forwards;
+  }
+  .loader.is-done { opacity: 0; }
+
+  @keyframes loader-failsafe {
+    to { opacity: 0; visibility: hidden; }
+  }
+
+  .loader__figure {
+    position: absolute;
+    left: 0;
+    bottom: var(--loader-figure-floor);
+    height: var(--loader-figure-h);
+    aspect-ratio: var(--loader-aspect);
+    background-image: var(--loader-sprite);
+    background-size: calc(var(--loader-cols) * 100%) calc(var(--loader-rows) * 100%);
+    background-repeat: no-repeat;
+    transform: translateX(-100%);
+    visibility: hidden;
+    will-change: transform;
+  }
+  .loader__figure.is-on { visibility: visible; }
+</style>

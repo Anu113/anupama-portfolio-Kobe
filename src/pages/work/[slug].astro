@@ -24,7 +24,15 @@
    Two things are deliberately duplicated for the 60-second skim: team
    scope sits in the hero meta row (not only in the scope section), and the
    headline metric sits in the closing band. A recruiter who reads the hero
-   and nothing else should still come away with team size and outcome. */
+   and nothing else should still come away with team size and outcome.
+
+   Type, after carlthomasiv.com/work/ona-conversations (chosen on request
+   from a mock): the title is the one large line (--step-case-title);
+   section heads drop to --step-title; every label, caption and the
+   section numbers are small mono caps (.u-label-mono), each section
+   opening on a hairline with "01  THE SITUATION". The page opens on the
+   company and its tags (lime chips, CASE TAGS in tokens.css), read from
+   the case's /work entry via labelsFor() so the tags match its card. */
 import Base from '../../layouts/Base.astro';
 import Section from '../../components/Section.astro';
 import Reveal from '../../components/Reveal.astro';
@@ -34,7 +42,7 @@ import CaseGate from '../../components/CaseGate.astro';
 import LockedGate from '../../components/LockedGate.astro';
 import LockIcon from '../../components/LockIcon.astro';
 import { cases, caseBySlug } from '../../data/cases';
-import { hueFor } from '../../data/work';
+import { hueFor, labelsFor, work } from '../../data/work';
 
 export function getStaticPaths() {
   return cases.map((c) => ({ params: { slug: c.slug }, props: { study: c } }));
@@ -54,6 +62,11 @@ const previewCount = study.locked?.preview ?? study.sections.length;
 const openSections = study.sections.slice(0, previewCount);
 const gatedSections = study.sections.slice(previewCount);
 const gateId = `${study.slug}-gate-content`;
+/* Tags: the same labels as this case's card on the home page and /work.
+   Cases with no /work entry show the company alone. */
+const workEntry = work.find((w) => w.href === `/work/${study.slug}`);
+const tags = workEntry ? labelsFor(workEntry) : [];
+const num = (i: number) => String(i + 1).padStart(2, '0');
 const pageId = `${study.slug}-page-content`;
 
 /* PROTOTYPE — scoped to one case study for review (blingbling.studio/
@@ -76,6 +89,11 @@ const topImpact = useRefLayout
     <LockedGate
       slug={study.slug}
       caseTitle={study.title}
+      company={study.company}
+      role={study.role}
+      scope={study.locked!.scope}
+      outcome={study.locked!.outcome}
+      sections={study.sections.map((s) => ({ nav: s.nav, heading: s.heading }))}
       password={study.locked!.password}
       targetId={pageId}
     />
@@ -105,7 +123,14 @@ const topImpact = useRefLayout
 
       <div class="body__col">
         <Reveal>
-          <p class="u-label hero__eyebrow">{study.eyebrow}</p>
+          <div class="hero__eyebrow">
+            <p class="u-label-mono hero__company">{study.company}</p>
+            {tags.length > 0 && (
+              <ul class="tags" aria-label="Tags">
+                {tags.map((t) => <li class="tag">{t}</li>)}
+              </ul>
+            )}
+          </div>
         </Reveal>
         {useRefLayout ? (
           /* PROTOTYPE banner — blingbling.studio/work/alfafrens: title and
@@ -126,12 +151,12 @@ const topImpact = useRefLayout
               </div>
               <dl class="meta meta--sidebar">
                 <div class="meta__cell">
-                  <dt class="u-label meta__label">Role</dt>
+                  <dt class="u-label-mono meta__label">Role</dt>
                   <dd class="meta__value">{study.role}</dd>
                 </div>
                 {study.meta.map((m) => (
                   <div class="meta__cell">
-                    <dt class="u-label meta__label">{m.label}</dt>
+                    <dt class="u-label-mono meta__label">{m.label}</dt>
                     <dd class="meta__value">{m.value}</dd>
                   </div>
                 ))}
@@ -175,12 +200,12 @@ const topImpact = useRefLayout
           <Reveal delay={260}>
             <dl class="meta">
               <div class="meta__cell">
-                <dt class="u-label meta__label">Role</dt>
+                <dt class="u-label-mono meta__label">Role</dt>
                 <dd class="meta__value">{study.role}</dd>
               </div>
               {study.meta.map((m) => (
                 <div class="meta__cell">
-                  <dt class="u-label meta__label">{m.label}</dt>
+                  <dt class="u-label-mono meta__label">{m.label}</dt>
                   <dd class="meta__value">{m.value}</dd>
                 </div>
               ))}
@@ -196,7 +221,7 @@ const topImpact = useRefLayout
         {topImpact && (
           <Reveal delay={280}>
             <div class="impact-band">
-              <p class="u-label impact-band__label">Impact</p>
+              <p class="u-label-mono impact-band__label">Impact</p>
               <dl class="impact-band__stats" style={`--cols: ${Math.min(topImpact.items.length, 4)};`}>
                 {topImpact.items.map((it) => (
                   <div class="impact-band__stat">
@@ -212,15 +237,12 @@ const topImpact = useRefLayout
         {openSections.map((s, i) => (
           <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
             <Reveal>
-              {/* Numbered eyebrow — blingbling.studio's "01 / MY ROLE"
-                  treatment. Number is decorative (aria-hidden); the label
-                  underneath still reads as the section name to a screen
-                  reader. Content order is the untouched rule-3 order —
-                  this only changes how each heading is dressed. */}
-              <p class:list={['u-label cs__label', useRefLayout && 'cs__label--numbered']}>
-                {useRefLayout && (
-                  <span class="cs__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                )}
+              {/* "01  THE SITUATION" on a hairline, in mono. The number is
+                  decorative (aria-hidden); the label still reads as the
+                  section name to a screen reader. Content order is the
+                  untouched rule-3 order — this only dresses the heading. */}
+              <p class="u-label-mono cs__label">
+                <span class="cs__num" aria-hidden="true">{num(i)}</span>
                 {s.label}
               </p>
               <h2 class="cs__head" id={`${s.id}-h`}>{s.heading}</h2>
@@ -246,10 +268,13 @@ const topImpact = useRefLayout
                 note on `locked` in cases.ts: `hidden` is a display/AT
                 mechanism, not a delivery one. */}
             <div id={`${gateId}-content`} hidden>
-              {gatedSections.map((s) => (
+              {gatedSections.map((s, i) => (
                 <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
                   <Reveal>
-                    <p class="u-label cs__label">{s.label}</p>
+                    <p class="u-label-mono cs__label">
+                      <span class="cs__num" aria-hidden="true">{num(previewCount + i)}</span>
+                      {s.label}
+                    </p>
                     <h2 class="cs__head" id={`${s.id}-h`}>{s.heading}</h2>
                   </Reveal>
                   <div class="cs__blocks">
@@ -313,11 +338,39 @@ const topImpact = useRefLayout
     padding-inline: var(--gutter);
   }
 
-  .hero__eyebrow { margin: 0 0 1.25rem; color: var(--fg-dim); }
+  /* Company, then its tags — carlthomasiv.com's "ONA [AI & AGENTS] …"
+     row. The company is in ink so it reads as the row's name. */
+  .hero__eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.75rem;
+  }
+  .hero__company { margin: 0; color: var(--fg); }
+  .tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .tag {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: 0.625rem;   /* 10px — the reference's chip size */
+    line-height: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--tag-fg);
+    background: var(--tag-bg);
+    border-radius: var(--radius-tag);
+    padding: 0.125rem 0.4375rem;
+  }
   .hero__title {
     font-family: var(--font-serif);
-    font-size: var(--step-heading);
-    line-height: 1;
+    font-size: var(--step-case-title);
+    line-height: 1.1;
     letter-spacing: var(--tracking-serif);
     font-weight: var(--weight-serif);
     margin: 0;
@@ -391,7 +444,13 @@ const topImpact = useRefLayout
   }
   .meta__cell { min-width: 0; }
   .meta__label { margin: 0 0 0.5rem; }
-  .meta__value { margin: 0; font-weight: var(--weight-sans); text-wrap: pretty; }
+  .meta__value {
+    margin: 0;
+    font-weight: var(--weight-sans);
+    font-size: var(--step-small);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
 
   /* --- PROTOTYPE banner: sidebar meta -----------------------------------
      blingbling.studio/work/alfafrens puts Role/Team/Partners/Timeline in a
@@ -405,6 +464,7 @@ const topImpact = useRefLayout
     column-gap: var(--gutter);
     align-items: start;
   }
+  .banner { margin-top: clamp(1.5rem, 3vw, 2.25rem); }
   .banner .lede { margin-top: 0; }
   .meta--sidebar {
     margin: 0;
@@ -439,7 +499,7 @@ const topImpact = useRefLayout
   .impact-band__desc {
     margin: 0.75rem 0 0;
     color: var(--fg-dim);
-    font-size: var(--step-body);
+    font-size: var(--step-small);
     line-height: 1.5;
     text-wrap: pretty;
   }
@@ -460,26 +520,26 @@ const topImpact = useRefLayout
     scroll-margin-top: calc(var(--nav-h) + 1rem);
   }
   .cs + .cs { margin-block-start: var(--space-case); }
-  .cs__label { margin: 0 0 0.85rem; }
-  /* PROTOTYPE numbering — blingbling.studio's "01 / MY ROLE" eyebrow.
-     Stacked above the label rather than inline: the reference sets the
-     number on its own line, larger and bolder than the label under it. */
-  .cs__label--numbered { display: flex; flex-direction: column; gap: 0.5rem; }
-  .cs__num {
-    font-family: var(--font-serif);
-    font-size: var(--step-title);
-    font-weight: var(--weight-serif);
-    letter-spacing: var(--tracking-serif);
-    color: var(--fg-dim);
+  /* Each section opens on a hairline, then "01  THE SITUATION" in mono —
+     the number in ink, the name in grey. */
+  .cs__label {
+    display: flex;
+    gap: 0.9rem;
+    margin: 0 0 1.75rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--rule);
   }
+  .cs__num { color: var(--fg); }
+  /* Section heads sit under the title, not beside it in size: --step-title,
+     so the one large line on the page stays the title. */
   .cs__head {
     font-family: var(--font-serif);
-    font-size: var(--step-heading);
-    line-height: 1.1;
+    font-size: var(--step-title);
+    line-height: 1.25;
     letter-spacing: var(--tracking-serif);
     font-weight: var(--weight-serif);
     margin: 0;
-    max-width: 26ch;
+    max-width: var(--measure);
     text-wrap: balance;
   }
   /* One rhythm for every block in a section, set here rather than in
@@ -487,8 +547,8 @@ const topImpact = useRefLayout
   .cs__blocks {
     display: flex;
     flex-direction: column;
-    gap: clamp(2rem, 3.5vw, 3rem);
-    margin-block-start: clamp(1.75rem, 3vw, 2.5rem);
+    gap: clamp(1.75rem, 3vw, 2.5rem);
+    margin-block-start: 1.25rem;
   }
 
   /* --- Next / footer -------------------------------------------------- */
@@ -515,7 +575,6 @@ const topImpact = useRefLayout
     margin-top: 0.75rem;
     max-width: 28ch;
     font-family: var(--font-serif); font-weight: var(--weight-serif);
-    font-style: italic;
     font-size: var(--step-heading);
     line-height: 1.15;
     letter-spacing: var(--tracking-serif);
@@ -561,7 +620,7 @@ const topImpact = useRefLayout
   }
 
   @media (max-width: 1080px) {
-    .body { grid-template-columns: 1fr; row-gap: clamp(2rem, 5vw, 3rem); }
+    .body { grid-template-columns: minmax(0, 1fr); row-gap: clamp(2rem, 5vw, 3rem); }
     /* The horizontal rail is pinned under the nav, so anchored sections
        need to clear both. */
     .cs { scroll-margin-top: calc(var(--nav-h) + 5rem); }

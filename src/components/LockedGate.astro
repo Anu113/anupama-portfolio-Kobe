@@ -4,17 +4,25 @@
    compact inline panel a PARTIALLY gated case shows part-way down its own
    page (see the `locked` field's comment in cases.ts for which is which).
 
-   Pattern drawn from two references: allierho.com/projects/pst2024's own
-   gate page (a password field with a show/hide toggle, a pill button, a way
-   back) and ozgur.design/unlock's copy shape (a locked-state label, a bold
-   two-line headline, one sentence explaining why, then the field). Neither
-   is reproduced — the wording below is Anupama's own, reusing the same NDA
-   phrasing CaseGate and the closing band already use, so the two gates read
-   as one system rather than two different voices.
-
-   Ink, not bone: this is the whole page's content while locked, not a panel
-   inside a reading column, so it wears the site's dark hero/chapter palette
-   instead of the editorial ground the case itself would use.
+   Layout "D" of five mocks (experiments/locked-gate), chosen on request:
+   it shows what's behind the lock instead of only saying so. Everything
+   sits in one centred column (on request, experiments/locked-gate/
+   centered.html), top to bottom: the case named in a mono line, the
+   headline, one paragraph, the public version — Role, Scope, Outcome in
+   one row of three (no Team, on request) — the passcode form and a way
+   to ask for it, then the case's own sections as a numbered contents
+   list: the first one readable (its heading), the rest as flat ink
+   redaction bars. A hiring manager sees a real, structured case is
+   there; a recruiter gets level and scope without the passcode.
+   The passcode field is a single underline (option 1 of six in
+   experiments/locked-gate/inputs.html, on request), with the show/hide
+   eye at its end and the Unlock pill on its own line under it.
+   The paragraph and the facts are 13px (--step-small), not body size:
+   in Manrope 600 at 15px the paragraph competed with the headline;
+   ozgur.design and allierho.com both keep their gate copy quieter.
+   The bars are decoration (aria-hidden); each redacted row tells screen
+   readers "redacted" in words instead. No motion beyond the shared hover.
+   Copy chosen on request from the mock's copy bank.
 
    Same security model as CaseGate — static site, no server, so this is a
    soft deterrent, not confidentiality. See cases.ts. */
@@ -24,240 +32,270 @@ import LockIcon from './LockIcon.astro';
 interface Props {
   slug: string;
   caseTitle: string;
+  company: string;
+  role: string;
+  scope?: string;
+  outcome?: string;
+  sections: { nav: string; heading: string }[];
   password: string;
   backHref?: string;
   targetId: string;
 }
-const { slug, caseTitle, password, backHref = '/work', targetId } = Astro.props;
-const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
+const {
+  slug, caseTitle, company, role, scope, outcome, sections,
+  password, backHref = '/work', targetId,
+} = Astro.props;
+const mailSubject = encodeURIComponent(`Passcode for "${caseTitle}"`);
+const facts = [
+  { term: 'Role', detail: role },
+  { term: 'Scope', detail: scope },
+  { term: 'Outcome', detail: outcome },
+].filter((f) => f.detail);
+const num = (i: number) => String(i + 1).padStart(2, '0');
+/* Redaction bar lengths, in %, cycled so the column reads like text with
+   a ragged edge rather than a stack of equal blocks. One or two lines. */
+const bars = [[92, 64], [78, 40], [86], [70, 88], [55], [66], [80, 48]];
 ---
-<div class="locked" data-theme="ink" data-themeband data-gate data-slug={slug} data-password={password} data-target={targetId}>
-  {/* Left-aligned to the page, outside the centred shell below — a "back"
-      control reads as navigation, not as part of the centred message, so it
-      keeps the page's normal left edge rather than following the headline
-      to the middle. */}
-  <a class="locked__back u-label" href={backHref}>
-    <span aria-hidden="true">&larr;</span> All work
-  </a>
-
-  <div class="locked__shell u-shell">
-    <p class="u-label locked__eyebrow">
-      <LockIcon size="0.8em" />
-      Locked
+<div class="locked" data-gate data-slug={slug} data-password={password} data-target={targetId}>
+  <div class="locked__col">
+    <p class="u-label-mono locked__eyebrow">
+      <LockIcon size="1.1em" />
+      <span>{company} · Under NDA</span>
     </p>
-    <!-- impeccable-variants-start 01ec264d -->
-    <div data-impeccable-variants="01ec264d" data-impeccable-variant-count="3" style="display: contents">
-      <!-- Original -->
-      <div data-impeccable-variant="original">
-        <h1 class="locked__head">This case study needs a password to open.</h1>
-      </div>
-      <style is:inline data-impeccable-css="01ec264d">
-        /* Variant 1 — rhythm: the eyebrow above sits 1.25rem off the
-           headline while the headline itself only left 1.5rem before the
-           body below it — barely distinguishable, so the block reads flat
-           rather than as "eyebrow, then headline, then body." Opening the
-           line-height a touch and widening the gap below restores more
-           space above the body than above the headline, matching the
-           craft floor's own rhythm rule. */
-        [data-impeccable-variant="1"] .locked__head {
-          line-height: 1.1;
-          margin: 0 0 1.85rem;
-        }
-        /* Variant 2 — hierarchy: two clauses, two weights. "This case
-           study" is context; "needs a password to open." is the actual
-           instruction. Splitting them onto the fg/fg-dim pair already used
-           for exactly this contextual-vs-primary distinction elsewhere on
-           the site (hero__body, sand__body) reads the instruction first
-           without adding a new colour or a shadow. */
-        [data-impeccable-variant="2"] .locked__head-quiet {
-          color: var(--fg-dim);
-          font-weight: var(--weight-serif);
-        }
-        [data-impeccable-variant="2"] .locked__head-strong {
-          color: var(--fg);
-          font-weight: var(--weight-serif);
-        }
-        /* Variant 3 — micro-details: at 6rem the shared -0.035em display
-           tracking sits open; -0.025em (still inside the -0.02..-0.03em
-           the craft floor calls out as usually reading better) closes it
-           slightly for this one headline without touching the global
-           token every other display use shares. text-wrap: pretty trades
-           balance's even line lengths for a plainer rag now that the
-           tighter tracking shifts where the line naturally breaks. */
-        [data-impeccable-variant="3"] .locked__head {
-          letter-spacing: -0.025em;
-          line-height: 0.98;
-          text-wrap: pretty;
-        }
-      </style>
-      <!-- Variants: insert below this line -->
-      <div data-impeccable-variant="1" style="display: none">
-        <h1 class="locked__head">This case study needs a password to open.</h1>
-      </div>
-      <div data-impeccable-variant="2" style="display: none">
-        <h1 class="locked__head"><span class="locked__head-quiet">This case study</span> <span class="locked__head-strong">needs a password to open.</span></h1>
-      </div>
-      <div data-impeccable-variant="3" style="display: none">
-        <h1 class="locked__head">This case study needs a password to open.</h1>
-      </div>
-    </div>
-    <!-- impeccable-variants-end 01ec264d -->
+    <p class="locked__case">{caseTitle}</p>
+    <h1 class="locked__head">The interesting parts are <em>confidential</em>.</h1>
     <p class="locked__body">
-      How it got made, the craft and the numbers sit behind it — same reason
-      as the rest of what's under NDA: I'd rather walk you through the
-      specifics live than post them for anyone to screenshot. If you don't
-      have a password, reaching out is faster than it sounds.
+      The detailed process is protected, but here is the public version.
+      Have the passcode? Step in for the full case study.
     </p>
+    {facts.length > 0 && (
+      <dl class="locked__facts">
+        {facts.map((f) => (
+          <div>
+            <dt class="u-label-mono">{f.term}</dt>
+            <dd>{f.detail}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
 
     <form class="locked__form" data-gate-form autocomplete="off">
-      <label class="u-label locked__label" for={`locked-pw-${slug}`}>Password</label>
+      <label class="u-label-mono locked__label" for={`locked-pw-${slug}`}>Passcode</label>
       <div class="locked__field">
-        <input
-          class="locked__input"
-          id={`locked-pw-${slug}`}
-          name="password"
-          type="password"
-          autocomplete="off"
-          aria-describedby={`locked-err-${slug}`}
-        />
-        <button class="locked__peek btn btn--tertiary btn--icon" type="button" data-gate-peek aria-label="Show password" aria-pressed="false">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path data-eye-open d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
-            <circle data-eye-open cx="12" cy="12" r="3" />
-            <path data-eye-closed d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.88 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a17.6 17.6 0 0 1-3.06 4.06M6.1 6.1A17.4 17.4 0 0 0 1 12s4 8 11 8a10.6 10.6 0 0 0 4.9-1.2" style="display:none" />
-          </svg>
-        </button>
+        <div class="locked__input-wrap">
+          <input
+            class="locked__input"
+            id={`locked-pw-${slug}`}
+            name="password"
+            type="password"
+            autocomplete="off"
+            aria-describedby={`locked-err-${slug}`}
+          />
+          <button class="locked__peek" type="button" data-gate-peek aria-label="Show passcode" aria-pressed="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path data-eye-open d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+              <circle data-eye-open cx="12" cy="12" r="3" />
+              <path data-eye-closed d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.88 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a17.6 17.6 0 0 1-3.06 4.06M6.1 6.1A17.4 17.4 0 0 0 1 12s4 8 11 8a10.6 10.6 0 0 0 4.9-1.2" style="display:none" />
+            </svg>
+          </button>
+        </div>
       </div>
       <p class="locked__err" id={`locked-err-${slug}`} role="alert" data-gate-err hidden>
-        That's not it — try again, or reach out below.
+        That's not it. Try again.
       </p>
-      <div class="locked__actions">
-        <button class="locked__submit btn btn--primary" type="submit">Unlock</button>
-        <a class="locked__reach u-label" href={`mailto:${site.email}?subject=${mailSubject}`}>
-          Reach out instead
-        </a>
-      </div>
+      <button class="locked__submit btn btn--primary" type="submit">Unlock</button>
     </form>
+    <p class="locked__reach">
+      No passcode? <a href={`mailto:${site.email}?subject=${mailSubject}`}>Email me</a> and I'll walk you through it.
+    </p>
+
+    <ol class="locked__toc" aria-label="Case contents">
+      {sections.map((s, i) => (
+        <li>
+          <span class="u-label-mono locked__num" aria-hidden="true">{num(i)}</span>
+          <span class="u-label-mono locked__sec">{s.nav}</span>
+          {i === 0 ? (
+            <span class="locked__open">{s.heading}</span>
+          ) : (
+            <span class="locked__bars">
+              <span class="u-sr-only">redacted</span>
+              {bars[(i - 1) % bars.length].map((w) => (
+                <span class="locked__bar" style={`width: ${w}%`} aria-hidden="true" />
+              ))}
+            </span>
+          )}
+        </li>
+      ))}
+    </ol>
+
+    <a class="locked__back u-label-mono" href={backHref}>
+      <span aria-hidden="true">&larr;</span> All work
+    </a>
   </div>
 </div>
 
 <style>
   .locked {
-    /* No forced viewport height — the section is exactly as tall as its
-       content plus the padding below, not a full screen every time. */
     background: var(--bg);
     color: var(--fg);
+    padding: calc(var(--nav-h) + var(--space-band)) var(--gutter) var(--space-band);
+  }
+  /* One centred column. The text centres; the facts row and the contents
+     list are left-aligned tables inside the same centred width. */
+  .locked__col {
+    max-width: 48rem;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding-block: calc(var(--nav-h) + var(--space-band-tight)) var(--space-band-tight);
   }
-  .locked__shell {
-    /* Wider than before on purpose: at 40rem the headline was breaking to
-       four visual lines off one manual <br>, and the body paragraph to
-       five. 62rem is the narrowest width that lands the headline on
-       exactly two lines at --step-h1 (checked directly, not estimated —
-       60rem was the tipping point, this keeps a small margin above it);
-       the body paragraph wraps to three well under that, governed by its
-       own --measure cap rather than the shell's width. */
-    max-width: 62rem;
-    margin: auto;
-    /* Everything below shares this one centred column, including the form —
-       centre-aligned text with a left-aligned form under it reads as a
-       layout mistake, so the field and its label centre too (see
-       .locked__form, .locked__field, .locked__actions below). */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  /* Outside .locked__shell now — a "back" control is navigation, not part
-     of the centred message, so it keeps the page's own left gutter instead
-     of centring with the headline. align-self pins it to the start of
-     .locked's cross axis; padding-inline gives it the same edge distance
-     u-shell gives everything else, since it's no longer inside one. */
-  .locked__back {
-    display: inline-block;
-    align-self: flex-start;
-    padding-inline: var(--gutter-start) var(--gutter);
-    color: var(--fg);
-    text-decoration: none;
-    margin-bottom: clamp(3rem, 8vw, 5rem);
-  }
-  .locked__back:hover { text-decoration: underline; text-underline-offset: 4px; }
 
   .locked__eyebrow {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: 0.5rem;
-    margin: 0 0 1.25rem;
+    margin: 0 0 1rem;
   }
+  .locked__case { margin: 0 0 0.4rem; font-size: var(--step-small); color: var(--fg-dim); }
   .locked__head {
     font-family: var(--font-serif);
-    font-size: var(--step-heading);
-    line-height: 1.02;
-    letter-spacing: var(--tracking-serif);
     font-weight: var(--weight-serif);
-    margin: 0 0 1.5rem;
-    /* Balances across whatever line count the width naturally produces —
-       two, at .locked__shell's new max-width, rather than the hand-placed
-       <br> this used to need. */
+    font-size: var(--step-case-title);
+    line-height: 1.1;
+    letter-spacing: var(--tracking-serif);
+    margin: 0 0 0.9rem;
     text-wrap: balance;
   }
-  /* Widened alongside the shell, from 46ch — that cap alone would have kept
-     the paragraph at five lines regardless of how much room .locked__shell
-     gained. --measure (62ch) is the site's own long-form reading width. */
-  .locked__body { margin: 0 0 2.5rem; max-width: var(--measure); color: var(--fg-dim); text-wrap: pretty; }
+  .locked__head em { font-style: italic; }
+  .locked__body {
+    margin: 0 0 2.25rem;
+    max-width: 34rem;
+    font-size: var(--step-small);
+    line-height: 1.7;
+    color: var(--fg-dim);
+    text-wrap: balance;
+  }
 
+  /* ---- the public version: one row of three ---- */
+  .locked__facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    margin: 0 0 2.25rem;
+    text-align: left;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .locked__facts > div { padding: 1rem 1.25rem 1.1rem; }
+  .locked__facts > div + div { border-left: 1px solid var(--rule); }
+  .locked__facts dt { margin-bottom: 0.4rem; }
+  .locked__facts dd { margin: 0; font-size: var(--step-small); line-height: 1.55; }
+  @media (max-width: 700px) {
+    .locked__facts { grid-template-columns: 1fr; }
+    .locked__facts > div { padding-inline: 0; }
+    .locked__facts > div + div { border-left: 0; border-top: 1px solid var(--rule); }
+  }
+
+  /* ---- the form ---- */
   .locked__form {
+    width: 100%;
+    max-width: 22rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
-    width: 100%;
-    max-width: 26rem;
   }
-  .locked__label { margin: 0; }
-  .locked__field { display: flex; align-items: stretch; gap: 0.5rem; width: 100%; }
+  .locked__label { display: block; margin: 0 0 0.25rem; }
+  .locked__field { width: 100%; }
+  /* One underline, no box. --fg at rest (a control's boundary needs 3:1),
+     the accent while focused or wrong. */
+  .locked__input-wrap {
+    position: relative;
+    border-bottom: 1px solid var(--fg);
+    transition: border-color var(--dur-hover) var(--ease-out);
+  }
+  /* Focus thickens the line to 2px as well as turning it the accent, so
+     the focus state doesn't rest on colour alone. */
+  .locked__input-wrap:focus-within { border-bottom-color: var(--accent); box-shadow: 0 1px 0 var(--accent); }
+  .locked__input-wrap:has([aria-invalid='true']) { border-bottom-color: var(--accent-text); }
   .locked__input {
-    flex: 1 1 auto;
-    min-width: 0;
+    width: 100%;
     font: inherit;
     font-size: var(--step-body);
     color: var(--fg);
-    background: var(--screen);
-    /* --fg-dim, not --rule — --rule is a quiet hairline-divider token
-       (tokens.css) and falls under the 3:1 WCAG needs for a control's own
-       boundary; --fg-dim already clears AA at body size in every theme. */
-    border: 1px solid var(--fg-dim);
-    border-radius: 999px;
-    padding: 0.7rem 1.2rem;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0.6rem 2.5rem;
+    text-align: center;
   }
-  .locked__input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  /* Visual style now comes from the shared .btn/.btn--tertiary/.btn--icon
-     system (global.css). align-self: center overrides .locked__field's
-     align-items: stretch — without it the button stretches to the input's
-     full height and .btn--icon's aspect-ratio: 1 can no longer keep it
-     square. */
-  .locked__peek { flex: 0 0 auto; align-self: center; }
+  /* The underline itself turns the accent on focus, so the field needs no
+     second ring. */
+  .locked__input:focus-visible { outline: none; }
+  .locked__peek {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--fg-dim);
+    cursor: pointer;
+    transition: color var(--dur-hover) var(--ease-out);
+  }
+  .locked__peek:hover { color: var(--fg); }
+  .locked__peek:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+  .locked__submit { margin-top: 1.5rem; }
 
-  .locked__err { margin: 0; font-size: var(--step-body); color: var(--accent-text); }
+  .locked__err { margin: 0.6rem 0 0; font-size: var(--step-small); color: var(--accent-text); }
+  .locked__reach { margin: 1rem 0 0; font-size: var(--step-small); color: var(--fg-dim); }
+  .locked__reach a {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-color: var(--rule);
+    text-underline-offset: 4px;
+    transition: color var(--dur-hover) var(--ease-out), text-decoration-color var(--dur-hover) var(--ease-out);
+  }
+  .locked__reach a:hover { color: var(--accent-text); text-decoration-color: currentColor; }
 
-  .locked__actions {
-    display: flex;
+  /* ---- the contents, redacted ---- */
+  .locked__toc {
+    list-style: none;
+    margin: clamp(3.5rem, 7vw, 5rem) 0 0;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+  }
+  .locked__toc li {
+    display: grid;
+    grid-template-columns: 2rem 11rem minmax(0, 1fr);
+    gap: 1rem;
     align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-top: 0.5rem;
-    flex-wrap: wrap;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--rule);
   }
-  /* Visual style now comes from the shared .btn/.btn--primary system
-     (global.css) — same control as CaseGate's, since both now share it. */
-  .locked__reach { color: var(--accent-text); text-decoration: none; }
-  .locked__reach:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .locked__toc li:last-child { border-bottom: 1px solid var(--rule); }
+  @media (max-width: 600px) {
+    .locked__toc li { grid-template-columns: 2rem minmax(0, 1fr); row-gap: 0.5rem; }
+    .locked__open, .locked__bars { grid-column: 2; }
+  }
+  .locked__sec { color: var(--fg); }
+  .locked__open { font-size: var(--step-small); line-height: 1.5; }
+  .locked__bars { display: flex; flex-direction: column; gap: 0.4rem; }
+  .locked__bar { display: block; height: 0.55rem; background: var(--fg); opacity: 0.85; }
 
-  .locked__unlocked { color: var(--fg-dim); margin: 0; }
+  .locked__back {
+    margin-top: 2.5rem;
+    color: var(--fg-dim);
+    text-decoration: none;
+    transition: color var(--dur-hover) var(--ease-out);
+  }
+  .locked__back:hover { color: var(--fg); }
 </style>
 
 <script>
@@ -295,7 +333,7 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
       const showing = peek.getAttribute('aria-pressed') === 'true';
       input.type = showing ? 'password' : 'text';
       peek.setAttribute('aria-pressed', String(!showing));
-      peek.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      peek.setAttribute('aria-label', showing ? 'Show passcode' : 'Hide passcode');
       peek.querySelectorAll<SVGElement>('[data-eye-open]').forEach((p) => {
         p.style.display = showing ? '' : 'none';
       });

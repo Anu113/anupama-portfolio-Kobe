@@ -10,14 +10,21 @@ import PixelBreak from '../components/PixelBreak.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 
 import { site } from '../data/site';
-import { work } from '../data/work';
+import { work, homeCards, labelsFor } from '../data/work';
 
-// The category filter tabs that used to live on this page moved to
-// /work — they were fighting the stacking-card effect below (hiding a
-// card shifts every card after it, which the sticky/settle math never
-// re-measured for), and /work's plain grid is a better home for
-// filtering anyway.
-const homeWork = work.filter((w) => w.showOnHome !== false);
+// The home cards (data/work.ts, `homeCards`), each filled in from the
+// `work` case it points at. Category filters live on /work.
+const cards = homeCards.map((c) => {
+  const w = work.find((x) => x.href === c.href)!;
+  return {
+    ...c,
+    company: w.company,
+    title: c.title ?? w.title,
+    tagline: c.tagline ?? w.tagline,
+    tags: labelsFor(w),
+    video: 'video' in w ? w.video : undefined,
+  };
+});
 ---
 <Base title={`${site.name} — ${site.seeking}`}>
   <!-- Hero. Type follows allierho.com's hero sentence: one serif display
@@ -83,36 +90,19 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   </div>
 </Section>
 <Section theme="bone" class="worklist">
-  <div class="worklist__grid" data-worklist>
-    {homeWork.map((w, i) => (
+  <div class="worklist__grid">
+    {cards.map((c, i) => (
       <div class="worklist__item" style={`--stack-i:${i}`}>
         <ProjectCard
           index={i + 1}
-          company={w.company}
-          title={w.title}
-          tagline={w.tagline}
-          href={w.href}
-          theme={w.theme}
-          hoverState={w.hoverState}
-          tags={w.tags}
-          image={'video' in w ? undefined : w.image}
-          alt={w.alt}
-        >
-          {'video' in w && w.video && (
-            <video
-              slot="hero"
-              poster={w.video.poster}
-              aria-label={w.video.alt}
-              muted
-              loop
-              playsinline
-              autoplay
-            >
-              <source src={w.video.webm} type="video/webm" />
-              <source src={w.video.mp4} type="video/mp4" />
-            </video>
-          )}
-        </ProjectCard>
+          company={c.company}
+          title={c.title}
+          tagline={c.tagline}
+          href={c.href}
+          tags={c.tags}
+          media={c.media}
+          video={c.video}
+        />
       </div>
     ))}
   </div>
@@ -185,11 +175,11 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   .hero__cue-arrow { width: 0.667em; height: 1em; }
   /* The hero sentence is .u-display (global.css): serif 300 at
      --step-display, italic lead-in via <em>. Background line under it in
-     the sans at body size, dim. */
+     the sans at --step-copy (12px, the reference's body), dim. */
   /* 26ch, was 22ch: the headline ended ~70px short of its own column,
      and that width went to the gap before the illustration. */
   .hero__line { max-width: 26ch; text-wrap: pretty; }
-  .hero__more { color: var(--fg-dim); max-width: 54ch; margin: 1.5rem 0 0; text-wrap: pretty; }
+  .hero__more { font-size: var(--step-copy); line-height: var(--leading-copy); letter-spacing: var(--tracking-copy); color: var(--fg-dim); max-width: 54ch; margin: 1.5rem 0 0; text-wrap: pretty; }
   .hero__co { color: var(--fg); }
 
   /* Hero copy + portrait side by side on desktop, portrait first and
@@ -200,6 +190,12 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      matching a reference, and reverted ("too big") back to this
      side-by-side card layout — see git history if it comes back. */
   .hero__row {
+    /* Above the cursor lamp's layer (CursorLamp.astro): the lamp lights
+       the ground behind the hero, not the hero itself. She is lit in her
+       own canvas (HeroIllustration), and the headline's text shadows
+       fall on the lamp's light instead of being re-lit by it. */
+    position: relative;
+    z-index: calc(var(--z-lamp) + 1);
     display: flex;
     /* flex-end, not flex-start — the illustration used to hang from the
        row's top edge, vertically centred against a copy column whose
@@ -223,7 +219,10 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      way round (image at a fixed share, copy getting the remainder) left
      the copy at ~200px on laptop-width screens once the left rail for the
      fixed menu (--gutter-start) came in. */
-  .hero__copy { flex: 0 0 var(--hero-copy-w); min-width: 0; }
+  /* Positioned above the portrait so the floor light and shadow drawn
+     behind her (HeroIllustration's ground canvas, which reaches past
+     her box) can never sit over the copy. */
+  .hero__copy { flex: 0 0 var(--hero-copy-w); min-width: 0; position: relative; z-index: 1; }
   /* The portrait's Reveal wrapper is the actual flex item; a class passed
      into a component doesn't carry this page's scope, hence :global. */
   /* Sized to the illustration, not flex: 1 — space-between hands the
@@ -265,13 +264,15 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   .hero__stage::before {
     inset: calc(-1 * var(--hero-lamp-spread));
     /* Not one circle: three overlapping soft pools, off-centre and of
-       different sizes, so the light reads as a room's uneven glow — fuller
-       low-left around the chair and table, a smaller lift up behind her
-       head — rather than a spotlight. The blur melts them into one. */
+       different sizes, so the light reads as a room's uneven glow — a lamp
+       up and to her right, fullest behind her head and shoulders, with a
+       softer spill down toward the table — rather than a spotlight. (Moved
+       up-right on request; it used to sit low-left around the chair.) The
+       blur melts them into one. */
     background:
-      radial-gradient(46% 40% at 42% 56%, var(--hero-lamp), var(--hero-lamp-mid) 50%, transparent 78%),
-      radial-gradient(34% 30% at 28% 70%, var(--hero-lamp-mid), transparent 75%),
-      radial-gradient(30% 26% at 60% 34%, var(--hero-lamp-mid), transparent 75%);
+      radial-gradient(46% 40% at 60% 38%, var(--hero-lamp), var(--hero-lamp-mid) 50%, transparent 78%),
+      radial-gradient(34% 30% at 46% 56%, var(--hero-lamp-mid), transparent 75%),
+      radial-gradient(30% 26% at 74% 22%, var(--hero-lamp-mid), transparent 75%);
     filter: blur(var(--hero-light-blur));
   }
   .hero__stage::after {
@@ -370,6 +371,7 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      so they don't carry this page's scope. */
 
 
+
   /* No max-width of its own any more: it was 74rem centred, which put
      the cards 13px (at 1440) to 140px inside the "Selected work" label's
      edge. The page-wide --shell-max (tokens.css) now does the containing,
@@ -380,22 +382,19 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
     gap: 0;
   }
 
-  /* Stacking cards: each row pins a little lower than the one before it
-     (--stack-i, set per row from index.astro's map), so as you scroll a
-     new card slides up over the last and the previous card's top edge
-     keeps peeking out underneath rather than vanishing. z-index makes
-     the paint order explicit instead of relying on DOM order. The
-     padding-bottom (replacing the old flex `gap`) is what lets that peek
-     show — a plain gap would just push the next card down without ever
-     overlapping. */
+  /* Stacking cards: every row pins at the same height, so as you scroll
+     each new card slides up and covers the one before it completely (on
+     request — the earlier version pinned each 16px lower, leaving the
+     previous cards' top edges peeking out above). z-index makes the
+     paint order explicit instead of relying on DOM order (--stack-i,
+     set per row from the map above). The padding-bottom is each card's
+     time on screen before the next one arrives. */
   .worklist__item {
     position: sticky;
-    top: calc(clamp(4.5rem, 6vw, 6rem) + var(--stack-i, 0) * 16px);
+    top: clamp(4.5rem, 6vw, 6rem);
     z-index: calc(var(--stack-i, 0) + 1);
-    /* This is what actually controls the delay before the next card
-       starts covering this one — NOT the 16px --stack-i step above
-       (that only sets how far each pinned card's top edge peeks out
-       from behind the next). A sticky element stays pinned for exactly
+    /* This is what controls the delay before the next card starts
+       covering this one. A sticky element stays pinned for exactly
        as much extra scroll distance as its own box has left below the
        pinned content — i.e. this padding. At the old ~2.5rem it barely
        stayed pinned before the next card's turn arrived, so cards felt
@@ -404,9 +403,16 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
        first. */
     padding-bottom: 40vh;
   }
-  /* Nothing follows the last card to cover it, so its pinned window was
-     just ~40vh of empty band before the next section. */
+  /* The last card. Its own padding can't give it a hold (a sticky box
+     that already reaches the bottom of its container has no room to
+     stick), so the hold comes from a spacer after it, inside the stack:
+     card 4 lands fully over card 3 and holds for --stack-end-hold before
+     it scrolls away. Without it the earlier cards let go the moment
+     card 4 arrived and the stack scrolled away before card 4 ever
+     landed. The spacer is the others' 40vh (so they stay pinned under
+     card 4 until it lands) plus the hold. */
   .worklist__item:last-child { padding-bottom: 0; }
+  .worklist__grid::after { content: ''; flex: none; height: calc(40vh + var(--stack-end-hold)); }
 
   /* The settle effect (a card scales/dims slightly as the next one
      covers it) used to run on the browser's own scroll-driven
@@ -424,15 +430,9 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
      browser, transition-free (no lag behind the scroll position). */
   .worklist__item > :global(.pc) {
     transform-origin: center top;
-    /* ProjectCard.astro's own .pc rule carries a transform transition
-       meant for a hover effect that no longer uses it. Left alone here
-       it would apply to our own rAF-driven scale updates below too —
-       every scroll tick would ease in over --dur-hover (320ms) instead
-       of landing immediately, so the card visibly lags behind the
-       actual scroll position. Overriding to none keeps the settle
-       effect locked exactly to scroll, which is what "smooth" means
-       for a scroll-driven effect (transitions are for animating TO a
-       new state on their own time; this state changes every frame). */
+    /* A guard: if .pc ever gets a transform transition again, it must
+       not apply here, or every scroll tick of the rAF-driven settle below
+       would ease in and the card would lag behind the scroll. */
     transition: none;
   }
 </style>
@@ -447,7 +447,9 @@ const homeWork = work.filter((w) => w.showOnHome !== false);
   // freezing the element's own rect while pinned). Same plain
   // rAF-on-scroll shape.
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const stackItems = [...document.querySelectorAll<HTMLElement>('.worklist__item')];
+    // The last card is left out: nothing slides over it, so it must
+    // never settle (scale down and dim) while it holds.
+    const stackItems = [...document.querySelectorAll<HTMLElement>('.worklist__item')].slice(0, -1);
     if (stackItems.length) {
       type Rec = { item: HTMLElement; card: HTMLElement; startY: number; padBottom: number };
       let recs: Rec[] = [];
