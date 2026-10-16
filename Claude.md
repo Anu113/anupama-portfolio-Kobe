@@ -93,7 +93,9 @@ effect:
   mouse icon and "A line is a dot that went for a walk" (Paul Klee) in
   16px mono caps, medium tracking, which starts as a row of dots, one
   per letter, and turns into its letters as the page loads. That is the
-  progress: there is no number, on request. At 100% the words fade and
+  progress: there is no number, on request. If it stalls (no new letter
+  for 0.7s), the next letter flicks through characters until the load
+  moves on, so a slow load reads as working, not frozen. At 100% the words fade and
   the terracotta shrinks, as a slowly lumping blob, into the orange dot
   beside "Moss" in his launcher card, ending at that dot's exact size
   and place, so the loader becomes a piece of the page. Where his dot
@@ -104,8 +106,9 @@ effect:
   of the site, nor on back/forward. It also waits for the hero
   portrait's sprite (`hero-scrub:ready`, capped at 6s), and the portrait
   shows its still frame until the sprite is in, so she appears with
-  Moss. Any key, click, tap or real scroll skips it with the same exit,
-  faster; a CSS failsafe hides it at 10s; it removes itself from the
+  Moss. A deliberate key, click, tap or real scroll skips it with the
+  same exit, faster (not in its first 1.2s, and never a shortcut such as
+  Cmd+R, so a refresh always shows it); a CSS failsafe hides it at 10s; it removes itself from the
   DOM. Under reduced motion: no line, and a fade. Values under
   PRELOADER in `tokens.css`. The walking loader (`Loader.astro`,
   `data/loader.ts`, `scripts/walk-sprite.py`, LOADER tokens) is parked,

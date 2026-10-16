@@ -732,4 +732,7 @@
   --ease-preloader-lift: cubic-bezier(0.785, 0.135, 0.15, 0.86);
   --dur-preloader-fade: 450ms;           /* reduced motion: fades instead */
   --dur-preloader-skip: 600ms;           /* a key, click, tap or scroll: the same exit, faster */
+  --dur-preloader-stall: 700ms;          /* no new letter for this long = stuck: the next letter starts trying characters */
+  --dur-preloader-try: 90ms;             /* how often a stuck letter changes */
+  --dur-preloader-skip-grace: 1200ms;    /* inputs this soon after load don't skip (a held Cmd+R, scroll momentum) */
 }

@@ -30,7 +30,8 @@
    reads as a short walk rather than a blink.
 
    It never holds the page hostage: the page is fully there underneath
-   from the start; any key, click, tap or real scroll ends it at once
+   from the start; any deliberate key, click, tap or real scroll (after a
+   short grace, and never a shortcut like Cmd+R) ends it at once
    with the same exit, faster (--dur-preloader-skip), and clicks pass
    through to the page during it; images still out after
    --dur-preloader-max count as in; a CSS failsafe hides it after 10s
@@ -38,6 +39,12 @@
    the DOM. Decorative, so aria-hidden: screen readers get the page
    straight away. Under reduced motion there's no line, the letters
    simply appear, and the sheet fades.
+
+   When it's stuck (no new letter for --dur-preloader-stall, a slow
+   connection), the next letter flicks through characters every
+   --dur-preloader-try until the load moves on and the right one lands
+   (stall.html, option 4, on request), so it reads as working rather
+   than frozen. On a normal load it never shows.
 
    Values: PRELOADER in tokens.css. The walking loader (Loader.astro) is
    parked, not deleted. */
@@ -136,6 +143,8 @@ const sentence = 'A line is a dot that went for a walk';
 
   // The paced schedule: uneven steps, a stall, a spurt, as the page's
   // pieces arrive. Times are fractions of --dur-preloader-min.
+  // What a stuck letter flicks through.
+  const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/#*+';
   const STEPS: [number, number][] = [[0, 0], [0.07, 7], [0.19, 18], [0.34, 31], [0.46, 38], [0.62, 59], [0.76, 72], [0.89, 86], [1, 100]];
 
   // Where Moss's orange dot is (the ::before of his name in the card), if
@@ -152,6 +161,7 @@ const sentence = 'A line is a dot that went for a walk';
 
   function run(root: HTMLElement) {
     const chars = [...root.querySelectorAll<HTMLElement>('[data-preloader-ch]')];
+    const letters = chars.map((c) => c.textContent ?? '');
     const line = root.querySelector<HTMLCanvasElement>('.preloader__line')!;
     const blob = root.querySelector<HTMLCanvasElement>('.preloader__blob')!;
     const ctx = line.getContext('2d')!;
@@ -252,9 +262,16 @@ const sentence = 'A line is a dot that went for a walk';
       if (skipped) root.classList.add('is-skipped');
       setTimeout(finish, out + 50);
     };
-    // A trackpad resting under two fingers sends tiny wheel events; only a
-    // real scroll counts as wanting past.
+    // Only a deliberate input skips it. Ignored: anything in the first
+    // --dur-preloader-skip-grace (a held Cmd+R, or trackpad momentum from
+    // scrolling the page before the refresh, arrives on the new page and
+    // used to skip it at once, so a refresh seemed to show no loader);
+    // shortcuts and lone modifier keys; and the tiny wheel events of a
+    // trackpad resting under two fingers.
+    const grace = token('--dur-preloader-skip-grace');
     const skip = (e: Event) => {
+      if (performance.now() - t0 < grace) return;
+      if (e instanceof KeyboardEvent && (e.metaKey || e.ctrlKey || e.altKey || ['Meta', 'Control', 'Alt', 'Shift'].includes(e.key))) return;
       if (e instanceof WheelEvent && Math.abs(e.deltaX) + Math.abs(e.deltaY) < 4) return;
       end(true);
     };
@@ -291,6 +308,9 @@ const sentence = 'A line is a dot that went for a walk';
     chain.seed(home.x, home.y);
 
     let p = 0, last = performance.now(), doneAt = 0, shown = -1;
+    let lastLetter = performance.now(), lastTry = 0, trying: HTMLElement | null = null;
+    const stallAfter = token('--dur-preloader-stall');
+    const tryEvery = token('--dur-preloader-try');
     const tick = (now: number) => {
       if (blobbing) return;   // the blob owns the frame from here
       const t = now - t0, dt = Math.min(50, now - last);
@@ -309,7 +329,25 @@ const sentence = 'A line is a dot that went for a walk';
       const k = Math.round((p / 100) * chars.length);
       if (k !== shown) {
         shown = k;
+        lastLetter = now;
+        if (trying) { trying.textContent = letters[chars.indexOf(trying)]; trying.classList.remove('is-trying'); trying = null; }
         chars.forEach((c, i) => c.classList.toggle('is-dot', i >= k));
+      }
+      // Stuck (no new letter for --dur-preloader-stall): the next letter
+      // keeps trying characters until the load moves on and the right one
+      // lands, so a slow load reads as working, not frozen.
+      if (!reduce && k < chars.length && now - lastLetter > stallAfter && now - lastTry > tryEvery) {
+        lastTry = now;
+        let n = k;
+        while (n < chars.length && letters[n] === ' ') n++;
+        const c = chars[n];
+        if (c) {
+          trying = c;
+          c.classList.add('is-trying');
+          let g = letters[n];
+          while (g === letters[n] || g === c.textContent) g = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+          c.textContent = g;
+        }
       }
 
       if (!reduce) {
@@ -405,6 +443,9 @@ const sentence = 'A line is a dot that went for a walk';
     text-align: center;
     color: var(--preloader-ink-dim);
   }
+  /* A stuck letter trying characters: shown as a letter, not a dot. */
+  .preloader__ch.is-trying { color: var(--preloader-ink); transition: none; }
+  .preloader__ch.is-dot.is-trying:not(.is-space)::before { content: none; }
 
   /* On a phone the sentence is wider than the screen at 16px: it drops
      a step there. */
