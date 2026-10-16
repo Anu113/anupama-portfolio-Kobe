@@ -114,7 +114,12 @@
      Reference edge: 40px at 1440, 20px at 390. Two-up grids use a
      20px gap. Past --shell-max the edge grows so content centres.  */
   --shell-max: 90rem;
-  --gutter: max(clamp(1.25rem, 0.786rem + 1.905vw, 2.5rem), calc((100vw - var(--shell-max)) / 2));
+  /* The gap between columns INSIDE the content. Same size as the edge
+     up to --shell-max, but it stops there: --gutter keeps growing on
+     wide screens to centre content, and used as a column gap it
+     squeezed the case-study column to a sliver. */
+  --col-gap: clamp(1.25rem, 0.786rem + 1.905vw, 2.5rem);
+  --gutter: max(var(--col-gap), calc((100vw - var(--shell-max)) / 2));
   --grid-gap: 1.25rem;
   --measure: 62ch;
   /* A project card's inner padding (ProjectCard). The footer's content

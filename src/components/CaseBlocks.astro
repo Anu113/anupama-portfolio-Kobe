@@ -164,7 +164,7 @@ const { blocks } = Astro.props;
   .row {
     display: grid;
     grid-template-columns: minmax(0, 10rem) minmax(0, 1fr);
-    gap: 0.5rem var(--gutter);
+    gap: 0.5rem var(--col-gap);
     padding-block: 1rem;
     border-top: 1px solid var(--rule);
   }
@@ -223,7 +223,7 @@ const { blocks } = Astro.props;
     margin: 0;
     display: grid;
     grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
-    gap: 2rem var(--gutter);
+    gap: 2rem var(--col-gap);
   }
   .metric { border-top: 1px solid var(--rule); padding-top: 1rem; }
   .metric__value {
