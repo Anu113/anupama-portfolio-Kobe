@@ -154,13 +154,13 @@ export const work = [
   // see `paypal-ads-consent` in cases.ts. Mostly brackets until she fills
   // in her role, the hard call and the outcome, and exports the ads screens.
   { company: 'PayPal', theme: 'sage', device: 'phone',
-    title: 'Ads that ask first',
+    title: 'Privacy-first ad personalization',
     tagline: 'Ad data sharing moved from opted in by default to asking first.',
     summary: 'PayPal shared customer data with ad partners by default, and only about 1% of people ever opted out. When compliance moved the default to opted out, I designed how PayPal asks for consent, and proposed the Auto Privacy Advisor: a checkup that brings privacy settings to people.',
     role: '[Lead product designer] · Ads consent and privacy settings',
     impact: '[Consent rate under the new default]',
     hoverState: 'case-study',
-    tags: ['Privacy & Data', 'Product Strategy'], categories: ['fintech'],
+    tags: ['Ads & Personalization', 'Privacy & Data'], categories: ['fintech'],
     href: '/work/paypal-ads-consent', image: '/images/paypal-ads-consent/hero.webp', alt: 'The rebuilt PayPal ad consent screens: Data & Privacy, the ask, and Online ad preferences' },
 ] as const;
 
@@ -267,7 +267,8 @@ export function hueFor(company?: string): Hue | undefined {
 
 // The domain half of a card's label row, and the /work filters: what the
 // product was for, plus Growth. Disciplines (Product Strategy, Research,
-// Design Systems, Information Architecture, Privacy & Data, Platform, 0→1)
+// Design Systems, Information Architecture, Privacy & Data, Ads &
+// Personalization, Platform, 0→1)
 // come through `tags`. Enterprise and Consumer were dropped on request
 // (labels and filters).
 export const DOMAIN_LABEL: Record<string, string> = {

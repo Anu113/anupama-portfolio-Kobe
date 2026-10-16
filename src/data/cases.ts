@@ -2367,7 +2367,7 @@ export const cases: CaseStudy[] = [
     company: 'PayPal',
     theme: 'sage',
     eyebrow: 'PayPal · Ad consent and a privacy checkup · 2023',
-    title: 'Ads that ask first',
+    title: 'Privacy-first ad personalization',
     hero: {
       src: '/images/paypal-ads-consent/hero.webp',
       alt: 'Three screens from the rebuilt ad consent flow: Data & Privacy with a privacy checkup card, the ask with equal Allow and Not now buttons, and Online ad preferences with its switch',
@@ -2469,6 +2469,31 @@ export const cases: CaseStudy[] = [
               { title: 'Test, then revise the consent flow', body: 'A prototype went to rapid research on 19–20 April 2023. The consent flow was revised after it, and a third version followed.' },
               { title: 'Legal and CXR review', body: 'The consent design went through legal review and PayPal\'s CXR review.' },
             ],
+          },
+        ],
+      },
+      // Stills of the same screens as the prototype above, captured from it
+      // (headless Chrome, 2x, reduced motion) so a skimmer sees every state
+      // without clicking. Re-capture if the prototype's copy changes.
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'Two equal answers, and a setting that says what each one does.',
+        blocks: [
+          {
+            kind: 'figure',
+            src: '/images/paypal-ads-consent/ask.webp',
+            alt: 'The ask: a sheet titled Want PayPal ads that match your interests?, with Allow and Not now as equal buttons, and the same sheet with How it works open, listing what is shared, who gets it, what you get and your choice',
+            caption: 'The ask. Allow and Not now look the same, nothing is pre-ticked, and "How it works" says what\'s shared, who gets it, and that it stays off unless you turn it on.',
+            ratio: '1800 / 1797',
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-ads-consent/after.webp',
+            alt: 'After Allow: Ad sharing is on, with Done and a link to Online ad preferences; and the Online ad preferences screen with its switch on and the On line under it',
+            caption: 'After the answer. The confirmation says what changed and where to undo it, and the setting\'s line switches between the On and Off wording.',
+            ratio: '1800 / 1797',
           },
         ],
       },
