@@ -101,8 +101,12 @@ export interface CaseStudy {
       anything. That is the same limit both reference sites accept — a soft,
       deter-casual-browsing gate, not confidentiality. Genuinely NDA'd
       specifics belong in the "reach out, I'll walk you through it live"
-      pattern already in the closing band below, never in `password`. */
-  locked?: { password: string; preview: number };
+      pattern already in the closing band below, never in `password`.
+
+      `scope` and `outcome` are the public version a fully locked case
+      shows on LockedGate, beside `role`: one line each, short enough for
+      a recruiter to read at a glance. Only facts cleared to be public. */
+  locked?: { password: string; preview: number; scope?: string; outcome?: string };
   sections: CaseSection[];
   /** Slug of the next case study, for the footer link. */
   next: string;
@@ -131,7 +135,13 @@ export const cases: CaseStudy[] = [
        page; nothing about this case is visible until the password matches.
        [Placeholder password — replace before sharing this link with
        anyone.] */
-    locked: { password: 'okta2026', preview: 0 },
+    locked: {
+      password: 'okta2026',
+      preview: 0,
+      scope: 'Entitlements, role management, OIN publishing and developer onboarding',
+      // [Draft from the Impact section — confirm the number before sharing.]
+      outcome: 'Admin task time down [X]%, with no migration windows asked of customers',
+    },
     sections: [
       {
         id: 'situation',

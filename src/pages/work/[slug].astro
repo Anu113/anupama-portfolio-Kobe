@@ -89,6 +89,11 @@ const topImpact = useRefLayout
     <LockedGate
       slug={study.slug}
       caseTitle={study.title}
+      company={study.company}
+      role={study.role}
+      scope={study.locked!.scope}
+      outcome={study.locked!.outcome}
+      sections={study.sections.map((s) => ({ nav: s.nav, heading: s.heading }))}
       password={study.locked!.password}
       targetId={pageId}
     />
