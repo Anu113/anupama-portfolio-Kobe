@@ -122,7 +122,7 @@ const topImpact = useRefLayout
       ]} />
 
       <div class="body__col">
-        <Reveal>
+        <Reveal still>
           <div class="hero__eyebrow">
             <p class="u-label-mono hero__company">{study.company}</p>
             {tags.length > 0 && (
@@ -139,7 +139,7 @@ const topImpact = useRefLayout
              Reveal for the same reason as the row version below: Reveal
              emits a wrapper div, and a Reveal per grid item would make the
              wrappers the grid cells instead of the content. */
-          <Reveal delay={100}>
+          <Reveal still delay={100}>
             <div class="banner">
               <div class:list={['lede', !study.live && 'lede--nocta']}>
                 <h1 class="hero__title">{study.title}</h1>
@@ -173,7 +173,7 @@ const topImpact = useRefLayout
               wrapper div, so a Reveal per element would make those wrappers
               the grid items instead of the h1/p/a, and the columns would
               collapse. */
-          <Reveal delay={100}>
+          <Reveal still delay={100}>
             <div class:list={['lede', !study.live && 'lede--nocta']}>
               <h1 class="hero__title">{study.title}</h1>
               <p class="lede__text">{study.description}</p>
@@ -184,7 +184,7 @@ const topImpact = useRefLayout
             </div>
           </Reveal>
         )}
-        <Reveal delay={240}>
+        <Reveal still delay={240}>
           <div class="hero__frame" data-hue={hueFor(study.company) ?? ''}>
             <img src={study.hero.src} alt={study.hero.alt} decoding="async" />
           </div>
@@ -197,7 +197,7 @@ const topImpact = useRefLayout
             where it renders. Skipped under the prototype layout — Role and
             the rest already sit in the banner sidebar above. */}
         {!useRefLayout && (
-          <Reveal delay={260}>
+          <Reveal still delay={260}>
             <dl class="meta">
               <div class="meta__cell">
                 <dt class="u-label-mono meta__label">Role</dt>
@@ -219,7 +219,7 @@ const topImpact = useRefLayout
             The full Impact section still runs in its rule-3 position near
             the end; this is a summary, not a replacement. */}
         {topImpact && (
-          <Reveal delay={280}>
+          <Reveal still delay={280}>
             <div class="impact-band">
               <p class="u-label-mono impact-band__label">Impact</p>
               <dl class="impact-band__stats" style={`--cols: ${Math.min(topImpact.items.length, 4)};`}>
@@ -236,7 +236,7 @@ const topImpact = useRefLayout
 
         {openSections.map((s, i) => (
           <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
-            <Reveal>
+            <Reveal still>
               {/* "01  THE SITUATION" on a hairline, in mono. The number is
                   decorative (aria-hidden); the label still reads as the
                   section name to a screen reader. Content order is the
@@ -255,7 +255,7 @@ const topImpact = useRefLayout
 
         {study.locked && gatedSections.length > 0 && (
           <section class="cs" id={gateId} aria-label="Full case study">
-            <Reveal>
+            <Reveal still>
               <CaseGate
                 slug={study.slug}
                 caseTitle={study.title}
@@ -270,7 +270,7 @@ const topImpact = useRefLayout
             <div id={`${gateId}-content`} hidden>
               {gatedSections.map((s, i) => (
                 <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
-                  <Reveal>
+                  <Reveal still>
                     <p class="u-label-mono cs__label">
                       <span class="cs__num" aria-hidden="true">{num(previewCount + i)}</span>
                       {s.label}
@@ -302,7 +302,7 @@ const topImpact = useRefLayout
        thing to click," which a single line of text can't say on its own. -->
   {next && (
     <Section theme={next.theme} class="casenext">
-      <Reveal>
+      <Reveal still>
         <p class="u-label">Next</p>
         <a class="next" href={`/work/${next.slug}`} data-follow-hover>
           {next.title}

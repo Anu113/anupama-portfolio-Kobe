@@ -718,6 +718,34 @@
 }
 
 /* ============================================================
+   BEFORE / AFTER (PrivacyCompare.astro) — on request, after
+   gauravi.design's last card, chosen from four mocks: one phone, the old
+   screen left of a line and the new one right of it, numbered pins on
+   what was wrong that move to the fix as the line crosses them. The
+   pins and the line sit on the product's own white screens, so they're
+   fixed values, not role colours: the same in light and dark mode.
+   ============================================================ */
+:root {
+  --compare-line: #ffffff;
+  --compare-line-edge: rgb(0 0 0 / 0.14);
+  --compare-handle: #ffffff;
+  --compare-handle-ink: #262626;
+  --compare-handle-shadow: 0 3px 12px rgb(0 0 0 / 0.3);
+  --compare-handle-size: 34px;
+  --compare-pin-before: #262626;   /* what was wrong: ink */
+  --compare-pin-after: #b4482a;    /* the fix: the light-mode accent, 5.6:1 with the pin ink */
+  --compare-pin-ink: #ffffff;
+  --compare-pin-size: 22px;
+  --compare-tag-bg: rgb(255 255 255 / 0.95);
+  --compare-tag-ink: #262626;
+  --compare-tag-edge: rgb(0 0 0 / 0.08);
+  --compare-tag-after-bg: #262626;
+  --compare-tag-after-ink: #ffffff;
+  --dur-compare-flip: 360ms;       /* a note turning from Before to After, a pin moving */
+  --dur-compare-ring: 700ms;       /* the ring that marks a pin as it appears */
+}
+
+/* ============================================================
    PIXEL'S OWN TYPE — held as it was before the allierho.com pass, so the
    chat looks exactly as it did ("don't touch the chat yet"). AskBubble
    reads the shared names below; these pin them to the old values inside

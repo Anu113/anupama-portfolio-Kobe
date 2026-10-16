@@ -550,6 +550,17 @@ walked back. Concretely, in the current implementation:
   before the situation, on request. Section
   heads follow the reference: a centred serif line with an italic phrase,
   a label link under it.
+- **Before and after on one phone** (`PrivacyCompare.astro`, the
+  `compare` block; on request, after gauravi.design's last card, chosen
+  from four mocks): in the Privacy case's craft section, the old screen
+  sits left of a line and the redesign right of it, in a device box. The
+  line sways slowly while on screen, and can be dragged or moved with the
+  arrow keys. Numbered pins on what was wrong move to the fix as the line
+  crosses them, and the notes beside the phone turn from Before to
+  After. Notes are read off the screens, never invented. The static
+  "Before" phones left the screens rows for it. Values under BEFORE /
+  AFTER in `tokens.css`. Its reason: the difference between the two
+  screens is the decision, and seeing it beats a paragraph about it.
 - `cases.ts` holds case-study content as structural prose with `[X]`
   placeholders for real numbers — written from what this file already
   records about each project, not confirmed by Anupama. It also currently

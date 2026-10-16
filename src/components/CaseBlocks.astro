@@ -20,19 +20,48 @@
    captions and citations are small mono caps (.u-label-mono); `points`
    is a numbered list at --step-small, not a grid of serif titles; the
    quote is roman serif at --step-title on a 1px ink rule — no italic,
-   no accent (both dropped on request). */
+   no accent (both dropped on request).
+
+   Two pieces of story structure, after rachelatwork.com and
+   carlthomasiv.com: `bet` is the case's one "How might we…?" line, a mono
+   label over a serif sentence; and a `claim` on a figure or screens row
+   makes it a numbered craft decision — "01" and the claim ("X replaced
+   Y") set above the work, the caption under it giving the reason. Claims
+   are numbered in the order they appear in the section. A `compare` (the
+   before/after phone, PrivacyCompare.astro) takes a claim the same way. */
 import type { CaseBlock } from '../data/cases';
 import Reveal from './Reveal.astro';
 import EnrollPrototype from './EnrollPrototype.astro';
 import OffersPrototype from './OffersPrototype.astro';
 import AdsConsentPrototype from './AdsConsentPrototype.astro';
 import PrivacyScreens from './PrivacyScreens.astro';
+import PrivacyCompare from './PrivacyCompare.astro';
 
 interface Props { blocks: CaseBlock[] }
 const { blocks } = Astro.props;
+let claimCount = 0;
+const claimNum = blocks.map((b) =>
+  (b.kind === 'figure' || b.kind === 'screens' || b.kind === 'compare') && b.claim
+    ? String(++claimCount).padStart(2, '0')
+    : null,
+);
 ---
 {blocks.map((block, i) => (
-  <Reveal delay={Math.min(i, 3) * 80}>
+  <Reveal still delay={Math.min(i, 3) * 80}>
+    {claimNum[i] && (
+      <p class="claim">
+        <span class="claim__num u-label-mono" aria-hidden="true">{claimNum[i]}</span>
+        <span class="claim__text">{(block as { claim: string }).claim}</span>
+      </p>
+    )}
+
+    {block.kind === 'bet' && (
+      <div class="bet">
+        <p class="u-label-mono bet__label">The bet</p>
+        <p class="bet__text">{block.text}</p>
+      </div>
+    )}
+
     {block.kind === 'prose' && (
       <div class="prose">
         {block.text.map((p) => <p>{p}</p>)}
@@ -95,6 +124,9 @@ const { blocks } = Astro.props;
     )}
     {block.kind === 'screens' && (
       <PrivacyScreens set={block.set} caption={block.caption} />
+    )}
+    {block.kind === 'compare' && (
+      <PrivacyCompare set={block.set} notes={block.notes} claim={block.claim} />
     )}
 
     {block.kind === 'metrics' && (
@@ -217,6 +249,38 @@ const { blocks } = Astro.props;
     text-wrap: balance;
   }
   .quote cite { display: block; margin-top: 0.75rem; font-style: normal; }
+
+  /* --- bet: the case's one question, set like a quote without the rule --- */
+  .bet__label { margin: 0 0 0.75rem; }
+  .bet__text {
+    font-family: var(--font-serif); font-weight: var(--weight-serif);
+    font-size: var(--step-title);
+    line-height: 1.35;
+    letter-spacing: var(--tracking-serif);
+    margin: 0;
+    max-width: 36ch;
+    color: var(--fg);
+    text-wrap: balance;
+  }
+
+  /* --- claim: a numbered craft decision, above its screens -------------- */
+  .claim {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    column-gap: 0.75rem;
+    align-items: baseline;
+    margin: 0 0 1.25rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--rule);
+    max-width: var(--measure);
+  }
+  .claim__num { color: var(--fg); letter-spacing: 0.04em; }
+  .claim__text {
+    font-size: var(--step-body);
+    line-height: 1.45;
+    color: var(--fg);
+    text-wrap: balance;
+  }
 
   /* --- metrics ---------------------------------------------------------- */
   .metrics {
