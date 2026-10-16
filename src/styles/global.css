@@ -6,19 +6,14 @@
 
 * { box-sizing: border-box; }
 
-/* Page scale. The layout is composed for a ~1440x800 laptop, where the
-   hero fills the first screen exactly. On a taller screen every rem-sized
-   thing (type, spacing, the portrait) grows by the same factor, so a
-   1810x1300 monitor shows the laptop composition, larger, instead of the
-   same 800px block with empty screen under it. Not CSS `zoom`: that also
-   multiplies vw/svh, which the hero's height and the gutters use.
-   --page-scale is set by the inline script in Base.astro, which measures
-   the screen at 100% zoom so browser zoom still multiplies on top. 100%
-   keeps the visitor's own default font size as the base. */
+/* No page scale: the site renders at 1x on every screen, like the
+   reference (allierho.com). It used to scale every rem up with the
+   screen, to 1.8x, which made the type read as too big. 100% keeps the
+   visitor's own default font size as the base. */
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
-  font-size: calc(100% * var(--page-scale, 1));
+  font-size: 100%;
 }
 
 body {
@@ -68,7 +63,7 @@ h1, h2, h3, h4, h5, h6 {
    read the same tokens.
      .u-display  the hero sentence — serif 300, 50px
      .u-heading  section/page headlines — serif 300, 44px
-     .u-title    sub-headings — serif 300, 26px
+     .u-title    sub-headings — serif 300, 22px
      .u-label    labels, captions — Manrope 600, 12px, uppercase
      .u-nav      the name and nav links — Manrope 600, 14px, uppercase
      .u-mono     ticking numbers, arrows — Azeret Mono 400
@@ -87,7 +82,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .u-display { font-size: var(--step-display); line-height: var(--leading-display); }
 .u-heading { font-size: var(--step-heading); line-height: var(--leading-heading); }
-.u-title   { font-size: var(--step-title);   line-height: var(--leading-heading); }
+.u-title   { font-size: var(--step-title);   line-height: var(--leading-title); letter-spacing: var(--tracking-title); }
 .u-display em,
 .u-heading em,
 .u-title em,

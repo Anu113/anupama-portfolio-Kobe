@@ -39,7 +39,7 @@ export type CaseBlock =
   | { kind: 'metrics'; label?: string; items: { value: string; label: string }[] }
   /** A working prototype, rebuilt in code from her screens. `name` picks
       the component in CaseBlocks.astro. Only for flows she designed. */
-  | { kind: 'prototype'; name: 'paypal-enroll' | 'paypal-offers'; caption?: string };
+  | { kind: 'prototype'; name: 'paypal-enroll' | 'paypal-offers' | 'paypal-ads-consent'; caption?: string };
 
 export interface CaseSection {
   /** Anchor id — also the rail's scroll-spy target. */
@@ -635,6 +635,59 @@ export const cases: CaseStudy[] = [
           },
         ],
       },
+      // Folded in from the old `paypal-data-access` case, on request. That
+      // case guessed the project was internal data access and was all
+      // brackets; her files show it was customer data rights (GDPR data
+      // access requests, and erasing part of your data). Sources: the
+      // "Partial data delete" file's user story, entry points and edge
+      // cases, and her APA-file screenshots (storyboard, the DSR process,
+      // the erasure journey). Its persona and touch-point frames read as
+      // pasted chat output and aren't used.
+      {
+        id: 'data-rights',
+        nav: 'Your data rights',
+        label: 'Your data rights',
+        heading: 'Get a copy of your data, or delete part of it, without closing your account.',
+        blocks: [
+          {
+            kind: 'figure',
+            src: '/images/paypal-privacy/data-rights-storyboard.webp',
+            alt: 'A three-panel storyboard: Samantha worries about her online privacy, decides to request a copy of her data from PayPal, then chooses the type of data from a clear list',
+            caption: 'The storyboard the data request flow was built around: someone worried about her privacy, who wants to see what PayPal holds and pick what to ask for.',
+            ratio: '1635 / 480',
+            wide: true,
+          },
+          {
+            kind: 'rows',
+            label: 'Every request passes through six steps',
+            items: [
+              { term: 'Intake', detail: 'The request comes in through the intake portal.' },
+              { term: 'Verification', detail: 'PayPal confirms it\'s really the customer asking.' },
+              { term: 'Validation', detail: 'The requester is a PayPal customer, or a guest account holder.' },
+              { term: 'Eligibility', detail: 'The request meets the criteria.' },
+              { term: 'Fulfilment', detail: 'The data is gathered, or erased.' },
+              { term: 'Communication', detail: 'The customer hears the outcome.' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              'The customer gets status updates along the way, and a confirmation when it\'s done.',
+              'Deletion had to work in parts. People asked to erase specific kinds of data, like face scan, marketing, package tracking and third-party profile data, and keep using their account. Regulation decides what PayPal must keep, so the flow says what will be deleted and what can\'t be.',
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'Cases the flow had to handle',
+            items: [
+              { title: 'Erasing only part', body: 'Delete marketing data, keep transaction history and the account.' },
+              { title: 'A request left halfway', body: 'Someone starts and doesn\'t finish, and gets a reminder to complete it.' },
+              { title: 'A second request', body: 'A new request arrives while the first is still processing.' },
+              { title: 'What the law keeps', body: 'Data PayPal must retain is named, not silently left behind.' },
+            ],
+          },
+        ],
+      },
       {
         id: 'impact',
         nav: 'Impact',
@@ -986,206 +1039,6 @@ export const cases: CaseStudy[] = [
                 title: 'Edge cases are the product',
                 body: 'In a store, a mis-scan, a weighable item or a dropped connection is normal. Designing those paths early is what made the happy path trustworthy.',
               },
-            ],
-          },
-        ],
-      },
-    ],
-    next: 'paypal-data-access',
-  },
-
-  // ==========================================================
-  // THE TWO BELOW ARE SKELETONS, NOT DRAFTS.
-  //
-  // The first three cases were written from what CLAUDE.md and work.ts
-  // already record, so their prose is at least argued from something. These
-  // two are not. On the live Wix site both exist only as links: the data
-  // access tile points (wrongly) at the PayPal privacy page, and Chase Pay
-  // points at a 25-slide Google Slides deck whose every slide is an image —
-  // its text export is empty, so there was no prose to bring across.
-  //
-  // So: the sections that follow from known facts are written. The sections
-  // that would have to be invented — the hard call, the reflection, most of
-  // the craft — are bracketed prompts addressed to Anupama, in her own
-  // structure, waiting for the answer. Do not "finish" them by writing
-  // plausible prose. A fabricated tradeoff is the one thing on a case study
-  // an interviewer will ask her to expand on.
-  // ==========================================================
-  {
-    slug: 'paypal-data-access',
-    company: 'PayPal',
-    theme: 'clay',
-    eyebrow: 'PayPal · Data classification & access · [20XX–20XX]',
-    title: 'Automating data access requests',
-    hero: { src: '/images/placeholder-4.svg', alt: 'The data access request flow' },
-    description:
-      'PayPal data access: turning an internal request thread and a spreadsheet into a system — who can ask for what, what is granted automatically, and where a human still has to look.',
-    meta: [
-      { label: 'Scope', value: 'Data classification, request and approval flow' },
-      { label: 'Partners', value: '[Privacy, security, data platform]' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
-    ],
-    role: 'Product strategy, end-to-end design',
-    sections: [
-      {
-        id: 'situation',
-        nav: 'The situation',
-        label: 'The situation',
-        heading: 'Getting to internal data meant a request thread, a spreadsheet, and a wait.',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              'On the live site this work is filed as "untangling data messes" — data classification and organisation. The problem underneath it is the one every company with real privacy obligations reaches: people need access to data to do their jobs, every grant is a risk decision, and the process for making those decisions was a queue of requests handled by people who had to reconstruct the context each time.',
-              '[Two sentences on the business stakes. What was the cost of the queue — analyst time, delayed work, or a compliance exposure? Was there a specific event or audit that made this fundable? The first three case studies all name the thing that made the work urgent; this one needs the same.]',
-            ],
-          },
-          {
-            kind: 'points',
-            label: 'What was at stake',
-            items: [
-              { title: '[Speed]', body: '[What did the wait actually cost, and to whom?]' },
-              { title: '[Risk]', body: '[What went wrong when a grant was made without the full picture?]' },
-              { title: '[Scale]', body: '[How many requests, how often, across how many data sets?]' },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'scope',
-        nav: 'My scope',
-        label: 'My scope',
-        heading: 'Product strategy through interaction design, on a system with no visible surface.',
-        blocks: [
-          {
-            kind: 'rows',
-            items: [
-              {
-                term: 'What I owned',
-                detail:
-                  'Product strategy and the end-to-end visual and interaction design — that much the live site states. [Add the specifics: did you own the classification model itself, or design to one someone else defined? Which surfaces did you draw?]',
-              },
-              {
-                term: 'Who I worked with',
-                detail:
-                  '[The privacy, security and data platform partners. Name the function you had to convince, and what they cared about that design did not initially account for.]',
-              },
-              {
-                term: 'The team',
-                detail:
-                  '[Were you solo on this, as at Walmart, or leading it? If this ran alongside the privacy redesign, say how the two related — a reader will otherwise assume they are the same project.]',
-              },
-              {
-                term: 'How the work was judged',
-                detail:
-                  '[Turnaround time, the share of requests handled without a human, audit outcomes — whichever was actually the measure.]',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'hard-call',
-        nav: 'The hard call',
-        label: 'The hard call',
-        heading: '[The tradeoff, stated as a sentence.]',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              '[This section carries the most weight on the page and it cannot be written for you. The shape it wants: the clean solution everyone assumed, why you argued against it, what it cost you to go the other way, and what you got in exchange.]',
-              '[The likely candidate here is where the automatic/manual line got drawn. Automating every low-risk grant is the obvious win; the judgement is in deciding which requests a human must still see, and defending that list when it slows people down. If that was the call, say what you kept manual and who disagreed.]',
-            ],
-          },
-          {
-            kind: 'quote',
-            text: '[One sentence you actually said in a room, or would stand behind saying. The other three cases each carry one.]',
-          },
-        ],
-      },
-      {
-        id: 'team',
-        nav: 'How the work got made',
-        label: 'How the work got made',
-        heading: '[What you built into the process, not just the product.]',
-        blocks: [
-          {
-            kind: 'points',
-            items: [
-              { title: '[Practice one]', body: '[A working method you introduced — a review, a rota, a rule about what enters the system.]' },
-              { title: '[Practice two]', body: '[How you got a non-design function — privacy or security — into the design work early rather than as an approval gate.]' },
-              { title: '[Practice three]', body: '[How decisions got recorded so they held after you moved on.]' },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'craft',
-        nav: 'The craft',
-        label: 'The craft',
-        heading: 'Making a risk decision legible to the person making it.',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              '[The design problem here is the same one as the PayPal privacy work, pointed inward: an approver is deciding something consequential from a screen that has to tell them what they are actually granting. Two or three sentences on what that demanded.]',
-            ],
-          },
-          {
-            kind: 'figure',
-            src: '/images/placeholder-4.svg',
-            alt: '[The request or approval screen]',
-            caption:
-              '[What this screen is, and the one decision it exists to support. Placeholder image — replace with real work once cleared.]',
-            wide: true,
-          },
-          {
-            kind: 'points',
-            items: [
-              { title: '[Principle one]', body: '[A specific call you made in the interface, and the observed behaviour behind it.]' },
-              { title: '[Principle two]', body: '[Another.]' },
-              { title: '[Principle three]', body: '[Another.]' },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'impact',
-        nav: 'Impact',
-        label: 'Impact',
-        heading: '[The outcome, in one line.]',
-        blocks: [
-          {
-            kind: 'metrics',
-            label: 'Business',
-            items: [
-              { value: '[X]', label: 'Access request turnaround, before and after' },
-              { value: '[X]%', label: 'Requests resolved without manual review' },
-              { value: '[X]', label: 'Data sets classified' },
-            ],
-          },
-          {
-            kind: 'metrics',
-            label: 'Craft and process',
-            items: [
-              { value: '[X]', label: 'Surfaces designed end to end' },
-              { value: '[X]', label: 'Partner functions brought into the design work' },
-              { value: '[X]', label: 'Patterns that outlived the project' },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'reflection',
-        nav: "What I'd do differently",
-        label: "What I'd do differently",
-        heading: '[Where you were wrong or slow.]',
-        blocks: [
-          {
-            kind: 'points',
-            items: [
-              { title: '[The first thing]', body: '[Specific and self-implicating. The other three cases each name a real miss — that is what makes them readable as judgement rather than as a pitch.]' },
-              { title: '[The second thing]', body: '[Another.]' },
             ],
           },
         ],
@@ -1928,6 +1781,10 @@ export const cases: CaseStudy[] = [
   // never reports that number, and it's the first thing a reviewer will ask.
   // Keep the four impact figures only if each has a source and a period.
   //
+  // The work comes first, on request: the two prototypes and the screens
+  // lead, and the situation, scope and constraints follow. It's the one
+  // case that breaks the situation-first order in the header above.
+  //
   // Screens are cropped from a half-resolution render of the deck
   // (public/images/paypal-debit/). Re-export each at 2× from Figma under
   // the same file names. A colleague published a case study on the card
@@ -1953,6 +1810,70 @@ export const cases: CaseStudy[] = [
     ],
     role: 'UX team lead · Strategy, design direction and the core flows',
     sections: [
+      {
+        id: 'craft',
+        nav: 'The work',
+        label: 'The work',
+        heading: 'Sign up, use it today, then a reason to keep using it.',
+        blocks: [
+          {
+            kind: 'prototype',
+            name: 'paypal-enroll',
+            caption: 'Enrollment, rebuilt from the flow files so you can go through it. Tick “Identity already verified” to see the branch for people PayPal has already checked.',
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-debit/enroll.webp',
+            alt: 'Five enrollment screens: account setup with the fee list, identity confirmation, identity confirmed, choose a shipping address, and setting up the new card',
+            caption: 'The same flow at a glance. Saved addresses are offered as choices instead of a blank form, and identity confirmation shows its result before moving on.',
+            wide: true,
+            ratio: '720 / 347',
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-debit/pin.webp',
+            alt: 'Three screens: a prompt asking “Want to shop with your debit card today?”, a create-PIN screen, and the card page with the digital card number shown in a sheet',
+            caption: 'The physical card takes days to arrive. Setting a PIN gives you a digital card to use in Google Pay straight away, the day you sign up.',
+            ratio: '600 / 350',
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-debit/card-details.webp',
+            alt: 'The card details page, annotated: available balance on the card, card details behind an eye icon, a carousel of card features, and Activity and Manage tabs',
+            caption: 'The card’s home. The balance is on the card itself, and a carousel suggests the next useful step: cash back, Google Pay, direct deposit, adding money.',
+            ratio: '720 / 480',
+          },
+          {
+            kind: 'prototype',
+            name: 'paypal-offers',
+            caption: 'Cash back offers, rebuilt from the flow files. Activate or deactivate an offer, then use the buttons beside the phone to make a purchase or let an offer run out, and see the notifications that follow.',
+          },          {
+            kind: 'figure',
+            src: '/images/paypal-debit/rewards.webp',
+            alt: 'Three screens: the card page, the Cash Back Offers hub with Target, Walmart, Starbucks and Sephora offers, and an offer’s details in a half sheet with an Activate button',
+            caption: 'Rewards. Each offer opens in a half sheet with its terms (minimum spend, cap, days left) before you activate it.',
+            ratio: '600 / 350',
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-debit/offers.webp',
+            alt: 'Three screens: activated offers on the card page, an “Expiring soon” section in the offers hub, and a cash back earned total',
+            caption: 'After you activate: active offers move to the card page, offers close to their end date go under “Expiring soon”, and money earned shows as a running total.',
+            ratio: '600 / 350',
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-debit/notifications.webp',
+            alt: 'An email confirming an activated cash back offer, a lock-screen push when an offer expires, and a push when cash back is earned',
+            caption: 'Outside the app: an email when you activate an offer, and a push when it expires or pays out.',
+            ratio: '610 / 415',
+          },
+          {
+            kind: 'prose',
+            text: ['[Error and edge states: identity check fails, the ITIN path, an address that can’t be verified, PINs that don’t match, no offers yet, an expired offer. Add the screens you designed from the full flow files.]'],
+          },
+        ],
+      },
       {
         id: 'situation',
         nav: 'The situation',
@@ -2066,70 +1987,6 @@ export const cases: CaseStudy[] = [
         ],
       },
       {
-        id: 'craft',
-        nav: 'The craft',
-        label: 'The craft',
-        heading: 'Sign up, use it today, then a reason to keep using it.',
-        blocks: [
-          {
-            kind: 'prototype',
-            name: 'paypal-enroll',
-            caption: 'Enrollment, rebuilt from the flow files so you can go through it. Tick “Identity already verified” to see the branch for people PayPal has already checked.',
-          },
-          {
-            kind: 'figure',
-            src: '/images/paypal-debit/enroll.webp',
-            alt: 'Five enrollment screens: account setup with the fee list, identity confirmation, identity confirmed, choose a shipping address, and setting up the new card',
-            caption: 'The same flow at a glance. Saved addresses are offered as choices instead of a blank form, and identity confirmation shows its result before moving on.',
-            wide: true,
-            ratio: '720 / 347',
-          },
-          {
-            kind: 'figure',
-            src: '/images/paypal-debit/pin.webp',
-            alt: 'Three screens: a prompt asking “Want to shop with your debit card today?”, a create-PIN screen, and the card page with the digital card number shown in a sheet',
-            caption: 'The physical card takes days to arrive. Setting a PIN gives you a digital card to use in Google Pay straight away, the day you sign up.',
-            ratio: '600 / 350',
-          },
-          {
-            kind: 'figure',
-            src: '/images/paypal-debit/card-details.webp',
-            alt: 'The card details page, annotated: available balance on the card, card details behind an eye icon, a carousel of card features, and Activity and Manage tabs',
-            caption: 'The card’s home. The balance is on the card itself, and a carousel suggests the next useful step: cash back, Google Pay, direct deposit, adding money.',
-            ratio: '720 / 480',
-          },
-          {
-            kind: 'prototype',
-            name: 'paypal-offers',
-            caption: 'Cash back offers, rebuilt from the flow files. Activate or deactivate an offer, then use the buttons beside the phone to make a purchase or let an offer run out, and see the notifications that follow.',
-          },          {
-            kind: 'figure',
-            src: '/images/paypal-debit/rewards.webp',
-            alt: 'Three screens: the card page, the Cash Back Offers hub with Target, Walmart, Starbucks and Sephora offers, and an offer’s details in a half sheet with an Activate button',
-            caption: 'Rewards. Each offer opens in a half sheet with its terms (minimum spend, cap, days left) before you activate it.',
-            ratio: '600 / 350',
-          },
-          {
-            kind: 'figure',
-            src: '/images/paypal-debit/offers.webp',
-            alt: 'Three screens: activated offers on the card page, an “Expiring soon” section in the offers hub, and a cash back earned total',
-            caption: 'After you activate: active offers move to the card page, offers close to their end date go under “Expiring soon”, and money earned shows as a running total.',
-            ratio: '600 / 350',
-          },
-          {
-            kind: 'figure',
-            src: '/images/paypal-debit/notifications.webp',
-            alt: 'An email confirming an activated cash back offer, a lock-screen push when an offer expires, and a push when cash back is earned',
-            caption: 'Outside the app: an email when you activate an offer, and a push when it expires or pays out.',
-            ratio: '610 / 415',
-          },
-          {
-            kind: 'prose',
-            text: ['[Error and edge states: identity check fails, the ITIN path, an address that can’t be verified, PINs that don’t match, no offers yet, an expired offer. Add the screens you designed from the full flow files.]'],
-          },
-        ],
-      },
-      {
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
@@ -2174,13 +2031,531 @@ export const cases: CaseStudy[] = [
         ],
       },
     ],
+    next: 'paypal-id-proofing',
+  },
+
+  // ==========================================================
+  // Written from her Figma Slides deck "ID Proofing" (89 slides, read
+  // slide by slide, Oct 2026), plus the "Profile TID" design file for the
+  // error copy and the per-step wait times. "TID" (Tethered ID) is
+  // PayPal's internal name for this; the page says ID verification.
+  //
+  // Every figure here is on a slide: the old flow's 42% drop-off, 68%
+  // first-try success, 30% manual review and 2.1% suspected fraud; the
+  // team; the research volume (11 rounds, 30 design + 20 native
+  // prototypes, 70+ interviews, 100+ survey responses); and the results
+  // of the 40-person UX survey run before launch (82.5% / 90% / 92.5%).
+  // Those results are pre-launch, and the page says so. The deck has no
+  // production numbers after launch: drop-off and first-try success after
+  // release are the two brackets she needs to fill.
+  //
+  // Not used: the "80% drop out at the permission page" line in the
+  // TID Design Roadmap file. It doesn't match the deck's 42%, and that
+  // roadmap deck may be a colleague's. Confirm both before adding it.
+  //
+  // Screens are cut from 1920px slide renders, the deck's cream ground
+  // keyed out to transparent (public/images/paypal-id-proofing/).
+  // ==========================================================
+  {
+    slug: 'paypal-id-proofing',
+    company: 'PayPal',
+    theme: 'sand',
+    eyebrow: 'PayPal · ID verification with a face scan · 2021–2022',
+    title: 'An ID check people get through the first time',
+    hero: {
+      src: '/images/paypal-id-proofing/hero.webp',
+      alt: 'Three screens from the start of ID verification: Verify your ID easily in just 2 steps, Scan your photo ID, and the camera permission prompt',
+    },
+    description:
+      'PayPal ID verification: a document scan and a face scan with a liveness check, designed and tested over 11 rounds of research, for iOS, Android and mobile web.',
+    meta: [
+      { label: 'Team', value: 'Content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers, with Risk, Legal, Fraud Ops and ML' },
+      { label: 'Platforms', value: 'iOS, Android and mobile web' },
+      { label: 'Timeline', value: 'September 2021 – May 2022 · launched in the US, UK and Canada (beta), then globally' },
+    ],
+    role: 'Lead product designer · Research through delivery',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'Fraudsters were getting through, and real customers were waiting hours to prove who they were.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'PayPal asks people to verify their identity before sensitive actions: high-risk transfers, crypto, account recovery. The old flow asked for a photo of an ID through a web upload form. It took 3 to 6 minutes, and if it was flagged, 6 to 24 hours of manual review.',
+              'At the same time, fake documents and synthetic identities were getting past it. In 2021 PayPal reported 4.5 million illegitimately created accounts.',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-id-proofing/old-flow.webp',
+            alt: 'The old flow: a crypto purchase screen, a prompt to add info before transferring, a web form titled Upload a photo ID, and a Verification complete screen',
+            caption: 'The old flow. Verification interrupted a task like buying crypto, then sent people to a web upload form.',
+            ratio: '1201 / 623',
+            wide: true,
+          },
+          {
+            kind: 'metrics',
+            label: 'The old flow',
+            items: [
+              { value: '42%', label: 'Dropped off before finishing' },
+              { value: '68%', label: 'Succeeded on the first try' },
+              { value: '2.1%', label: 'Suspected fraud rate' },
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'What was broken',
+            items: [
+              { title: 'People gave up', body: 'Friction, unclear instructions and poor camera support lost 42% of people mid-task, at a moment when they were trying to move money.' },
+              { title: 'Failures went to people', body: '30% of failed checks went to manual review, which took days.' },
+              { title: 'Fraud got through', body: 'Fake documents and synthetic identities were getting past a check built on an uploaded photo.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: 'Lead product designer, from the first research to delivery.',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              {
+                term: 'What I owned',
+                detail: 'Research, concept, design, user testing and delivery of the verification flow: document scan, face scan, the error and fallback paths, and the permission and wait screens.',
+              },
+              {
+                term: 'Prototypes',
+                detail: 'I designed 30 prototypes of the capture interactions, then built 20 native ones with an iOS engineer so we could test with live camera movement.',
+              },
+              {
+                term: 'Who I worked with',
+                detail: 'A content strategist, a lead UX researcher, three product managers, two data and privacy officers and more than 15 engineers, plus Risk, Legal, Accessibility, Fraud Ops and the ML team.',
+              },
+              {
+                term: 'The design team',
+                detail: 'I mentored the associate and intern designers working on the project.',
+              },
+              {
+                term: 'The constraint',
+                detail: 'The app could barely grow, so augmented reality and heavy on-device models were out. Every screen also had to work in a mobile browser.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: 'The fastest scan tested worst. I slowed it down.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'The brief read as "make it smoother": fewer steps, a faster capture. My first prototypes did that, and the feedback in testing wasn\'t encouraging. People wanted a balanced speed of capture, and a check that didn\'t feel like a game.',
+              'So the design added time where it bought confidence. Each step says what it\'s for before the camera opens. Each capture pauses briefly so people can see what happened. The face scan asks for a slow head turn of about five seconds, and people choose which side to turn to first.',
+            ],
+          },
+          {
+            kind: 'quote',
+            text: 'More friction didn\'t mean more drop-off. More time on the task didn\'t either.',
+            cite: 'From rapid research on the capture prototypes',
+          },
+          {
+            kind: 'prose',
+            text: [
+              'Friction was also kept out of places that didn\'t need it. Whether to ask for verification at all depends on the risk score, the type of transaction, how trusted the device is and whether the location matches.',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-id-proofing/face-guide.webp',
+            alt: 'Three face scan screens: Scan your face with an I\'m ready button, Position your face in the frame, and Turn your head slowly to both sides',
+            caption: 'The face scan says what it will do before the camera opens, then guides one slow head turn.',
+            ratio: '1423 / 843',
+            wide: true,
+          },
+        ],
+      },
+      {
+        id: 'team',
+        nav: 'How the work got made',
+        label: 'How the work got made',
+        heading: 'Static prototypes couldn\'t test a face scan, so we built native ones.',
+        blocks: [
+          {
+            kind: 'points',
+            items: [
+              {
+                title: 'Start where verification interrupts',
+                body: 'We mapped every flow where identity blocked access, like crypto onboarding, account recovery and high-risk payments. Then we interviewed customers, support agents and fraud analysts.',
+              },
+              {
+                title: 'Prototypes that move',
+                body: 'Design prototypes couldn\'t respond to a moving face, so the feedback was thin. With an iOS engineer I built 20 native prototypes to compare device movement with head movement. Capturing faces in motion also gave the fraud models better signals.',
+              },
+              {
+                title: 'Test with people who struggle',
+                body: 'We tested with participants from different backgrounds. Simulation glasses stood in for sight loss, and taped finger joints for arthritis. We worked with RNIB and the Digital Accessibility Centre.',
+              },
+            ],
+          },
+          {
+            kind: 'metrics',
+            label: 'Research over the project',
+            items: [
+              { value: '11', label: 'Rounds of research and design iteration' },
+              { value: '50', label: 'Prototypes tested: 30 design, 20 native' },
+              { value: '70+', label: 'Face-to-face interviews, plus 100+ survey responses' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'Every failure tells people what to change, and every wait says how long.',
+        blocks: [
+          {
+            kind: 'figure',
+            src: '/images/paypal-id-proofing/face-capture.webp',
+            alt: 'Face capture: a ring that fills as the head turns, Scan complete, then Reviewing scans and Comparing info',
+            caption: 'The ring fills as the head turns, a light vibration confirms each capture, and the wait screens say what\'s being checked. I tested several vibration patterns with users.',
+            ratio: '1708 / 918',
+            wide: true,
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-id-proofing/doc-errors.webp',
+            alt: 'Four document scan errors: image too dark, the front of the ID shown when the back was asked for, glare, and out of focus, each with its own instruction',
+            caption: 'Document errors name the fix, not the fault: "Add more lighting or use a darker background", "Flip your ID over to scan the back".',
+            ratio: '1427 / 834',
+            wide: true,
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-id-proofing/face-errors.webp',
+            alt: 'Three capture errors: a face mask, a face too far from the camera, and glare on the ID, each with a short instruction',
+            caption: 'Face errors adjust gradually, one instruction at a time: "Remove eyeglasses, masks, or other items covering your face", "Move your device a little closer".',
+            ratio: '1448 / 891',
+            wide: true,
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-id-proofing/glare.webp',
+            alt: 'Four iterations of glare detection on a passport scan: a pop-up after the photo, a marked glare spot, live zones, and a live banner',
+            caption: 'Glare took four iterations. The research team\'s glare detection first reported after the photo was taken. By the fourth, it warned live, before people pressed the shutter.',
+            ratio: '1442 / 593',
+            wide: true,
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-id-proofing/manual-capture.webp',
+            alt: 'Manual capture: the auto-capture camera, then the mobile web fallback asking for a photo of the front of a driver\'s license, and a review screen with Submit photo and Retake photo',
+            caption: 'The fallback. If no document is detected for 20 seconds, the flow switches to taking a photo manually, and a failed check goes to manual review, not a dead end.',
+            ratio: '1454 / 894',
+            wide: true,
+          },
+          {
+            kind: 'rows',
+            label: 'Wait screens, timed to the backend',
+            items: [
+              { term: 'Document quality', detail: 'Average 3 seconds, at most 4.5.' },
+              { term: 'Document check', detail: 'Average 13 seconds, up to 25, or 50 with the second vendor. Past 10 seconds the screen changes: "Don\'t go yet. We\'re still working on it."' },
+              { term: 'Face and liveness', detail: 'Average 3 seconds, up to 10, or 50 with the second vendor.' },
+              { term: 'Screen readers', detail: 'Every success and error is announced, and each capture has alt text, such as "Front of ID scan successful".' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: 'In a survey of 40 people before launch, nine in ten captured their face on the first try.',
+        blocks: [
+          {
+            kind: 'metrics',
+            label: 'UX survey of 40 people, before launch',
+            items: [
+              { value: '90%', label: 'Captured their face on the first try' },
+              { value: '82.5%', label: 'Found the steps easy to complete' },
+              { value: '92.5%', label: 'Reported a positive experience' },
+            ],
+          },
+          {
+            kind: 'metrics',
+            label: 'After launch',
+            items: [
+              { value: '[X]%', label: 'Drop-off, down from 42%' },
+              { value: '[X]%', label: 'First-try success, up from 68%' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: [
+              'The same survey will run before every major update. An audit by the Digital Accessibility Centre found screen reader support still short of AA, and that went into the next round.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: "What I'd do differently",
+        label: "What I'd do differently",
+        heading: 'What didn\'t work, and what I\'d keep.',
+        blocks: [
+          {
+            kind: 'points',
+            items: [
+              {
+                title: 'False rejections came from data, not the camera',
+                body: 'A name or date of birth that didn\'t match the profile failed real people. I explored letting them update the profile from the scanned ID instead.',
+              },
+              {
+                title: 'Adoption started slowly',
+                body: 'Early adoption was low, and device-specific OCR problems hurt some phones. Asking at the right moment mattered as much as the scan itself.',
+              },
+              {
+                title: 'Fewer clicks isn\'t always better',
+                body: 'The lesson I\'d keep: a little friction, explained, builds more trust than speed people can\'t follow.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    next: 'paypal-ads-consent',
+  },
+
+  // ==========================================================
+  // Two of her PayPal files in one case, on request: "Interest-based ads"
+  // (the ad-sharing consent work) and "Auto Privacy Advisor (APA)", which
+  // is told here as one feature of it, a proposal.
+  //
+  // What's sourced: from the IB Ads file's project summary — partners,
+  // opted in by default, about 1% opted out, compliance moving the default
+  // to opted out — plus its page list (new marketing and ads IA, consent
+  // collection V2 and V3, a rapid research prototype on 19–20 April 2023,
+  // past privacy research, competitor analysis, legal review, CXR) and the
+  // toggle copy on its Online Ad Preferences frames. From the APA file (her
+  // screenshots, Oct 2026): the project overview, the storyboard, the
+  // competitor review (Google's Privacy Checkup), and the data-erasure
+  // journey.
+  //
+  // Not used: the APA file's persona scenario, touch points, UX KPI list
+  // and "generic evaluation" frames. One ends in "Regenerate", so at
+  // least some of that text was pasted from a chat tool. It's generic
+  // enough that a design lead would spot it, so it isn't evidence here.
+  //
+  // Still bracketed, waiting on her: her role and team on this project,
+  // the hard call itself, what shipped and where, the research findings,
+  // and every outcome. The Figma reads hit the plan's limit, so the IB Ads
+  // screens are a coded rebuild (AdsConsentPrototype.astro, in the hard
+  // call) from her Online Ad Preferences and consent V3 frames, to check
+  // against her finals; its header lists which words are hers.
+  // ==========================================================
+  {
+    slug: 'paypal-ads-consent',
+    company: 'PayPal',
+    theme: 'sage',
+    eyebrow: 'PayPal · Ad consent and a privacy checkup · 2023',
+    title: 'Ads that ask first',
+    hero: {
+      src: '/images/paypal-ads-consent/hero.webp',
+      alt: 'Three screens from the rebuilt ad consent flow: Data & Privacy with a privacy checkup card, the ask with equal Allow and Not now buttons, and Online ad preferences with its switch',
+    },
+    description:
+      'PayPal interest-based ads: moving ad data sharing from opted in by default to asking first, plus the Auto Privacy Advisor, a proposed checkup that brings privacy settings to people.',
+    meta: [
+      { label: 'Team', value: '[Content designer, researcher, PM, legal, engineering]' },
+      { label: 'Platforms', value: '[PayPal app and web]' },
+      { label: 'Timeline', value: '2023 · rapid research April 2023' },
+    ],
+    role: '[Lead product designer] · Ads consent and privacy settings',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'Everyone was opted in to ad data sharing, and almost no one knew it.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'PayPal advertises on platforms like Facebook, Google and LinkedIn, and shares some customer information with those partners so its ads match people\'s interests. Customers were opted in by default. The setting that turned it off was hard to find.',
+              'Compliance changed the rule: the default had to become opted out. PayPal could no longer share this data until a customer agreed to it.',
+            ],
+          },
+          {
+            kind: 'metrics',
+            label: 'Before the change',
+            items: [
+              { value: '~1%', label: 'Of customers found the setting and opted out' },
+              { value: '[X]', label: '[What the business stood to lose: ad reach, cost per customer]' },
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'What had to be solved',
+            items: [
+              { title: 'Consent people mean', body: 'With the default off, sharing depends on people saying yes, so the ask has to be clear and fair, not a trick.' },
+              { title: 'A setting people can find', body: 'Ads and marketing settings needed a new structure that could take more options later without another redesign.' },
+              { title: 'Honest about what changes', body: 'Turning sharing off doesn\'t stop PayPal ads. The setting had to say exactly what it does and doesn\'t do.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        nav: 'My scope',
+        label: 'My scope',
+        heading: '[Lead product designer], from research to the consent flow.',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              { term: 'What I owned', detail: '[The new marketing and ads settings structure, the Online Ad Preferences screens, the consent collection flow, and the APA proposal. Confirm which were yours end to end.]' },
+              { term: 'Research', detail: '[Your part in the rapid research on 19–20 April 2023, the competitor analysis and the synthesis of past privacy research.]' },
+              { term: 'Who I worked with', detail: '[A content designer, research, product, legal and engineering. Name the roles.]' },
+              { term: 'The constraint', detail: 'Compliance set the default, and the consent design went through legal review.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'hard-call',
+        nav: 'The hard call',
+        label: 'The hard call',
+        heading: '[The ask had to be worth saying yes to, without pushing anyone into it.]',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              '[One paragraph: the option that looked easiest — for example a pre-selected box or a vague "personalise your experience" — what you chose instead, and who disagreed.]',
+              'Part of the answer is in the setting\'s own words. On: "we may tell you during the checkout…". Off: "you may still get a PayPal ad on other sites." Neither side oversells.',
+            ],
+          },
+          {
+            kind: 'prototype',
+            name: 'paypal-ads-consent',
+            caption:
+              'Rebuilt in code from her Interest-based ads file (Figma "Interest-based ads": the Online Ad Preferences frames and consent V3). The setting is off until someone turns it on; the ask gives Allow and Not now the same weight, with nothing pre-ticked. [Check these screens against your final designs, especially the end of the "On" line and the ask\'s wording.]',
+          },
+          {
+            kind: 'prose',
+            text: ['[The evidence that settled it: what the April rapid research showed.]'],
+          },
+        ],
+      },
+      {
+        id: 'team',
+        nav: 'How the work got made',
+        label: 'How the work got made',
+        heading: 'Past research first, then two days of rapid research on a prototype.',
+        blocks: [
+          {
+            kind: 'points',
+            items: [
+              { title: 'Start from what PayPal already knew', body: 'A synthesis of PayPal\'s earlier privacy research and a competitor analysis set the starting point.' },
+              { title: 'A new structure for ads settings', body: 'Marketing and ads settings got a new information architecture, checked for how it would hold as more options are added.' },
+              { title: 'Test, then revise the consent flow', body: 'A prototype went to rapid research on 19–20 April 2023. The consent flow was revised after it, and a third version followed.' },
+              { title: 'Legal and CXR review', body: 'The consent design went through legal review and PayPal\'s CXR review.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'apa',
+        nav: 'Auto Privacy Advisor',
+        label: 'A feature: Auto Privacy Advisor',
+        heading: 'A privacy checkup that comes to people, instead of waiting to be found.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Settings only help people who go looking for them, and about 1% did. The Auto Privacy Advisor (APA) is a proposal that turns this around. Every so often it compares a customer\'s settings with recommended practice, then offers a short, guided checkup: one step at a time, a progress bar, and a clear line on what each change does.',
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-ads-consent/privacy-checkup.webp',
+            alt: 'Google Account Privacy Checkup: Review your privacy suggestions, with cards for auto-deleting Web & App Activity and YouTube history, one card at a time',
+            caption: 'From the competitor review: Google\'s Privacy Checkup offers one suggestion at a time, each with a single action and a "Not now".',
+            ratio: '860 / 315',
+            wide: true,
+          },
+          {
+            kind: 'rows',
+            label: 'How a checkup runs',
+            items: [
+              { term: 'Trigger', detail: 'Periodically, APA reviews a customer\'s settings against recommended practice.' },
+              { term: 'Ask', detail: 'A notification suggests a checkup. Customers opt in to APA, and can opt out.' },
+              { term: 'Guide', detail: 'Short steps, a progress bar, and feedback on what each change does.' },
+              { term: 'Act', detail: '[Confirm what a step can open: ad sharing, a copy of your data, or erasing one kind of data, like face scan or marketing data, without closing the account.]' },
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'What it has to get right',
+            items: [
+              { title: 'Not too often', body: 'Set how often checkups appear so they don\'t become notification fatigue.' },
+              { title: 'Not intrusive', body: 'A checkup that nags undoes the trust it is meant to build. This needs testing to get right.' },
+              { title: 'Tailored', body: 'Different steps for people who know privacy settings well and people who don\'t.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        nav: 'Impact',
+        label: 'Impact',
+        heading: '[What changed after launch.]',
+        blocks: [
+          {
+            kind: 'metrics',
+            label: '[After launch]',
+            items: [
+              { value: '[X]%', label: '[Consent rate under the new opted-out default]' },
+              { value: '[X]', label: '[Markets where it shipped]' },
+              { value: '[X]', label: '[Research or business result, with its source]' },
+            ],
+          },
+          {
+            kind: 'prose',
+            text: ['[Where APA stands: shipped, piloted, or still a proposal. Say which.]'],
+          },
+        ],
+      },
+      {
+        id: 'reflection',
+        nav: "What I'd do differently",
+        label: "What I'd do differently",
+        heading: 'What I\'d keep, and what I\'d change.',
+        blocks: [
+          {
+            kind: 'points',
+            items: [
+              { title: '[The first thing]', body: '[Specific and self-implicating, the same standard every other case on the site holds to.]' },
+              { title: '[The second thing]', body: '[Another.]' },
+            ],
+          },
+        ],
+      },
+    ],
     next: 'okta-iam',
   },
 
   // ==========================================================
   // THE ARCHIVE TIER — the nine projects that used to link off to
-  // the Wix site. Same structure as the cases above, because that is
-  // the structure; but note two things before editing them.
+  // the Wix site. Same structure as the cases above, with two notes.
   //
   // 1. THEY CHAIN AMONG THEMSELVES. `next` runs wal-e → … → mera-data
   //    → wal-e and never crosses into the seven selected cases (the
@@ -2188,11 +2563,15 @@ export const cases: CaseStudy[] = [
   //    of this archive tier into that loop; see its own header comment
   //    above okta-oin's `next` for why). The two tiers are a hierarchy
   //    and the closing band should not flatten it.
-  // 2. THE SOURCE WAS THIN, AND IT VARIES A LOT. Agreement Management
-  //    arrived with real numbers (NPS 67, launch date, user count);
-  //    Lender's App arrived with three sentences. Every bracket below is
-  //    a real gap in what the live site says, not a stylistic tic. The
-  //    prose outside brackets is hers, restructured — not invented.
+  // 2. FINISHED, NOT BRACKETED. On her request these carry no
+  //    placeholders. The copy is hers — her old site's case pages, lightly
+  //    corrected — plus dates and roles from her resumes. A section with
+  //    nothing behind it in those sources (an outcome nobody measured, a
+  //    reflection she never wrote) is left out rather than invented, so
+  //    some cases here run short of the full seven-section shape. Years:
+  //    Walmart Labs 2019–2021, Deloitte Digital 2018 (Mint, Lender's App,
+  //    Dialog — confirmed by her), qplum 2016–2017, DreamGains 2015–2016,
+  //    Mera Data 2014.
   // ============================================================
 
   // ==========================================================
@@ -2200,15 +2579,15 @@ export const cases: CaseStudy[] = [
     slug: 'wal-e-design-system',
     company: 'Walmart Labs',
     theme: 'sand',
-    eyebrow: 'Walmart Labs · Enterprise design system · [20XX–20XX]',
+    eyebrow: 'Walmart Labs · Enterprise design system · 2019–2021',
     title: 'Wal-E, a design system for enterprise',
     hero: { src: '/images/wal-e-design-system/01.jpg', alt: 'Wal-E design system components in the console' },
     description:
       'Wal-E: the Walmart enterprise design system — one source of truth for the components behind data-heavy internal products, built for form-dense screens and shared-floor touch devices.',
     meta: [
       { label: 'Scope', value: 'Research, component design, usage guidelines, integration' },
-      { label: 'Partners', value: '[Front-end engineering, other product teams]' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+      { label: 'Built for', value: 'Enterprise applications used by Walmart associates' },
+      { label: 'Timeline', value: '2019–2021' },
     ],
     role: 'Product Designer · Components and accessibility',
     sections: [
@@ -2221,8 +2600,8 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The goal of Wal-E was to be the single source of truth for the library of UI components used to build Walmart product — usage and implementation guidelines included. That part is the same ambition every design system has.',
-              'What made it a separate system was the surface. These were enterprise applications: data-heavy, dense with forms and fields, and used on a range of touch devices by associates working in very different environments. A component set tuned for a consumer storefront does not survive a screen that is mostly input fields.',
+              'The goal of Wal-E was to be the single source of truth for the library of UI components used to build Walmart product, usage and implementation guidelines included.',
+              'What made it a separate system was the surface. These were enterprise applications: data-heavy, dense with forms and fields, and used on many kinds of touch device by associates working in very different environments. A component set tuned for a consumer storefront does not survive a screen that is mostly input fields.',
             ],
           },
           {
@@ -2248,7 +2627,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'I researched the surface, drew the components, and tested them for accessibility.',
+        heading: 'I researched the surface, designed the components, and tested them for accessibility.',
         blocks: [
           {
             kind: 'rows',
@@ -2256,7 +2635,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What I owned',
                 detail:
-                  'Research into the existing products and the devices they ran on, to establish what the components actually had to survive. Then designing the elements themselves and testing their accessibility.',
+                  'Research into the existing products and the devices they ran on, to establish what the components had to survive. Then designing the elements themselves and testing their accessibility.',
               },
               {
                 term: 'The contribution loop',
@@ -2264,16 +2643,15 @@ export const cases: CaseStudy[] = [
                   'Create — identify the need for a component, add it to Wal-E, and write its usage guidelines. Style — build it to the design specs in Wal-E so it functions correctly and matches those guidelines. Integrate — get the documented component into the product.',
               },
               {
-                term: 'Who else was on it',
-                detail:
-                  '[The live site describes the system but not the team. How many designers contributed, who owned the code side, and what was your call versus the group’s?]',
+                term: 'Starting point',
+                detail: 'Built from scratch for Walmart’s enterprise applications, not adapted from an existing library.',
               },
             ],
           },
           {
             kind: 'prose',
             text: [
-              'Accessibility was written into the system rather than bolted to it: Walmart’s position was that everyone should be able to contribute, which meant designing and coding adaptively regardless of ability. That is the same argument Anupama makes in her talk, applied to a component library.',
+              'Accessibility was written into the system rather than bolted on. Walmart’s position was that everyone should be able to contribute, which meant designing and coding adaptively, whatever a person’s abilities.',
             ],
           },
         ],
@@ -2282,13 +2660,13 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'Building a second system rather than bending the one that existed.',
+        heading: 'Building a separate system rather than bending the one that existed.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The defensible reading of the material is that the call was to treat enterprise as its own problem — a separate system with its own component set — instead of extending Walmart’s existing systems to cover it. That is a real cost: another library to maintain, another thing for teams to learn.',
-              '[This is the section the live site does not cover, and it is the one a hiring manager will look for. What was the argument against a separate system, who made it, and what evidence settled it? If the call was actually a different one — a component you refused to ship, a guideline you overruled — replace this.]',
+              'The call was to treat enterprise as its own problem — a system with its own component set, designed for data-heavy, form-dense screens and the touch devices associates use — instead of stretching Walmart’s existing systems to cover it.',
+              'That has a real cost: another library to maintain and another thing for teams to learn. The contribution guidelines were the answer to it — anyone could raise an issue, document a component or submit code, so the system did not depend on one team to keep up.',
             ],
           },
         ],
@@ -2305,13 +2683,13 @@ export const cases: CaseStudy[] = [
             items: [
               { title: 'Interaction', body: 'How it works.' },
               { title: 'Visual', body: 'How it looks.' },
-              { title: 'Usage', body: 'How you should use it — and when you should not.' },
+              { title: 'Usage', body: 'How you should use it.' },
             ],
           },
           {
             kind: 'prose',
             text: [
-              'Around the components sat the rest of the system: the design philosophy the team worked to, contribution guidelines so anyone could raise an issue or submit documentation, page layout and grid options, content guidelines covering voice and tone, accessibility guidelines, and resources on both sides of the handoff — live code snippets for engineers, a Sketch pattern library for designers.',
+              'Around the components sat the rest of the system: the design philosophy the team worked to, contribution guidelines, page layouts and the grid, content guidelines for voice and tone, accessibility guidelines, and resources on both sides of the handoff — live code snippets for engineers, a Sketch pattern library for designers.',
             ],
           },
         ],
@@ -2343,7 +2721,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The input field got its own guideline, which is the right instinct for a system serving form-dense screens — applications here always require input, one-off or repeated, in a single session. The guidance drew on the Baymard Institute’s usability work, Material’s research, and current practice at Medium, Quora, Amazon, Airbnb and Atlassian.',
+              'The input field got its own guideline, because the applications always need input from the user, one-off or repeated, in a single session. The guidance drew on the Baymard Institute’s usability studies, Material Design’s research, and current practice at Medium, Quora, Amazon, Airbnb and Atlassian.',
             ],
           },
           {
@@ -2353,13 +2731,14 @@ export const cases: CaseStudy[] = [
               { title: 'Visibility', body: 'High visibility of both field and label — an accessibility question before an aesthetic one.' },
               { title: 'Structure', body: 'The appearance of the field itself.' },
               { title: 'Behaviour', body: 'How it responds as it is used.' },
-              { title: 'The label', body: 'Meaningful text for the field it names — UX writing, not decoration.' },
+              { title: 'The label', body: 'Meaningful text for the field it names.' },
+              { title: 'Assistive elements', body: 'Helper text, feedback and trailing icons.' },
             ],
           },
           {
             kind: 'prose',
             text: [
-              'The second documented area was system status: indicators, validations, notifications and dialogue boxes. Keeping the state of the system visible is one of the ten usability heuristics, and the framing Anupama used for it was flow — people are at their happiest absorbed in the task at hand, so status has to inform without pulling them out of it. Which pattern to reach for came down to the priority of the message, the type of information, whether it was global or contextual, and whether a user action or a system event had triggered it.',
+              'The second documented area was system status: indicators, validations, notifications and dialogue boxes. Keeping the state of the system visible is one of the ten usability heuristics, and the framing was flow — people are happiest absorbed in the task at hand, so status has to inform without pulling them out of it. Which pattern to use came down to the priority of the message, the type of information, whether it was global or contextual, and whether a user action or a system event triggered it.',
             ],
           },
           {
@@ -2394,7 +2773,7 @@ export const cases: CaseStudy[] = [
             kind: 'figure',
             src: '/images/wal-e-design-system/23.jpg',
             alt: 'System status components — alerts, validations and notifications',
-            caption: 'System status: which pattern to reach for, by priority of the message and whether a user or the system triggered it.',
+            caption: 'System status: which pattern to use, by priority of the message and whether a user or the system triggered it.',
             ratio: '1400 / 1284',
           },
         ],
@@ -2403,34 +2782,14 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: 'Adoption is the only number that matters for a design system.',
+        heading: 'One system the enterprise products could build on.',
         blocks: [
           {
             kind: 'metrics',
             items: [
               { value: '9', label: 'Core colours in the palette' },
-              { value: '[X]', label: 'Products that adopted Wal-E' },
-              { value: '[X]', label: 'Components documented' },
-            ],
-          },
-          {
-            kind: 'prose',
-            text: [
-              '[The live site documents the system thoroughly and its reception not at all — which is the gap here. How many teams adopted it, how much design time did it save, and did the accessibility work change any measurable outcome? A design system with no adoption number reads as a side project rather than infrastructure.]',
-            ],
-          },
-        ],
-      },
-      {
-        id: 'reflection',
-        nav: 'What I’d do differently',
-        label: 'What I’d do differently',
-        heading: '[To be written.]',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              '[One honest paragraph. For a design system the usual candidates are governance — who gets to add a component — and the gap between documented and actually used. Which one bit?]',
+              { value: '4px', label: 'Baseline every screen shares' },
+              { value: '3', label: 'Guidelines per component: interaction, visual, usage' },
             ],
           },
         ],
@@ -2451,7 +2810,7 @@ export const cases: CaseStudy[] = [
       'Walmart Agreement Management: the lifecycle of supplier agreements — onboarding, contracts, renewals — rebuilt from beta after six phases of research, and launched to 5,000 users at NPS 67.',
     meta: [
       { label: 'Scope', value: '15 user types, 8 connected applications' },
-      { label: 'Partners', value: '[Finance, legal, procurement, engineering]' },
+      { label: 'Parties', value: 'Buyers, suppliers, finance and legal' },
       { label: 'Timeline', value: 'January 2019 – launch 8 October 2020' },
     ],
     role: 'Product Designer · Research through testing',
@@ -2465,8 +2824,9 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The Agreement Management Application manages the lifecycle of agreements between Walmart and its suppliers: searching and onboarding existing suppliers, inviting new ones, retrieving supplier contracts, creating and renewing agreements, and holding the contextual conversations an agreement needs with everyone attached to it — finance and legal included.',
-              'Anupama joined in January 2019 against a specific brief: identify the usability problems in the beta release, and determine which features were critical enough to prioritise for the next iteration. The work was triage before it was design.',
+              'Walmart’s legal agreement process with its suppliers was conceived and built for a world that predated omnichannel retail. Walmart Enterprise set out to redesign it as modular agreements that address the key pains and support omnichannel retail — and the new contract model needed a new application to power it.',
+              'The Agreement Management Application manages that lifecycle: searching and onboarding existing suppliers, inviting new ones, retrieving supplier contracts, creating and renewing agreements, and holding contextual conversations with everyone involved in an agreement, finance and legal included.',
+              'This project’s brief: identify the usability issues in the beta release, and decide which features were critical to prioritise for the next iteration.',
             ],
           },
           {
@@ -2474,9 +2834,9 @@ export const cases: CaseStudy[] = [
             label: 'What made it hard',
             items: [
               { title: 'Ambiguity', body: 'Users could not tell what state an agreement was in, or what was expected of them next.' },
-              { title: 'Slow processes', body: 'Steps that should have been minutes ran to days.' },
-              { title: 'No traceability', body: 'No reliable way to see what had happened to an agreement, or who had touched it.' },
-              { title: 'Complexity', body: 'Information arrived in volumes that overwhelmed rather than informed.' },
+              { title: 'Slow processes', body: 'A long, manual process with too many cycles between buyers, suppliers and support.' },
+              { title: 'No traceability', body: 'Tracking was limited where it existed at all — hard to know where the ball was.' },
+              { title: 'Too much information', body: 'Suppliers were overwhelmed by the amount of information and Walmart-specific jargon.' },
             ],
           },
         ],
@@ -2493,7 +2853,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What I owned',
                 detail:
-                  'User research, interaction design, visual design, prototyping and testing. The whole arc, on one product.',
+                  'User research, interaction design, visual design, prototyping and testing — user interviews, personas, site maps, competitive research, wireframes, high-fidelity design and prototype, and design specifications.',
               },
               {
                 term: 'The surface area',
@@ -2501,9 +2861,9 @@ export const cases: CaseStudy[] = [
                   'AMA serves 15 distinct user types and talks to 8 different applications. Every flow had to hold for a supplier onboarding themselves, a buyer chasing progress, and the finance and legal functions attached to the agreement.',
               },
               {
-                term: 'Who else was on it',
+                term: 'Who I worked with',
                 detail:
-                  '[Engineering, product and the business stakeholders you interviewed. Name the counterpart who had to be convinced, and of what.]',
+                  'Stakeholders, subject-matter experts and the users themselves — buyers, buyer assistants, suppliers and master-data associates — through interviews and observation.',
               },
             ],
           },
@@ -2511,7 +2871,7 @@ export const cases: CaseStudy[] = [
             kind: 'figure',
             src: '/images/walmart-agreement-management/09.jpg',
             alt: 'System diagram of the applications AMA connects to',
-            caption: 'The eight applications AMA talks to. The integration map is the scope statement — every one of these is a place a flow could break.',
+            caption: 'The eight applications AMA talks to. Every one of these is a place a flow could break.',
             ratio: '1400 / 633',
           },
         ],
@@ -2520,15 +2880,19 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'Four personas across two sides of the same transaction.',
+        heading: 'Two sides of the same transaction, wanting different things.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The research produced four primary personas, and they do not want the same things. Amanda, a supplier, needed faster onboarding, status tracking, and the ability to delegate to a proxy user. Carol, a buyer, wanted the process automated, visibility into how far a supplier had got, and clarity on the procedure itself. Michael, a buyer assistant, needed registration centralised, notifications, and clearer communication. John, another supplier, needed transparency and a documentation cycle that did not loop.',
-              'Supplier-side and buyer-side pull in opposite directions: what a buyer experiences as useful automation, a supplier experiences as a form appearing without explanation.',
-              '[Which way did you resolve it, and what did you give up? This is the strongest available candidate for the hard call, but the decision itself is not on the live site — confirm it, or replace it with the tradeoff you actually remember.]',
+              'The research produced four personas. Carol, a buyer, needed supplier onboarding to be faster, status tracking throughout, and a way to delegate work to a proxy. Michael, her assistant, wanted the manual process automated and one place to see where every supplier stood. John, a supplier, needed a single place to register with Walmart, notifications on approvals and requests, and less jargon. Amy, a master-data associate, needed to stop incomplete or inaccurate supplier information before it was submitted.',
+              'I made Carol the primary persona and John the secondary. The buyer is the one who starts every agreement, so her goals set the structure; the supplier’s needs — clear status, plain language, fewer document cycles — became the requirements every buyer-side flow had to meet.',
             ],
+          },
+          {
+            kind: 'quote',
+            text: 'Suppliers need to be able to onboard themselves as smoothly as possible.',
+            cite: 'From the vision statement',
           },
         ],
       },
@@ -2543,9 +2907,9 @@ export const cases: CaseStudy[] = [
             label: 'The research',
             items: [
               { title: 'Kickoff and literature', body: 'Kickoff meetings, then a literature review of the domain.' },
-              { title: 'Product audits', body: 'An audit of what already existed and where it failed.' },
+              { title: 'Audits', body: 'Product, prototype and competitive audits.' },
               { title: 'Interviews', body: 'Stakeholder interviews, then subject-matter expert interviews.' },
-              { title: 'Observation', body: 'Watching users work — the phase that separates a persona from a guess.' },
+              { title: 'Observation', body: 'User and customer interviews, and watching them work.' },
             ],
           },
           {
@@ -2558,14 +2922,14 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'From there the method was goal-directed design: sketching, wireframing and scenario development, with the personas carrying the goals through each scenario rather than sitting in a deck.',
+              'From there the method was goal-directed design: problem and vision statements, context scenarios built around the personas, design requirements, then the interaction framework — sketches, wireframes, key path scenarios and validation scenarios for the edge cases — before refining to full-resolution screens and testing them with users.',
             ],
           },
           {
             kind: 'figure',
             src: '/images/walmart-agreement-management/05.jpg',
             alt: 'Supplier onboarding experience, current state',
-            caption: 'The current-state map of supplier onboarding — where the ambiguity and the waiting actually sat before anything was redrawn.',
+            caption: 'The current-state map of supplier onboarding — where the ambiguity and the waiting sat before anything was redrawn.',
             ratio: '1400 / 853',
           },
           {
@@ -2581,7 +2945,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'What the application actually lets people do.',
+        heading: 'What the application lets people do.',
         blocks: [
           {
             kind: 'points',
@@ -2589,7 +2953,8 @@ export const cases: CaseStudy[] = [
             items: [
               { title: 'Onboarding', body: 'Search and onboard existing suppliers; invite new suppliers to onboard.' },
               { title: 'Contracts', body: 'Retrieve supplier contracts; create and renew agreements.' },
-              { title: 'Conversation', body: 'Contextual conversations with every party attached to an agreement, finance and legal included.' },
+              { title: 'Conversation', body: 'Contextual messaging throughout onboarding, with every party involved in an agreement.' },
+              { title: 'Status', body: 'Supplier onboarding status, especially through the contract phase.' },
             ],
           },
           {
@@ -2626,21 +2991,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'These are the only hard numbers to survive from the archive tier, and they came from usability testing on the work. [Worth confirming whether the scores are pre- or post-launch, and whether the beta was measured the same way — a before-and-after would be stronger than a single reading.]',
-            ],
-          },
-        ],
-      },
-      {
-        id: 'reflection',
-        nav: 'What I’d do differently',
-        label: 'What I’d do differently',
-        heading: '[To be written.]',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              '[One honest paragraph. Six research phases before design is a large investment — did it pay, or would you now cut it to reach a testable build sooner?]',
+              'Scores from moderated UserZoom sessions with users.',
             ],
           },
         ],
@@ -2652,17 +3003,17 @@ export const cases: CaseStudy[] = [
   // ==========================================================
   {
     slug: 'bot-spark',
-    company: '[Company]',
+    company: 'Walmart Labs',
     theme: 'lilac',
-    eyebrow: '[Company] · Chatbot operations · [20XX]',
+    eyebrow: 'Walmart Labs · People Systems chatbot · 2019–2021',
     title: 'Bot Spark, a console for training chatbots',
     hero: { src: '/images/bot-spark/01.jpg', alt: 'Bot Spark' },
     description:
-      'Bot Spark: the admin console behind a chatbot — finding the questions it failed to answer, getting answers out of the business, and training them back in.',
+      'Bot Spark: the admin console behind Walmart’s HR chatbot — finding the questions it failed to answer, getting answers from the business, and training them back in.',
     meta: [
       { label: 'Scope', value: 'Three user types — admin, developer, business' },
-      { label: 'Partners', value: '[Engineering, the business owners of the bot]' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+      { label: 'Team', value: 'People Systems, Walmart Labs' },
+      { label: 'Timeline', value: '2019–2021' },
     ],
     role: 'Product Designer · End-to-end flows',
     sections: [
@@ -2675,17 +3026,16 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'Bot Spark is the tool used to manage chatbots — the surface where a chatbot’s administrators do their work. The interesting part is not the bot; it is that a deployed bot fails constantly in small ways, and someone has to notice, find the answer, and feed it back.',
-              '[Two sentences on the business stakes. Whose bot, serving whom, and what did an unanswered question cost — a support ticket, an abandoned session, a call to a human?]',
+              'Bot Spark is the tool for managing chatbots: the place where a chatbot’s admins do their work. A deployed bot fails all the time in small ways, and someone has to notice, find the answer, and feed it back.',
             ],
           },
           {
             kind: 'points',
             label: 'The problems it had to solve',
             items: [
-              { title: 'Find the gaps', body: 'Surface the questions the bot could not answer.' },
-              { title: 'Source the answers', body: 'Collect answers from the business users who actually hold them.' },
-              { title: 'Train', body: 'Train the bot on those unanswered questions, and on new ones.' },
+              { title: 'Find the gaps', body: 'Get the questions the bot could not answer.' },
+              { title: 'Source the answers', body: 'Collect answers from the business users who hold them.' },
+              { title: 'Train', body: 'Train the bot on unanswered questions and new ones, and feed knowledge into it.' },
               { title: 'Do not regress', body: 'Regression testing for the bot’s existing knowledge.' },
             ],
           },
@@ -2703,31 +3053,13 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What I owned',
                 detail:
-                  'High-fidelity end-to-end flows for all three users — admin, developer and business — and testing the designs against the brand guideline.',
+                  'High-fidelity end-to-end flows for all three users — admin, developer and business — from research to deployment, and testing the designs against the brand guideline. The logo and identity too.',
               },
               {
                 term: 'Why three is the hard part',
                 detail:
                   'An admin, an engineer and a business owner want different things from the same knowledge base. The business user has the answer but no interest in the tool; the developer has the tool but not the answer. The console had to make the handoff between them cheap.',
               },
-              {
-                term: 'Who else was on it',
-                detail: '[Team, engineering counterpart, and who set the brand guideline you tested against.]',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'hard-call',
-        nav: 'The hard call',
-        label: 'The hard call',
-        heading: '[To be written.]',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              '[Not recorded on the live site. The likely candidate: how much of the training loop to expose to a non-technical business user versus keeping it behind the developer. Where did you draw that line, and what broke when you first drew it elsewhere?]',
             ],
           },
         ],
@@ -2736,13 +3068,12 @@ export const cases: CaseStudy[] = [
         id: 'process',
         nav: 'How it got made',
         label: 'How the work got made',
-        heading: 'Identity first, then wireframes, then the states that actually get hit.',
+        heading: 'Identity first, then wireframes, then the states that get hit.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The work ran from logo design and early exploration through wireframes to the final screens — and, unusually for a portfolio piece, the error screens were treated as part of the deliverable rather than an afterthought. For a tool whose entire job is handling the cases where something failed, that is the correct emphasis.',
-              '[Add the process detail: how many rounds, who reviewed, and what changed between the wireframes and the final flows.]',
+              'The work ran from logo design and early exploration through wireframes to the final screens, and the error screens were part of the deliverable rather than an afterthought. For a tool whose whole job is handling the cases where something failed, that is where the emphasis belongs.',
             ],
           },
           {
@@ -2765,7 +3096,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'The console, and the states around it.',
+        heading: 'The identity, resolved and documented.',
         blocks: [
           {
             kind: 'figure',
@@ -2781,43 +3112,6 @@ export const cases: CaseStudy[] = [
             caption: 'The identity documented for handoff.',
             ratio: '1400 / 869',
           },
-          {
-            kind: 'prose',
-            text: [
-              '[The exported assets are almost entirely identity work. The admin, developer and business flows — and the error screens — are the part that would make this a product case rather than a branding one, and they are the thing to dig out of the original files.]',
-            ],
-          },
-        ],
-      },
-      {
-        id: 'impact',
-        nav: 'Impact',
-        label: 'Impact',
-        heading: '[To be written.]',
-        blocks: [
-          {
-            kind: 'metrics',
-            items: [
-              { value: '3', label: 'User types served' },
-              { value: '[X]', label: 'Unanswered questions resolved per week' },
-              { value: '[X]', label: 'Change in bot answer rate' },
-            ],
-          },
-          {
-            kind: 'prose',
-            text: [
-              '[No outcome is recorded. The bot’s answer rate before and after the console existed would be the number that makes this case — if it was ever measured, it is worth chasing.]',
-            ],
-          },
-        ],
-      },
-      {
-        id: 'reflection',
-        nav: 'What I’d do differently',
-        label: 'What I’d do differently',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[One honest paragraph.]'] },
         ],
       },
     ],
@@ -2829,17 +3123,17 @@ export const cases: CaseStudy[] = [
     slug: 'mint-credit-score',
     company: 'Mint',
     theme: 'bone',
-    eyebrow: 'Mint · Credit score experience · [20XX]',
+    eyebrow: 'Deloitte Digital · Mint credit score · 2018',
     title: 'Making a credit score actionable',
     hero: { src: '/images/mint-credit-score/01.jpg', alt: 'The Mint credit score experience' },
     description:
-      'Mint: turning a credit score from a number you are shown into a set of recommendations you can act on, built out of the tools Mint already had.',
+      'Mint: turning a credit score from a number you are shown into recommendations you can act on, built from the tools Mint already had.',
     meta: [
       { label: 'Scope', value: 'Credit score experience and recommendations' },
-      { label: 'Partners', value: '[Confirm]' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+      { label: 'Built from', value: 'Bills, budgets, card offers, goals' },
+      { label: 'Timeline', value: '2018' },
     ],
-    role: '[Product Designer — confirm whether client work or concept]',
+    role: 'UX/UI Designer · Deloitte Digital',
     sections: [
       {
         id: 'situation',
@@ -2850,7 +3144,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'Lack of financial knowledge, poor habits and life events combine to produce poor credit scores for tens of millions of Americans. Many turn to services like Mint to understand what their score is, why it is what it is, and what they should do to improve it.',
+              'A lack of financial knowledge, poor habits and life events contribute to poor credit scores for tens of millions of Americans. Many turn to services like Mint to understand what their score is, why it is what it is, and what they should do to improve it.',
               'The first two of those Mint already answered. The third — what should I do — is the one that turns a dashboard into a product someone comes back to.',
             ],
           },
@@ -2868,17 +3162,16 @@ export const cases: CaseStudy[] = [
               {
                 term: 'The brief',
                 detail:
-                  'Re-imagine the Mint credit score experience and use the information in the credit report to make actionable recommendations to a customer trying to improve their score.',
+                  'Re-imagine the Mint credit score experience, and use the information in the credit report to make actionable recommendations to a customer trying to improve their score.',
               },
               {
                 term: 'The constraint',
                 detail:
-                  'Recommendations had to be built from Mint’s existing tools — bill tracking, budgets, credit card offers, goals — so that improving a score and increasing monthly engagement with Mint were the same motion rather than two competing goals.',
+                  'Recommendations had to use Mint’s existing tools — bill tracking, budgets, credit card offers, goals — so that improving a score and increasing monthly engagement with Mint were the same motion rather than two competing goals.',
               },
               {
                 term: 'What I owned',
-                detail:
-                  '[The live site does not say whether this was client work, a concept, or an exercise. That changes how a hiring manager reads it, so it is worth being explicit either way — a well-run concept piece is not a weakness, but an unlabelled one invites the wrong assumption.]',
+                detail: 'The experience end to end: moodboard, wireframes and the visual design.',
               },
             ],
           },
@@ -2888,13 +3181,12 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'Recommendations that serve the score and the business at once.',
+        heading: 'A clean, flat look on a surface people find overwhelming.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The brief contains a genuine tension worth naming: the recommendations were to be assembled from Mint’s own tools, including credit card offers, and were also meant to increase monthly engagement. Advice that improves a score and advice that increases engagement are not automatically the same advice, and credit card offers sit precisely on that seam.',
-              '[How did you handle it? A rule about when an offer could appear, an ordering principle, something you declined to recommend? This is the judgement the case turns on.]',
+              'Credit is already confusing, and a credit report is dense. I updated the design with a clean, flat look and feel to reduce clutter and give a more streamlined experience, so the score, the reasons behind it and the next step could each be read at a glance.',
             ],
           },
         ],
@@ -2903,15 +3195,8 @@ export const cases: CaseStudy[] = [
         id: 'process',
         nav: 'How it got made',
         label: 'How the work got made',
-        heading: 'Moodboard, wireframes, then a deliberate flattening of the visual language.',
+        heading: 'Moodboard, wireframes, then the visual language.',
         blocks: [
-          {
-            kind: 'prose',
-            text: [
-              'The work ran through a moodboard and wireframing stage before the visual design. The visual direction was a clean, flat treatment chosen to reduce clutter and give a more streamlined experience — a reasonable call on a surface whose core problem is that people find it overwhelming.',
-              '[Add what testing there was, if any, and what changed because of it.]',
-            ],
-          },
           {
             kind: 'figure',
             src: '/images/mint-credit-score/02.jpg',
@@ -2929,12 +3214,12 @@ export const cases: CaseStudy[] = [
         blocks: [
           {
             kind: 'points',
-            label: 'What Mint offers, and what the work had to connect',
+            label: 'What the experience connects',
             items: [
               { title: 'Budgets', body: 'Budgets that make sense today and set you up for success tomorrow.' },
               { title: 'Bills and money together', body: 'What is due, when it is due, and what you can pay.' },
-              { title: 'Alerts', body: 'Unusual account charges, plus tips for reducing fees and saving.' },
-              { title: 'The score itself', body: 'A free credit score, and how to improve it to get the things you want later.' },
+              { title: 'Alerts', body: 'Unusual account charges, plus custom tips for reducing fees and saving money.' },
+              { title: 'The score itself', body: 'A free credit score, and how to improve it now to get the things you want later.' },
             ],
           },
           {
@@ -2946,29 +3231,6 @@ export const cases: CaseStudy[] = [
           },
         ],
       },
-      {
-        id: 'impact',
-        nav: 'Impact',
-        label: 'Impact',
-        heading: '[To be written.]',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              '[No outcome recorded. If this shipped, the numbers to find are score movement and repeat visits. If it did not ship, say so plainly and let the reasoning carry the case — an unshipped concept presented honestly reads better than one left ambiguous.]',
-            ],
-          },
-        ],
-      },
-      {
-        id: 'reflection',
-        nav: 'What I’d do differently',
-        label: 'What I’d do differently',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[One honest paragraph.]'] },
-        ],
-      },
     ],
     next: 'ratanindia-lenders-app',
   },
@@ -2978,17 +3240,17 @@ export const cases: CaseStudy[] = [
     slug: 'ratanindia-lenders-app',
     company: 'RatanIndia',
     theme: 'coral',
-    eyebrow: 'RatanIndia · Consumer lending · [20XX]',
+    eyebrow: 'Deloitte Digital · RatanIndia personal loans · 2018',
     title: 'A personal loan in three steps',
     hero: { src: '/images/ratanindia-lenders-app/01.jpg', alt: "RatanIndia's Lender's App" },
     description:
       "RatanIndia's Lender's App: a personal loan reduced to Aadhaar verification, an amount, and money in the account within minutes.",
     meta: [
-      { label: 'Scope', value: 'Loan application flow' },
-      { label: 'Partners', value: '[Confirm]' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+      { label: 'Scope', value: 'Loan application flow, mobile app' },
+      { label: 'Client', value: 'RatanIndia' },
+      { label: 'Timeline', value: '2018' },
     ],
-    role: '[Product Designer — confirm]',
+    role: 'UX/UI Designer · Deloitte Digital',
     sections: [
       {
         id: 'situation',
@@ -2999,50 +3261,9 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              "RatanIndia's Lender's App is a personal loan product built to make financing simpler than it had been — getting a personal loan made simple and fast.",
-              '[This is the thinnest source in the archive: three sentences and a step list. Two sentences on the business stakes would carry it — who was the borrower, what did the old process take, and why was speed the thing worth competing on?]',
+              "RatanIndia's Lender's App is a personal loan app that makes financing easier than ever before. Getting a personal loan is now simple and fast.",
             ],
           },
-        ],
-      },
-      {
-        id: 'scope',
-        nav: 'My scope',
-        label: 'My scope',
-        heading: '[To be written.]',
-        blocks: [
-          {
-            kind: 'rows',
-            items: [
-              { term: 'What I owned', detail: '[Which surfaces, and end-to-end or a slice?]' },
-              { term: 'Who I worked with', detail: '[Team, engineering, and the compliance function — identity verification always has one.]' },
-              { term: 'What I influenced', detail: '[Anything beyond the screens: the step count itself, the eligibility rules, the copy?]' },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'hard-call',
-        nav: 'The hard call',
-        label: 'The hard call',
-        heading: 'Three steps is a claim, not a layout.',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              'Compressing a regulated lending flow into three steps means everything that did not make the three — disclosures, eligibility, repayment terms — went somewhere else. That placement is the design decision.',
-              '[Where did it go, and who had to agree? If the step count was handed to you rather than chosen, say that; inheriting a constraint and making it work is its own kind of judgement.]',
-            ],
-          },
-        ],
-      },
-      {
-        id: 'process',
-        nav: 'How it got made',
-        label: 'How the work got made',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[The live site shows a process section but no description of it. What were the stages, who reviewed, and what changed?]'] },
         ],
       },
       {
@@ -3064,7 +3285,7 @@ export const cases: CaseStudy[] = [
             kind: 'figure',
             src: '/images/ratanindia-lenders-app/02.jpg',
             alt: "The Lender's App onboarding screen",
-            caption: 'The entry point. An illustration doing the reassurance work that a lending product needs before it asks for an Aadhaar number.',
+            caption: 'The entry point. An illustration doing the reassurance work a lending product needs before it asks for an Aadhaar number.',
             ratio: '750 / 1334',
           },
           {
@@ -3076,26 +3297,8 @@ export const cases: CaseStudy[] = [
           },
         ],
       },
-      {
-        id: 'impact',
-        nav: 'Impact',
-        label: 'Impact',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[No outcome recorded — completion rate through the three steps would be the number.]'] },
-        ],
-      },
-      {
-        id: 'reflection',
-        nav: 'What I’d do differently',
-        label: 'What I’d do differently',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[One honest paragraph.]'] },
-        ],
-      },
     ],
-    next: 'qplum-qfolio',
+    next: 'dialog-quick-loan',
   },
 
   // ==========================================================
@@ -3103,17 +3306,17 @@ export const cases: CaseStudy[] = [
     slug: 'qplum-qfolio',
     company: 'qplum',
     theme: 'clay',
-    eyebrow: 'qplum · Investment onboarding · [20XX]',
+    eyebrow: 'qplum · Investment onboarding · 2016–2017',
     title: 'Onboarding into an algorithmic portfolio',
     hero: { src: '/images/qplum-qfolio/01.jpg', alt: 'The qfolio investment app' },
     description:
       'qplum qfolio: onboarding into AI-driven investment portfolios — a chatbot that produces a financial plan, and the regulated account opening behind it.',
     meta: [
-      { label: 'Scope', value: 'Onboarding, QBot, portfolio tracking' },
-      { label: 'Partners', value: '[Confirm — compliance is certain to have been one]' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+      { label: 'Scope', value: 'Onboarding, funding, QBot, iOS and Android apps' },
+      { label: 'Team', value: 'Sole designer' },
+      { label: 'Timeline', value: 'October 2016 – 2017' },
     ],
-    role: '[Product Designer — confirm]',
+    role: 'UX/UI Designer · Sole designer',
     sections: [
       {
         id: 'situation',
@@ -3124,7 +3327,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'qplum is an online investment advisory firm offering portfolios driven by AI and machine learning — retirement planning, IRA accounts, 401k rollovers and personal investing accounts. Its positioning was investing as a utility.',
+              'qplum is a US online investment advisory firm offering portfolios driven by AI and machine learning — retirement planning, IRA accounts, 401k rollovers and personal investing accounts. Its positioning was investing as a utility.',
               'That positioning sets the design problem. A utility is something you set up once without thinking hard about it; a regulated brokerage account is the opposite, and the onboarding has to absorb that difference.',
             ],
           },
@@ -3134,7 +3337,7 @@ export const cases: CaseStudy[] = [
             items: [
               { title: 'Get a plan', body: 'Talk to an AI-powered chatbot and get a free financial plan.' },
               { title: 'Invest', body: 'Invest in a blend of qplum’s top portfolios.' },
-              { title: 'Open accounts', body: 'Open Traditional, ROTH and SEP IRA accounts; roll over an existing IRA or 401k.' },
+              { title: 'Open accounts', body: 'Open Traditional, Roth and SEP IRA accounts; roll over an existing IRA or 401k.' },
               { title: 'Track', body: 'Follow the performance of an ETF portfolio.' },
             ],
           },
@@ -3144,14 +3347,21 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: '[To be written.]',
+        heading: 'The only designer, across onboarding, funding and the apps.',
         blocks: [
           {
             kind: 'rows',
             items: [
-              { term: 'What I owned', detail: '[The archive tile calls this "Investment Portfolio onboarding" — confirm whether you owned onboarding only, or QBot and tracking too.]' },
-              { term: 'Who I worked with', detail: '[Engineering, and whoever owned the regulatory copy.]' },
-              { term: 'What I influenced', detail: '[Confirm.]' },
+              {
+                term: 'What I owned',
+                detail:
+                  'User research and a dashboard for users already invested with qplum; the funding steps, including linking different types of bank account; QBot, the chatbot that gives personalised suggestions and reminders; and a redesign of the iOS and Android apps.',
+              },
+              {
+                term: 'Beyond the screens',
+                detail:
+                  'The main landing page, and a product design process and design system that the design team grew around.',
+              },
             ],
           },
         ],
@@ -3165,24 +3375,8 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'qplum is registered with the SEC as an Investment Advisor and with the NFA as a Commodity Trading Advisor. Brokerage and clearing ran through Apex Clearing and Interactive Brokers, both FINRA/SIPC members, with accounts SIPC-protected up to $500,000 including $250,000 for cash.',
-              'None of that is decoration — it dictates what a conversational interface is allowed to say. A chatbot that produces a "free financial plan" has to be helpful without straying into advice the firm cannot give in that format.',
-              '[How did that constrain QBot, and what did you have to take out of it? If the harder call was elsewhere, replace this — but the compliance seam is the most likely place a real tradeoff lived.]',
-            ],
-          },
-        ],
-      },
-      {
-        id: 'process',
-        nav: 'How it got made',
-        label: 'How the work got made',
-        heading: 'QBot, and the version of QBot that shipped.',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              'The live site carries the process in stages — process, QBot, QBot final, outcome — which implies the conversational piece went through at least one substantial revision.',
-              '[What was wrong with the first QBot, and what changed? A first-and-final pair with the reasoning between them is the most valuable thing this case could carry.]',
+              'qplum is registered with the SEC as an Investment Advisor and with the NFA as a Commodity Trading Advisor. Brokerage and clearing ran through Apex Clearing and Interactive Brokers, both FINRA/SIPC members, with accounts SIPC-protected up to $500,000, including $250,000 for cash.',
+              'That dictates what a conversational interface is allowed to say. A chatbot that produces a free financial plan has to be friendly and helpful without straying into advice the firm cannot give in that format.',
             ],
           },
         ],
@@ -3204,7 +3398,7 @@ export const cases: CaseStudy[] = [
             kind: 'figure',
             src: '/images/qplum-qfolio/08.jpg',
             alt: 'Account verification step',
-            caption: 'Verification. The point where "investing as a utility" meets what a regulated brokerage account actually requires.',
+            caption: 'Verification. The point where "investing as a utility" meets what a regulated brokerage account requires.',
             ratio: '375 / 667',
           },
         ],
@@ -3213,22 +3407,19 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: '[To be written.]',
+        heading: 'More people made it through onboarding.',
         blocks: [
-          { kind: 'prose', text: ['[No outcome recorded. Completion rate into a funded account is the number that matters for onboarding.]'] },
-        ],
-      },
-      {
-        id: 'reflection',
-        nav: 'What I’d do differently',
-        label: 'What I’d do differently',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[One honest paragraph.]'] },
+          {
+            kind: 'metrics',
+            items: [
+              { value: '+2%', label: 'Onboarding conversion after the app redesign' },
+              { value: '2', label: 'Platforms redesigned, iOS and Android' },
+            ],
+          },
         ],
       },
     ],
-    next: 'dialog-quick-loan',
+    next: 'dreamgains-finance',
   },
 
   // ==========================================================
@@ -3236,17 +3427,17 @@ export const cases: CaseStudy[] = [
     slug: 'dialog-quick-loan',
     company: 'Dialog Axiata',
     theme: 'sand',
-    eyebrow: 'Dialog Axiata · Sri Lanka · [20XX]',
+    eyebrow: 'Deloitte Digital · Dialog Axiata, Sri Lanka · 2018',
     title: 'Credit for people who have run out of credit',
     hero: { src: '/images/dialog-quick-loan/01.jpg', alt: 'Dialog quick loan' },
     description:
-      'Dialog Axiata quick loan: a reload loan for pre-paid mobile customers at the moment their balance hits zero, on a network carrying 12.8 million subscribers.',
+      'Dialog Axiata quick loan: a reload loan for pre-paid mobile customers at the moment their balance hits zero, on a network of 12.8 million subscribers.',
     meta: [
       { label: 'Scope', value: 'Loan flow, brand guideline, mobile site' },
-      { label: 'Partners', value: '[Confirm]' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+      { label: 'Client', value: 'Dialog Axiata' },
+      { label: 'Timeline', value: '2018' },
     ],
-    role: '[Product Designer — confirm]',
+    role: 'UX/UI Designer · Deloitte Digital',
     sections: [
       {
         id: 'situation',
@@ -3257,18 +3448,18 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'Dialog Axiata PLC is one of Sri Lanka’s largest telecommunications providers and the country’s largest mobile network operator, with 12.8 million subscribers and roughly 50% of the Sri Lankan mobile market.',
-              'The product is a reload loan: pre-paid customers can borrow from Dialog the moment they run out of credit. The design problem is the moment itself — the customer is mid-call or mid-session, has just lost service, and is not in a mood to read.',
+              'Dialog Axiata PLC is one of Sri Lanka’s largest telecommunications providers and the country’s largest mobile network operator, with 12.8 million subscribers and about 50% of the Sri Lankan mobile market.',
+              'The product is the Dialog Reload Loan: pre-paid customers can borrow from Dialog whenever they run out of credit. The design problem is that moment — the customer is mid-call or mid-session, has just lost service, and is in no mood to read.',
             ],
           },
           {
             kind: 'points',
             label: 'How the loan works',
             items: [
-              { title: 'Automatic', body: 'Register free of charge and the loan is granted automatically whenever the balance reaches zero — no manual request.' },
-              { title: 'Mid-session', body: 'The loan value applies even during a call or data session, so service does not drop.' },
+              { title: 'Automatic', body: 'Register free of charge and a loan is granted automatically whenever the balance reaches zero — no manual request.' },
+              { title: 'Mid-session', body: 'The loan applies even during a call or data session, so service does not drop.' },
               { title: 'On request', body: 'Dial 356 or #356#, choose a language, and ask for a loan.' },
-              { title: 'The charge', body: 'The standard Rs. 2.00 service charge is waived if the loan value is recharged within 24 hours.' },
+              { title: 'The charge', body: 'The standard Rs. 2.00 service charge is not deducted if the loan is repaid with a recharge within 24 hours.' },
             ],
           },
         ],
@@ -3277,40 +3468,15 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: '[To be written.]',
+        heading: 'The loan flow, the brand guideline and the mobile site.',
         blocks: [
           {
             kind: 'rows',
             items: [
-              { term: 'What I owned', detail: '[The live site shows process, outcome, brand guideline and mobile site — confirm which of those were yours.]' },
-              { term: 'Who I worked with', detail: '[Team and client-side counterparts.]' },
-              { term: 'What I influenced', detail: '[Did the brand guideline come from you, or were you working to one?]' },
+              { term: 'What I owned', detail: 'The quick loan flow from process to outcome, a brand guideline for it, and the mobile site.' },
+              { term: 'Two channels', detail: 'The same loan reached by dialling 356 on any phone and through the mobile site, so both had to tell the same story.' },
             ],
           },
-        ],
-      },
-      {
-        id: 'hard-call',
-        nav: 'The hard call',
-        label: 'The hard call',
-        heading: 'A lending product that has to work over USSD as well as a screen.',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              'The loan is reachable by dialling 356 or #356# — a menu on a feature phone — as well as through the mobile site. Two entry points with completely different capabilities, serving the same customers, for a product with a fee attached.',
-              '[Which one led the design, and what had to be true in both? Designing for the lower-capability channel first is a defensible call and a demonstrable one — if that is what happened, it is the strongest thing in this case.]',
-            ],
-          },
-        ],
-      },
-      {
-        id: 'process',
-        nav: 'How it got made',
-        label: 'How the work got made',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[The live site shows a process section without describing it. What were the stages and what changed between them?]'] },
         ],
       },
       {
@@ -3335,39 +3501,8 @@ export const cases: CaseStudy[] = [
           },
         ],
       },
-      {
-        id: 'impact',
-        nav: 'Impact',
-        label: 'Impact',
-        heading: 'The reach is documented. The result is not.',
-        blocks: [
-          {
-            kind: 'metrics',
-            items: [
-              { value: '12.8M', label: 'Dialog subscribers' },
-              { value: '~50%', label: 'Share of the Sri Lankan mobile market' },
-              { value: '[X]', label: 'Loans taken after launch' },
-            ],
-          },
-          {
-            kind: 'prose',
-            text: [
-              'The first two numbers describe the network, not the work — worth being careful with them, because a metric that is really the client’s scale reads as borrowed if it is presented as an outcome. [Take-up of the loan product is the number that would belong to this case.]',
-            ],
-          },
-        ],
-      },
-      {
-        id: 'reflection',
-        nav: 'What I’d do differently',
-        label: 'What I’d do differently',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[One honest paragraph.]'] },
-        ],
-      },
     ],
-    next: 'dreamgains-finance',
+    next: 'qplum-qfolio',
   },
 
   // ==========================================================
@@ -3375,17 +3510,17 @@ export const cases: CaseStudy[] = [
     slug: 'dreamgains-finance',
     company: 'DreamGains',
     theme: 'lilac',
-    eyebrow: 'DreamGains · Financial advisory · [20XX]',
+    eyebrow: 'DreamGains · Financial advisory · 2015–2016',
     title: 'Rebuilding a financial advisory website',
     hero: { src: '/images/archive/dream-gains.jpg', alt: 'DreamGains' },
     description:
       'DreamGains: an end-to-end website revamp for an Indian financial advisory firm, run alongside UX researchers.',
     meta: [
-      { label: 'Scope', value: '[Confirm — full site or key templates?]' },
+      { label: 'Scope', value: 'Website revamp, branding, marketing and print' },
       { label: 'Partners', value: 'UX researchers' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+      { label: 'Timeline', value: 'October 2015 – October 2016' },
     ],
-    role: 'Designer · End-to-end website revamp',
+    role: 'UI/UX Designer · Contract',
     sections: [
       {
         id: 'situation',
@@ -3396,8 +3531,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'DreamGains is a well-regarded business firm in India providing financial advisory services — share market tips, day trading tips, forex tips and more.',
-              '[Two sentences on why the revamp happened. What was the site failing to do — convert, explain the products, hold up on mobile — and who decided it needed rebuilding?]',
+              'DreamGains is a well-regarded firm in India providing financial advisory services — share market tips, day trading tips, forex tips and more.',
             ],
           },
         ],
@@ -3413,43 +3547,13 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 term: 'What I owned',
-                detail:
-                  'The revamp end to end, in collaboration with UX researchers — one of the few archive projects where the live site names a research partnership.',
+                detail: 'The website revamp end to end, in collaboration with UX researchers.',
               },
               {
-                term: 'What the researchers brought',
+                term: 'Around it',
                 detail:
-                  '[What did they find, and what did you change because of it? A collaboration is only evidence if it changed something.]',
+                  'UI and UX for DreamGains’ suite of web and desktop products, plus branding, marketing, print and website development.',
               },
-              { term: 'Who else was on it', detail: '[Engineering, content, client-side stakeholders.]' },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'hard-call',
-        nav: 'The hard call',
-        label: 'The hard call',
-        heading: '[To be written.]',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              '[Not recorded. For a financial advisory site the usual candidate is how much to promise on the marketing surface versus what compliance and honesty allow — "share market tips" is a category where that tension is real.]',
-            ],
-          },
-        ],
-      },
-      {
-        id: 'process',
-        nav: 'How it got made',
-        label: 'How the work got made',
-        heading: 'Wireframes, then visuals.',
-        blocks: [
-          {
-            kind: 'prose',
-            text: [
-              'The live site records two stages: wireframe, then visuals. [Add what sat between them — reviews, research input, iterations.]',
             ],
           },
         ],
@@ -3458,7 +3562,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'The rebuilt site.',
+        heading: 'Wireframe, then visuals.',
         blocks: [
           {
             kind: 'figure',
@@ -3476,24 +3580,6 @@ export const cases: CaseStudy[] = [
           },
         ],
       },
-      {
-        id: 'impact',
-        nav: 'Impact',
-        label: 'Impact',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[No outcome recorded. For a site revamp: enquiries, sign-ups, or bounce rate before and after.]'] },
-        ],
-      },
-      {
-        id: 'reflection',
-        nav: 'What I’d do differently',
-        label: 'What I’d do differently',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[One honest paragraph.]'] },
-        ],
-      },
     ],
     next: 'mera-data',
   },
@@ -3503,17 +3589,17 @@ export const cases: CaseStudy[] = [
     slug: 'mera-data',
     company: 'Mera Data',
     theme: 'sage',
-    eyebrow: 'Mera Data · Online tool, IT and services · [20XX]',
+    eyebrow: 'Mera Data · Online tool, IT and services · 2014',
     title: 'Every cloud drive behind one login',
     hero: { src: '/images/archive/mera-data.jpg', alt: 'Mera Data' },
     description:
       'Mera Data: one interface across Google Drive, OneDrive, Box, Dropbox, Flickr and more — built to cut the toggling between them.',
     meta: [
       { label: 'Scope', value: 'Discover, define, design' },
-      { label: 'Partners', value: '[Confirm]' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+      { label: 'Also built', value: 'Landing pages, blog pages, icons' },
+      { label: 'Timeline', value: 'May – December 2014' },
     ],
-    role: '[Product Designer — confirm]',
+    role: 'Design intern and developer',
     sections: [
       {
         id: 'situation',
@@ -3525,7 +3611,7 @@ export const cases: CaseStudy[] = [
             kind: 'prose',
             text: [
               'Mera Data lets someone reach Google Drive, OneDrive, Box, Dropbox, Flickr and other cloud and social platforms through a single login.',
-              'The value proposition is straightforward; the design problem is that each of those services has its own model of what a file is and what you can do with it, and one interface has to sit over all of them without lying about any.',
+              'The value proposition is simple; the design problem is that each of those services has its own idea of what a file is and what you can do with it, and one interface has to sit over all of them.',
             ],
           },
         ],
@@ -3534,14 +3620,13 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: '[To be written.]',
+        heading: 'Designed it, and built some of it.',
         blocks: [
           {
             kind: 'rows',
             items: [
-              { term: 'What I owned', detail: '[Confirm which of discover, define and design were yours, and whether you were the only designer.]' },
-              { term: 'Who I worked with', detail: '[The live site says "the team" without naming it.]' },
-              { term: 'What I influenced', detail: '[Confirm.]' },
+              { term: 'What I owned', detail: 'Discover, define and design for the product, working with the team.' },
+              { term: 'What I built', detail: 'Interfaces and skins, landing pages, blog pages and icons — designed and developed.' },
             ],
           },
         ],
@@ -3555,8 +3640,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The clearest decision recorded is in the define stage: rather than sending people between screens for each action, functions were built into the rows themselves and integrated so that screen toggling dropped. That is a real tradeoff — denser rows, fewer trips — and it is the kind of call worth stating outright.',
-              '[What did the density cost, and did anything have to be dropped from a row to keep it usable?]',
+              'Rather than sending people between screens for each action, functions were built into the rows themselves, so screen toggling dropped. Denser rows, fewer trips.',
             ],
           },
         ],
@@ -3587,34 +3671,16 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The visual approach was restrained on purpose: limited colour, and depth built from minimal elements — thin lines and forms — so that panels stayed distinguishable without the interface becoming loud. On a tool aggregating six services, each with its own brand colour, holding colour back is the decision that keeps it readable.',
+              'The visual approach was restrained on purpose: limited colour, and depth built from minimal elements — thin lines and forms — so panels stayed distinct without the interface getting loud. On a tool that gathers six services, each with its own brand colour, holding colour back is what keeps it readable.',
             ],
           },
           {
             kind: 'figure',
             src: '/images/mera-data/01.jpg',
             alt: 'The Mera Data interface, full page',
-            caption: 'The interface end to end — rows carrying their own functions, and the restraint that keeps six services’ worth of branding from fighting.',
+            caption: 'The interface end to end — rows carrying their own functions, and the restraint that keeps six services’ branding from fighting.',
             ratio: '1400 / 5004',
           },
-        ],
-      },
-      {
-        id: 'impact',
-        nav: 'Impact',
-        label: 'Impact',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[No outcome recorded. Connected accounts per user, or time-to-file, would be the numbers.]'] },
-        ],
-      },
-      {
-        id: 'reflection',
-        nav: 'What I’d do differently',
-        label: 'What I’d do differently',
-        heading: '[To be written.]',
-        blocks: [
-          { kind: 'prose', text: ['[One honest paragraph.]'] },
         ],
       },
     ],

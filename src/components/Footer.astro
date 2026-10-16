@@ -46,8 +46,8 @@
    the curve stays either way. It re-inks the palette tokens to the
    NIGHT values in tokens.css, so every role colour inside follows. No
    text rests in the accent; links turn to it on hover.
-   Type follows allierho.com's system: the sign-off is the serif display
-   step, the note body text, links and labels 12px uppercase. */
+   Type follows allierho.com's system: the sign-off is the serif at
+   32px (--step-signoff, as the reference's "Let's chat."), the note body text, links and labels 12px uppercase. */
 import { site } from '../data/site';
 
 const year = new Date().getFullYear();
@@ -153,7 +153,7 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
   .foot__signoff {
     margin: 0;
     font-family: var(--font-serif); font-weight: var(--weight-serif);
-    font-size: var(--step-display);
+    font-size: var(--step-signoff);
     line-height: var(--leading-heading);
     letter-spacing: var(--tracking-serif);
     color: var(--fg);

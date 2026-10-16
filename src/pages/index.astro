@@ -175,11 +175,11 @@ const cards = homeCards.map((c) => {
   .hero__cue-arrow { width: 0.667em; height: 1em; }
   /* The hero sentence is .u-display (global.css): serif 300 at
      --step-display, italic lead-in via <em>. Background line under it in
-     the sans at body size, dim. */
+     the sans at --step-copy (12px, the reference's body), dim. */
   /* 26ch, was 22ch: the headline ended ~70px short of its own column,
      and that width went to the gap before the illustration. */
   .hero__line { max-width: 26ch; text-wrap: pretty; }
-  .hero__more { color: var(--fg-dim); max-width: 54ch; margin: 1.5rem 0 0; text-wrap: pretty; }
+  .hero__more { font-size: var(--step-copy); line-height: var(--leading-copy); letter-spacing: var(--tracking-copy); color: var(--fg-dim); max-width: 54ch; margin: 1.5rem 0 0; text-wrap: pretty; }
   .hero__co { color: var(--fg); }
 
   /* Hero copy + portrait side by side on desktop, portrait first and

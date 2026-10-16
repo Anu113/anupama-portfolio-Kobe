@@ -393,8 +393,14 @@ walked back. Concretely, in the current implementation:
   Manrope 600 for everything else, Azeret Mono 400 for ticking numbers
   and the case-study labels, tags and captions (`.u-label-mono`).
   Scale: display 34→50px, heading 32→44px, nav 14px, label 12px uppercase;
-  plus two steps the reference lacks (title 20→26px, body 15px) because it
-  has no long copy. Emphasis is the serif turning italic mid-line, nothing
+  plus title 22px, body 14px, copy 12px. On request (2026-10-16), from a mock, the whole site
+  moved onto the reference's exact scale, measured across its pages: no
+  page scale (1x on every screen; it used to grow every rem with the
+  screen, up to 1.8x, and read as too big), reading copy 14px
+  (`--step-body`), short copy 12px (`--step-copy`), sub-heads 22px
+  (`--step-title`), project titles on cards as 12px caps, the footer
+  sign-off 32px (`--step-signoff`). The reference's 70px page titles were
+  not taken; ours stay at 44px. Emphasis is the serif turning italic mid-line, nothing
   else. One palette: `#fcfcfc` ground, `#262626` ink, one terracotta accent
   (`#b4482a`, her own — the reference's purple was swapped out), square corners except pill buttons and the 4px case tags (and the two approved curves: Moss's
   panel and the page's end over the black footer). Deliberate departures
@@ -530,7 +536,18 @@ walked back. Concretely, in the current implementation:
   (removed on request, knowing WCAG 2.2.2 asks for one on motion over
   five seconds) and no Screens/Prototype label on the stage. Its reason: a skimming
   recruiter sees the product working, not a thumbnail. Sizes and
-  timing under PHONE CARDS in `tokens.css`. Section
+  timing under PHONE CARDS in `tokens.css`.
+- **On case studies, a phone sits in a device box** (`DeviceBox.astro`,
+  `styles/device-box.css`, on request, measured off danield.design's
+  phone tiles): a plain white box (no colour behind the phone), 1px
+  hairline border, 48px corners, the phone centred with a thin dark
+  bezel and soft layered shadow, a label pill under it. It's the one way
+  to show a phone on a case study, reuse it; its corners are a requested
+  exception to the square `--radius` rule. The PayPal prototypes get the
+  same look in their case-study view; their home-page autoplay phones
+  keep PHONE CARDS. Values under DEVICE BOX in `tokens.css`. On the
+  PayPal Debit Card case the work (prototypes, then screens) comes first,
+  before the situation, on request. Section
   heads follow the reference: a centred serif line with an italic phrase,
   a label link under it.
 - `cases.ts` holds case-study content as structural prose with `[X]`

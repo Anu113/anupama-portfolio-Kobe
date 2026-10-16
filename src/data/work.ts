@@ -2,7 +2,7 @@
 // Placeholder imagery — swap the image paths once real assets land in
 // /public/images. Numbers in brackets are still to be filled in.
 //
-// All seven link to /work/<slug>. Nothing here sends a visitor off to a
+// All eight link to /work/<slug>. Nothing here sends a visitor off to a
 // Google Slides deck — a recruiter who lands on a Drive login has left the
 // site.
 //
@@ -53,9 +53,12 @@
 // discipline chips from `tags`; `labelsFor()` joins them and keeps the
 // first three (on request); past that the row stops being skimmable. "Product Design" was dropped on request — on a product
 // designer's portfolio it's implied, and it sat on five of seven cards.
-// Growth is on Chase Pay only (its job was winning back Walmart Pay
-// adoption); add it elsewhere only where the case is about adoption or
-// conversion.
+// Growth is on Chase Pay (winning back Walmart Pay adoption) and the Debit
+// Card (68% of applicants gave up); add it elsewhere only where the case is
+// about adoption or conversion. 0→1 only where the work started from
+// nothing — not the Okta cases, which rebuilt or merged what existed.
+// No AI, Infrastructure or Leadership labels: not her field, and the ask
+// is an IC role, not a management one.
 export const work = [
   { company: 'Okta', theme: 'coral', device: 'desktop',
     title: 'Rebuilding IAM for enterprise admins',
@@ -64,7 +67,7 @@ export const work = [
     role: 'Staff Product Designer · IAM + Developer Tools · Led 6 designers',
     impact: 'Admin task time down [X]% across the four highest-volume flows',
     hoverState: 'case-study',
-    tags: ['Product Strategy', 'Design Systems', '0→1'], categories: ['devtools', '0-1', 'design-systems'],
+    tags: ['Product Strategy', 'Design Systems'], categories: ['identity'],
     href: '/work/okta-iam', image: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" },
   { company: 'PayPal', theme: 'lilac', device: 'phone',
     title: 'Privacy settings people can read',
@@ -73,7 +76,7 @@ export const work = [
     role: 'Lead product designer · PayPal app and web · Research through delivery',
     impact: 'Privacy support calls down 60%',
     hoverState: 'case-study',
-    tags: ['Design Systems'], categories: ['fintech'],
+    tags: ['Privacy & Data', 'Information Architecture'], categories: ['fintech'],
     href: '/work/paypal-privacy', image: '/images/paypal-privacy/hero.webp', alt: 'Redesigned PayPal Data and privacy screens' },
   { company: 'Walmart Labs', theme: 'sage', device: 'phone',
     title: 'Scan & Go, in-store',
@@ -82,23 +85,9 @@ export const work = [
     role: 'Product designer · End-to-end flows · Team of 11',
     impact: 'Basket size up 25% in the first pilot',
     hoverState: 'case-study',
-    tags: ['Product Strategy', '0→1'], categories: ['0-1'],
+    tags: ['0→1', 'Research'], categories: ['retail'],
     href: '/work/walmart-scan-go', image: '/images/scan-go/hero.webp', alt: 'Scan & Go screens: scanning, cart and self-checkout' },
 
-  // TODO: `company` here is an inference, not a fact. The live site's tile for
-  // this work links at the PayPal privacy page, and that page lists a focus
-  // area called "untangling data messes — data classification & organization",
-  // which reads like the same project. If it is the same project, this may
-  // belong inside the PayPal privacy case rather than beside it. Confirm.
-  { company: 'PayPal', theme: 'clay', device: 'desktop',
-    title: 'Automating data access requests',
-    tagline: 'A request-and-wait process turned into a governed, self-serve system.',
-    summary: 'Getting access to internal data meant a request thread, a spreadsheet and a wait. I designed the flow that turned it into a system — who can ask for what, what gets granted automatically, and where a human still has to look.',
-    role: 'Product strategy · End-to-end visual and interaction design',
-    impact: 'Access request turnaround down from [X] to [X]',
-    hoverState: 'case-study',
-    tags: ['Product Strategy'], categories: ['fintech'],
-    href: '/work/paypal-data-access', image: '/images/placeholder-4.svg', alt: 'Data access automation' },
   { company: 'Walmart Labs', theme: 'ink', device: 'phone',
     title: 'Chase Pay inside Walmart Pay',
     tagline: 'Brought Chase Pay into Walmart Pay, validated with real customers in-store.',
@@ -106,7 +95,7 @@ export const work = [
     role: 'Product designer, Walmart Pay · Sole designer · 5 Chase stakeholders',
     impact: 'Shipped on iOS Feb 2020 and Android Jun 2020',
     hoverState: 'case-study',
-    tags: [], categories: ['fintech', 'growth'],
+    tags: ['Research'], categories: ['fintech', 'growth'],
     href: '/work/walmart-chase-pay',
     // `image` is the /work tile (a landscape crop). The home-page band puts
     // the actual prototype recording in the phone instead — the GIF from the
@@ -130,7 +119,7 @@ export const work = [
     role: 'Staff Product Designer · Integration Platform + Developer Ecosystem',
     impact: 'Submission cycle time down [X]%, on one framework instead of four',
     hoverState: 'case-study',
-    tags: ['Design Systems', 'Design Engineering', '0→1'], categories: ['devtools', 'design-systems', '0-1'],
+    tags: ['Platform', 'Design Systems'], categories: ['devtools'],
     href: '/work/okta-oin', image: '/images/okta/integrations.webp', alt: 'Auth0 onboarding screens: Applications, Organizations and Single Sign On Integrations' },
 
   // Written from her "PayPal Debit Card" deck — see the header comment on
@@ -144,8 +133,35 @@ export const work = [
     role: 'UX team lead · Enrollment, card home and rewards',
     impact: 'Applications 20% faster, same-day activation up 18%',
     hoverState: 'case-study',
-    tags: ['Product Strategy'], categories: ['fintech'],
+    tags: ['Product Strategy'], categories: ['fintech', 'growth'],
     href: '/work/paypal-debit-card', image: '/images/paypal-debit/hero.webp', alt: 'PayPal Debit Card screens in the PayPal app' },
+
+  // Written from her "ID Proofing" deck — see the header comment on
+  // `paypal-id-proofing` in cases.ts. Identity first: it's the work that
+  // connects PayPal to Okta IAM. The impact here is the pre-launch survey;
+  // swap in the production drop-off number once she has it.
+  { company: 'PayPal', theme: 'sand', device: 'phone',
+    title: 'An ID check people get through the first time',
+    tagline: 'A document scan and a face scan that replaced a photo upload form.',
+    summary: 'PayPal\'s ID check was a photo upload: 42% of people dropped off and only 68% passed first time. I led the design of a document and face scan for iOS, Android and mobile web, tested over 11 rounds of research, with an error and fallback for every way a capture fails.',
+    role: 'Lead product designer · Research through delivery',
+    impact: '90% captured their face on the first try, in pre-launch testing',
+    hoverState: 'case-study',
+    tags: ['Research', 'Privacy & Data'], categories: ['identity', 'fintech'],
+    href: '/work/paypal-id-proofing', image: '/images/paypal-id-proofing/hero.webp', alt: 'PayPal ID verification screens: Verify your ID easily in just 2 steps, and Scan your photo ID' },
+
+  // Interest-based ads and the Auto Privacy Advisor, one case on request —
+  // see `paypal-ads-consent` in cases.ts. Mostly brackets until she fills
+  // in her role, the hard call and the outcome, and exports the ads screens.
+  { company: 'PayPal', theme: 'sage', device: 'phone',
+    title: 'Ads that ask first',
+    tagline: 'Ad data sharing moved from opted in by default to asking first.',
+    summary: 'PayPal shared customer data with ad partners by default, and only about 1% of people ever opted out. When compliance moved the default to opted out, I designed how PayPal asks for consent, and proposed the Auto Privacy Advisor: a checkup that brings privacy settings to people.',
+    role: '[Lead product designer] · Ads consent and privacy settings',
+    impact: '[Consent rate under the new default]',
+    hoverState: 'case-study',
+    tags: ['Privacy & Data', 'Product Strategy'], categories: ['fintech'],
+    href: '/work/paypal-ads-consent', image: '/images/paypal-ads-consent/hero.webp', alt: 'The rebuilt PayPal ad consent screens: Data & Privacy, the ask, and Online ad preferences' },
 ] as const;
 
 // The home page's "Selected work": four stacked cards (ProjectCard.astro),
@@ -201,41 +217,37 @@ export const homeCards: { href: string; title?: string; tagline?: string; media:
 // at the Wix site any more, so the archive survives that site being retired.
 //
 // `tag` is read off what each project actually is (a design system is a
-// design system) — not invented. `year` is bracketed everywhere except
-// Agreement Management, which is the one project whose dates the live site
-// states: started January 2019, launched 8 October 2020.
-//
-// STILL NEEDS HER: the years, and the gaps inside each case study. The
-// source pages varied enormously — Agreement Management came with NPS and a
-// launch date, Lender's App with three sentences — so the thin ones carry a
-// lot of brackets. See the header note above the archive tier in cases.ts.
+// design system) — not invented. `year` comes from her resumes (and, for
+// the three Deloitte-era projects, from her directly): Walmart Labs
+// 2019–2021, Deloitte Digital 2018, qplum 2017, DreamGains 2016, Mera
+// Data 2014. Agreement Management is its launch year, 2020.
 // `href` is optional — a row without one renders as text, no link.
 export const archive = [
-  { name: 'Wal-E Design System', tag: 'Design system', year: '[20XX]',
+  { name: 'Wal-E Design System', tag: 'Design system', year: '2019–21',
     href: '/work/wal-e-design-system',
     image: '/images/archive/wal-e-design-system.jpg' },
   { name: 'Agreement Management Application', tag: 'Enterprise application', year: '2020',
     href: '/work/walmart-agreement-management',
     image: '/images/archive/agreement-management.jpg' },
-  { name: 'Bot Spark', tag: 'Internal tool', year: '[20XX]',
+  { name: 'Bot Spark', tag: 'Internal tool', year: '2019–21',
     href: '/work/bot-spark',
     image: '/images/archive/bot-spark-banner.jpg' },
-  { name: 'Mint app', tag: 'Product concept', year: '[20XX]',
+  { name: 'Mint app', tag: 'Credit score experience', year: '2018',
     href: '/work/mint-credit-score',
     image: '/images/archive/mint-app.jpg' },
-  { name: "Lender's app", tag: 'Mobile app', year: '[20XX]',
+  { name: "Lender's App", tag: 'Mobile app', year: '2018',
     href: '/work/ratanindia-lenders-app',
     image: '/images/archive/lenders-app.jpg' },
-  { name: 'Investment Portfolio onboarding', tag: 'Mobile app', year: '[20XX]',
-    href: '/work/qplum-qfolio',
-    image: '/images/archive/investment-onboarding.jpg' },
-  { name: 'Dialog quick loan', tag: 'Mobile app', year: '[20XX]',
+  { name: 'Dialog quick loan', tag: 'Mobile app', year: '2018',
     href: '/work/dialog-quick-loan',
     image: '/images/archive/dialog-quick-loan.jpg' },
-  { name: 'Dream gains finance', tag: 'Website design', year: '[20XX]',
+  { name: 'Investment Portfolio onboarding', tag: 'Mobile app', year: '2017',
+    href: '/work/qplum-qfolio',
+    image: '/images/archive/investment-onboarding.jpg' },
+  { name: 'DreamGains finance', tag: 'Website design', year: '2016',
     href: '/work/dreamgains-finance',
     image: '/images/archive/dream-gains.jpg' },
-  { name: 'Mera Data', tag: 'Web app', year: '[20XX]',
+  { name: 'Mera Data', tag: 'Web app', year: '2014',
     href: '/work/mera-data',
     image: '/images/archive/mera-data.jpg' },
 ] as const;
@@ -253,13 +265,16 @@ export function hueFor(company?: string): Hue | undefined {
   return undefined;
 }
 
-// The domain half of a card's label row. 0-1 and design-systems are
-// categories too, but they're disciplines, so they come through `tags`.
-// Enterprise and Consumer were dropped on request (labels and filters).
+// The domain half of a card's label row, and the /work filters: what the
+// product was for, plus Growth. Disciplines (Product Strategy, Research,
+// Design Systems, Information Architecture, Privacy & Data, Platform, 0→1)
+// come through `tags`. Enterprise and Consumer were dropped on request
+// (labels and filters).
 export const DOMAIN_LABEL: Record<string, string> = {
-  fintech: 'Fintech', devtools: 'Developer Tools', growth: 'Growth',
+  fintech: 'Fintech', identity: 'Identity & Security',
+  devtools: 'Developer Tools', retail: 'Retail', growth: 'Growth',
 };
-const DOMAIN_ORDER = ['fintech', 'devtools', 'growth'];
+export const DOMAIN_ORDER = ['fintech', 'identity', 'devtools', 'retail', 'growth'];
 // Three labels at most, everywhere a case is labelled (home cards, /work,
 // the case study page) — on request. Domain first, then disciplines in
 // the order written, so trim a case's `tags` order to choose what shows.

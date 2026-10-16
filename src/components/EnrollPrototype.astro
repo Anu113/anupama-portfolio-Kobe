@@ -38,6 +38,7 @@
    default address confirmed — then starting again. phone-loop.ts runs
    it only while the card is on screen and motion is allowed. */
 import '../styles/pp-proto.css';
+import '../styles/device-box.css';
 interface Props { caption?: string; autoplay?: boolean }
 const { caption, autoplay = false } = Astro.props;
 
@@ -52,7 +53,7 @@ const steps = [
 ];
 ---
 <figure class:list={['proto', autoplay && 'proto--auto']} data-proto data-autoplay={autoplay ? '' : undefined} inert={autoplay} aria-hidden={autoplay ? 'true' : undefined}>
-  <div class="proto__stage" data-hue="paypal">
+  <div class="proto__stage">
     <div class="phone">
       <div class="phone__screen">
         <p class="sr-only" aria-live="polite" data-announce></p>
@@ -205,6 +206,7 @@ const steps = [
         </section>
       </div>
     </div>
+    {!autoplay && <span class="device-box__pill" aria-hidden="true">Card sign-up</span>}
   </div>
 
   <div class="proto__side">

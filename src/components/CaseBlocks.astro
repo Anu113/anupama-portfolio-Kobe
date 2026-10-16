@@ -24,6 +24,7 @@ import type { CaseBlock } from '../data/cases';
 import Reveal from './Reveal.astro';
 import EnrollPrototype from './EnrollPrototype.astro';
 import OffersPrototype from './OffersPrototype.astro';
+import AdsConsentPrototype from './AdsConsentPrototype.astro';
 
 interface Props { blocks: CaseBlock[] }
 const { blocks } = Astro.props;
@@ -86,6 +87,9 @@ const { blocks } = Astro.props;
     )}
     {block.kind === 'prototype' && block.name === 'paypal-offers' && (
       <OffersPrototype caption={block.caption} />
+    )}
+    {block.kind === 'prototype' && block.name === 'paypal-ads-consent' && (
+      <AdsConsentPrototype caption={block.caption} />
     )}
 
     {block.kind === 'metrics' && (

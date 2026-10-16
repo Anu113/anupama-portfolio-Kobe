@@ -14,78 +14,36 @@ import { cases } from '../data/cases';
 const lockedSlugs = new Set(cases.filter((c) => c.locked).map((c) => c.slug));
 const isLocked = (href: string) => lockedSlugs.has(href.replace('/work/', ''));
 
-// The category filter tabs — moved here from the home page's own
-// "Selected work" section, which stacks its cards on scroll: hiding a
-// card there shifts every card below it, which the sticky/settle math
-// never re-measured for. This page's plain staggered grid has no such
-// scroll-position math to desync, so filtering lives here instead. Built
-// from whatever categories the seven projects actually carry, not a
-// hand-typed list that could drift from work.ts. Order is fixed (not
-// alphabetical) so "0-1" reads before the domain tags rather than
-// wherever it happens to sort.
-const CATEGORY_ORDER = ['0-1', 'fintech', 'devtools', 'growth', 'design-systems'] as const;
-const CATEGORY_LABEL: Record<string, string> = {
-  '0-1': '0→1', fintech: 'Fintech', devtools: 'Developer Tools',
-  growth: 'Growth', 'design-systems': 'Design Systems',
-};
-const categories = CATEGORY_ORDER.filter((c) => work.some((w) => w.categories?.includes(c)));
-
-/* Where each tile sits. Presentation only, so it lives here rather than in
-   work.ts — that file stays about content. Columns are on the 12-track grid
-   below; `top` is a rem offset that pushes a tile down out of line with its
-   neighbour, and `ratio` varies the media height. Together they make the
-   staggered field from the reference (allierho.com) instead of a card wall.
-   A sixth project needs a sixth entry — the grid falls back to a full-width
-   16/10 tile if one is missing (the sixth and seventh both do, on purpose:
-   the flagship and the still-unconfirmed seventh case each read as an
-   intentional close rather than a squeezed card).
-   Rows 1 and 3 pair two tiles; row 2 is the single wide one. The last pair is
-   the deck-linked work, so it sits below the three full case studies. */
-const layout = [
-  { col: '1 / 9',  ratio: '16 / 10', top: 0 },
-  { col: '9 / 13', ratio: '4 / 5',   top: 7 },
-  { col: '4 / 12', ratio: '16 / 9',  top: 0 },
-  { col: '1 / 6',  ratio: '4 / 5',   top: 0 },
-  { col: '7 / 13', ratio: '16 / 10', top: 6 },
-];
-const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
+/* One even grid after carlthomasiv.com/work: two columns, every tile the
+   same 3:2 picture, no stagger. The earlier staggered field (mixed spans,
+   drops and ratios) read as uneven, and its full-width tiles ran taller
+   than the window. */
+const RATIO = '3 / 2';
 ---
 <Base
   title="Work — Anupama Mishra"
-  description="Selected work: Okta's Integration Platform, Okta IAM and developer tools, PayPal privacy, Walmart Scan & Go, data access automation, Chase Pay and PayPal's Unified Card System. Scope, the hard calls and outcomes for each."
+  description="Selected work: Okta IAM and the Integration Platform, PayPal ID verification, the PayPal Debit Card, PayPal privacy and ad consent, Walmart Scan & Go and Chase Pay. Scope, the hard calls and outcomes for each."
 >
   <Section theme="bone" class="workindex">
     <div class="workindex__head">
-      <PageHeader label="Selected work">
-        Seven projects, and <em>what I owned</em> in each.
+      <PageHeader label="Work">
+        Curated <em>case studies</em>
         <Fragment slot="intro">
-          <p>
-            Every case study runs the same way: the business situation, my scope,
-            the hardest call I made, how the work actually got made, and then the
-            craft and the numbers.
-          </p>
+          <p>Fintech, identity, developer tools and retail. Work spanning hands-on design, design systems, team leadership and 0-to-1 products.</p>
         </Fragment>
       </PageHeader>
     </div>
 
-    <div class="workindex__filters" data-filters role="tablist" aria-label="Filter selected work by category">
-      <button type="button" class="is-active" data-filter="all" role="tab" aria-selected="true">All</button>
-      {categories.map((c) => (
-        <button type="button" data-filter={c} role="tab" aria-selected="false">{CATEGORY_LABEL[c]}</button>
-      ))}
-    </div>
-
     <div class="grid" data-worklist>
       {work.map((w, i) => {
-        const l = layout[i] ?? fallback;
         return (
-          <div class="cell" data-categories={(w.categories ?? []).join(',')} style={`--col: ${l.col}; --top: ${l.top}rem;`}>
-          <Reveal delay={i * 90}>
+          <div class="cell">
+          <Reveal delay={(i % 2) * 90}>
             <CaseCard
               title={w.title} href={w.href} image={w.image} alt={w.alt}
-              company={w.company} role={w.role} impact={w.impact}
+              company={w.company} impact={w.impact}
               labels={labelsFor(w)}
-              theme={w.theme} ratio={l.ratio}
+              theme={w.theme} ratio={RATIO}
               locked={isLocked(w.href)}
               hoverState={w.hoverState}
             />
@@ -117,51 +75,24 @@ const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
      index.astro already owns that class for its "Selected work" label row. */
   :global(.workindex) { padding-top: 0; }
 
-  /* Carries the band height the header used to get from the Section, so
-     /work's header still measures the same as /about's. */
+  /* A compact header on the content edge, after carlthomasiv.com/work —
+     label, one line, then straight into the grid. Left-aligned here
+     rather than PageHeader's centred default. */
   .workindex__head {
-    min-height: 72svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    padding-top: calc(var(--space-band-tight) * 2);
   }
-  /* --space-band-tight, not --space-section: the header is 72svh with its
-     type centred, so it already leaves a half-band of air below the intro.
-     A full section space on top of that reads as a hole. */
-  .workindex__filters { margin-top: var(--space-band-tight); }
-  .grid { margin-top: clamp(2rem, 4vw, 3rem); }
+  .workindex__head :global(.phead) { align-items: flex-start; text-align: left; }
+  .workindex__head :global(.phead__title) { max-width: none; }
+  .grid { margin-top: var(--space-band-tight); }
 
-  /* Same pill treatment the home page's own filter row used to have. */
-  .workindex__filters {
-    display: flex; gap: 0.6rem; flex-wrap: wrap;
-    padding-bottom: clamp(2rem, 4vw, 3rem);
-    border-bottom: 1px solid var(--rule);
-  }
-  .workindex__filters button {
-    all: unset; cursor: pointer;
-    font-family: var(--font-sans); font-size: var(--step-label); font-weight: var(--weight-sans);
-    padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--rule);
-    color: var(--fg-dim);
-    transition: border-color var(--dur-hover) var(--ease-out),
-                color var(--dur-hover) var(--ease-out),
-                background var(--dur-hover) var(--ease-out);
-  }
-  .workindex__filters button:hover { border-color: var(--fg-dim); color: var(--fg); }
-  .workindex__filters button.is-active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-  .cell[hidden] { display: none; }
-
-  /* --- The staggered grid --------------------------------------------
-     12 tracks. Each cell picks its span and its drop from the `layout`
-     array above; auto-placement handles which row it lands on. */
+  /* --- The grid ------------------------------------------------------
+     Two equal columns, rows aligned to the top. */
   .grid {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    column-gap: var(--gutter);
-    row-gap: clamp(4rem, 9vw, 8rem);
-  }
-  .cell {
-    grid-column: var(--col);
-    margin-block-start: var(--top);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(1.5rem, 2.5vw, 2rem);
+    row-gap: clamp(3rem, 4.5vw, 3.5rem);
+    align-items: start;
   }
 
   /* --- Archive -------------------------------------------------------
@@ -169,39 +100,9 @@ const fallback = { col: '1 / 13', ratio: '16 / 10', top: 0 };
   .arch__head { margin: 0 0 2rem; color: var(--fg-dim); }
 
   @media (max-width: 900px) {
-    .grid { grid-template-columns: 1fr; row-gap: clamp(3.5rem, 10vw, 5rem); }
-    .cell { grid-column: 1 / -1; margin-block-start: 0; }
+    .grid { grid-template-columns: minmax(0, 1fr); row-gap: clamp(3.5rem, 10vw, 5rem); }
     .arch__row { grid-template-columns: minmax(0, 1fr) 5rem; }
     .arch__tag { grid-column: 1; }
     .arch__year { grid-column: 2; grid-row: 1; }
   }
 </style>
-
-<script>
-  // Selected Work filter tabs — plain show/hide by category, no
-  // framework needed. Each cell carries its own categories as a
-  // comma-separated data attribute set server-side from work.ts. Ported
-  // from the home page's own version of this script (removed there —
-  // see this page's own comment on why).
-  const filterBar = document.querySelector<HTMLElement>('[data-filters]');
-  const grid = document.querySelector<HTMLElement>('[data-worklist]');
-  if (filterBar && grid) {
-    const buttons = [...filterBar.querySelectorAll<HTMLButtonElement>('button[data-filter]')];
-    const items = [...grid.querySelectorAll<HTMLElement>('[data-categories]')];
-
-    filterBar.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-filter]');
-      if (!btn) return;
-      const filter = btn.dataset.filter!;
-
-      buttons.forEach((b) => {
-        b.classList.toggle('is-active', b === btn);
-        b.setAttribute('aria-selected', String(b === btn));
-      });
-      items.forEach((item) => {
-        const cats = item.dataset.categories?.split(',') ?? [];
-        item.hidden = filter !== 'all' && !cats.includes(filter);
-      });
-    });
-  }
-</script>

@@ -1,6 +1,6 @@
 /* pp-proto.css — the shared phone for the PayPal case prototypes
-   (EnrollPrototype.astro, OffersPrototype.astro): the stage on the PayPal
-   hue, the phone, PayPal's pills, card art, fields, toasts, and the step
+   (EnrollPrototype.astro, OffersPrototype.astro,
+   AdsConsentPrototype.astro): the layout, the phone, PayPal's pills, card art, fields, toasts, and the step
    list beside the phone. Everything is nested under .proto so none of it
    reaches the rest of the site, and the site's global button and heading
    styles are reset inside the phone. Colours and sizes come from PAYPAL
@@ -8,12 +8,10 @@
    layout at phone scale. */
 .proto {
 
-  & { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gutter); align-items: start; }
-  .proto__stage {
-    background: var(--hue);
-    padding: clamp(1.5rem, 4vw, 3rem);
-    display: grid; place-items: center;
-  }
+  /* The phone sits in a device box (styles/device-box.css) the width of
+     the column; the step list and controls sit under it in two columns. */
+  & { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(1.5rem, 3vw, 2.5rem); }
+  .proto__stage { display: grid; place-items: center; }
   .proto__cap { grid-column: 1 / -1; max-width: var(--measure); font-size: var(--step-body); line-height: 1.6; color: var(--fg-dim); margin: 0; }
 
   /* --- the phone --------------------------------------------------- */
@@ -142,7 +140,10 @@
   .setup__t { font-size: var(--pp-text-lg); font-weight: 500; margin: 8px 0 0; }
 
   /* --- the side panel ---------------------------------------------- */
-  .proto__side { display: grid; gap: 1.25rem; align-content: start; padding-top: 0.5rem; }
+  .proto__side { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem var(--gutter); align-content: start; align-items: start; }
+  .proto__side > .u-label { grid-column: 1 / -1; margin: 0; }
+  .proto__side > .steps { grid-column: 1; grid-row: 2 / span 3; }
+  .proto__side > :not(.steps, .u-label) { grid-column: 2; }
   .steps { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
   .step {
     width: 100%; display: flex; gap: 0.9rem; align-items: baseline; text-align: left;
@@ -168,8 +169,8 @@
   .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   @media (max-width: 820px) {
-    & { grid-template-columns: 1fr; }
-    .proto__stage { padding-inline: 0; }
+    .proto__side { grid-template-columns: minmax(0, 1fr); }
+    .proto__side > .u-label, .proto__side > .steps, .proto__side > :not(.steps, .u-label) { grid-column: 1; grid-row: auto; }
   }
   @media (prefers-reduced-motion: reduce) {
     .scr { animation: none; }
