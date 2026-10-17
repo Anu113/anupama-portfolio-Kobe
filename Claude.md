@@ -220,7 +220,12 @@ effect:
     typewriter is visual only), everything static under reduced motion.
   Keep it to one character with one voice; don't give it idle animation on
   the hero beyond the breathing ellipsis, and don't add a second chat or
-  mascot elsewhere.
+  mascot elsewhere. One second place for him is approved, on request:
+  the "Ask Moss anything else" field under the home page's Small talk
+  (below), with the same tree and voice. It's the one place a visitor
+  types to him: the text is matched in the browser against `pixelKeys`
+  in `ask.ts` (no model, nothing sent or kept), and when nothing
+  matches he says so (`pixelUnknown`) rather than guess.
 
 - **`PixelBreak`, approved on request.** The word "pixel" at the end of
   the hero sentence breaks into ~3px round dots when the pointer crosses
@@ -554,7 +559,27 @@ walked back. Concretely, in the current implementation:
   "Email" rather than printing the address; /contact is the one page
   that prints it in full.
 - The home page is now: hero → "Selected *work*" head + project cards →
-  "Beyond *work*" ring → one-line playground pointer → footer (which carries contact).
+  "Beyond *work*" ring → one-line playground pointer → Small talk →
+  footer (which carries contact).
+- **Small talk** (`SmallTalk.astro`, `data/talk.ts`; on request, after
+  andreas.vision's section of the same name, matched rule for rule off
+  his stylesheet): "Small *talk*" and a one-line dek on the left, five
+  questions as cards on the right (stacked under 1200px), one open at a
+  time. The ground grows 3% under the pointer, + turns to ×, answers open
+  on a spring. His 12px corners are kept on request, an exception to the
+  square `--radius` rule for this list only. The questions are his five;
+  answers come from `site.ts` and what the site says, with `[X]` where
+  she still has to write it (how she got into design, what she wants
+  next). Under the cards, his "Ask the cloud anything else" field as
+  "Ask Moss anything else" (see Moss, above), with his behaviour: tiny
+  Moss at its start, a send arrow faded until there's text, a rotating
+  "thinking" line, the answer writing itself out under the field, then
+  three suggestion pills; a pill fills the field and answers at once.
+  Its placeholder is `--fg-dim`, not his 28% grey, which fails AA.
+  Focus shows nothing but the caret, exactly his (chosen on request over
+  an accent ring and over a deeper ground) — don't add a ring back.
+  Values under SMALL TALK in `tokens.css`. Its reason: the first-call
+  questions answered in a line each, without leaving the page.
 - **The project cards are stacked phone cards** (`ProjectCard.astro`,
   on request): four full-width rows that pin and stack as you scroll
   (sticky rows and the settle effect in `index.astro`), text on the

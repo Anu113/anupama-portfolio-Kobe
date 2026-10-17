@@ -10,6 +10,7 @@ import PixelBreak from '../components/PixelBreak.astro';
 import PixelSky from '../components/PixelSky.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import BeyondWork from '../components/BeyondWork.astro';
+import SmallTalk from '../components/SmallTalk.astro';
 
 import { site } from '../data/site';
 import { work, homeCards, labelsFor } from '../data/work';
@@ -127,6 +128,10 @@ const cards = homeCards.map((c) => {
       <a class="btn--link" href="/playground">Explore playground</a>
     </div>
   </Section>
+
+  <!-- Small talk: the short questions, then Moss for the rest. Last band
+       before the footer, which carries contact. -->
+  <SmallTalk />
 </Base>
 
 <style>

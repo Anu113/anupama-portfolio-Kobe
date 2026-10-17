@@ -184,3 +184,33 @@ export const pixelStatus = [
   'Moss is measuring the spacing…',
   'Moss is ignoring a “quick change”…',
 ];
+
+/** What a typed question is matched on, for the Small talk field
+ *  (SmallTalk.astro). Lower-case words or short phrases; a question goes
+ *  to the node with the most hits (ties: earlier node). Matching runs in
+ *  the browser: nothing typed is sent anywhere or stored. */
+export const pixelKeys: Record<string, string[]> = {
+  moss: ['moss', 'who are you', 'your name', 'totoro', 'mascot', 'creature'],
+  site: ['this site', 'website', 'this page', 'portfolio site'],
+  built: ['built', 'build', 'code', 'coding', 'astro', 'claude', 'stack', 'tech', 'develop', 'engineer'],
+  who: ['who is', 'anupama', 'about her', 'background', 'experience', 'years', 'career', 'okta', 'paypal', 'walmart', 'deloitte', 'zomato'],
+  work: ['work', 'project', 'projects', 'case', 'cases', 'worked on', 'portfolio', 'fintech', 'examples'],
+  first: ['first', 'start with', 'read first', 'should i read', 'which case', 'which project', 'recommend', 'strongest', 'best case', 'best project'],
+  hardest: ['hard', 'hardest', 'difficult', 'challenge', 'tradeoff', 'trade-off', 'decision', 'hard call', 'conflict'],
+  locked: ['locked', 'password', 'private', 'nda', 'iam', 'confidential', 'access'],
+  available: ['available', 'hire', 'hiring', 'job', 'open to', 'looking', 'role', 'roles', 'position', 'relocate', 'based', 'where', 'location', 'bangalore'],
+  manage: ['manage', 'manager', 'management', 'lead', 'leader', 'leadership', 'team', 'people', 'ic'],
+  how: ['how does she', 'process', 'approach', 'method', 'accessibility', 'a11y', 'research', 'systems', 'strategy', 'style'],
+  contact: ['contact', 'email', 'mail', 'reach', 'linkedin', 'talk to', 'get in touch', 'resume', 'cv'],
+};
+
+/** When nothing matches: Moss says so rather than guessing. */
+export const pixelUnknown: PixelNode = {
+  q: '',
+  say: ['Hm. That one isn’t on the site, so I won’t guess. Tiny creature, limited access.', 'Try one of these, or ask her directly.'],
+  exits: [email, linkedin],
+  next: ['work', 'available', 'contact'],
+};
+
+/** "Thinking" lines while a typed question is matched. */
+export const pixelThinking = ['Moss is thinking…', 'Moss is checking the case studies…', 'Moss is measuring the spacing…'];

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ask Moss field — states</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  /* Mock of the "Ask Moss anything else" field, state by state, against
+     andreas.vision's (studied live, 2026-10-17):
+       - focus: no ring, no border, no colour change (outline: none on
+         the input, nothing on the form) — only the caret
+       - typing: nothing appears under the field; the arrow goes from 16%
+         to solid
+       - sent: a faint "thinking" line, then the answer writes out under
+         the field, then up to three suggestion pills
+     Two focus treatments to pick from: A is his exactly; B is his plus
+     the card's hover ground on focus (ink 3.5%), so a keyboard user can
+     still see where they are (WCAG 2.4.7) without a coloured ring.
+     Values copied from tokens.css (SMALL TALK). */
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --talk-soft: color-mix(in srgb, var(--fg) 62%, var(--bg));
+    --talk-card: color-mix(in srgb, var(--fg) 1.5%, var(--bg));
+    --talk-card-focus: color-mix(in srgb, var(--fg) 3.5%, var(--bg));
+    --talk-chip: color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --talk-chip-hover: color-mix(in srgb, var(--fg) 9%, var(--bg));
+    --talk-chip-ink: color-mix(in srgb, var(--fg) 68%, var(--bg));
+    --talk-send-bg: color-mix(in srgb, var(--fg) 89%, var(--bg));
+    --talk-moss-shadow: color-mix(in srgb, var(--fg) 22%, transparent);
+    --radius-talk: 12px; --radius-pill: 999px;
+  }
+  :root[data-mode='dark'] {
+    --bg: #1b1a19; --fg: #ecebe8; --fg-dim: #a09d98; --line: rgb(255 255 255 / 0.12);
+    --talk-moss-shadow: rgb(0 0 0 / 0.55);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 600 14px/1.5 var(--font-sans); -webkit-font-smoothing: antialiased;
+    padding: 2rem clamp(1.25rem, 4vw, 3rem) 5rem;
+  }
+  .bar { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center; margin-bottom: 2.5rem; font: 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; }
+  .bar span { color: var(--fg-dim); }
+  .bar button { border: 1px solid var(--line); background: none; color: inherit; border-radius: 999px; padding: 0.35rem 0.75rem; font: inherit; text-transform: inherit; cursor: pointer; }
+  .bar button[aria-pressed='true'] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  h1 { font: 300 2.25rem/1.15 var(--font-serif); letter-spacing: -0.03em; margin: 0 0 0.5rem; }
+  h1 em { font-style: italic; }
+  .lede { color: var(--talk-soft); font-size: 17px; margin: 0 0 3rem; max-width: 40rem; }
+  .cols { display: grid; gap: 3rem 4rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); }
+  .col h2 { font: 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-dim); margin: 0 0 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--line); }
+  .state { margin-bottom: 2.25rem; }
+  .state > p { font: 11px/1.4 var(--font-mono); letter-spacing: 0.04em; color: var(--fg-dim); margin: 0 0 0.6rem; }
+  .live { max-width: 32rem; margin-bottom: 4rem; }
+
+  /* ---- the field ---- */
+  .ask {
+    display: flex; align-items: center; gap: 14px; padding: 12px 12px 12px 20px;
+    border-radius: var(--radius-talk); background: var(--talk-card);
+    transition: background-color 100ms ease-out;
+  }
+  .ask .input {
+    flex: 1; min-width: 0; padding: 6px 0; border: 0; outline: none; background: none;
+    color: var(--fg); font: inherit; font-size: 17px; line-height: 1.2; letter-spacing: 0;
+  }
+  .ask .input::placeholder, .ask .ph { color: var(--fg-dim); opacity: 1; }
+  .caret { display: inline-block; width: 1px; height: 1.1em; background: var(--fg); vertical-align: -0.15em; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .send {
+    display: grid; flex: none; place-items: center; width: 32px; height: 32px; padding: 0; border: 0;
+    border-radius: var(--radius-pill); background: var(--talk-send-bg); color: var(--bg); cursor: pointer;
+    transition: opacity 100ms ease-out, transform 100ms ease-out;
+  }
+  .send svg { width: 16px; height: 16px; }
+  .send:disabled, .send.off { opacity: 0.16; cursor: default; }
+  .send:not(:disabled):active { transform: scale(0.94); }
+  /* B: his, plus the card hover ground on focus */
+  .is-b .ask:focus-within, .is-b .ask.focus { background: var(--talk-card-focus); }
+
+  .moss { position: relative; flex: none; width: 28px; aspect-ratio: 188 / 223; margin-block: -0.35rem -0.2rem; transform-origin: 50% 100%; }
+  .moss::before { content: ''; position: absolute; left: 50%; bottom: -8%; translate: -50% 0; width: 100%; height: 18%; border-radius: 50%; background: radial-gradient(closest-side, var(--talk-moss-shadow), transparent); }
+  .moss img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: bottom; }
+  .thinking-now .moss { animation: sway 1.2s ease-in-out infinite; }
+  @keyframes sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+
+  .under { display: grid; gap: 16px; padding-top: 16px; }
+  .under:empty { padding-top: 0; }
+  .reply { padding: 0 4px; color: var(--talk-soft); font-size: 17px; line-height: 1.5; letter-spacing: 0; }
+  .reply p { margin: 0; } .reply p + p { margin-top: 8px; }
+  .reply strong { color: var(--fg); font-weight: inherit; }
+  .reply a { color: var(--fg); text-decoration: underline 1px; text-underline-offset: 3px; margin-right: 1rem; }
+  .thinking { color: var(--fg-dim); }
+  .arrive { animation: arrive 220ms ease-out both; }
+  @keyframes arrive { from { opacity: 0; transform: translateY(4px); } }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  .pills li { animation: arrive 260ms ease-out both; animation-delay: calc(var(--i) * 40ms); }
+  .pills button {
+    padding: 7px 14px; border: 0; border-radius: var(--radius-pill); background: var(--talk-chip); color: var(--talk-chip-ink);
+    font: inherit; font-size: 15px; line-height: 1.4; letter-spacing: 0; cursor: pointer;
+    transition: background-color 100ms, color 100ms;
+  }
+  .pills button:hover { background: var(--talk-chip-hover); color: var(--fg); }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <span>Mode</span><button data-mode="light" aria-pressed="true">Light</button><button data-mode="dark" aria-pressed="false">Dark</button>
+  </div>
+
+  <h1>Ask <em>Moss</em> — the field, state by state</h1>
+  <p class="lede">Left: exactly his. Right: his, plus a slightly deeper ground while the field has focus, instead of the terracotta ring. Try the live one first.</p>
+
+  <section class="live is-b" aria-label="Live field">
+    <div class="state">
+      <p>LIVE · type a question, press Enter</p>
+      <div data-live>
+        <form class="ask">
+          <span class="moss"><img src="img/moss-sm.webp" alt="" /></span>
+          <input class="input" placeholder="Ask Moss anything else" aria-label="Ask Moss anything else" maxlength="280" />
+          <button class="send" aria-label="Ask" disabled><svg viewBox="0 0 14 14" fill="none"><path d="M12 6 7 1 2 6M7 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </form>
+        <div class="under" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cols">
+    <div class="col is-a"><h2>A · Exactly his</h2></div>
+    <div class="col is-b"><h2>B · His + focus ground</h2></div>
+  </div>
+
+  <template id="frames">
+    <div class="state"><p>1 · AT REST</p>
+      <div class="ask"><span class="moss"><img src="img/moss-sm.webp" alt="" /></span><span class="input ph">Ask Moss anything else</span><span class="send off"><svg viewBox="0 0 14 14" fill="none"><path d="M12 6 7 1 2 6M7 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+    </div>
+    <div class="state"><p>2 · FOCUSED, EMPTY</p>
+      <div class="ask focus"><span class="moss"><img src="img/moss-sm.webp" alt="" /></span><span class="input"><span class="caret"></span><span class="ph">Ask Moss anything else</span></span><span class="send off"><svg viewBox="0 0 14 14" fill="none"><path d="M12 6 7 1 2 6M7 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+    </div>
+    <div class="state"><p>3 · TYPING — nothing below yet; the arrow turns solid</p>
+      <div class="ask focus"><span class="moss"><img src="img/moss-sm.webp" alt="" /></span><span class="input">Is she open to a lead role?<span class="caret"></span></span><span class="send"><svg viewBox="0 0 14 14" fill="none"><path d="M12 6 7 1 2 6M7 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+    </div>
+    <div class="state"><p>4 · SENT — a faint thinking line, Moss sways</p>
+      <div class="thinking-now"><div class="ask"><span class="moss"><img src="img/moss-sm.webp" alt="" /></span><span class="input">Is she open to a lead role?</span><span class="send off"><svg viewBox="0 0 14 14" fill="none"><path d="M12 6 7 1 2 6M7 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+      <div class="under"><div class="reply"><p class="thinking">Moss is checking the case studies…</p></div></div></div>
+    </div>
+    <div class="state"><p>5 · ANSWERED — his reply under the field, then suggestion pills</p>
+      <div class="ask"><span class="moss"><img src="img/moss-sm.webp" alt="" /></span><span class="input">Is she open to a lead role?</span><span class="send off"><svg viewBox="0 0 14 14" fill="none"><path d="M12 6 7 1 2 6M7 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+      <div class="under">
+        <div class="reply"><p>Yes. She’s looking for a <strong>Staff or Lead Product Designer role</strong>. Based in Bangalore.</p><p>I’ve suggested a walk. She opened Figma instead. A team would be good for her.</p><p><a href="#">Email her</a><a href="#">LinkedIn</a></p></div>
+        <ul class="pills"><li style="--i:0"><button>Is she after a management role?</button></li><li style="--i:1"><button>How does she work?</button></li><li style="--i:2"><button>What has she worked on?</button></li></ul>
+      </div>
+    </div>
+  </template>
+
+<script>
+  const root = document.documentElement;
+  document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+    root.dataset.mode = b.dataset.mode;
+    document.querySelectorAll('[data-mode]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  }));
+  document.querySelectorAll('.col').forEach(c => c.append(document.getElementById('frames').content.cloneNode(true)));
+
+  // Live: a few canned answers from Moss's tree, his flow.
+  const replies = {
+    available: { q: 'Is she available?', say: ['Yes. She’s looking for a <strong>Staff or Lead Product Designer role</strong>. Based in Bangalore.', 'I’ve suggested a walk. She opened Figma instead. A team would be good for her.'], next: ['manage', 'how', 'work'] },
+    manage: { q: 'Is she after a management role?', say: ['No. She wants a <strong>Staff or Lead Product Designer role</strong>, with her hands on the work.', 'She led a team of six at Okta. That’s how big the problems got, not what she’s asking for next.'], next: ['work', 'how'] },
+    how: { q: 'How does she work?', say: ['She wanders comfortably between strategy, systems, messy problems and the actual interface.', 'Accessibility goes in at the start, not at QA. She gives a talk on it: <strong>The Saga of Accessibility</strong>.'], next: ['work', 'available'] },
+    work: { q: 'What has she worked on?', say: ['Fintech, mostly: payments, cards, privacy. Then enterprise and developer tools, the kind with forty settings and one dangerous one.'], next: ['available', 'how'] },
+    unknown: { q: '', say: ['Hm. That one isn’t on the site, so I won’t guess. Tiny creature, limited access.', 'Try one of these, or ask her directly.'], next: ['work', 'available', 'how'] },
+  };
+  const keys = { available: ['available', 'hire', 'role', 'open', 'job', 'looking'], manage: ['manage', 'manager', 'team', 'lead'], how: ['how', 'process', 'accessibility', 'work with'], work: ['work', 'project', 'case'] };
+  const live = document.querySelector('[data-live]');
+  const form = live.querySelector('form'), input = live.querySelector('input'), send = live.querySelector('.send'), under = live.querySelector('.under');
+  let busy = false, current = '';
+  const refresh = () => { send.disabled = !input.value.trim() || busy || input.value.trim() === current; };
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  function match(t) { t = ' ' + t.toLowerCase() + ' '; let best = 'unknown', s = 0; for (const [k, ws] of Object.entries(keys)) { const n = ws.filter(w => t.includes(w)).length; if (n > s) { s = n; best = k; } } return best; }
+  async function answer(k, typed) {
+    const node = replies[k];
+    busy = true; input.readOnly = true;
+    if (!typed) input.value = node.q;
+    current = input.value.trim(); refresh();
+    if (typed) {
+      live.classList.add('thinking-now');
+      under.innerHTML = '<div class="reply"><p class="thinking arrive">Moss is thinking…</p></div>';
+      await wait(900); under.querySelector('.thinking').textContent = 'Moss is checking the case studies…'; await wait(700);
+      live.classList.remove('thinking-now');
+    }
+    under.innerHTML = '<div class="reply"><div class="answer arrive"></div></div>';
+    const ans = under.querySelector('.answer');
+    for (const s of node.say) {
+      const p = document.createElement('p'); ans.append(p);
+      const text = s.replace(/<[^>]+>/g, '');
+      if (typed) for (let i = 1; i <= text.length; i += 2) { p.textContent = text.slice(0, i); await wait(/[.?!]/.test(text[i - 1]) ? 180 : 18); }
+      p.innerHTML = s;
+    }
+    const ul = document.createElement('ul'); ul.className = 'pills';
+    node.next.forEach((n, i) => { const li = document.createElement('li'); li.style.setProperty('--i', i); const b = document.createElement('button'); b.type = 'button'; b.textContent = replies[n].q; b.onclick = () => !busy && answer(n, false); li.append(b); ul.append(li); });
+    under.append(ul);
+    busy = false; input.readOnly = false; refresh();
+  }
+  input.addEventListener('input', refresh);
+  input.addEventListener('keydown', e => { if (e.key === 'Escape') { input.value = ''; refresh(); } });
+  form.addEventListener('submit', e => { e.preventDefault(); const q = input.value.trim(); if (q && !busy && q !== current) answer(match(q), true); });
+</script>
+</body>
+</html>
