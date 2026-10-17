@@ -47,6 +47,9 @@ export const beyond = {
     { src: 'office-garden-2.webp', alt: 'Arms crossed with a colleague in the office garden', aspect: 1.14 },
   ].map((p): BeyondPhoto & { soft: string } => ({
     ...p,
+    // No card taller than 2:3, as on the reference: the tallest photos are
+    // cropped (object-fit) so the near arc clears the words.
+    aspect: Math.max(p.aspect, 2 / 3),
     src: dir + p.src,
     soft: dir + p.src.replace('.webp', '-blur.webp'),
   })),
@@ -55,7 +58,10 @@ export const beyond = {
 // The ring, measured off andreas.vision (2026-10-17). Positions are
 // fractions of the band's half-width / half-height; angles in radians.
 //   angle  t = i/n·2π + turn       depth (cos t + 1)/2, 1 = nearest
-//   x      sin t · spreadX          y     (0.3 + 0.7 cos t) · spreadY
+//   x      sin t · spreadX          y     (offset + amp · cos t) · spreadY
+// His offset/amp were 0.3/0.7, which put the far arc across the headline;
+// ours lift the far arc above it and drop the near arc below the pills
+// (option E in experiments/beyond-work/oval.html).
 //   scale  0.55 + 0.45 · depth
 // Far cards fade to `fade` opacity and blur to `blur` (in CSS px).
 export const ring = {
@@ -63,6 +69,8 @@ export const ring = {
   easeRate: 1.6,    // how fast speed settles back to the drift after a throw
   spreadX: 0.9,
   spreadY: 0.66,
+  offset: 0.2,      // where the ring's middle sits below the words' centre
+  amp: 0.82,        // half the ring's height (far arc up, near arc down)
   blur: 3,
   fade: 0.45,
   dragStart: 6,     // px of travel before a press becomes a drag
