@@ -74,14 +74,26 @@ role, *feeling* the engineering is the point. The difference between this and
 "showing off" is restraint in **quantity and volume**, not in ambition per
 effect:
 
-- **One hero treatment, not effects scattered everywhere.** The hero may
-  carry a genuinely crafted moment — currently a subtle WebGL flow-noise
-  shader behind the headline (ink → accent, ~0.55 opacity, a scrim on top for
-  text contrast, frozen to a static frame under `prefers-reduced-motion`).
-  It should read as texture noticed on a second look, not a lava lamp. This
-  is the one place on the site allowed to be visibly "built," and it earns
-  that by being the very first thing a visitor sees — it sets the design-eng
-  claim before a word of copy does.
+- **One hero treatment, not effects scattered everywhere.** The hero
+  carries one crafted moment: the pixel sky (`PixelSky.astro`, after
+  andreas.vision, chosen on request from mocks in
+  `experiments/hero-pixels`, option D3 "cloud edge"; it replaced the
+  earlier WebGL shader idea). At rest, terracotta pixel clouds along the
+  hero's top and bottom edges drift slowly and clear around the words,
+  the nav and her portrait — the accent mixed into the ground in four
+  steps with a checker dither between them, so it re-inks in dark mode.
+  On scroll (no pin) the whole sky folds into a small tile after
+  "pixel" in the headline, its edge ragged and drifting like the clouds
+  (never a square edge, on request), held to light tones while it
+  crosses the words. The tile is full-stop sized and replaces the
+  sentence's full stop, landing as a crisp 2x2 block (T1 of the
+  small-tile mocks, on request); the real full stop stays for screen
+  readers and shows under reduced motion. The tile keeps drifting. ~15fps, only on screen; a
+  still frame with no fold and no tile under reduced motion. Values
+  under PIXEL SKY in `tokens.css`. This is the one place on the site
+  allowed to be visibly "built", and it earns that by being the very
+  first thing a visitor sees. Pixel backgrounds on the project-card
+  stages were mocked too but not built; ask before adding them.
 - **The preloader, on the home page, on first paint** (`Preloader.astro`,
   chosen on request from rounds of mocks): a terracotta sheet (the
   light-mode accent, in both modes) with a faint grain, everything on it
@@ -234,7 +246,7 @@ effect:
   in `data/books.ts`). Spines follow a reference she sent: a short rule,
   bold sans title, author in mono. About page only, one shelf.
 
-Outside those seven moments — hero shader, first-paint loader, the reused
+Outside those seven moments — hero pixel sky, first-paint loader, the reused
 hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
@@ -243,8 +255,8 @@ floating/bouncing idle animation, parallax for its own sake, a second
 full-screen shader anywhere else on the site, or any interaction whose only
 purpose is "this is hard to build." If you can't name the UX reason for an
 interaction in one sentence, cut it — that test still applies to the five
-allowed moments too, it just resolves differently for them (the hero shader's
-reason is "sets the design-eng claim on first paint"; the loader's is "the
+allowed moments too, it just resolves differently for them (the pixel sky's
+reason is "the sentence's last stubborn pixel, acted out once on the first scroll"; the loader's is "the
 one screen with nothing else to show"; the hover system's is "reveals
 information, doesn't just move"; `CursorTrail`'s is the standing one already
 in this file — a felt, physical response to the pointer, not a demo;
@@ -550,6 +562,17 @@ walked back. Concretely, in the current implementation:
   before the situation, on request. Section
   heads follow the reference: a centred serif line with an italic phrase,
   a label link under it.
+- **Before and after on one phone** (`PrivacyCompare.astro`, the
+  `compare` block; on request, after gauravi.design's last card, chosen
+  from four mocks): in the Privacy case's craft section, the old screen
+  sits left of a line and the redesign right of it, in a device box. The
+  line sways slowly while on screen, and can be dragged or moved with the
+  arrow keys. Numbered pins on what was wrong move to the fix as the line
+  crosses them, and the notes beside the phone turn from Before to
+  After. Notes are read off the screens, never invented. The static
+  "Before" phones left the screens rows for it. Values under BEFORE /
+  AFTER in `tokens.css`. Its reason: the difference between the two
+  screens is the decision, and seeing it beats a paragraph about it.
 - `cases.ts` holds case-study content as structural prose with `[X]`
   placeholders for real numbers — written from what this file already
   records about each project, not confirmed by Anupama. It also currently

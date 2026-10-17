@@ -1,10 +1,16 @@
 ---
 /* Fades + lifts its contents in on scroll. Honours reduced-motion.
-   Usage: <Reveal delay={120}>...</Reveal> */
-interface Props { delay?: number; y?: number; class?: string; }
-const { delay = 0, y = 28, class: cls = '' } = Astro.props;
+   Usage: <Reveal delay={120}>...</Reveal>
+
+   `still` renders the same wrapper div with no motion: case studies use
+   it, on request, so the only thing moving there is the product (phones,
+   prototypes, the before/after line), never the page. */
+interface Props { delay?: number; y?: number; class?: string; still?: boolean }
+const { delay = 0, y = 28, class: cls = '', still = false } = Astro.props;
 ---
-<div data-reveal class={cls} style={`--d:${delay}ms; --y:${y}px;`}><slot /></div>
+{still
+  ? <div class={cls}><slot /></div>
+  : <div data-reveal class={cls} style={`--d:${delay}ms; --y:${y}px;`}><slot /></div>}
 
 <style>
   [data-reveal] {

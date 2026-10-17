@@ -32,9 +32,12 @@ export type CaseBlock =
       is right for a photo and destroys a portrait screen or a long page
       mockup — half the archive artefacts are one of those two. Give it the
       asset's real dimensions and nothing is cropped. */
-  | { kind: 'figure'; src: string; alt: string; caption?: string; wide?: boolean; ratio?: string }
+  | { kind: 'figure'; src: string; alt: string; caption?: string; wide?: boolean; ratio?: string; claim?: string }
   /** The pull quote. One per section at most, or it stops being a pull. */
   | { kind: 'quote'; text: string; cite?: string }
+  /** The bet: one line, a "How might we…?" or an "If we…, we'll see…".
+      Once per case, at the end of the situation. */
+  | { kind: 'bet'; text: string }
   /** The numbers. Business, team, and craft — in that order. */
   | { kind: 'metrics'; label?: string; items: { value: string; label: string }[] }
   /** A working prototype, rebuilt in code from her screens. `name` picks
@@ -42,7 +45,28 @@ export type CaseBlock =
   | { kind: 'prototype'; name: 'paypal-enroll' | 'paypal-offers' | 'paypal-ads-consent'; caption?: string }
   /** A row of phone screens redrawn in code (PrivacyScreens.astro), each in
       a device box. `set` picks the row. Only for the Privacy case so far. */
-  | { kind: 'screens'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'contextual'; caption?: string };
+  | { kind: 'screens'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'contextual'; caption?: string; claim?: string }
+  /** Before and after on one phone (PrivacyCompare.astro): the old screen
+      left of a line you drag, the new one right of it, and numbered notes
+      that turn from what was wrong to the fix as the line crosses them.
+      `set` picks the pair of screens. Only for the Privacy case so far. */
+  | { kind: 'compare'; set: 'hub' | 'shopping' | 'request' | 'delete'; claim?: string; notes: CompareNote[] };
+
+/** One note on a before/after phone. Boxes are [x, y, width, height] in %
+    of the screen, measured off the drawn screens. `at` is where the pin
+    sits across the screen (% from the left): its note flips when the line
+    passes it, so spread them out and the line reaches them one at a time. */
+export interface CompareNote {
+  at: number;
+  before: [number, number, number, number];
+  after: [number, number, number, number];
+  was: string;
+  now: string;
+}
+// `claim` on a figure or a screens row makes it a numbered craft decision:
+// CaseBlocks numbers the claimed blocks in a section 01, 02… and sets the
+// claim above the work as one line, "X replaced Y", with the caption under
+// it giving the reason (after rachelatwork.com's "Key interface decisions").
 
 export interface CaseSection {
   /** Anchor id — also the rail's scroll-spy target. */
@@ -401,8 +425,10 @@ export const cases: CaseStudy[] = [
       src: '/images/paypal-privacy/hero.webp',
       alt: 'Four redesigned screens: the Data and privacy page, Deals & ads, Personalized deals and offers, and How it works',
     },
+    /* Opener in the combined pattern (rachelatwork.com × carlthomasiv.com):
+       a hard number, then "I led X so that Y", then where it landed. */
     description:
-      'PayPal Data & Privacy settings: a new structure built from card sorts and tested in unmoderated prototypes, launched in early 2023 to more than 80 million people.',
+      '75% of settings traffic stopped on the first page. I led the redesign of PayPal\'s privacy settings so that every setting is one tap away and says what it does. Launched in early 2023, now used by more than 80 million people.',
     meta: [
       { label: 'Team', value: '4 designers, content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers' },
       { label: 'Platforms', value: 'PayPal app, mobile first, and web' },
@@ -414,20 +440,12 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'The settings had grown one control at a time, and most people never got past the first page.',
+        heading: '75% of settings traffic stopped on the first page. The settings had grown one control at a time.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'PayPal\'s Data & Privacy settings were a list of controls in legal language, with no structure underneath. New features and new GDPR and CCPA requirements had nowhere to go. Customer service heard the same privacy questions again and again.',
-              'The goal was to make managing your data easy, build trust, and meet the legal requirements, all on the same screens.',
-            ],
-          },
-          {
-            kind: 'metrics',
-            label: 'What the baseline showed',
-            items: [
-              { value: '75%', label: 'Of settings traffic stopped on the first settings page' },
+              'A list of controls in legal language, with no structure underneath. New features and new GDPR and CCPA rules had nowhere to go. Customer service heard the same privacy questions again and again.',
             ],
           },
           {
@@ -445,13 +463,18 @@ export const cases: CaseStudy[] = [
             text: 'It\'s not explained clearly. I have to fill in the holes with my own prior knowledge.',
             cite: 'A participant in customer research',
           },
+          /* The project's own goal (her deck), restated as the bet. */
+          {
+            kind: 'bet',
+            text: 'How might we make managing your data easy, build trust, and meet GDPR and CCPA, all on the same screens?',
+          },
         ],
       },
       {
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'Lead product designer, from the first research to delivery.',
+        heading: 'I led the design from the first card sort to delivery, as one of four designers.',
         blocks: [
           {
             kind: 'rows',
@@ -494,7 +517,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The first version, built from the card sorts, had three layers. Four tiles: Profile privacy, Feature preferences, Notifications, and Ads and data. Each tile opened a sheet listing its settings, and each setting answered five questions: what data we collect, where it comes from, why, whether it\'s shared, and what you can control.',
+              'The first version came straight from the card sorts. Four tiles: Profile privacy, Feature preferences, Notifications, and Ads and data. Each tile opened a sheet of its settings. Each setting answered five questions: what we collect, where it comes from, why, whether it\'s shared, and what you control.',
             ],
           },
           {
@@ -508,7 +531,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'In rapid research the groups worked: people found the categories clear and the page easier to scan. The sheets didn\'t. They added a click before any real setting, so every task took more steps. And some labels failed:',
+              'In rapid research the groups worked. The sheets didn\'t: one more tap before any real setting, on every task. Some labels failed too:',
             ],
           },
           {
@@ -523,7 +546,15 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The revised version keeps the groups and removes the sheets. Every setting sits on one page under three headings: Profile privacy, Permissions and shared data, and Your data rights. Each setting is one tap away, with a line under it saying what it does. "Correct your data" became "Update your data", and emails and notifications got their own link at the bottom of the page.',
+              'So I kept the groups and dropped the sheets. Every setting now sits on one page under three headings: Profile privacy, Permissions and shared data, and Your data rights, each with a line saying what it does. "Correct your data" became "Update your data". Emails and notifications got their own link at the bottom, where people looked for them.',
+            ],
+          },
+          {
+            kind: 'metrics',
+            label: 'First version → revised',
+            items: [
+              { value: '2 → 1', label: 'Taps from the privacy page to any setting' },
+              { value: '4 → 3', label: 'Groups: four tiles became three headings on one page' },
             ],
           },
           {
@@ -541,22 +572,22 @@ export const cases: CaseStudy[] = [
         id: 'team',
         nav: 'How the work got made',
         label: 'How the work got made',
-        heading: 'The structure came from card sorts, and every version went in front of people.',
+        heading: 'Four card sorts, three prototypes, and only one cleared the 70% bar.',
         blocks: [
           {
             kind: 'points',
             items: [
               {
                 title: 'Start from what people do',
-                body: 'A review of the current settings with the product triad, a year of settings traffic, and sessions with customer service and with the product teams whose features needed a setting. The tasks people did most set the order on each page, balanced against stakeholder needs and GDPR.',
+                body: 'A year of settings traffic, a review with the product triad, and sessions with customer service and the teams whose features needed a setting. The most-used tasks set the order on each page, balanced against stakeholders and GDPR.',
               },
               {
                 title: 'Card sorts, then prototypes',
-                body: 'Four closed card sorts compared the current structure with three alternatives: 20 tasks, and participants picked the tab each one belonged in. Three workable options came out, and each became a high-fidelity prototype.',
+                body: 'Four closed card sorts tested the current structure against three alternatives: 20 tasks, and people picked the tab each belonged in. Three options survived, and each became a high-fidelity prototype.',
               },
               {
                 title: 'Privacy where the question comes up',
-                body: 'Most privacy questions start somewhere else: a first visit, a shopping integration, the middle of a payment. We mapped each of those moments to a short explanation in place, with a link to the setting.',
+                body: 'Most privacy questions start somewhere else: a first visit, a shopping integration, the middle of a payment. Each of those moments got a short explanation in place, with a link to the setting.',
               },
             ],
           },
@@ -585,42 +616,86 @@ export const cases: CaseStudy[] = [
         label: 'The craft',
         heading: 'Each setting says what it does, what it\'s set to, and what changes if you switch it.',
         blocks: [
+          /* Before and after on one phone (PrivacyCompare.astro), then the
+             live screens. Notes are read off the screens themselves; the
+             boxes are measured off the drawn screens. */
+          {
+            kind: 'compare',
+            set: 'hub',
+            claim: 'One page with three headings replaced a list of legal controls.',
+            notes: [
+              { at: 26, before: [6, 13, 88, 6], after: [3, 6, 94, 5], was: 'Five rows under one heading, in no order.', now: 'Three headings group every setting.' },
+              { at: 52, before: [6, 52, 88, 12], after: [3, 37, 94, 9.5], was: 'Interest-based marketing, a row of its own.', now: 'Deals & ads, under Permissions and shared data.' },
+              { at: 78, before: [6, 87, 88, 9], after: [3, 49, 94, 38], was: 'Download, correct and delete share one row.', now: 'Your data rights: three rows. "Correct" became "Update".' },
+            ],
+          },
           {
             kind: 'screens',
             set: 'hub',
             caption:
-              'The revised page. Every setting one tap away under three headings, each with a line saying what it does. The blue card at the top is a proposal: once a year, it asks whether your settings still suit you.',
+              'Every setting is one tap away, with a line saying what it does. The blue card at the top is a later proposal: once a year, it asks whether your settings still suit you.',
+          },
+          {
+            kind: 'compare',
+            set: 'shopping',
+            claim: 'A switch that says what\'s on replaced a single "Turn off" button.',
+            notes: [
+              { at: 78, before: [6, 53, 88, 7.5], after: [4, 55, 92, 15.5], was: '"Turn off" is the only control. Nothing says it\'s on.', now: 'A switch that shows its state, with a line on what it does.' },
+              { at: 50, before: [6, 31, 88, 19], after: [8, 71, 44, 5], was: 'Two bullets on what you get. Nothing on how it works.', now: '"Learn how it works" opens an example.' },
+              { at: 22, before: [6, 12, 88, 17], after: [8, 82, 84, 9], was: 'Nothing on what happens to your data.', now: 'It ends on "We never sell your personal information."' },
+            ],
           },
           {
             kind: 'screens',
             set: 'shopping',
-            caption:
-              'PayPal Shopping. The old screen had one button: Turn off PayPal Shopping. The new one is a switch that says what\'s on and what you get, explains how it works with an example, and ends on "We never sell your personal information."',
+            caption: 'The new screens. Flip the switch, or open "Learn how it works".',
+          },
+          {
+            kind: 'compare',
+            set: 'request',
+            claim: 'Grouped data types replaced one long checklist.',
+            notes: [
+              { at: 50, before: [5, 39, 90, 27], after: [4, 43, 92, 15], was: 'A checkbox for every item: six before Usage info.', now: 'One tick per data type, with a line on what it\'s for.' },
+              { at: 22, before: [10, 40, 66, 11], after: [8, 52, 34, 4.5], was: 'Every item listed up front.', now: 'Each type\'s items fold under "What\'s included".' },
+              { at: 84, before: [68, 28, 28, 4.5], after: [4, 38, 92, 4.5], was: '"Unselect all", with no count.', now: '"Select all", and a count: 6 of 7 selected.' },
+            ],
           },
           {
             kind: 'screens',
             set: 'request',
             caption:
-              'Get a copy of your data. The old flow was one long checklist. Now data types are grouped, each says what it\'s for and what\'s included, connected apps (Xoom, Venmo, Honey) are listed, and the request ends on a note that your info is encrypted.',
+              'Connected apps (Xoom, Venmo, Honey) are listed too, and the request ends on a note that your info is encrypted.',
+          },
+          {
+            kind: 'compare',
+            set: 'delete',
+            claim: '"Clean up your data" now comes before "Delete and close".',
+            notes: [
+              { at: 22, before: [5, 12, 90, 9.5], after: [4, 54, 92, 5.5], was: 'One path: delete everything and close the account.', now: 'Two ways to delete.' },
+              { at: 50, before: [5, 55, 90, 14], after: [4, 60, 92, 14.5], was: 'Closing the account is the only way to delete anything.', now: 'Clean up first: delete parts, keep the account.' },
+              { at: 80, before: [5, 26, 90, 17], after: [4, 76, 92, 13], was: 'What closing means is spread over paragraphs.', now: 'Closing is still there, second, in one line.' },
+            ],
           },
           {
             kind: 'screens',
             set: 'delete',
             caption:
-              'Delete, split in two. The old flow had one path: delete your data and close the account. The new one offers "Clean up your data" first: face scan, marketing, package tracking and third-party profile data, each saying what you lose.',
+              'Face scan, marketing, package tracking and third-party profile data can each go on their own, each saying what you lose.',
           },
           {
             kind: 'screens',
             set: 'contextual',
+            claim: 'Privacy is explained where the question comes up, not only in settings.',
             caption:
-              'Privacy where the question comes up. Offers carry a "Personalize your experience" link, and a Shopping and Privacy card explains why you see these deals: "We never sell it, and won\'t share it without your permission."',
+              'Offers carry a "Personalize your experience" link, and a Shopping and Privacy card explains why you see these deals: "We never sell it, and won\'t share it without your permission."',
           },
           {
             kind: 'figure',
             src: '/images/paypal-privacy/subnav.webp',
             alt: 'Web account settings before and after: a blue sub-navigation under a blue global nav, then a white sub-navigation with larger type and a current-page marker',
+            claim: 'A white sub-navigation replaced blue on blue: up to 85% better on some tasks.',
             caption:
-              'Web settings. The old sub-navigation was blue on blue, and in baseline testing many people never saw it. The new one sits on white, with larger type and a clear current-page marker: up to 85% better on some tasks in unmoderated tests.',
+              'Web settings. In baseline testing many people never saw the old one. The new one has larger type and a clear current-page marker. Measured in unmoderated tests.',
             ratio: '1800 / 498',
             wide: true,
           },
@@ -683,11 +758,11 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: 'Launched in early 2023, now used by more than 80 million people.',
+        heading: '60% fewer support calls about privacy, on settings now used by more than 80 million people.',
         blocks: [
           {
             kind: 'metrics',
-            label: 'After launch',
+            label: 'After launch in early 2023',
             items: [
               { value: '60%', label: 'Fewer support calls about privacy settings' },
               { value: '76%', label: 'Faster data access time' },
@@ -700,13 +775,13 @@ export const cases: CaseStudy[] = [
         id: 'reflection',
         nav: "What I'd do differently",
         label: "What I'd do differently",
-        heading: 'What I\'d keep, and what I\'d change.',
+        heading: 'What a setting can promise is decided by the backend and the law. I\'d learn both sooner.',
         blocks: [
           {
             kind: 'points',
             items: [
               {
-                title: 'Bring engineering and the privacy officers in early',
+                title: 'Bring engineering and the privacy officers in earlier',
                 body: 'What a setting can promise depends on what the backend does and what regulation requires. Both are cheaper to learn before the design is set.',
               },
               {

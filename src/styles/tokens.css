@@ -195,6 +195,23 @@
   --pb-c6: #5b5bd6;        /* indigo */
   --pb-c7: #ab4aba;        /* violet */
 
+  /* PIXEL SKY (PixelSky.astro) — the hero's drifting pixel clouds, which
+     fold into a tile after "pixel" on scroll. Tones are the accent mixed
+     into the ground (--bg) by these shares, so they re-ink in dark mode;
+     a checker dither sits between each step. Drift and frame rate are in
+     the component. */
+  --sky-mix-1: 0.2;
+  --sky-mix-2: 0.38;
+  --sky-mix-3: 0.6;
+  --sky-mix-4: 0.86;
+  --sky-cell: clamp(14px, 1.5vw, 22px);    /* one pixel of the sky at rest */
+  --sky-scale: clamp(240px, 26vw, 380px);  /* cloud size: px per noise unit */
+  --sky-fold: 0.4;          /* the fold completes after this share of the viewport's height of scroll */
+  --sky-tile: 0.3em;        /* the tile after "pixel", in the headline's em: full-stop sized, in the full stop's place */
+  --sky-tile-cells: 2;      /* it lands as a crisp 2x2 block */
+  --sky-tile-gap: 0.07em;
+  --sky-tile-drop: 0;
+
   /* --- COMPONENT TOKENS ---------------------------------- */
   /* Nav (Nav.astro). One line: the name on the left; the links, a
      hairline and the theme button, together on the right. */
@@ -715,6 +732,34 @@
   --pp-illo-book: #2f8f6a;
   --pp-illo-page: #f3efe4;
   --pp-illo-grey: #b9bec6;
+}
+
+/* ============================================================
+   BEFORE / AFTER (PrivacyCompare.astro) — on request, after
+   gauravi.design's last card, chosen from four mocks: one phone, the old
+   screen left of a line and the new one right of it, numbered pins on
+   what was wrong that move to the fix as the line crosses them. The
+   pins and the line sit on the product's own white screens, so they're
+   fixed values, not role colours: the same in light and dark mode.
+   ============================================================ */
+:root {
+  --compare-line: #ffffff;
+  --compare-line-edge: rgb(0 0 0 / 0.14);
+  --compare-handle: #ffffff;
+  --compare-handle-ink: #262626;
+  --compare-handle-shadow: 0 3px 12px rgb(0 0 0 / 0.3);
+  --compare-handle-size: 34px;
+  --compare-pin-before: #262626;   /* what was wrong: ink */
+  --compare-pin-after: #b4482a;    /* the fix: the light-mode accent, 5.6:1 with the pin ink */
+  --compare-pin-ink: #ffffff;
+  --compare-pin-size: 22px;
+  --compare-tag-bg: rgb(255 255 255 / 0.95);
+  --compare-tag-ink: #262626;
+  --compare-tag-edge: rgb(0 0 0 / 0.08);
+  --compare-tag-after-bg: #262626;
+  --compare-tag-after-ink: #ffffff;
+  --dur-compare-flip: 360ms;       /* a note turning from Before to After, a pin moving */
+  --dur-compare-ring: 700ms;       /* the ring that marks a pin as it appears */
 }
 
 /* ============================================================

@@ -1,0 +1,305 @@
+---
+/* PrivacyCompare.astro — one Privacy screen before and after, on one
+   phone (the `compare` block in the "Privacy settings people can read"
+   case; `set` picks the pair). After gauravi.design's last card, chosen
+   on request from four mocks: the old screen sits left of a line, the
+   redesign right of it. Numbered pins mark what was wrong on the old
+   screen; as the line crosses a pin, the pin moves to the fix on the new
+   screen and its note beside the phone turns from Before to After.
+
+   Why it exists: the difference between the two screens is the design
+   decision, and seeing it beats reading about it. The notes say in one
+   line each what changed, so a skimming visitor gets the point without
+   touching anything; one who drags gets to compare at their own pace.
+
+   Motion: the line sways slowly on its own while the phone is on screen
+   (product motion: it's the comparison, not page decoration). Dragging
+   or the arrow keys take over and it waits a few seconds before swaying
+   again. Under reduced motion it stays at the middle until moved, and
+   pins and notes change without animating.
+
+   The screens are the case's coded ones (PrivacyScreen.astro), drawn at
+   --pp-screen-w and scaled to the phone, and pictures here: `inert`, no
+   taps. The live versions are in the screens row under each compare.
+   The old Data and Privacy page wasn't redrawn, so it's her board's
+   screen, cropped (public/images/paypal-privacy/hub-before.webp).
+
+   A11y: the phone is a role="slider" (arrow keys, Home, End) whose value
+   says how many fixes are showing. The notes list carries both lines of
+   every note for screen readers whatever the line's position; the
+   swapping text is visual only. Values under BEFORE / AFTER in
+   tokens.css. */
+import DeviceBox from './DeviceBox.astro';
+import PrivacyScreen from './PrivacyScreen.astro';
+import type { CompareNote } from '../data/cases';
+import '../styles/pp-sans.css';
+
+export type CompareSet = 'hub' | 'shopping' | 'request' | 'delete';
+interface Props { set: CompareSet; notes: CompareNote[]; claim?: string }
+const { set, notes, claim } = Astro.props;
+
+// `under`: the page a sheet opens over, drawn beneath it (as PrivacyScreens does).
+type Side = { id: string; offset?: number; under?: string } | { img: string };
+const pairs: Record<CompareSet, { before: Side; after: Side; name: string }> = {
+  hub: { before: { img: '/images/paypal-privacy/hub-before.webp' }, after: { id: 'hub', offset: 586 }, name: 'Data and privacy' },
+  shopping: { before: { id: 'shop-before' }, after: { id: 'shop-offers' }, name: 'PayPal Shopping' },
+  request: { before: { id: 'req-before' }, after: { id: 'req' }, name: 'Get a copy of your data' },
+  delete: { before: { id: 'del-before' }, after: { id: 'del-choice', under: 'hub' }, name: 'Delete your data' },
+};
+const pair = pairs[set];
+const pct = (n: number) => `${n}%`;
+const num = (i: number) => String(i + 1).padStart(2, '0');
+---
+<figure class="cmp" data-cmp>
+  <div class="cmp__grid">
+  <div class="cmp__phone">
+    <DeviceBox label="Drag to compare">
+      <div
+        class="cmp__screen"
+        data-cmp-screen
+        role="slider"
+        tabindex="0"
+        aria-label={`${pair.name}, before and after${claim ? `: ${claim}` : ''}. Arrow keys move the line.`}
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="50"
+      >
+        {[pair.after, pair.before].map((side, k) => (
+          <div class:list={['cmp__layer', k ? 'cmp__layer--before' : 'cmp__layer--after']} aria-hidden="true" inert>
+            {'img' in side ? (
+              <img src={side.img} alt="" draggable="false" />
+            ) : (
+              <div class="cmp__draw" data-offset={side.offset}>
+                <div class="sb"><span>9:41</span><span class="sb__icons"><i></i><i></i><i></i></span></div>
+                <div class:list={['cmp__scr', side.under && 'cmp__scr--over']}>
+                  {side.under && <PrivacyScreen id={side.under} />}
+                  <PrivacyScreen id={side.id} />
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+        {notes.map((n, i) => (
+          <>
+            <span class="cmp__pin cmp__pin--before" data-pin-before={i} style={`left:${pct(n.at)};top:${pct(n.before[1] + n.before[3] / 2)}`} aria-hidden="true">{i + 1}</span>
+            <span class="cmp__pin cmp__pin--after is-off" data-pin-after={i} style={`left:${pct(n.at)};top:${pct(n.after[1] + n.after[3] / 2)}`} aria-hidden="true">{i + 1}</span>
+          </>
+        ))}
+        <div class="cmp__line" aria-hidden="true"></div>
+        <div class="cmp__handle" aria-hidden="true">↔</div>
+        <span class="cmp__tag cmp__tag--before" aria-hidden="true">Before</span>
+        <span class="cmp__tag cmp__tag--after" aria-hidden="true">After</span>
+      </div>
+    </DeviceBox>
+  </div>
+
+  <ol class="cmp__notes" data-at={JSON.stringify(notes.map((n) => n.at))}>
+    {notes.map((n, i) => (
+      <li class="cmp__note" data-note={i}>
+        <span class="cmp__num u-label-mono" aria-hidden="true"><i></i>{num(i)}</span>
+        <span class="cmp__swap" aria-hidden="true">
+          <span class="cmp__was"><span class="cmp__k u-label-mono">Before</span>{n.was}</span>
+          <span class="cmp__now"><span class="cmp__k u-label-mono">After</span>{n.now}</span>
+        </span>
+        <span class="u-sr-only">{`${num(i)}. Before: ${n.was} After: ${n.now}`}</span>
+      </li>
+    ))}
+  </ol>
+  </div>
+</figure>
+
+<style>
+  /* The phone and its notes side by side where there's room; stacked,
+     phone first, where there isn't. */
+  .cmp { margin: 0; container-type: inline-size; }
+  .cmp__grid { display: grid; gap: 2rem; }
+  @container (min-width: 46rem) {
+    .cmp__grid { grid-template-columns: minmax(19rem, 24rem) minmax(0, 1fr); gap: 3.5rem; align-items: center; }
+  }
+  .cmp__phone :global(.device-box) { padding-inline: 1rem; }
+
+  /* --- the phone ------------------------------------------------------- */
+  .cmp__screen {
+    --pos: 50%;
+    position: absolute; inset: 0; overflow: hidden;
+    background: var(--pp-surface);
+    cursor: ew-resize; touch-action: pan-y; user-select: none;
+  }
+  .cmp__screen:focus-visible { outline: none; }
+  .cmp__screen:focus-visible .cmp__handle { outline: 2px solid var(--compare-handle-ink); outline-offset: 3px; }
+  .cmp__layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; background: var(--pp-surface); }
+  .cmp__layer--before { z-index: 2; clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+  .cmp__layer img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+  /* A coded screen: drawn at a fixed size, scaled to the phone by the
+     script (as in PrivacyScreens.astro). */
+  .cmp__draw {
+    width: var(--pp-screen-w); height: var(--pp-screen-h); position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+    transform: scale(var(--cmp-k, 1)); transform-origin: 0 0;
+    color: var(--pp-ink); font-family: var(--pp-sans); font-size: var(--pp-text-md); font-weight: var(--pp-w-reg); line-height: 1.35;
+  }
+  .cmp__scr { position: relative; flex: 1; overflow: hidden; }
+  /* A sheet over its page: the sheet's own drawn stand-in gives way to
+     the real page under it, which its overlay dims. */
+  .cmp__scr--over :global(.scr--sheet),
+  .cmp__scr--over :global(.scr--sheet .sheeted) { background: transparent; }
+  .cmp__scr--over :global(.scr--sheet .behind) { visibility: hidden; }
+  .sb { position: relative; z-index: 3; background: var(--pp-surface); display: flex; justify-content: space-between; align-items: center; padding: 14px 24px 4px; font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); flex: none; }
+  .sb__icons { display: flex; gap: 4px; align-items: flex-end; }
+  .sb__icons i { display: block; width: 4px; height: 6px; background: var(--pp-ink); border-radius: 1px; }
+  .sb__icons i:nth-child(2) { height: 8px; }
+  .sb__icons i:nth-child(3) { width: 18px; height: 8px; border-radius: 2px; }
+
+  .cmp__line {
+    position: absolute; z-index: 6; top: 0; bottom: 0; left: var(--pos);
+    width: 2px; margin-left: -1px;
+    background: var(--compare-line); box-shadow: 0 0 0 1px var(--compare-line-edge);
+    pointer-events: none;
+  }
+  .cmp__handle {
+    position: absolute; z-index: 7; top: 50%; left: var(--pos); transform: translate(-50%, -50%);
+    width: var(--compare-handle-size); height: var(--compare-handle-size); border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--compare-handle); color: var(--compare-handle-ink); box-shadow: var(--compare-handle-shadow);
+    font-family: var(--font-mono); font-size: var(--step-copy);
+    pointer-events: none;
+  }
+  .cmp__tag {
+    position: absolute; z-index: 8; bottom: 1rem;
+    padding: 0.45em 0.8em; border-radius: var(--radius-pill);
+    font-family: var(--font-mono); font-size: var(--step-fine); letter-spacing: 0.1em; text-transform: uppercase; line-height: 1;
+    pointer-events: none;
+  }
+  .cmp__tag--before { left: 0.9rem; background: var(--compare-tag-bg); color: var(--compare-tag-ink); box-shadow: 0 0 0 1px var(--compare-tag-edge); }
+  .cmp__tag--after { right: 0.9rem; background: var(--compare-tag-after-bg); color: var(--compare-tag-after-ink); }
+
+  /* Pins: one on the problem, one on the fix; the line decides which shows. */
+  .cmp__pin {
+    position: absolute; z-index: 5;
+    width: var(--compare-pin-size); height: var(--compare-pin-size);
+    margin: calc(var(--compare-pin-size) / -2) 0 0 calc(var(--compare-pin-size) / -2);
+    border-radius: 50%; display: grid; place-items: center;
+    color: var(--compare-pin-ink); font-family: var(--font-mono); font-size: var(--step-fine); line-height: 1;
+    pointer-events: none;
+    transition: transform var(--dur-compare-flip) var(--ease-out), opacity var(--dur-compare-flip) var(--ease-out);
+  }
+  .cmp__pin--before { background: var(--compare-pin-before); }
+  .cmp__pin--after { background: var(--compare-pin-after); }
+  .cmp__pin.is-off { transform: scale(0.4); opacity: 0; }
+  .cmp__pin::after {
+    content: ''; position: absolute; inset: -5px; border-radius: 50%;
+    border: 1px solid; border-color: inherit; opacity: 0;
+  }
+  .cmp__pin--before::after { border-color: var(--compare-pin-before); }
+  .cmp__pin--after::after { border-color: var(--compare-pin-after); }
+  .cmp__pin.is-pop::after { animation: cmp-ring var(--dur-compare-ring) var(--ease-out); }
+  @keyframes cmp-ring { from { opacity: 0.7; transform: scale(0.6); } to { opacity: 0; transform: scale(1.5); } }
+
+  /* --- the notes ------------------------------------------------------- */
+  .cmp__notes { list-style: none; margin: 0; padding: 0; }
+  .cmp__note {
+    display: grid; grid-template-columns: 3rem minmax(0, 1fr); column-gap: 0.75rem;
+    padding: 1.1rem 0; border-top: 1px solid var(--rule);
+  }
+  .cmp__note:last-child { border-bottom: 1px solid var(--rule); }
+  .cmp__num { display: flex; align-items: center; gap: 0.5rem; align-self: start; color: var(--fg); padding-top: 0.15rem; }
+  .cmp__num i {
+    width: 0.5rem; height: 0.5rem; border-radius: 50%; flex: none;
+    background: var(--fg);
+    transition: background-color var(--dur-compare-flip) var(--ease-out);
+  }
+  /* Off the product, so the page's own colours: ink, then the accent. */
+  .cmp__note.is-fixed .cmp__num i { background: var(--accent); }
+
+  .cmp__swap { display: grid; font-size: var(--step-body); line-height: 1.45; color: var(--fg); }
+  .cmp__swap > span { grid-area: 1 / 1; transition: opacity var(--dur-compare-flip) var(--ease-out), transform var(--dur-compare-flip) var(--ease-out); }
+  .cmp__k { display: block; margin-bottom: 0.35rem; color: var(--fg-dim); }
+  .cmp__now { opacity: 0; transform: translateY(6px); }
+  .cmp__note.is-fixed .cmp__was { opacity: 0; transform: translateY(-6px); }
+  .cmp__note.is-fixed .cmp__now { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cmp__pin, .cmp__num i, .cmp__swap > span { transition: none; }
+    .cmp__pin.is-pop::after { animation: none; }
+  }
+</style>
+
+<script>
+  // How the line moves on its own, and how long it waits after a visitor
+  // has moved it.
+  const SWAY = 40;            // % either side of the middle, so every pin gets crossed
+  const SPEED = 0.9;          // radians a second: one sweep there and back in ~7s
+  const WAIT_DRAG = 2800;     // ms after a drag
+  const WAIT_KEY = 4000;      // ms after an arrow key
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-cmp]').forEach((root) => {
+    const screen = root.querySelector<HTMLElement>('[data-cmp-screen]')!;
+    const at = JSON.parse(root.querySelector<HTMLElement>('[data-at]')!.dataset.at ?? '[]') as number[];
+    const notes = [...root.querySelectorAll<HTMLElement>('[data-note]')];
+    const pinB = [...root.querySelectorAll<HTMLElement>('[data-pin-before]')];
+    const pinA = [...root.querySelectorAll<HTMLElement>('[data-pin-after]')];
+    const fixed: (boolean | null)[] = at.map(() => null);
+
+    // Scale each drawn screen to the phone; start the hub scrolled down.
+    const draws = [...root.querySelectorAll<HTMLElement>('.cmp__draw')];
+    const fit = () => draws.forEach((d) => d.style.setProperty('--cmp-k', String(screen.clientWidth / d.offsetWidth)));
+    new ResizeObserver(fit).observe(screen);
+    draws.forEach((d) => {
+      const off = Number(d.dataset.offset);
+      const scr = d.querySelector<HTMLElement>('.scr');
+      if (off && scr) requestAnimationFrame(() => { scr.scrollTop = off; });
+    });
+
+    let pos = 50, t = Math.PI / 2, drag = false, wait = 0, seen = false;
+    const set = (p: number) => {
+      pos = Math.max(0, Math.min(100, p));
+      screen.style.setProperty('--pos', `${pos}%`);
+      screen.setAttribute('aria-valuenow', String(Math.round(pos)));
+      let shown = 0;
+      at.forEach((x, i) => {
+        const f = x > pos; // right of the line is the new screen
+        if (f) shown++;
+        if (fixed[i] === f) return;
+        const first = fixed[i] === null;
+        fixed[i] = f;
+        pinB[i].classList.toggle('is-off', f);
+        pinA[i].classList.toggle('is-off', !f);
+        notes[i].classList.toggle('is-fixed', f);
+        if (!first && !reduce) {
+          const on = f ? pinA[i] : pinB[i];
+          on.classList.remove('is-pop'); void on.offsetWidth; on.classList.add('is-pop');
+        }
+      });
+      screen.setAttribute('aria-valuetext', `${shown} of ${at.length} fixes showing`);
+    };
+
+    const fromX = (x: number) => { const r = screen.getBoundingClientRect(); return ((x - r.left) / r.width) * 100; };
+    screen.addEventListener('pointerdown', (e) => { drag = true; screen.setPointerCapture(e.pointerId); set(fromX(e.clientX)); });
+    screen.addEventListener('pointermove', (e) => { if (drag) set(fromX(e.clientX)); });
+    const end = () => { if (drag) { drag = false; wait = performance.now() + WAIT_DRAG; } };
+    screen.addEventListener('pointerup', end);
+    screen.addEventListener('pointercancel', end);
+    screen.addEventListener('keydown', (e) => {
+      const step = ({ ArrowLeft: -5, ArrowDown: -5, ArrowRight: 5, ArrowUp: 5, Home: -100, End: 100 } as Record<string, number>)[e.key];
+      if (step === undefined) return;
+      e.preventDefault();
+      set(pos + step);
+      wait = performance.now() + WAIT_KEY;
+    });
+
+    if (reduce) { set(50); return; }
+    set(50 + SWAY * Math.sin(t));
+    new IntersectionObserver(([en]) => { seen = en.isIntersecting; if (seen) loop(); }).observe(screen);
+    let last = 0, running = false;
+    const tick = (now: number) => {
+      if (!seen) { running = false; return; }
+      const dt = last ? Math.min(64, now - last) : 16;
+      last = now;
+      if (!drag && now > wait) { t += (dt / 1000) * SPEED; set(50 + SWAY * Math.sin(t)); }
+      requestAnimationFrame(tick);
+    };
+    const loop = () => { if (running) return; running = true; last = 0; requestAnimationFrame(tick); };
+  });
+</script>

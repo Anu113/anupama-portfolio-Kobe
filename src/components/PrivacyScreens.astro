@@ -6,11 +6,13 @@
 
    Why it exists: the case's screens were crops of a half-scale render
    of her deck and read soft. Redrawn, they're sharp in either theme,
-   each row reads left to right as the flow (the old screen first where
-   there was one, pill "Before"), and the redesigned phones work: tap
+   each row reads left to right as the flow, and the redesigned phones work: tap
    through from where each starts, flip the switches, tick the data you
    want, open "How it works". A skimming visitor still sees the three
-   screens at rest; one who taps gets the product.
+   screens at rest; one who taps gets the product. The old screens are
+   no longer in these rows: each pair is shown before and after on one
+   phone by PrivacyCompare.astro, the block above the row. The
+   `before` flag below still works if a row needs one again.
 
    How a phone works: it starts on its screen; a `data-go` clones that
    screen's <template> on top (sheets slide over the screen they came
@@ -45,17 +47,14 @@ const sets: Record<PrivacySet, Phone[]> = {
     { id: 'deals-ads', label: 'Deals & ads' },
   ],
   shopping: [
-    { id: 'shop-before', label: 'Before', before: true, alt: 'Before: Update PayPal Shopping, two bullet points, and a single button, Turn off PayPal Shopping.' },
     { id: 'shop-offers', label: 'Personalized offers' },
     { id: 'shop-how', label: 'How it works' },
   ],
   request: [
-    { id: 'req-before', label: 'Before', before: true, alt: 'Before: Get a copy of your data as one long checklist of data items under Personal info, Financial info and Usage info, then a file type and Continue.' },
     { id: 'req', label: 'Get a copy' },
     { id: 'req', label: 'File format', offset: 566 },
   ],
   delete: [
-    { id: 'del-before', label: 'Before', before: true, alt: 'Before: Delete your data and close account, the one path, with what happens to your data and to your account, and Continue.' },
     { id: 'del-choice', label: 'Two ways to delete' },
     { id: 'del-clean', label: 'Clean up your data' },
   ],
@@ -94,7 +93,7 @@ const names: Record<string, string> = {
 };
 ---
 <figure class="ps-set" data-ps>
-  <div class="ps-set__row" role="group" aria-label={`${phones.length} screens: ${phones.map((x) => x.label).join(', ')}`}>
+  <div class="ps-set__row" style={`--n: ${phones.length};`} role="group" aria-label={`${phones.length} screens: ${phones.map((x) => x.label).join(', ')}`}>
     {phones.map((p) => (
       <DeviceBox label={p.label}>
         <div
@@ -136,7 +135,7 @@ const names: Record<string, string> = {
   }
   .ps-set__row > :global(*) { scroll-snap-align: start; }
   @container (min-width: 50rem) {
-    .ps-set__row { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; }
+    .ps-set__row { grid-auto-flow: row; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); overflow: visible; }
   }
   .ps-set__row :global(.device-box) { padding-inline: 1rem; }
   .ps-set__cap { max-width: var(--measure); color: var(--fg-dim); margin: 0; }
