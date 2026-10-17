@@ -867,7 +867,11 @@
    his section's, kept on request. Type is ours.
    ============================================================ */
 :root {
-  --ring-h: clamp(40rem, 100svh, 56rem);   /* the band: one screen, capped */
+  /* Taller than a screen: the ring's height scales with the band, so the
+     near cards sit lower and clear the "More about me" pills, which a
+     one-screen band let them touch once the line under the head grew. */
+  --ring-h: clamp(52rem, 135svh, 76rem);
+  --ring-tail: var(--space-band);          /* extra room under the ring, before the playground line */
   /* The ring is laid out inside the page's content edge, not the window:
      its stage is inset by --gutter plus this, as on the reference, so on
      wide screens it centres on the same column as everything else instead

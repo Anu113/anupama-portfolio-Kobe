@@ -71,6 +71,7 @@ const { title, dek, action, photos } = beyond;
   .beyond {
     position: relative;
     height: var(--ring-h);
+    margin-bottom: var(--ring-tail);
     overflow: hidden;
     background: var(--bg);
     color: var(--fg);
@@ -100,12 +101,15 @@ const { title, dek, action, photos } = beyond;
   .beyond__centre > * { position: relative; z-index: 32; }
   /* Capped to the window's content width, not the stage's: on phones the
      stage runs past the screen's edges. */
+  /* The same body type as Small talk's dek (17px, soft grey, no
+     tracking), which is also the reference's. */
   .beyond__dek {
-    width: min(calc(100vw - 2 * var(--gutter)), 24rem);
+    width: min(calc(100vw - 2 * var(--gutter)), 30rem);
     margin: 1rem 0 0;
-    color: var(--fg-dim);
-    font-size: var(--step-body);
-    line-height: var(--leading-body);
+    color: var(--talk-soft);
+    font-size: var(--step-talk);
+    line-height: 1.42;
+    letter-spacing: 0;
     text-wrap: balance;
   }
 
