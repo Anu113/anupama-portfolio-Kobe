@@ -111,16 +111,6 @@
       ],
       "port": 4339,
       "autoPort": true
-    },
-    {
-      "name": "hero-pixels-mockup",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": [
-        "-c",
-        "python3 -m http.server \"$PORT\" --directory experiments/hero-pixels"
-      ],
-      "port": 4351,
-      "autoPort": true
     }
   ]
 }
