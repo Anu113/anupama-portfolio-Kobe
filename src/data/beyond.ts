@@ -24,9 +24,8 @@ const dir = '/images/beyond/';
 
 export const beyond = {
   title: ['Beyond', 'work'] as const,
-  // DRAFT — needs her words. Only the talk, the paintings and the
-  // baking are confirmed by the photos.
-  dek: 'Talking accessibility on stage, painting, meeting designers, and baking cookies.',
+  // Her words, as given.
+  dek: 'I enjoy being around people who care about their craft, sharing what I’ve learned, and making things with my hands. I’m always up for exploring a new idea, a new trail, or a different way of seeing things :)',
   action: { label: 'More about me', href: '/about' },
   photos: [
     { src: 'talk-poster.webp', alt: 'Poster for her talk, The Saga of Accessibility, on Design Sundays', aspect: 1.78 },
