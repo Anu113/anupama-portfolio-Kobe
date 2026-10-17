@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hero pixels — mockups</title>
+<!-- Mockup only, after andreas.vision's pixel sky. Four hero treatments
+     (A–D) and the same field behind the project-card stages, in the
+     site's own palette: terracotta mixed into the paper in four steps,
+     with a checker dither between each step. Values here are mock
+     values; the real build would move them into tokens.css. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" />
+<style>
+  :root {
+    --paper: #fcfcfc; --paper-2: #f7f7f7; --ink: #262626; --ink-dim: #707070;
+    --line: #e6e6e6; --accent: #b4482a; --on-accent: #fff;
+    --hue-okta: #c9dcf2; --hue-paypal: #e0d6ef;
+    --serif: 'Crimson Pro', Georgia, serif;
+    --sans: 'Manrope', system-ui, sans-serif;
+    --mono: 'Azeret Mono', ui-monospace, monospace;
+    --gutter: clamp(16px, 4vw, 56px);
+    --ease: cubic-bezier(.16,1,.3,1);
+  }
+  :root[data-mode='dark'] {
+    --paper: #1b1a19; --paper-2: #252422; --ink: #ecebe8; --ink-dim: #a09d98;
+    --line: #34322f; --accent: #e0714f; --on-accent: #1b1a19;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: var(--sans); font-weight: 600; font-size: 14px; overflow-x: clip; }
+  a { color: inherit; }
+
+  /* Nav, one line, as on the site */
+  .nav { position: absolute; z-index: 5; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 22px var(--gutter); }
+  .nav__name { font-size: 14px; text-decoration: none; }
+  .nav__links { display: flex; gap: 22px; align-items: center; font-size: 12px; color: var(--ink-dim); }
+  .nav__links a { text-decoration: none; }
+  .nav__links a:first-child { color: var(--ink); }
+  .nav__rule { width: 1px; height: 14px; background: var(--line); }
+  .nav button { all: unset; cursor: pointer; color: var(--ink); font-size: 12px; }
+  .nav button:focus-visible, .sw button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  @media (max-width: 900px) { .nav__links a { display: none; } }
+
+  /* Hero */
+  .hero-wrap { position: relative; }
+  .hero { position: relative; min-height: 100svh; padding: clamp(7rem, 26vh, 13rem) var(--gutter) 3rem; display: flex; flex-direction: column; }
+  .hero__sky { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .hero__row { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 4vw; flex: 1; }
+  .hero__copy { flex: 1 1 auto; max-width: 640px; padding-bottom: 6vh; align-self: flex-start; }
+  .eyebrow { display: flex; gap: 10px; align-items: center; font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .06em; color: var(--ink-dim); margin-bottom: 22px; }
+  .eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: #2f9e5b; display: inline-block; }
+  h1 { font-family: var(--serif); font-weight: 300; font-size: clamp(34px, 3.2vw + 10px, 50px); line-height: 1.08; letter-spacing: -.01em; margin: 0; max-width: 26ch; text-wrap: pretty; }
+  h1 em { font-style: italic; }
+  .tile { display: none; width: .78em; height: .78em; vertical-align: -.04em; margin-left: .12em; }
+  [data-v^='d'] .tile { display: inline-block; }
+  [data-v='d5'] .tile { width: .62em; height: .62em; vertical-align: .02em; }
+  /* T: small tiles that replace the full stop */
+  [data-v^='t'] .tile { display: inline-block; margin-left: .07em; vertical-align: 0; }
+  [data-v^='t'] .stop { display: none; }
+  [data-v='t1'] .tile { width: .3em; height: .3em; }
+  [data-v='t2'] .tile, [data-v='t3'] .tile { width: .42em; height: .42em; }
+  [data-v='t4'] .tile { width: .2em; height: .2em; }
+  [data-v='t5'] .tile { width: .3em; height: .3em; vertical-align: .42em; }
+  .more { font-size: 12px; line-height: 1.6; color: var(--ink-dim); max-width: 54ch; margin: 1.5rem 0 0; }
+  .more b { color: var(--ink); font-weight: 600; }
+  .btns { display: flex; gap: 10px; margin-top: 1.75rem; }
+  .btn { display: inline-flex; padding: 10px 18px; border-radius: 999px; font-size: 12px; text-decoration: none; border: 1px solid var(--ink); }
+  .btn--p { background: var(--ink); color: var(--paper); }
+  .hero__portrait { flex: 0 0 auto; width: min(36vw, 470px); }
+  .hero__portrait img { display: block; width: 100%; height: auto; }
+  @media (max-width: 820px) {
+    .hero__row { flex-direction: column-reverse; align-items: stretch; }
+    .hero__portrait { width: min(70vw, 340px); align-self: center; }
+    .hero__copy { padding-bottom: 0; }
+  }
+
+  /* D: the hero pins while its sky folds into the tile after "pixel" */
+  [data-v^='d'] .hero-wrap, [data-v^='t'] .hero-wrap { height: 210svh; }
+  [data-v^='d'] .hero, [data-v^='t'] .hero { position: sticky; top: 0; height: 100svh; }
+
+  /* Below the hero */
+  .workhead { position: relative; z-index: 1; text-align: center; padding: 18vh var(--gutter) 6vh; }
+  .workhead h2 { font-family: var(--serif); font-weight: 300; font-size: clamp(32px, 2.6vw + 10px, 44px); margin: 0 0 12px; }
+  .workhead a { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  [data-v='c'] .workhead { padding-top: 26vh; }
+
+  .cards { position: relative; z-index: 1; display: grid; gap: 24px; padding: 0 var(--gutter) 20vh; }
+  .card { display: grid; grid-template-columns: 1fr 1.35fr; min-height: 520px; border: 1px solid var(--line); background: var(--paper); text-decoration: none; }
+  .card__text { padding: 32px; display: flex; flex-direction: column; justify-content: space-between; }
+  .card__idx { font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--ink-dim); }
+  .card__title { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; margin: 8px 0 10px; }
+  .card__tag { font-size: 12px; color: var(--ink-dim); line-height: 1.6; max-width: 40ch; margin: 0; }
+  .card__stage { position: relative; overflow: hidden; background: var(--hue); display: grid; place-items: center; }
+  .card__stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .card__stage img { position: relative; z-index: 1; display: block; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 12px 36px rgba(0,0,0,.14); transition: transform 600ms var(--ease); }
+  .card:hover .card__stage img, .card:focus-visible .card__stage img { transform: translateY(-6px); }
+  .card__stage .shot { width: 78%; }
+  .card__stage .phone { height: 82%; width: auto; border-radius: 26px; border: 6px solid #111; }
+  .card[data-hue='okta'] { --hue: var(--hue-okta); }
+  .card[data-hue='paypal'] { --hue: var(--hue-paypal); }
+  [data-cards='off'] .card__stage canvas { display: none; }
+  @media (max-width: 820px) { .card { grid-template-columns: 1fr; } .card__stage { min-height: 360px; } }
+
+  /* Mock switcher */
+  .sw { position: fixed; z-index: 20; left: 50%; bottom: 16px; transform: translateX(-50%); width: min(760px, calc(100vw - 32px)); background: #161616; color: #f2f2f2; border-radius: 14px; padding: 10px 12px 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); font-family: var(--mono); font-weight: 400; }
+  .sw__row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .sw button { all: unset; cursor: pointer; padding: 7px 11px; border-radius: 8px; font-size: 11px; color: #bdbdbd; }
+  .sw button[aria-pressed='true'] { background: #f2f2f2; color: #161616; }
+  .sw__sep { flex: 1; }
+  .sw__row--d { margin-top: 6px; padding-top: 6px; border-top: 1px solid #2c2c2c; }
+  .sw__lab { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: #8a8a8a; padding: 0 6px 0 4px; }
+  .sw__note { margin: 8px 4px 0; font-size: 11px; line-height: 1.5; color: #a9a9a9; }
+</style>
+</head>
+<body data-v="a" data-cards="on">
+  <header class="nav">
+    <a class="nav__name" href="#">Anupama Mishra</a>
+    <nav class="nav__links"><a href="#">Work</a><a href="#">About me</a><a href="#">Playground</a><a href="#">Contact</a><span class="nav__rule"></span><button type="button" id="mode">Dark</button></nav>
+  </header>
+
+  <div class="hero-wrap">
+    <section class="hero">
+      <canvas class="hero__sky" aria-hidden="true"></canvas>
+      <div class="hero__row">
+        <div class="hero__copy">
+          <div class="eyebrow"><i></i>BANGALORE,IN · 14:32:07</div>
+          <h1><em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn pixel<span class="tile" aria-hidden="true"></span><span class="stop">.</span></h1>
+          <p class="more">10+ years in fintech, enterprise software and developer tools, most recently @&nbsp;<b>Okta</b>. Previously at <b>PayPal</b>, <b>Walmart Labs</b>, and <b>Deloitte</b>.</p>
+          <p class="btns"><a class="btn btn--p" href="#">Resume</a><a class="btn" href="#">LinkedIn</a></p>
+        </div>
+        <div class="hero__portrait"><img src="img/hero-idle.webp" alt="Illustrated portrait of Anupama Mishra, working at her laptop" /></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="workhead">
+    <h2>Selected <em>work</em></h2>
+    <a href="#">View all work</a>
+  </section>
+
+  <section class="cards">
+    <a class="card" href="#" data-hue="okta">
+      <div class="card__text">
+        <span class="card__idx">01 · OKTA</span>
+        <div><p class="card__title">Identity &amp; Access Management console</p><p class="card__tag">One console for the people, apps and policies a company's IT team looks after.</p></div>
+      </div>
+      <div class="card__stage"><canvas aria-hidden="true"></canvas><img class="shot" src="img/my-apps.webp" alt="" /></div>
+    </a>
+    <a class="card" href="#" data-hue="paypal">
+      <div class="card__text">
+        <span class="card__idx">02 · PAYPAL</span>
+        <div><p class="card__title">Chase Pay</p><p class="card__tag">Paying in store with a phone, from first tap to receipt.</p></div>
+      </div>
+      <div class="card__stage"><canvas aria-hidden="true"></canvas><img class="phone" src="img/prototype-poster.jpg" alt="" /></div>
+    </a>
+  </section>
+
+  <div class="sw" role="group" aria-label="Mockup options">
+    <div class="sw__row">
+      <button type="button" data-set="a" aria-pressed="true">A · Sky</button>
+      <button type="button" data-set="b" aria-pressed="false">B · Corner</button>
+      <button type="button" data-set="c" aria-pressed="false">C · Seam</button>
+      <button type="button" data-set="d" aria-pressed="false">D · Into the word</button>
+    </div>
+    <div class="sw__row sw__row--d">
+      <span class="sw__lab">Fold edge</span>
+      <button type="button" data-set="d1" aria-pressed="false">D1 · Soft corners</button>
+      <button type="button" data-set="d2" aria-pressed="false">D2 · Pixel corners</button>
+      <button type="button" data-set="d3" aria-pressed="false">D3 · Cloud edge</button>
+      <button type="button" data-set="d4" aria-pressed="false">D4 · Dither fade</button>
+      <button type="button" data-set="d5" aria-pressed="false">D5 · Into a dot</button>
+    </div>
+    <div class="sw__row sw__row--d">
+      <span class="sw__lab">Small tile</span>
+      <button type="button" data-set="t1" aria-pressed="false">T1 · Full stop</button>
+      <button type="button" data-set="t2" aria-pressed="false">T2 · Three by three</button>
+      <button type="button" data-set="t3" aria-pressed="false">T3 · Pixel plus</button>
+      <button type="button" data-set="t4" aria-pressed="false">T4 · One pixel</button>
+      <button type="button" data-set="t5" aria-pressed="false">T5 · Raised</button>
+      <span class="sw__sep"></span>
+      <button type="button" id="cards" aria-pressed="true">Card pixels</button>
+    </div>
+    <p class="sw__note" id="note"></p>
+  </div>
+
+<script>
+(() => {
+  const NOTES = {
+    a: 'A · Sky. The andreas.vision treatment: terracotta pixel clouds along the top and bottom of the hero, drifting slowly, clearing behind the words.',
+    b: 'B · Corner. The field lives only in the bottom-right corner, behind her and Moss, and thins out before it reaches the headline.',
+    c: 'C · Seam. The hero ends on a band of pixels that dissolves into the next section: a divider made of the hero itself.',
+    d: 'D · Into the word. Scroll: the hero pins and its sky folds down into a small tile after “pixel”, still drifting. Scroll back to open it. Hard square edges while it folds.',
+    d1: 'D1 · Soft corners. The same fold, clipped to a rounded rectangle whose corners grow as it shrinks. Smooth curve, pixels cut by it.',
+    d2: 'D2 · Pixel corners. Rounded too, but the curve is built from whole pixels, so the corners step like a pixel-art circle.',
+    d3: 'D3 · Cloud edge. No rectangle at all: the edge is ragged and drifting like the sky itself, tightening as it folds into the tile.',
+    d4: 'D4 · Dither fade. The edge never cuts: the last few rows of pixels step down through the checker tones to nothing.',
+    t1: 'T1 · Full stop. D3’s cloud fold, landing as a 2×2 block the size of a full stop, in its place.',
+    t2: 'T2 · Three by three. A slightly bigger 3×3 block of mixed tones, sitting on the baseline where the full stop was.',
+    t3: 'T3 · Pixel plus. The 3×3 block with its corners knocked out: a little pixel-art plus, like a sparkle.',
+    t4: 'T4 · One pixel. The whole sky lands as a single solid terracotta square: literally the last stubborn pixel.',
+    t5: 'T5 · Raised. A 2×2 block lifted to the middle of the letters, like a small mark after the word rather than punctuation.',
+    d5: 'D5 · Into a dot. The sky folds into a circle and lands as a round dot after “pixel”: the last stubborn pixel.',
+  };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- noise -----------------------------------------------------------
+  const hash = (x, y) => {
+    let h = Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263);
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  };
+  const vnoise = (x, y) => {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  };
+  const fbm = (x, y) => vnoise(x, y) * .55 + vnoise(x * 2.1 + 5.2, y * 2.1 + 1.3) * .3 + vnoise(x * 4.3 + 9.1, y * 4.3 + 3.7) * .15;
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+
+  // ---- colour ------------------------------------------------------------
+  const hex = (h) => { h = h.trim().replace('#', ''); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); };
+  const mix = (a, b, t) => { const A = hex(a), B = hex(b); return `rgb(${A.map((v, i) => Math.round(v * t + B[i] * (1 - t))).join(',')})`; };
+  const cssVar = (el, n) => getComputedStyle(el).getPropertyValue(n).trim();
+
+  // ---- a pixel field on one canvas -------------------------------------
+  // Levels: 0 empty, then for each tone a dithered step (checker of the
+  // tone below and this one) and a solid step.
+  class Field {
+    constructor(cv, o) {
+      Object.assign(this, { cell: 20, scalePx: 300, chunk: .5, seed: 0, vx: .05, vy: .018, region: null, ...o });
+      this.cv = cv; this.ctx = cv.getContext('2d'); this.pats = new Map();
+    }
+    resize() {
+      const r = this.cv.getBoundingClientRect();
+      this.dpr = Math.min(2, devicePixelRatio || 1);
+      this.W = r.width; this.H = r.height;
+      this.cv.width = Math.round(r.width * this.dpr); this.cv.height = Math.round(r.height * this.dpr);
+      this.pats.clear();
+    }
+    setTones(t) { this.tones = t; this.pats.clear(); }
+    pat(lo, hi) {
+      const k = lo + '|' + hi; if (this.pats.has(k)) return this.pats.get(k);
+      const s = Math.max(1, Math.round(this.dpr * 1.5)), c = document.createElement('canvas');
+      c.width = c.height = s * 2; const x = c.getContext('2d');
+      if (lo) { x.fillStyle = lo; x.fillRect(0, 0, s * 2, s * 2); }
+      x.fillStyle = hi; x.fillRect(0, 0, s, s); x.fillRect(s, s, s, s);
+      const p = this.ctx.createPattern(c, 'repeat'); this.pats.set(k, p); return p;
+    }
+    draw(t) {
+      const { ctx, dpr, W, H, tones } = this; if (!W) return;
+      ctx.clearRect(0, 0, this.cv.width, this.cv.height);
+      const R = this.region ? this.region() : { x: 0, y: 0, w: W, h: H };
+      if (!R || R.w < 4) return;
+      if (this.clip) { ctx.save(); this.clip(ctx, R, dpr); }
+      const k = R.w / W, cell = Math.max(this.minCell ? this.minCell() : 4, this.cell * k);
+      const cols = Math.ceil(R.w / cell), rows = Math.ceil(R.h / cell);
+      const span = W / this.scalePx, N = tones.length, L = 2 * N;
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        // Some 2x2 groups sample once, so the field mixes block sizes.
+        const big = hash((i >> 1) + this.seed * 31, (j >> 1) + 7) < (this.chunkAt ? this.chunkAt() : this.chunk);
+        const si = big ? (i & ~1) + 1 : i + .5, sj = big ? (j & ~1) + 1 : j + .5;
+        const u = (si * cell) / R.w, v = (sj * cell) / R.h;
+        let m = this.mask(R.x + si * cell, R.y + sj * cell, u, v, R);
+        // Edge shape: judged per cell (not per sample) so corners step
+        // in whole cells.
+        if (this.shape) { const e = this.shape((i + .5) * cell, (j + .5) * cell, R, t); if (e === null) continue; m += e; }
+        if (m <= 0) continue;
+        const n = fbm(u * span + t * this.vx + this.seed, (sj * cell / R.w) * span + t * this.vy);
+        const val = (n - .5) * 3.4 + m - .42;
+        const lv = Math.min(L, Math.floor(val * (L + 1)));
+        if (lv <= 0) continue;
+        if (lv % 2 === 0) ctx.fillStyle = tones[lv / 2 - 1];
+        else { const h = (lv - 1) / 2; ctx.fillStyle = this.pat(h ? tones[h - 1] : null, tones[h]); }
+        const x0 = Math.round((R.x + i * cell) * dpr), y0 = Math.round((R.y + j * cell) * dpr);
+        const x1 = Math.round((R.x + Math.min(R.w, (i + 1) * cell)) * dpr), y1 = Math.round((R.y + Math.min(R.h, (j + 1) * cell)) * dpr);
+        ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+      }
+      if (this.clip) ctx.restore();
+    }
+  }
+
+  // ---- hero ----------------------------------------------------------------
+  const body = document.body, hero = document.querySelector('.hero');
+  const heroCv = document.querySelector('.hero__sky');
+  const copyEls = [...document.querySelectorAll('.nav__name, .nav__links, .eyebrow, h1, .more, .btns, .workhead h2, .workhead a')];
+  const tile = document.querySelector('.tile');
+  const sky = new Field(heroCv, { cell: innerWidth < 700 ? 14 : 22, scalePx: innerWidth < 700 ? 240 : 380 });
+
+  // Soft "keep clear" boxes around the copy, in canvas coordinates.
+  let clears = [];
+  const measure = () => {
+    const c = heroCv.getBoundingClientRect();
+    clears = copyEls.map((el) => { const r = el.getBoundingClientRect(); return { x0: r.left - c.left, y0: r.top - c.top, x1: r.right - c.left, y1: r.bottom - c.top }; });
+  };
+  const clearAt = (x, y, pad = 18, soft = 70) => {
+    let c = 0;
+    for (const b of clears) {
+      const dx = Math.max(b.x0 - pad - x, 0, x - b.x1 - pad), dy = Math.max(b.y0 - pad - y, 0, y - b.y1 - pad);
+      c = Math.max(c, 1 - sstep(0, soft, Math.hypot(dx, dy)));
+    }
+    return c;
+  };
+
+  const masks = {
+    a(x, y, u, v) {
+      const H = sky.H, W = sky.W;
+      const top = 1 - sstep(0, H * .34, y), bot = sstep(H * .58, H * .98, y);
+      const side = Math.max(1 - sstep(0, W * .1, x), sstep(W * .9, W, x)) * .7;
+      return Math.max(top, bot, side) * 1.05 - clearAt(x, y);
+    },
+    b(x, y) {
+      const W = sky.W, H = sky.H;
+      const d = Math.hypot((W - x) / (W * .7), (H - y) / (H * 1.0));
+      return (1 - sstep(0, 1, d)) * .92 - clearAt(x, y, 24, 90);
+    },
+    c(x, y) {
+      // Canvas runs past the hero into the next section; densest at the join.
+      const H = sky.H, join = hero.offsetHeight;
+      const d = Math.abs(y - join) / (H - join);
+      return (1 - sstep(0, 1, d)) * .8 - clearAt(x, y);
+    },
+    d(x, y, u, v) {
+      const p = dProg;
+      const edge = Math.max(1 - sstep(0, .34, v), sstep(.58, .98, v), Math.max(1 - sstep(0, .1, u), sstep(.9, 1, u)) * .7) * 1.05;
+      const f = sstep(0, .45, p);
+      const open = edge - clearAt(x, y) * (1 - f);
+      // Lighter while it passes over the words, full strength as the tile.
+      return open + (.62 - open) * f + sstep(.75, 1, p) * dBoost;
+    },
+  };
+
+  // D: the region shrinks from the whole hero to the tile.
+  let dProg = 0, dBoost = .45;
+  const ease = (t) => sstep(.08, .92, t);
+  const dRegion = () => {
+    const c = heroCv.getBoundingClientRect(), r = tile.getBoundingClientRect();
+    const T = { x: r.left - c.left, y: r.top - c.top, w: r.width, h: r.height };
+    const p = ease(dProg), F = { x: 0, y: 0, w: sky.W, h: sky.H };
+    return { x: F.x + (T.x - F.x) * p, y: F.y + (T.y - F.y) * p, w: F.w + (T.w - F.w) * p, h: F.h + (T.h - F.h) * p };
+  };
+
+  // Fold edges. Each returns a mask offset for a cell at local (x, y) in
+  // the region, or null to leave the cell empty. `a` brings the shape in
+  // over the first fifth of the scroll so the resting hero keeps its
+  // full-bleed edges.
+  const rrSDF = (x, y, w, h, r) => {
+    r = Math.min(r, w / 2, h / 2);
+    const qx = Math.abs(x - w / 2) - (w / 2 - r), qy = Math.abs(y - h / 2) - (h / 2 - r);
+    return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r;
+  };
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const fold = () => ({ a: sstep(0, .2, dProg), p: ease(dProg) });
+  const tileH = () => tile.getBoundingClientRect().height;
+  const SHAPES = {
+    d2(x, y, R) {
+      const { a, p } = fold(); if (!a) return 0;
+      return rrSDF(x, y, R.w, R.h, a * lerp(200, tileH() * .32, p)) > 0 ? null : 0;
+    },
+    d3(x, y, R, t) {
+      const { a, p } = fold(); if (!a) return 0;
+      const amp = a * lerp(170, tileH() * .22, p);
+      const d = rrSDF(x, y, R.w, R.h, a * lerp(120, tileH() * .3, p));
+      const n = fbm(x / R.w * 6 + t * .15, y / R.w * 6 - t * .1);
+      const e = d + (n - .3) * amp * 1.4;
+      return e > 0 ? null : -sstep(-amp * .5, 0, e) * .5;
+    },
+    d4(x, y, R) {
+      const { a, p } = fold(); if (!a) return 0;
+      const band = a * lerp(170, tileH() * .25, p);
+      const d = rrSDF(x, y, R.w, R.h, a * lerp(140, tileH() * .3, p));
+      return d > 0 ? null : -sstep(-band, 0, d) * 1.4;
+    },
+    d5(x, y, R) {
+      const { a, p } = fold(); if (!a) return 0;
+      const d = rrSDF(x, y, R.w, R.h, a * lerp(260, Math.min(R.w, R.h) / 2, p));
+      return d > 0 ? null : -sstep(-a * lerp(90, 2, p), 0, d) * 1.1;
+    },
+  };
+  // T: the cloud edge as D3, but it relaxes to nothing as it lands, so the
+  // tile ends as a crisp n x n block of pixels.
+  const TILES = {
+    t1: { n: 2, boost: .9 },
+    t2: { n: 3, boost: .9 },
+    t3: { n: 3, boost: .9, corners: true },
+    t4: { n: 1, boost: 3 },
+    t5: { n: 2, boost: .9 },
+  };
+  const tShape = (cfg) => (x, y, R, t) => {
+    const { a, p } = fold(); if (!a) return 0;
+    if (cfg.corners && p > .9) {
+      const cx = Math.floor(x / (R.w / cfg.n)), cy = Math.floor(y / (R.h / cfg.n)), e = cfg.n - 1;
+      if ((cx === 0 || cx === e) && (cy === 0 || cy === e)) return null;
+    }
+    const k = 1 - sstep(.8, 1, p);
+    const amp = a * lerp(170, 0, p) * k, rad = a * lerp(120, 0, p);
+    const d = rrSDF(x, y, R.w, R.h, rad);
+    const n = fbm(x / R.w * 6 + t * .15, y / R.w * 6 - t * .1);
+    const e = d + (n - .3) * amp * 1.4;
+    return e > 0 ? null : -sstep(-amp * .5 - .01, 0, e) * .5;
+  };
+
+  const CLIPS = {
+    d1(ctx, R, dpr) {
+      const { a, p } = fold();
+      ctx.beginPath(); ctx.roundRect(R.x * dpr, R.y * dpr, R.w * dpr, R.h * dpr, a * lerp(160, tileH() * .3, p) * dpr); ctx.clip();
+    },
+  };
+
+  const layoutHero = () => {
+    const v = body.dataset.v;
+    heroCv.style.height = v === 'c' ? `calc(100% + 32vh)` : '100%';
+    const isD = /^[dt]/.test(v), T = TILES[v];
+    sky.mask = masks[isD ? 'd' : v];
+    sky.region = isD ? dRegion : null;
+    sky.shape = T ? tShape(T) : (SHAPES[v] || null);
+    dBoost = T ? T.boost : .45;
+    sky.minCell = T ? () => tile.getBoundingClientRect().width / T.n : null;
+    sky.chunkAt = T ? () => (dProg > .7 ? 0 : .5) : null;
+    sky.clip = CLIPS[v] || null;
+    sky.resize(); measure();
+  };
+
+  // ---- cards ---------------------------------------------------------------
+  const cards = [...document.querySelectorAll('.card')].map((card, i) => {
+    const f = new Field(card.querySelector('canvas'), { cell: 16, scalePx: 220, seed: 11 + i * 5, chunk: .55 });
+    f.mask = (x, y, u, v) => { const e = Math.max(Math.abs(u - .5), Math.abs(v - .5)) * 2; return .3 + sstep(.35, 1, e) * .7; };
+    f.card = card; f.hover = false;
+    const on = () => { f.hover = true; }, off = () => { f.hover = false; };
+    card.addEventListener('pointerenter', on); card.addEventListener('pointerleave', off);
+    card.addEventListener('focus', on); card.addEventListener('blur', off);
+    return f;
+  });
+
+  // ---- tones ---------------------------------------------------------------
+  const setTones = () => {
+    const root = document.documentElement, paper = cssVar(root, '--paper'), ink = cssVar(root, '--ink'), acc = cssVar(root, '--accent');
+    sky.setTones([.2, .38, .6, .86].map((t) => mix(acc, paper, t)));
+    // Card fields: the project hue, stepping a little deeper each level.
+    // Each hue steps toward a deeper, still-muted version of itself.
+    const DEEP = { okta: '#6ea6dc', paypal: '#a08bd0' };
+    cards.forEach((f) => { const hue = cssVar(f.card, '--hue'), deep = DEEP[f.card.dataset.hue]; f.setTones([mix(hue, '#ffffff', .45), mix(deep, hue, .22), mix(deep, hue, .45), mix(deep, hue, .7)]); });
+  };
+
+  // ---- loop ----------------------------------------------------------------
+  // Cells change in steps, so 15fps is enough; nothing draws off screen.
+  let heroVis = true, t0 = performance.now(), last = 0, cardT = cards.map(() => 0);
+  new IntersectionObserver(([e]) => { heroVis = e.isIntersecting; }).observe(heroCv);
+  const frame = (now) => {
+    requestAnimationFrame(frame);
+    if (now - last < 66) return;
+    step(now);
+  };
+  const step = (now) => {
+    const dt = Math.min(.1, (now - last) / 1000); last = now;
+    const t = (now - t0) / 1000;
+    if (/^[dt]/.test(body.dataset.v)) {
+      const wrap = document.querySelector('.hero-wrap');
+      dProg = reduce ? 0 : clamp(-wrap.getBoundingClientRect().top / (wrap.offsetHeight - innerHeight));
+    }
+    if (heroVis) sky.draw(reduce ? 0 : t);
+    cards.forEach((f, i) => { if (f.hover && !reduce) { cardT[i] += dt * 2.5; f.draw(cardT[i]); } });
+  };
+  window.__step = () => step(performance.now());
+
+  const redrawAll = () => { layoutHero(); cards.forEach((f, i) => { f.resize(); f.draw(cardT[i]); }); sky.draw(0); };
+
+  // ---- controls --------------------------------------------------------------
+  const note = document.getElementById('note');
+  const setV = (v) => {
+    body.dataset.v = v; note.textContent = NOTES[v];
+    document.querySelectorAll('[data-set]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.set === v)));
+    history.replaceState(null, '', '?v=' + v);
+    scrollTo(0, 0); requestAnimationFrame(redrawAll);
+  };
+  document.querySelectorAll('[data-set]').forEach((b) => b.addEventListener('click', () => setV(b.dataset.set)));
+  document.getElementById('cards').addEventListener('click', (e) => {
+    const on = body.dataset.cards !== 'on'; body.dataset.cards = on ? 'on' : 'off'; e.currentTarget.setAttribute('aria-pressed', String(on));
+  });
+  document.getElementById('mode').addEventListener('click', (e) => {
+    const root = document.documentElement, dark = root.dataset.mode !== 'dark';
+    root.dataset.mode = dark ? 'dark' : 'light'; e.currentTarget.textContent = dark ? 'Light' : 'Dark';
+    setTones(); redrawAll();
+  });
+  addEventListener('resize', redrawAll);
+
+  setTones();
+  const start = new URLSearchParams(location.search).get('v');
+  setV(NOTES[start] ? start : 'a');
+  document.fonts.ready.then(redrawAll);
+  addEventListener('load', redrawAll);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

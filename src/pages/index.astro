@@ -7,6 +7,7 @@ import HeroIllustration from '../components/HeroIllustration.astro';
 import AskBubble from '../components/AskBubble.astro';
 import LocalTime from '../components/LocalTime.astro';
 import PixelBreak from '../components/PixelBreak.astro';
+import PixelSky from '../components/PixelSky.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 
 import { site } from '../data/site';
@@ -32,23 +33,27 @@ const cards = homeCards.map((c) => {
        system's only emphasis. Background line and CTAs underneath in the
        sans. -->
   <Section theme="charcoal" class="hero">
+    <!-- The pixel sky: clouds at rest that fold into the tile after
+         "pixel" on scroll (PixelSky.astro). data-sky-clear marks what it
+         keeps off. -->
+    <PixelSky />
     <div class="hero__row">
       <div class="hero__copy">
         <!-- No entrance animation on the hero text: it is the first thing
              read, so it is simply there on first paint. -->
         <!-- Where she is and whether she's around, before the pitch:
              status light, city, weather, ticking time (LocalTime.astro). -->
-        <div class="hero__eyebrow"><LocalTime /></div>
-        <h1 class="u-display hero__line">
-          <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn <PixelBreak>pixel</PixelBreak>.
+        <div class="hero__eyebrow" data-sky-clear><LocalTime /></div>
+        <h1 class="u-display hero__line" data-sky-clear>
+          <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn <PixelBreak>pixel</PixelBreak><span data-pixel-sky-tile aria-hidden="true"></span><span data-pixel-sky-stop>.</span>
         </h1>
-        <p class="hero__more">
+        <p class="hero__more" data-sky-clear>
           10+ years in fintech, enterprise software and developer tools,
           most recently @&nbsp;<span class="hero__co">Okta</span>. Previously
           at <span class="hero__co">PayPal</span>, <span class="hero__co">Walmart Labs</span>,
           and <span class="hero__co">Deloitte</span>.
         </p>
-        <p class="intro__links">
+        <p class="intro__links" data-sky-clear>
           <a class="btn btn--primary" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
           <a class="btn btn--secondary" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
         </p>
@@ -58,7 +63,7 @@ const cards = homeCards.map((c) => {
           <!-- .hero__stage: a positioned box exactly the portrait's size, so
                AskBubble can sit Moss on the books in the
                illustration. -->
-          <div class="hero__stage">
+          <div class="hero__stage" data-sky-clear>
             <HeroIllustration alt="Illustrated portrait of Anupama Mishra, working at her laptop" size={1700} />
             <AskBubble />
           </div>
@@ -69,7 +74,7 @@ const cards = homeCards.map((c) => {
          visitor the work is below the fold, then fades on the first
          scroll because the hint is spent. Static (no bobbing arrow), and
          aria-hidden: a screen reader already knows there's more page. -->
-    <p class="u-label hero__cue" aria-hidden="true" data-hero-cue>Scroll<svg class="hero__cue-arrow" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 1v10M1.5 3.5 4 1l2.5 2.5M1.5 8.5 4 11l2.5-2.5"/></svg></p>
+    <p class="u-label hero__cue" aria-hidden="true" data-hero-cue data-sky-clear>Scroll<svg class="hero__cue-arrow" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 1v10M1.5 3.5 4 1l2.5 2.5M1.5 8.5 4 11l2.5-2.5"/></svg></p>
   </Section>
 
   <script>
