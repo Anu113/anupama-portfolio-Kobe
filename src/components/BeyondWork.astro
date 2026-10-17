@@ -25,6 +25,10 @@
    keyboard focus is in it, so nothing slides away from a focused
    control. The link is always above the cards.
 
+   The ring is laid out in a stage inset to the page's content edge, as
+   on the reference, so on wide screens it sits on the same centred
+   column as the rest of the page; on phones it runs past the edges.
+
    Reduced motion: no drift and no coasting; drag and arrow keys still
    turn it, directly. Values under BEYOND WORK in tokens.css. */
 import { beyond, ring } from '../data/beyond';
@@ -71,8 +75,11 @@ const { title, dek, action, photos } = beyond;
     background: var(--bg);
     color: var(--fg);
   }
+  /* Inset to the page's content edge (+ --ring-inset), so the ring's
+     width follows the content column, not the window. The band itself
+     stays full width so cards past the edge aren't cut at the column. */
   .beyond__stage {
-    position: absolute; inset: 0;
+    position: absolute; inset: 0 calc(var(--gutter) + var(--ring-inset));
     cursor: grab;
     touch-action: pan-y pinch-zoom;   /* a vertical swipe still scrolls the page */
     user-select: none;
@@ -174,6 +181,7 @@ const { title, dek, action, photos } = beyond;
     .beyond__card { width: var(--ring-card-md); border-radius: var(--radius-ring-card-md); }
   }
   @media (max-width: 809.98px) {
+    .beyond__stage { inset: 0 var(--ring-inset-sm); }
     .beyond__card { width: var(--ring-card-sm); border-radius: var(--radius-ring-card-sm); }
     /* On phones the cards crowd the words: a soft patch of ground behind
        them keeps the line readable. */

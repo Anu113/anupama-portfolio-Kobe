@@ -885,6 +885,12 @@
    ============================================================ */
 :root {
   --ring-h: clamp(40rem, 100svh, 56rem);   /* the band: one screen, capped */
+  /* The ring is laid out inside the page's content edge, not the window:
+     its stage is inset by --gutter plus this, as on the reference, so on
+     wide screens it centres on the same column as everything else instead
+     of running edge to edge. On phones it runs past the edges instead. */
+  --ring-inset: 24px;
+  --ring-inset-sm: -64px;
   --ring-card: 216px;                       /* card width; height from the photo */
   --ring-card-md: 148px;                    /* under 1200px */
   --ring-card-sm: 118px;                    /* under 810px */
