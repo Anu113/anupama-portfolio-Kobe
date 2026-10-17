@@ -1,0 +1,301 @@
+---
+/* BeyondWork.astro — "Beyond work" on the home page, added on request
+   after andreas.vision's community ring (version D of the mocks in
+   experiments/beyond-work: his layout, rounded cards and pill buttons,
+   in our type). UX reason: one screen shows who she is outside the
+   work (her talk, her paintings, the people she designs with) without
+   a paragraph about it, then hands over to the About page.
+
+   What the visitor sees: "Beyond work" (44px serif, "work" in italic),
+   one grey line and an ink pill pair, "More about me" + an arrow, in
+   the middle of the band. Around them, her photos and paintings sit on
+   a tilted ring that drifts slowly. The near half of the ring passes in
+   front of the words, the far half behind them, smaller, fainter and
+   softened. Dragging turns the ring and lets it coast; it then drifts
+   on in the direction it was thrown. Arrow keys turn it from the
+   keyboard (the band is one focus stop). Hovering the pill slides its
+   arrow out and a new one in.
+
+   How: each card is placed every frame from one turn angle (the maths
+   is in data/beyond.ts) with a transform, an opacity and a z-index
+   above or below the words' layer. The far-side softness is a small
+   pre-blurred copy of the image fading in over it, not a live CSS
+   blur(), which re-renders and dropped the mock to ~30fps. The loop
+   sleeps when the band is off screen or the tab is hidden, and when
+   keyboard focus is in it, so nothing slides away from a focused
+   control. The link is always above the cards.
+
+   Reduced motion: no drift and no coasting; drag and arrow keys still
+   turn it, directly. Values under BEYOND WORK in tokens.css. */
+import { beyond, ring } from '../data/beyond';
+const { title, dek, action, photos } = beyond;
+---
+<section class="beyond" aria-labelledby="beyond-h">
+  <div
+    class="beyond__stage"
+    role="group"
+    tabindex="0"
+    aria-label="Photos from outside work. Drag or use the arrow keys to turn the ring."
+    data-ring={JSON.stringify(ring)}
+  >
+    <div class="beyond__centre">
+      <h2 id="beyond-h" class="u-heading">{title[0]} <em>{title[1]}</em></h2>
+      <p class="beyond__dek">{dek}</p>
+      <a class="beyond__pills" href={action.href}>
+        <span class="beyond__pill">{action.label}</span>
+        <span class="beyond__pill beyond__pill--round" aria-hidden="true">
+          {[0, 1].map(() => (
+            <svg width="20" height="20" viewBox="0 0 14 14"><path d="M1.6 7h10M7 2l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          ))}
+        </span>
+      </a>
+    </div>
+    <ul class="beyond__cards" role="list">
+      {photos.map((p) => (
+        <li class="beyond__card" style={`aspect-ratio: ${p.aspect}`}>
+          <span class="beyond__face">
+            <img src={p.src} alt={p.alt} loading="lazy" decoding="async" />
+            <img class="beyond__soft" src={p.soft} alt="" loading="lazy" decoding="async" />
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .beyond {
+    position: relative;
+    height: var(--ring-h);
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--fg);
+  }
+  .beyond__stage {
+    position: absolute; inset: 0;
+    cursor: grab;
+    touch-action: pan-y pinch-zoom;   /* a vertical swipe still scrolls the page */
+    user-select: none;
+    outline: none;
+  }
+  .beyond__stage[data-dragging] { cursor: grabbing; }
+  /* The band is one focus stop; its ring is the heading underline, as on
+     the reference, so the focus mark sits on something readable. */
+  .beyond__stage:focus-visible .u-heading { text-decoration: underline 2px; text-underline-offset: 0.12em; }
+
+  .beyond__centre {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    pointer-events: none;
+  }
+  /* 32: above the far cards (1–31), under the near ones (33+). */
+  .beyond__centre > * { position: relative; z-index: 32; }
+  .beyond__dek {
+    width: min(90%, 24rem);
+    margin: 1rem 0 0;
+    color: var(--fg-dim);
+    font-size: var(--step-body);
+    line-height: var(--leading-body);
+    text-wrap: balance;
+  }
+
+  /* The pill pair: an ink label pill and a round arrow pill. */
+  .beyond__pills {
+    display: inline-flex; gap: var(--ring-pill-gap);
+    margin-top: 1.5rem;
+    color: inherit; text-decoration: none;
+    pointer-events: auto;
+    z-index: 1000;   /* the way out is never under a card */
+  }
+  .beyond__pill {
+    display: inline-flex; align-items: center;
+    height: var(--ring-pill-h);
+    padding: 0 var(--ring-pill-pad);
+    border-radius: var(--radius-pill);
+    background: var(--fg);
+    color: var(--bg);
+    font-family: var(--font-sans);
+    font-weight: var(--weight-sans);
+    font-size: var(--step-label);
+    line-height: var(--leading-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: transform var(--dur-ring-press) ease-out;
+  }
+  .beyond__pill--round {
+    position: relative; overflow: hidden;
+    width: var(--ring-pill-h); padding: 0;
+    justify-content: center;
+  }
+  .beyond__pill--round svg {
+    position: absolute;
+    transform: rotate(-45deg);
+    transition: transform var(--dur-ring-swap) var(--ease-ring-swap);
+  }
+  .beyond__pill--round svg + svg { transform: translate(-150%, 150%) rotate(-45deg); }
+  .beyond__pills:hover .beyond__pill--round svg:first-child,
+  .beyond__pills:focus-visible .beyond__pill--round svg:first-child { transform: translate(150%, -150%) rotate(-45deg); }
+  .beyond__pills:hover .beyond__pill--round svg + svg,
+  .beyond__pills:focus-visible .beyond__pill--round svg + svg { transform: rotate(-45deg); }
+  .beyond__pills:hover .beyond__pill { transform: scale(1.015); }
+  .beyond__pills:active .beyond__pill { transform: scale(0.97); }
+  /* The ring goes on the pills, not around the link's odd box. */
+  .beyond__pills:focus-visible { outline: none; }
+  .beyond__pills:focus-visible .beyond__pill { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .beyond__cards { margin: 0; padding: 0; list-style: none; }
+  .beyond__card {
+    position: absolute; top: 50%; left: 50%;
+    width: var(--ring-card);
+    border-radius: var(--radius-ring-card);
+    will-change: transform;
+    contain: layout style;
+    /* first paint, before the script places them: tucked behind the words */
+    transform: translate(-50%, -50%) scale(0.55);
+    opacity: 0;
+  }
+  .beyond__face {
+    position: absolute; inset: 0;
+    display: block; overflow: hidden;
+    border-radius: inherit;
+    background: var(--screen);   /* holds the card's place while the image loads */
+  }
+  .beyond__face img {
+    width: 100%; height: 100%;
+    display: block; object-fit: cover;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  .beyond__face .beyond__soft { position: absolute; inset: 0; opacity: 0; will-change: opacity; }
+
+  @media (max-width: 1199.98px) {
+    .beyond__card { width: var(--ring-card-md); border-radius: var(--radius-ring-card-md); }
+  }
+  @media (max-width: 809.98px) {
+    .beyond__card { width: var(--ring-card-sm); border-radius: var(--radius-ring-card-sm); }
+    /* On phones the cards crowd the words: a soft patch of ground behind
+       them keeps the line readable. */
+    .beyond__centre::before {
+      content: ''; position: absolute; top: 50%; left: 50%; z-index: 31;
+      width: min(92%, 22rem); height: 15rem;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(var(--bg) 0%, var(--ring-scrim) 46%, transparent 76%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .beyond__pill, .beyond__pill--round svg { transition: none; }
+  }
+</style>
+
+<script>
+  type Ring = { drift: number; easeRate: number; spreadX: number; spreadY: number; blur: number; fade: number; dragStart: number; keyKick: number };
+
+  function mount(stage: HTMLElement) {
+    const cfg: Ring = JSON.parse(stage.dataset.ring!);
+    const cards = [...stage.querySelectorAll<HTMLElement>('.beyond__card')];
+    const softs = cards.map((c) => c.querySelector<HTMLElement>('.beyond__soft'));
+    const n = cards.length;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+    const FRONT_Z = 33;
+
+    let turn = 0, speed = reduce ? 0 : cfg.drift, dir = 1, raf = 0, last = 0;
+    let visible = false, focused = false;
+    let W = stage.offsetWidth, H = stage.offsetHeight;
+    let drag: { id: number; x: number; t: number; travel: number } | null = null, dragging = false;
+    const memo = cards.map(() => ({ o: '', s: '', z: '' }));
+
+    function paint() {
+      const ax = (W / 2) * cfg.spreadX, ay = (H / 2) * cfg.spreadY;
+      const ps = cards.map((_, i) => {
+        const t = (i / n) * Math.PI * 2 + turn, depth = (Math.cos(t) + 1) / 2;
+        return { x: Math.sin(t), y: 0.3 + 0.7 * Math.cos(t), depth, scale: 0.55 + 0.45 * depth };
+      });
+      const order = ps.map((_, i) => i).sort((a, b) => ps[a].depth - ps[b].depth);
+      order.forEach((i, rank) => {
+        const p = ps[i], el = cards[i], m = memo[i];
+        const far = clamp((0.6 - p.depth) / 0.6);   // 0 on the near half, 1 at the very back
+        el.style.transform = `translate(-50%, -50%) translate3d(${(p.x * ax).toFixed(1)}px, ${(p.y * ay).toFixed(1)}px, 0) scale(${p.scale.toFixed(3)})`;
+        const o = (1 - far * (1 - cfg.fade)).toFixed(2);
+        if (o !== m.o) el.style.opacity = m.o = o;
+        const s = clamp((far - 0.1) / 0.9).toFixed(2);
+        if (s !== m.s && softs[i]) softs[i]!.style.opacity = m.s = s;
+        const z = String((p.depth >= 0.5 ? FRONT_Z : 1) + rank);
+        if (z !== m.z) el.style.zIndex = m.z = z;
+      });
+    }
+
+    function tick(now: number) {
+      raf = 0;
+      const dt = Math.min(0.05, (now - (last || now)) / 1000);
+      last = now;
+      let target = 0;
+      if (!drag) {
+        target = focused || reduce ? 0 : cfg.drift * dir;
+        speed += (target - speed) * (1 - Math.exp(-dt * cfg.easeRate));
+        if (reduce) speed = 0;
+        turn += speed * dt;
+      }
+      paint();
+      if (!drag && target === 0 && Math.abs(speed) < 5e-4) return;
+      wake();
+    }
+    function wake() {
+      if (!raf && visible && !document.hidden) raf = requestAnimationFrame(tick);
+    }
+    function restart() { last = 0; wake(); }
+
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || (e.target as Element).closest('a')) return;
+      drag = { id: e.pointerId, x: e.clientX, t: e.timeStamp, travel: 0 };
+      dragging = false;
+      speed = 0;
+    });
+    stage.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x, dt = Math.max(1, e.timeStamp - drag.t) / 1000;
+      drag.travel += Math.abs(dx); drag.x = e.clientX; drag.t = e.timeStamp;
+      if (!dragging && drag.travel > cfg.dragStart) {
+        dragging = true; stage.dataset.dragging = ''; stage.setPointerCapture(e.pointerId);
+      }
+      if (!dragging) return;
+      const d = dx / ((W / 2) * cfg.spreadX);
+      turn += d;
+      speed = speed * 0.6 + (d / dt) * 0.4;
+      if (reduce) paint(); else restart();
+    });
+    const release = (e: PointerEvent) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (e.timeStamp - drag.t > 80) speed = 0;           // held still before letting go: no throw
+      if (Math.abs(speed) > 0.05) dir = Math.sign(speed);  // drift on the way it was thrown
+      if (reduce) speed = 0;
+      drag = null;
+      delete stage.dataset.dragging;
+      restart();
+    };
+    stage.addEventListener('pointerup', release);
+    stage.addEventListener('pointercancel', release);
+    stage.addEventListener('dragstart', (e) => e.preventDefault());
+
+    stage.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      dir = e.key === 'ArrowLeft' ? -1 : 1;
+      if (reduce) { turn += dir * ((Math.PI * 2) / n); paint(); return; }   // one card, at once
+      speed += dir * cfg.keyKick;
+      focused = false;   // a deliberate turn: let it coast, then hold again
+      restart();
+    });
+    stage.addEventListener('focusin', (e) => { focused = (e.target as Element).matches(':focus-visible'); restart(); });
+    stage.addEventListener('focusout', () => { focused = false; restart(); });
+
+    new ResizeObserver(() => { W = stage.offsetWidth; H = stage.offsetHeight; paint(); }).observe(stage);
+    new IntersectionObserver(([en]) => { visible = en.isIntersecting; if (visible) restart(); }).observe(stage);
+    document.addEventListener('visibilitychange', restart);
+    paint();
+  }
+
+  document.querySelectorAll<HTMLElement>('.beyond__stage').forEach(mount);
+</script>

@@ -871,3 +871,31 @@
   --dur-preloader-try: 90ms;             /* how often a stuck letter changes */
   --dur-preloader-skip-grace: 1200ms;    /* inputs this soon after load don't skip (a held Cmd+R, scroll momentum) */
 }
+
+/* ============================================================
+   BEYOND WORK (BeyondWork.astro, home page) — added on request, after
+   andreas.vision's community ring (version D of the mocks): her photos
+   and paintings on a tilted ring around "Beyond work", drifting slowly,
+   the near half passing in front of the words and the far half behind
+   them, smaller, fainter and softened. The ring's motion numbers live
+   with the photos in data/beyond.ts.
+   Its rounded cards and pill buttons are a requested exception to the
+   square --radius rule, like Moss's panel and the device boxes: they're
+   his section's, kept on request. Type is ours.
+   ============================================================ */
+:root {
+  --ring-h: clamp(40rem, 100svh, 56rem);   /* the band: one screen, capped */
+  --ring-card: 216px;                       /* card width; height from the photo */
+  --ring-card-md: 148px;                    /* under 1200px */
+  --ring-card-sm: 118px;                    /* under 810px */
+  --radius-ring-card: 40px;
+  --radius-ring-card-md: 28px;
+  --radius-ring-card-sm: 22px;
+  --ring-pill-h: 44px;
+  --ring-pill-pad: 24px;
+  --ring-pill-gap: 8px;
+  --ring-scrim: color-mix(in srgb, var(--bg) 82%, transparent);   /* phones: keeps the words readable over cards */
+  --dur-ring-swap: 600ms;                   /* the arrow sliding out and a new one in, on hover */
+  --ease-ring-swap: cubic-bezier(0.77, 0, 0.175, 1);
+  --dur-ring-press: 100ms;                  /* the pill's press and hover scale */
+}

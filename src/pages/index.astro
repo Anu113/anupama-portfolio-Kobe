@@ -9,6 +9,7 @@ import LocalTime from '../components/LocalTime.astro';
 import PixelBreak from '../components/PixelBreak.astro';
 import PixelSky from '../components/PixelSky.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import BeyondWork from '../components/BeyondWork.astro';
 
 import { site } from '../data/site';
 import { work, homeCards, labelsFor } from '../data/work';
@@ -112,6 +113,11 @@ const cards = homeCards.map((c) => {
     ))}
   </div>
 </Section>
+
+  <!-- Beyond work: her photos and paintings on a drifting ring, after
+       andreas.vision (BeyondWork.astro). Full width — the ring runs to
+       the window's edges. -->
+  <BeyondWork />
 
   <!-- The playground, pointed to — the same centred head as Selected
        work, standing on its own. Contact is the footer's job. -->

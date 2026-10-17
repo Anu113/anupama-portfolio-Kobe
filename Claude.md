@@ -246,8 +246,29 @@ effect:
   in `data/books.ts`). Spines follow a reference she sent: a short rule,
   bold sans title, author in mono. About page only, one shelf.
 
-Outside those seven moments — hero pixel sky, first-paint loader, the reused
-hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak — the old rule still applies at full strength:
+- **`BeyondWork`, approved on request** (after andreas.vision's
+  community ring; version D of the mocks in `experiments/beyond-work`).
+  On the home page between the project cards and the playground line:
+  "Beyond *work*" in our 44px serif, one grey line and his ink pill
+  pair ("More about me" + an arrow that swaps on hover) in the middle,
+  ringed by her photos and paintings on a tilted ring that drifts
+  slowly. The near half passes in front of the words, the far half
+  behind them, smaller, fainter and softened (a pre-blurred copy fading
+  in, not a live CSS blur, which halved the frame rate). Drag throws it
+  with inertia; arrow keys turn it; the band is one focus stop and holds
+  still under keyboard focus. His rounded cards and pills are kept, on
+  request, as an exception to the square `--radius` rule; the type is
+  ours. Life outside work only — no UI or product work, one talk poster,
+  one mic photo, and none of the crying (crown) painting, the mermaid,
+  the lit bob portrait or the grandmother painting, on request. Images
+  and ring numbers in `data/beyond.ts`, files in `public/images/beyond/`
+  (480px wide plus a `-blur` copy), values under BEYOND WORK in
+  `tokens.css`. No drift under reduced motion. Its reason: one screen
+  shows who she is outside the work without a paragraph about it, then
+  hands over to About. Home page only, one ring.
+
+Outside those eight moments — hero pixel sky, first-paint loader, the reused
+hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak, BeyondWork — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,
@@ -533,7 +554,7 @@ walked back. Concretely, in the current implementation:
   "Email" rather than printing the address; /contact is the one page
   that prints it in full.
 - The home page is now: hero → "Selected *work*" head + project cards →
-  one-line playground pointer → footer (which carries contact).
+  "Beyond *work*" ring → one-line playground pointer → footer (which carries contact).
 - **The project cards are stacked phone cards** (`ProjectCard.astro`,
   on request): four full-width rows that pin and stack as you scroll
   (sticky rows and the settle effect in `index.astro`), text on the
