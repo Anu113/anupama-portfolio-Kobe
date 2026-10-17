@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en" data-mode="light" data-moss="shelf">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Small talk — Moss, round 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet" />
+<style>
+  /* Round 2 of the "Small talk" mock (round 1: index.html). Layout A and
+     the Chips row, as chosen. What changes is Moss: round 1 cropped his
+     head into a circle avatar, which read as a 2000s forum icon. Here he's
+     the whole watercolour figure, treated as an object in the space —
+     sitting on something, half behind something, or given room of his
+     own — grounded by a contact shadow, never cropped by a shape. He
+     follows the pointer through his 48-frame clip, the same scrub as the
+     hero, so it's one character with one behaviour.
+
+     Questions are andreas.vision's five, as asked. Where the site has the
+     answer it's filled from site.ts; where it doesn't, it's a [bracket]
+     for her to write.
+
+     Values copied from src/styles/tokens.css; new ones would go under a
+     SMALL TALK block there. */
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --font-pixel: 'Roboto Mono', ui-monospace, monospace;
+    --paper: #fcfcfc; --paper-2: #f7f7f7; --ink: #262626; --ink-dim: #707070;
+    --line: rgb(0 0 0 / 0.1);
+    --accent: #b4482a;
+    --night: #0b0b0b; --night-ink: #ecebe8;
+    --step-heading: clamp(2rem, 1.721rem + 1.143vw, 2.75rem);
+    --step-body: 0.875rem; --step-label: 0.75rem; --step-fine: 0.6875rem;
+    --tracking-serif: -0.03em; --tracking-label: 0.067em; --tracking-mono-label: 0.08em; --tracking-body: 0.01em;
+    --leading-heading: 1.15; --leading-body: 1.5;
+    --gutter: clamp(1.25rem, 0.786rem + 1.905vw, 2.5rem);
+    --shell-max: 90rem;
+    --space-band: clamp(4rem, 8vw, 7.5rem);
+    --radius-page-end: clamp(1.5rem, -0.5rem + 5vw, 5rem);
+    --radius-pill: 999px;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur-hover: 320ms; --dur-micro: 150ms;
+
+    --pixel-bg: #161616; --pixel-ink: #ecebe8; --pixel-dim: #a09d98; --pixel-chip: #232323;
+    --radius-pixel-panel: 24px; --radius-pixel-msg: 18px;
+
+    /* SMALL TALK (new) */
+    --talk-gap: 0.5rem;
+    --talk-pad: 1.25rem;
+    --talk-q: 1.0625rem;
+    --talk-answer-max: 32rem;
+    --talk-grow: 0.625rem;
+    --talk-sign: 1.25rem;
+    --dur-talk: 500ms;
+    --row: var(--paper-2);
+    --row-hover: color-mix(in srgb, var(--ink) 4%, var(--paper-2));
+    /* Moss as an object: his size per placement, and the shadow that
+       sits him on a surface (a soft ellipse, ink at low strength, so it
+       re-inks in dark mode). */
+    --moss-shelf: 5.25rem;      /* sitting on the row */
+    --moss-counter: 6.5rem;     /* behind the row */
+    --moss-corner: 10rem;       /* his own corner */
+    --moss-shadow: color-mix(in srgb, var(--ink) 22%, transparent);
+    --moss-ratio: 188 / 223;    /* one sprite cell */
+  }
+  :root[data-mode='dark'] {
+    --paper: #1b1a19; --paper-2: #252422; --ink: #ecebe8; --ink-dim: #a09d98;
+    --line: rgb(255 255 255 / 0.12); --accent: #e0714f;
+    --moss-shadow: rgb(0 0 0 / 0.55);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    margin: 0; background: var(--night); color: var(--ink);
+    font: var(--step-body)/var(--leading-body) var(--font-sans); font-weight: 600;
+    letter-spacing: var(--tracking-body);
+  }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; letter-spacing: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- mock chrome ---- */
+  .mock-bar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: center;
+    padding: 0.75rem var(--gutter); background: var(--paper); border-bottom: 1px solid var(--line);
+    font: var(--step-fine)/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: var(--tracking-mono-label);
+  }
+  .mock-bar fieldset { border: 0; margin: 0; padding: 0; display: flex; gap: 0.25rem; align-items: center; flex-wrap: wrap; }
+  .mock-bar legend { float: left; margin-right: 0.5rem; color: var(--ink-dim); }
+  .mock-bar button {
+    border: 1px solid var(--line); background: none; border-radius: var(--radius-pill);
+    padding: 0.35rem 0.75rem; cursor: pointer; font: inherit; text-transform: inherit;
+  }
+  .mock-bar button[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .mock-note { color: var(--ink-dim); text-transform: none; letter-spacing: 0; font-family: var(--font-sans); font-size: var(--step-label); flex-basis: 100%; margin: 0; }
+
+  /* ---- page stand-in ---- */
+  main {
+    position: relative; z-index: 1; background: var(--paper);
+    clip-path: inset(0 round 0 0 var(--radius-page-end) var(--radius-page-end));
+    padding-bottom: var(--space-band);
+  }
+  .shell { padding-inline: max(var(--gutter), calc((100vw - var(--shell-max)) / 2)); }
+  .u-heading { font: 300 var(--step-heading)/var(--leading-heading) var(--font-serif); letter-spacing: var(--tracking-serif); margin: 0; }
+  .u-heading em { font-style: italic; }
+  .ghost { opacity: 0.35; }
+  .playline { padding-block: var(--space-band) 0; text-align: center; display: grid; justify-items: center; gap: 1.5rem; }
+  .playline .u-heading { max-width: 20ch; }
+  .playline span { font-size: var(--step-label); text-transform: uppercase; letter-spacing: var(--tracking-label); }
+  footer { color: var(--night-ink); padding: calc(var(--radius-page-end) + 3rem) var(--gutter) 3rem; margin-top: calc(var(--radius-page-end) * -1); background: var(--night); }
+  footer p { margin: 0; font: 300 2rem/1.15 var(--font-serif); letter-spacing: var(--tracking-serif); }
+  footer em { text-decoration: underline; text-underline-offset: 0.15em; text-decoration-thickness: 1px; }
+
+  /* ==================================================================
+     SMALL TALK — layout A
+     ================================================================== */
+  .talk { padding-top: var(--space-band); }
+  .talk__grid { display: grid; gap: 2.5rem; }
+  .talk__head { display: flex; flex-direction: column; }
+  .talk__dek { margin: 1rem 0 0; color: var(--ink-dim); max-width: 30ch; }
+  @media (min-width: 62rem) {
+    .talk__grid { grid-template-columns: 1fr 1fr; gap: 4rem; }
+    :root:not([data-moss='corner']) .talk__head { position: sticky; top: 6rem; align-self: start; }
+  }
+  .talk__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--talk-gap); }
+
+  .q { position: relative; isolation: isolate; }
+  .q::before {
+    content: ''; position: absolute; inset: 0; z-index: -1; background: var(--row);
+    transition: inset var(--dur-talk) var(--ease-out), background-color var(--dur-micro);
+  }
+  .q:has(> .q__btn:hover)::before { background: var(--row-hover); }
+  .q.is-open::before { inset: 0 calc(var(--talk-grow) * -1); }
+  .q__btn {
+    width: 100%; display: flex; align-items: center; gap: 1rem; justify-content: space-between;
+    padding: var(--talk-pad); background: none; border: 0; cursor: pointer; text-align: left;
+    font-size: var(--talk-q); line-height: 1.35; letter-spacing: 0;
+  }
+  .q__text { flex: 1; }
+  .q__sign { flex: none; width: var(--talk-sign); height: var(--talk-sign); color: var(--ink-dim); transition: transform var(--dur-talk) var(--ease-out), color var(--dur-micro); }
+  .q__btn:hover .q__sign { color: var(--ink); }
+  .q.is-open .q__sign { transform: rotate(45deg); color: var(--ink); }
+  .q__panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--dur-talk) var(--ease-out); }
+  .q.is-open .q__panel { grid-template-rows: 1fr; }
+  .q__panel > div { overflow: hidden; }
+  .q__answer {
+    padding: 0 var(--talk-pad) var(--talk-pad); max-width: var(--talk-answer-max); color: var(--ink-dim);
+    opacity: 0; transform: translateY(-4px);
+    transition: opacity var(--dur-micro), transform var(--dur-talk) var(--ease-out);
+  }
+  .q.is-open .q__answer { opacity: 1; transform: none; transition-delay: 80ms, 0s; }
+  .q__answer p { margin: 0 0 0.75em; }
+  .q__answer p:last-child { margin-bottom: 0; }
+  .q__answer a { color: var(--ink); text-underline-offset: 0.2em; }
+  .q__answer a:hover { color: var(--accent); }
+  .todo { color: var(--accent); font-family: var(--font-mono); font-size: var(--step-label); }
+
+  /* Moss's row: opens like the others; inside, three of his questions */
+  .moss-row .q__answer { max-width: none; }
+  .moss__say { margin: 0 0 0.875rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip {
+    border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-pill);
+    padding: 0.5rem 0.875rem; cursor: pointer; font-size: var(--step-label); color: var(--ink);
+    transition: border-color var(--dur-micro);
+  }
+  .chip:hover { border-color: var(--ink); }
+  .chip--more { border-style: dashed; color: var(--ink-dim); }
+
+  /* ==================================================================
+     MOSS — the figure. One element, three placements.
+     ================================================================== */
+  .moss {
+    position: absolute; pointer-events: none; z-index: 1;   /* own stacking context, so the shadow sits on the row, not under it */
+    aspect-ratio: var(--moss-ratio);
+    transform-origin: 50% 100%;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .moss__fig {
+    position: absolute; inset: 0;
+    background: url(img/moss-sm.webp) center bottom / contain no-repeat;
+  }
+  .moss.is-scrub .moss__fig { background: url(img/moss-sprite.webp) 0 0 / 800% 600% no-repeat; }
+  /* contact shadow: two soft ellipses, a wide faint one and a tight dark
+     one under the feet — what makes him sit ON something */
+  .moss::before, .moss::after {
+    content: ''; position: absolute; left: 50%; translate: -50% 0; border-radius: 50%; z-index: -1;
+  }
+  .moss::before { bottom: -5%; width: 100%; height: 14%; background: radial-gradient(closest-side, var(--moss-shadow), transparent); opacity: 0.7; }
+  .moss::after  { bottom: -2%; width: 64%; height: 7%;  background: radial-gradient(closest-side, var(--moss-shadow), transparent); }
+  .moss-row { margin-top: var(--talk-gap); }
+
+  /* 1 — SHELF: sitting on top of his row, like a figurine on a ledge.
+     The row gets room above it; he sits at the row's left, over the
+     words that name him. Hover the row: he perks up from the feet. */
+  :root[data-moss='shelf'] .moss-row { margin-top: calc(var(--moss-shelf) * 1.1); }
+  :root[data-moss='shelf'] .moss { width: var(--moss-shelf); left: calc(var(--talk-pad) - 0.5rem); bottom: calc(100% - 0.5rem); }
+  :root[data-moss='shelf'] .moss-row:has(.q__btn:hover) .moss { transform: scale(1.06); }
+
+  /* 2 — COUNTER: sitting behind his row, the row hiding him from the
+     chest down, as if he's behind a counter. The row is opaque, so it
+     does the cropping — an object in front of him, not a shape around
+     him. Hover the row: he rises to look over it. */
+  :root[data-moss='counter'] .moss-row { margin-top: calc(var(--moss-counter) * 0.62); }
+  :root[data-moss='counter'] .moss { width: var(--moss-counter); right: calc(var(--talk-pad) + var(--talk-sign) + 1.5rem); bottom: calc(100% - var(--moss-counter) * 0.5); z-index: -2; }
+  :root[data-moss='counter'] .moss::before, :root[data-moss='counter'] .moss::after { display: none; }
+  :root[data-moss='counter'] .moss-row .q::before { box-shadow: 0 -1px 0 var(--line); }
+  :root[data-moss='counter'] .moss-row:has(.q__btn:hover) .moss { transform: translateY(-0.6rem); }
+  :root[data-moss='counter'] .moss-row.is-open .moss { transform: translateY(-0.6rem); }
+
+  /* 3 — CORNER: on wide screens he gets the empty half under the
+     heading, sitting on the same floor line as his row, looking across
+     at the list. The hairline is the floor they share. Below 62rem
+     there's no empty half, so he falls back to the shelf. */
+  @media (min-width: 62rem) {
+    :root[data-moss='corner'] .talk__head { position: relative; }
+    :root[data-moss='corner'] .moss { width: var(--moss-corner); left: 0; bottom: 0; }
+    :root[data-moss='corner'] .floor {
+      display: block; position: absolute; left: 0; right: -4rem; bottom: 0; height: 1px; background: var(--line);
+    }
+    :root[data-moss='corner'] .talk:has(.moss-row .q__btn:hover) .moss { transform: scale(1.04) rotate(-2deg); }
+  }
+  @media (max-width: 61.99rem) {
+    :root[data-moss='corner'] .moss-row { margin-top: calc(var(--moss-shelf) * 1.1); }
+    :root[data-moss='corner'] .moss { width: var(--moss-shelf); left: calc(var(--talk-pad) - 0.5rem); bottom: calc(100% - 0.5rem); }
+  }
+  .floor { display: none; }
+
+  /* ---- Moss's panel, stand-in ---- */
+  .scrim { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 30; opacity: 0; pointer-events: none; transition: opacity var(--dur-hover); }
+  .panel {
+    position: fixed; z-index: 31; right: var(--gutter); bottom: var(--gutter); width: min(24rem, calc(100vw - 2 * var(--gutter)));
+    background: var(--pixel-bg); color: var(--pixel-ink); border-radius: var(--radius-pixel-panel);
+    font: 0.8125rem/1.55 var(--font-pixel); padding: 1.25rem; display: grid; gap: 0.75rem;
+    opacity: 0; transform: translateY(12px); visibility: hidden;
+    transition: opacity var(--dur-hover), transform var(--dur-hover) var(--ease-out), visibility 0s var(--dur-hover);
+  }
+  .is-moss .scrim { opacity: 1; pointer-events: auto; }
+  .is-moss .panel { opacity: 1; transform: none; visibility: visible; transition-delay: 0s; }
+  .panel header { display: flex; align-items: center; gap: 0.6rem; color: var(--pixel-dim); }
+  .panel header button { margin-left: auto; background: none; border: 0; color: var(--pixel-dim); cursor: pointer; font-size: 1rem; }
+  .panel .msg { background: var(--pixel-chip); border-radius: var(--radius-pixel-msg); padding: 0.75rem 1rem; }
+  .panel .msg p { margin: 0 0 0.5em; } .panel .msg p:last-child { margin: 0; }
+  .panel .note { color: var(--pixel-dim); font-size: var(--step-fine); margin: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0s !important; transition-delay: 0s !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="mock-bar" role="group" aria-label="Mock options">
+    <fieldset><legend>Moss</legend>
+      <button data-set="moss" data-v="shelf" aria-pressed="true">1 · On the row</button>
+      <button data-set="moss" data-v="counter" aria-pressed="false">2 · Behind the row</button>
+      <button data-set="moss" data-v="corner" aria-pressed="false">3 · His own corner</button>
+    </fieldset>
+    <fieldset><legend>Mode</legend>
+      <button data-set="mode" data-v="light" aria-pressed="true">Light</button>
+      <button data-set="mode" data-v="dark" aria-pressed="false">Dark</button>
+    </fieldset>
+    <p class="mock-note" id="mock-note"></p>
+  </div>
+
+  <main>
+    <section class="shell playline ghost" aria-hidden="true">
+      <h2 class="u-heading">Smaller experiments live in the <em>playground.</em></h2>
+      <span>Explore playground</span>
+    </section>
+
+    <section class="shell talk" aria-labelledby="talk-h">
+      <div class="talk__grid">
+        <div class="talk__head" data-corner>
+          <h2 class="u-heading" id="talk-h">Small <em>talk</em></h2>
+          <p class="talk__dek">The short ones are here. For anything else, ask Moss.</p>
+        </div>
+
+        <div class="talk__body">
+          <ul class="talk__list">
+            <li class="q">
+              <button class="q__btn" aria-expanded="false" aria-controls="a1" id="q1"><span class="q__text">How did you get into design?</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a1" role="region" aria-labelledby="q1" inert><div><div class="q__answer">
+                <p class="todo">[Your story, in your words. Two short paragraphs, like his. Not on the site yet, so not written for you.]</p>
+              </div></div></div>
+            </li>
+            <li class="q">
+              <button class="q__btn" aria-expanded="false" aria-controls="a2" id="q2"><span class="q__text">What&rsquo;s your main thing?</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a2" role="region" aria-labelledby="q2" inert><div><div class="q__answer">
+                <p>Fintech first: payments, cards and privacy at PayPal. Then enterprise software and developer tools: identity, access and the integration platform at Okta.</p>
+                <p>Complicated systems, made usable, down to the last pixel.</p>
+              </div></div></div>
+            </li>
+            <li class="q">
+              <button class="q__btn" aria-expanded="false" aria-controls="a3" id="q3"><span class="q__text">Where are you based?</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a3" role="region" aria-labelledby="q3" inert><div><div class="q__answer">
+                <p>Bangalore, India. The clock at the top of the page is mine.</p>
+              </div></div></div>
+            </li>
+            <li class="q">
+              <button class="q__btn" aria-expanded="false" aria-controls="a4" id="q4"><span class="q__text">Where do you see yourself in the future?</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a4" role="region" aria-labelledby="q4" inert><div><div class="q__answer">
+                <p>In a Staff or Lead Product Designer role, with my hands on the work.</p>
+                <p class="todo">[What kind of team, product or problem you want next, in your words.]</p>
+              </div></div></div>
+            </li>
+            <li class="q">
+              <button class="q__btn" aria-expanded="false" aria-controls="a5" id="q5"><span class="q__text">How can I get in touch?</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a5" role="region" aria-labelledby="q5" inert><div><div class="q__answer">
+                <p><a href="#">Email</a> is fastest. <a href="#">LinkedIn</a> works too.</p>
+                <p>And if your question isn&rsquo;t up here, ask Moss. He knows the rest.</p>
+              </div></div></div>
+            </li>
+          </ul>
+
+          <div class="moss-row">
+            <div class="q" data-moss-anchor>
+              <button class="q__btn" aria-expanded="false" aria-controls="a6" id="q6"><span class="q__text">Ask Moss anything else</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a6" role="region" aria-labelledby="q6" inert><div><div class="q__answer">
+                <p class="moss__say">Not on the list? I know the rest. Pick one.</p>
+                <div class="chips">
+                  <button class="chip" data-moss-open="first">Which case should I read first?</button>
+                  <button class="chip" data-moss-open="hardest">What&rsquo;s the hardest call she made?</button>
+                  <button class="chip" data-moss-open="locked">Is anything locked?</button>
+                  <button class="chip chip--more" data-moss-open="start">Something else&hellip;</button>
+                </div>
+              </div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer aria-hidden="true"><p>Let&rsquo;s start with a <em>conversation</em>.</p></footer>
+
+  <!-- the one figure; script moves it between the row and the corner -->
+  <span class="moss" aria-hidden="true"><span class="moss__fig"></span></span>
+  <span class="floor" aria-hidden="true"></span>
+
+  <div class="scrim" data-moss-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-label="Moss" id="panel">
+    <header>Moss <button type="button" data-moss-close aria-label="Close">×</button></header>
+    <div class="msg" id="panel-msg"></div>
+    <p class="note" id="panel-note"></p>
+  </div>
+
+<script>
+  const root = document.documentElement;
+  const notes = {
+    shelf: '1 — On the row: he sits on top of his own row, at the start of the words that name him, like a figurine on a ledge. Contact shadow under him. Smallest change to the list; the row gets a little room above it.',
+    counter: '2 — Behind the row: the row hides him from the chest down, as if he’s behind a counter. The row does the cropping, not a shape. Hover or open the row and he rises to look over it.',
+    corner: '3 — His own corner: on wide screens he sits in the empty half under the heading, on the same floor line as his row, looking across at the questions. Bigger, more of an illustration. On phones he falls back to 1.',
+  };
+  const say = {
+    start: ['Ah. You found me.', 'I’m Moss. I look after this portfolio. Ask me something and I’ll point you at the good bits.'],
+    first: ['Oh, this one. I like this one.', 'The Okta Integration Network. Most recent, and open.'],
+    hardest: ['Pick one. She has a habit of arguing for the slower option.'],
+    locked: ['One. Rebuilding IAM at Okta is behind a password. I don’t have it. Tiny creature, limited access.'],
+  };
+
+  const moss = document.querySelector('.moss');
+  const floor = document.querySelector('.floor');
+  const anchorRow = document.querySelector('[data-moss-anchor]').parentElement;   // .moss-row
+  const corner = document.querySelector('[data-corner]');
+  const wide = matchMedia('(min-width: 62rem)');
+  function place() {
+    const inCorner = root.dataset.moss === 'corner' && wide.matches;
+    if (inCorner) {
+      corner.append(floor, moss);
+      // the corner's floor sits level with the bottom of Moss's row
+      const gap = corner.getBoundingClientRect().bottom - anchorRow.getBoundingClientRect().bottom;
+      corner.style.paddingBottom = '';
+      corner.style.marginBottom = Math.max(0, -gap) + 'px';
+      corner.style.minHeight = '';
+    } else {
+      corner.style.marginBottom = '';
+      anchorRow.style.position = 'relative';
+      anchorRow.append(moss);
+    }
+  }
+
+  function paint() {
+    document.querySelectorAll('[data-set]').forEach(b => b.setAttribute('aria-pressed', root.dataset[b.dataset.set] === b.dataset.v));
+    document.getElementById('mock-note').textContent = notes[root.dataset.moss];
+    place();
+  }
+  document.querySelectorAll('[data-set]').forEach(b => b.addEventListener('click', () => { root.dataset[b.dataset.set] = b.dataset.v; paint(); }));
+  wide.addEventListener('change', place);
+
+  // corner: the head column stretches to the list's height so its bottom
+  // (the floor) lines up with the bottom of Moss's row
+  const style = document.createElement('style');
+  style.textContent = `@media (min-width: 62rem) { :root[data-moss='corner'] .talk__grid { align-items: stretch; } :root[data-moss='corner'] .talk__head { justify-content: flex-start; } }`;
+  document.head.append(style);
+
+  // ---- accordion: one open at a time; closed answers are inert ----
+  const rows = [...document.querySelectorAll('.q')];
+  function setOpen(row, on) {
+    row.classList.toggle('is-open', on);
+    row.querySelector('.q__btn').setAttribute('aria-expanded', on);
+    row.querySelector('.q__panel').inert = !on;
+    if (row.dataset.mossAnchor !== undefined) anchorRow.classList.toggle('is-open', on);
+  }
+  rows.forEach(row => row.querySelector('.q__btn').addEventListener('click', () => {
+    const on = !row.classList.contains('is-open');
+    rows.forEach(r => setOpen(r, false));
+    setOpen(row, on);
+  }));
+
+  // ---- the scrub: pointer across the band picks a frame of his clip,
+  // the hero's behaviour; leaving eases back to frame 0. Fine pointers,
+  // full motion only; the sprite swaps in once decoded. ----
+  const COLS = 8, ROWS = 6, N = 48;
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const img = new Image();
+    img.src = 'img/moss-sprite.webp';
+    img.decode().then(() => {
+      moss.classList.add('is-scrub');
+      const fig = moss.querySelector('.moss__fig');
+      const band = document.querySelector('.talk');
+      let cur = 0, target = 0, raf = 0;
+      const show = f => {
+        const i = Math.round(f) % N;
+        fig.style.backgroundPosition = `${(i % COLS) / (COLS - 1) * 100}% ${Math.floor(i / COLS) / (ROWS - 1) * 100}%`;
+      };
+      const tick = () => {
+        cur += (target - cur) * 0.18;
+        show(cur);
+        raf = Math.abs(target - cur) > 0.3 ? requestAnimationFrame(tick) : (show(target), 0);
+      };
+      const go = t => { target = t; if (!raf) raf = requestAnimationFrame(tick); };
+      band.addEventListener('pointermove', e => {
+        const r = band.getBoundingClientRect();
+        go(Math.min(N - 1, Math.max(0, (e.clientX - r.left) / r.width * (N - 1))));
+      });
+      band.addEventListener('pointerleave', () => go(0));
+      show(0);
+    });
+  }
+
+  // ---- Moss's panel stand-in ----
+  let back = null;
+  function openMoss(key, from) {
+    back = from;
+    document.getElementById('panel-msg').innerHTML = say[key].map(s => `<p>${s}</p>`).join('');
+    document.getElementById('panel-note').textContent = `Stand-in. The real panel (AskBubble.astro) opens here at “${key}”.`;
+    document.body.classList.add('is-moss');
+    document.querySelector('#panel [data-moss-close]').focus();
+  }
+  function closeMoss() { document.body.classList.remove('is-moss'); back?.focus(); }
+  document.querySelectorAll('[data-moss-open]').forEach(b => b.addEventListener('click', () => openMoss(b.dataset.mossOpen, b)));
+  document.querySelectorAll('[data-moss-close]').forEach(b => b.addEventListener('click', closeMoss));
+  addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('is-moss')) closeMoss(); });
+
+  const p = new URLSearchParams(location.search);
+  if (p.get('m')) root.dataset.moss = p.get('m');
+  if (p.get('mode')) root.dataset.mode = p.get('mode');
+  if (p.get('open')) setOpen(rows[+p.get('open') - 1], true);
+  paint();
+</script>
+</body>
+</html>

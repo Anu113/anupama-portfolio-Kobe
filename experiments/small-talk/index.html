@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en" data-mode="light" data-layout="a" data-moss="1">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Small talk — home mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet" />
+<style>
+  /* Mock of a "Small talk" band for the home page, after andreas.vision's
+     (measured off the live site, 2026-10-17): the short questions as a
+     one-open-at-a-time accordion, and a last row that hands everything
+     else to the site's character — "Ask the cloud" there, Moss here.
+
+     His numbers: rows 8px apart, 20px padding, 17px question, a 20px
+     plus that turns to ×, the open row widening by ~10px each side,
+     answers 14px grey capped at 510px. At 1440 the head sits in the left
+     half and the list in the right; below ~1000px they stack.
+
+     Ours differs where the site's rules say so: square corners (his are
+     12px), our serif heading, our role colours, and Moss's row is a
+     BUTTON that opens his existing panel — not a text field. Moss has
+     no model behind him (CLAUDE.md), so a field you could type into
+     would be a false promise.
+
+     Answers are DRAFTS, written only from site.ts / cases.ts / ask.ts.
+     Values copied from src/styles/tokens.css; new ones would go under a
+     SMALL TALK block there. */
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --font-pixel: 'Roboto Mono', ui-monospace, monospace;
+    --paper: #fcfcfc; --paper-2: #f7f7f7; --ink: #262626; --ink-dim: #707070;
+    --line: rgb(0 0 0 / 0.1);
+    --accent: #b4482a;
+    --night: #0b0b0b; --night-ink: #ecebe8; --night-ink-dim: #a09d98;
+    --step-heading: clamp(2rem, 1.721rem + 1.143vw, 2.75rem);
+    --step-title: 1.375rem;
+    --step-body: 0.875rem; --step-label: 0.75rem; --step-fine: 0.6875rem; --step-small: 0.8125rem;
+    --tracking-serif: -0.03em; --tracking-label: 0.067em; --tracking-mono-label: 0.08em; --tracking-body: 0.01em;
+    --leading-heading: 1.15; --leading-body: 1.5;
+    --gutter: clamp(1.25rem, 0.786rem + 1.905vw, 2.5rem);
+    --shell-max: 90rem;
+    --space-band: clamp(4rem, 8vw, 7.5rem);
+    --space-head: clamp(3.5rem, 5.5vw, 5rem);
+    --radius-page-end: clamp(1.5rem, -0.5rem + 5vw, 5rem);
+    --radius-pill: 999px;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur-hover: 320ms; --dur-micro: 150ms;
+
+    /* Moss's panel ("Pixel" block) */
+    --pixel-bg: #161616; --pixel-ink: #ecebe8; --pixel-dim: #a09d98;
+    --pixel-line: rgb(255 255 255 / 0.12); --pixel-chip: #232323;
+    --radius-pixel-panel: 24px; --radius-pixel-msg: 18px;
+
+    /* SMALL TALK (new) */
+    --talk-gap: 0.5rem;             /* between rows (his 8px) */
+    --talk-pad: 1.25rem;            /* inside a row (his 20px) */
+    --talk-q: 1.0625rem;            /* the question, 17px (his) */
+    --talk-answer-max: 32rem;       /* his 510px */
+    --talk-grow: 0.625rem;          /* how far an open row widens each side */
+    --talk-sign: 1.25rem;           /* the + / × */
+    --talk-moss: 1.75rem;           /* Moss's head in the last row */
+    --dur-talk: 500ms;              /* a row opening; the hover system's reveal */
+    --row: var(--paper-2);
+    --row-hover: color-mix(in srgb, var(--ink) 4%, var(--paper-2));
+  }
+  :root[data-mode='dark'] {
+    --paper: #1b1a19; --paper-2: #252422; --ink: #ecebe8; --ink-dim: #a09d98;
+    --line: rgb(255 255 255 / 0.12); --accent: #e0714f;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    margin: 0; background: var(--night); color: var(--ink);
+    font: var(--step-body)/var(--leading-body) var(--font-sans); font-weight: 600;
+    letter-spacing: var(--tracking-body);
+  }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; letter-spacing: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- mock chrome: switcher ---- */
+  .mock-bar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: center;
+    padding: 0.75rem var(--gutter); background: var(--paper); border-bottom: 1px solid var(--line);
+    font: var(--step-fine)/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: var(--tracking-mono-label);
+  }
+  .mock-bar fieldset { border: 0; margin: 0; padding: 0; display: flex; gap: 0.25rem; align-items: center; flex-wrap: wrap; }
+  .mock-bar legend { float: left; margin-right: 0.5rem; color: var(--ink-dim); }
+  .mock-bar button {
+    border: 1px solid var(--line); background: none; border-radius: var(--radius-pill);
+    padding: 0.35rem 0.75rem; cursor: pointer; font: inherit; text-transform: inherit;
+  }
+  .mock-bar button[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .mock-note { color: var(--ink-dim); text-transform: none; letter-spacing: 0; font-family: var(--font-sans); font-size: var(--step-label); flex-basis: 100%; }
+
+  /* ---- page stand-in ---- */
+  main {
+    position: relative; z-index: 1; background: var(--paper);
+    clip-path: inset(0 round 0 0 var(--radius-page-end) var(--radius-page-end));
+    padding-bottom: var(--space-band);
+  }
+  .shell { padding-inline: max(var(--gutter), calc((100vw - var(--shell-max)) / 2)); }
+  .u-heading {
+    font: 300 var(--step-heading)/var(--leading-heading) var(--font-serif);
+    letter-spacing: var(--tracking-serif); margin: 0;
+  }
+  .u-heading em { font-style: italic; }
+  .btn--link {
+    font-size: var(--step-label); text-transform: uppercase; letter-spacing: var(--tracking-label);
+    text-decoration: none; display: inline-flex; gap: 0.4em;
+  }
+  .ghost { opacity: 0.35; }
+  .playline { padding-block: var(--space-band) 0; text-align: center; display: grid; justify-items: center; gap: 1.5rem; }
+  .playline .u-heading { max-width: 20ch; }
+  footer {
+    color: var(--night-ink); padding: calc(var(--radius-page-end) + 3rem) var(--gutter) 3rem;
+    margin-top: calc(var(--radius-page-end) * -1); background: var(--night);
+  }
+  footer p { margin: 0; font: 300 2rem/1.15 var(--font-serif); letter-spacing: var(--tracking-serif); }
+  footer em { text-decoration: underline; text-underline-offset: 0.15em; text-decoration-thickness: 1px; }
+
+  /* ==================================================================
+     SMALL TALK
+     ================================================================== */
+  .talk { padding-top: var(--space-band); }
+  .talk__grid { display: grid; gap: 2.5rem; }
+  .talk__dek { margin: 1rem 0 0; color: var(--ink-dim); max-width: 30ch; }
+  .talk__label {
+    font: var(--step-fine)/1.4 var(--font-mono); text-transform: uppercase;
+    letter-spacing: var(--tracking-mono-label); color: var(--ink-dim); margin: 0 0 1rem;
+  }
+  .talk__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--talk-gap); }
+
+  /* the row */
+  .q { position: relative; }
+  .q::before {                    /* the row's ground — widens when open */
+    content: ''; position: absolute; inset: 0; z-index: -1;
+    background: var(--row);
+    transition: inset var(--dur-talk) var(--ease-out), background-color var(--dur-micro);
+  }
+  .q:has(> .q__btn:hover)::before { background: var(--row-hover); }
+  .q.is-open::before { inset: 0 calc(var(--talk-grow) * -1); }
+  .q__btn {
+    width: 100%; display: flex; align-items: center; gap: 1rem; justify-content: space-between;
+    padding: var(--talk-pad); background: none; border: 0; cursor: pointer; text-align: left;
+    font-size: var(--talk-q); line-height: 1.35; letter-spacing: 0;
+  }
+  .q__n { font: var(--step-fine)/1 var(--font-mono); letter-spacing: var(--tracking-mono-label); color: var(--ink-dim); display: none; min-width: 2ch; }
+  .q__text { flex: 1; }
+  .q__sign {
+    flex: none; width: var(--talk-sign); height: var(--talk-sign); color: var(--ink-dim);
+    transition: transform var(--dur-talk) var(--ease-out), color var(--dur-micro);
+  }
+  .q__btn:hover .q__sign { color: var(--ink); }
+  .q.is-open .q__sign { transform: rotate(45deg); color: var(--ink); }
+  .q__panel {
+    display: grid; grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-talk) var(--ease-out);
+  }
+  .q.is-open .q__panel { grid-template-rows: 1fr; }
+  .q__panel > div { overflow: hidden; }
+  .q__answer {
+    padding: 0 var(--talk-pad) var(--talk-pad); max-width: var(--talk-answer-max); color: var(--ink-dim);
+    opacity: 0; transform: translateY(-4px);
+    transition: opacity var(--dur-micro), transform var(--dur-talk) var(--ease-out);
+  }
+  .q.is-open .q__answer { opacity: 1; transform: none; transition-delay: 80ms, 0s; }
+  .q__answer p { margin: 0 0 0.75em; }
+  .q__answer p:last-child { margin-bottom: 0; }
+  .q__answer a { color: var(--ink); text-underline-offset: 0.2em; }
+  .q__answer a:hover { color: var(--accent); }
+  .draft { font: var(--step-fine)/1 var(--font-mono); color: var(--accent); text-transform: uppercase; letter-spacing: var(--tracking-mono-label); margin-left: 0.5em; }
+
+  /* ---- layout A: his — head left, filled rows right ---- */
+  @media (min-width: 62rem) {
+    :root[data-layout='a'] .talk__grid,
+    :root[data-layout='b'] .talk__grid { grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+    :root[data-layout='a'] .talk__head,
+    :root[data-layout='b'] .talk__head { position: sticky; top: 6rem; }
+  }
+
+  /* ---- layout B: hairlines, numbered — the case-study register ---- */
+  :root[data-layout='b'] { --talk-gap: 0; }
+  :root[data-layout='b'] .q::before { background: none; border-top: 1px solid var(--line); inset: 0; }
+  :root[data-layout='b'] .q:last-child::after { content: ''; position: absolute; inset: auto 0 0; border-bottom: 1px solid var(--line); }
+  :root[data-layout='b'] .q.is-open::before { inset: 0; }
+  :root[data-layout='b'] .q__btn { padding-inline: 0; }
+  :root[data-layout='b'] .q__n { display: inline-block; }
+  :root[data-layout='b'] .q__answer { padding-inline: calc(2ch + 1rem + 0.2rem) 0; }
+  :root[data-layout='b'] .q__btn:hover .q__text { color: var(--ink); }
+  :root[data-layout='b'] .q__btn .q__text { transition: transform var(--dur-hover) var(--ease-out); }
+  :root[data-layout='b'] .q__btn:hover .q__text { transform: translateX(4px); }
+  :root[data-layout='b'] .q.is-open .q__btn .q__text { transform: none; }
+
+  /* ---- layout C: our section head, list centred under it ---- */
+  :root[data-layout='c'] .talk__head { text-align: center; display: grid; justify-items: center; padding-bottom: calc(var(--space-head) - 2.5rem); }
+  :root[data-layout='c'] .talk__dek { max-width: 40ch; }
+  :root[data-layout='c'] .talk__body { width: 100%; max-width: 46rem; margin-inline: auto; }
+
+  /* ==================================================================
+     MOSS'S ROW — three ways
+     ================================================================== */
+  .moss { position: relative; margin-top: var(--talk-gap); }
+  :root[data-layout='b'] .moss { margin-top: 1rem; }
+  .moss > div { display: none; }
+  :root[data-moss='1'] .moss__field,
+  :root[data-moss='2'] .moss__chips,
+  :root[data-moss='3'] .moss__peek { display: block; }
+  .moss__head {
+    flex: none; width: var(--talk-moss); height: var(--talk-moss); border-radius: 50%;
+    overflow: hidden; background: var(--paper);
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .moss__head img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* 1 — FIELD: his look (avatar, prompt, send arrow), but a button */
+  .moss__field button {
+    width: 100%; display: flex; align-items: center; gap: 0.875rem;
+    padding: calc(var(--talk-pad) * 0.6) calc(var(--talk-pad) * 0.6) calc(var(--talk-pad) * 0.6) var(--talk-pad);
+    background: var(--row); border: 0; cursor: pointer; text-align: left;
+    font-size: var(--talk-q); line-height: 1.35; letter-spacing: 0;
+    transition: background-color var(--dur-micro);
+  }
+  :root[data-layout='b'] .moss__field button { background: none; border: 1px dashed var(--line); }
+  .moss__field button:hover { background: var(--row-hover); }
+  .moss__field .t { flex: 1; color: var(--ink-dim); transition: color var(--dur-micro); }
+  .moss__field button:hover .t { color: var(--ink); }
+  .moss__go {
+    flex: none; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center;
+    background: var(--ink); color: var(--paper);
+    transition: transform var(--dur-hover) var(--ease-out), background-color var(--dur-micro);
+  }
+  .moss__go svg { width: 0.875rem; height: 0.875rem; }
+  .moss__field button:hover .moss__go { background: var(--accent); transform: translateX(2px); }
+  .moss__field button:hover .moss__head { transform: rotate(-8deg) scale(1.08); }
+
+  /* 2 — CHIPS: opens like a question, Moss offers three of his own */
+  .moss__chips .q__btn { gap: 0.875rem; }
+  .moss__chips .q__text { color: var(--ink); }
+  .moss__chips .q__btn:hover .moss__head { transform: rotate(-8deg) scale(1.08); }
+  .moss__chips .q__answer { max-width: none; }
+  .moss__say { margin: 0 0 0.875rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip {
+    border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-pill);
+    padding: 0.5rem 0.875rem; cursor: pointer; font-size: var(--step-label); color: var(--ink);
+    transition: border-color var(--dur-micro), color var(--dur-micro);
+  }
+  .chip:hover { border-color: var(--ink); }
+  .chip--more { border-style: dashed; color: var(--ink-dim); }
+  :root[data-layout='b'] .moss__chips .q__answer { padding-left: calc(var(--talk-moss) + 0.875rem); }
+
+  /* 3 — PEEK: Moss himself sits on the row's top edge, his launcher's
+     card beside him, words at rest */
+  .moss__peek { padding-top: 3.25rem; }
+  .moss__peek button {
+    position: relative; width: 100%; display: flex; align-items: center; gap: 1rem;
+    padding: var(--talk-pad); padding-left: 6.25rem; min-height: 4.25rem;
+    background: var(--row); border: 0; cursor: pointer; text-align: left; font-size: var(--talk-q); letter-spacing: 0;
+  }
+  :root[data-layout='b'] .moss__peek button { background: none; border-block: 1px solid var(--line); }
+  .moss__peek img {
+    position: absolute; left: 1rem; bottom: 0.75rem; width: 4.5rem; height: auto;
+    transform-origin: 50% 100%;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .moss__peek button:hover img { transform: translateY(-4px) rotate(-3deg); }
+  .moss__peek .t { flex: 1; display: grid; gap: 0.15rem; }
+  .moss__peek .who { font-size: var(--step-label); color: var(--ink-dim); display: flex; align-items: center; gap: 0.4em; }
+  .moss__peek .who::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .moss__peek .offer { transition: color var(--dur-micro); }
+  .moss__peek button:hover .offer { color: var(--accent); }   /* never accent at rest */
+  .moss__peek .q__sign { transform: rotate(-90deg); }
+  .moss__peek button:hover .q__sign { transform: rotate(-90deg) translateY(3px); color: var(--ink); }
+
+  /* ---- Moss's panel, stand-in (the real one is AskBubble.astro) ---- */
+  .scrim { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 30; opacity: 0; pointer-events: none; transition: opacity var(--dur-hover); }
+  .panel {
+    position: fixed; z-index: 31; right: var(--gutter); bottom: var(--gutter); width: min(24rem, calc(100vw - 2 * var(--gutter)));
+    background: var(--pixel-bg); color: var(--pixel-ink); border-radius: var(--radius-pixel-panel);
+    font: 0.8125rem/1.55 var(--font-pixel); padding: 1.25rem; display: grid; gap: 0.75rem;
+    opacity: 0; transform: translateY(12px); visibility: hidden;
+    transition: opacity var(--dur-hover), transform var(--dur-hover) var(--ease-out), visibility 0s var(--dur-hover);
+  }
+  .is-moss .scrim { opacity: 1; pointer-events: auto; }
+  .is-moss .panel { opacity: 1; transform: none; visibility: visible; transition-delay: 0s; }
+  .panel header { display: flex; align-items: center; gap: 0.6rem; color: var(--pixel-dim); }
+  .panel header img { width: 1.75rem; height: 1.75rem; border-radius: 50%; }
+  .panel header button { margin-left: auto; background: none; border: 0; color: var(--pixel-dim); cursor: pointer; font-size: 1rem; }
+  .panel .msg { background: var(--pixel-chip); border-radius: var(--radius-pixel-msg); padding: 0.75rem 1rem; }
+  .panel .msg p { margin: 0 0 0.5em; } .panel .msg p:last-child { margin: 0; }
+  .panel .note { color: var(--pixel-dim); font-size: var(--step-fine); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0s !important; transition-delay: 0s !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="mock-bar" role="group" aria-label="Mock options">
+    <fieldset><legend>Layout</legend>
+      <button data-set="layout" data-v="a" aria-pressed="true">A · His</button>
+      <button data-set="layout" data-v="b" aria-pressed="false">B · Hairlines</button>
+      <button data-set="layout" data-v="c" aria-pressed="false">C · Centred</button>
+    </fieldset>
+    <fieldset><legend>Moss row</legend>
+      <button data-set="moss" data-v="1" aria-pressed="true">1 · Field</button>
+      <button data-set="moss" data-v="2" aria-pressed="false">2 · Chips</button>
+      <button data-set="moss" data-v="3" aria-pressed="false">3 · Peek</button>
+    </fieldset>
+    <fieldset><legend>Mode</legend>
+      <button data-set="mode" data-v="light" aria-pressed="true">Light</button>
+      <button data-set="mode" data-v="dark" aria-pressed="false">Dark</button>
+    </fieldset>
+    <p class="mock-note" id="mock-note"></p>
+  </div>
+
+  <main>
+    <!-- what sits above it today, faded -->
+    <section class="shell playline ghost" aria-hidden="true">
+      <h2 class="u-heading">Smaller experiments live in the <em>playground.</em></h2>
+      <span class="btn--link">Explore playground</span>
+    </section>
+
+    <section class="shell talk" aria-labelledby="talk-h">
+      <div class="talk__grid">
+        <div class="talk__head">
+          <h2 class="u-heading" id="talk-h">Small <em>talk</em></h2>
+          <p class="talk__dek">The short ones are here. For anything else, ask Moss.</p>
+        </div>
+
+        <div class="talk__body">
+          <ul class="talk__list">
+            <li class="q">
+              <button class="q__btn" aria-expanded="false" aria-controls="a1" id="q1"><span class="q__n">01</span><span class="q__text">What role are you looking for?</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a1" role="region" aria-labelledby="q1" inert><div><div class="q__answer">
+                <p>A Staff or Lead Product Designer role, with my hands on the work.<span class="draft">draft</span></p>
+                <p>At Okta I also led a team of six. That&rsquo;s the size of problem I&rsquo;m used to, not the job I&rsquo;m asking for next.</p>
+              </div></div></div>
+            </li>
+            <li class="q">
+              <button class="q__btn" aria-expanded="false" aria-controls="a2" id="q2"><span class="q__n">02</span><span class="q__text">What&rsquo;s your main thing?</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a2" role="region" aria-labelledby="q2" inert><div><div class="q__answer">
+                <p>Fintech first: payments, cards and privacy at PayPal. Then enterprise software and developer tools: identity, access and the integration platform at Okta.<span class="draft">draft</span></p>
+                <p>Complicated systems, made usable, down to the last pixel.</p>
+              </div></div></div>
+            </li>
+            <li class="q">
+              <button class="q__btn" aria-expanded="false" aria-controls="a3" id="q3"><span class="q__n">03</span><span class="q__text">Where are you based?</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a3" role="region" aria-labelledby="q3" inert><div><div class="q__answer">
+                <p>Bangalore, India. The clock at the top of the page is mine.<span class="draft">draft</span></p>
+              </div></div></div>
+            </li>
+            <li class="q">
+              <button class="q__btn" aria-expanded="false" aria-controls="a4" id="q4"><span class="q__n">04</span><span class="q__text">Do you code?</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a4" role="region" aria-labelledby="q4" inert><div><div class="q__answer">
+                <p>Enough to build this site: Astro, written with Claude Code, every colour and space in one token file.<span class="draft">draft</span></p>
+                <p>When a static frame can&rsquo;t show an idea, I prototype it. The Debit Card sign-up in the work above is one.</p>
+              </div></div></div>
+            </li>
+            <li class="q">
+              <button class="q__btn" aria-expanded="false" aria-controls="a5" id="q5"><span class="q__n">05</span><span class="q__text">How do you think about accessibility?</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <div class="q__panel" id="a5" role="region" aria-labelledby="q5" inert><div><div class="q__answer">
+                <p>It goes in at the start, not at QA. I give a talk on it, <em>The Saga of Accessibility</em>.<span class="draft">draft</span></p>
+                <p>This site holds WCAG 2.1 AA: keyboard all the way through, and the motion stops if you&rsquo;ve asked your computer for less.</p>
+              </div></div></div>
+            </li>
+          </ul>
+
+          <div class="moss">
+            <!-- 1 · FIELD -->
+            <div class="moss__field">
+              <button type="button" data-moss-open="start" aria-haspopup="dialog">
+                <span class="moss__head"><img src="img/moss-head.webp" alt="" /></span>
+                <span class="t">Ask Moss anything else</span>
+                <span class="moss__go" aria-hidden="true"><svg viewBox="0 0 14 14" fill="none"><path d="M12 6 7 1 2 6M7 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              </button>
+            </div>
+
+            <!-- 2 · CHIPS -->
+            <div class="moss__chips">
+              <div class="q">
+                <button class="q__btn" aria-expanded="false" aria-controls="a6" id="q6"><span class="moss__head"><img src="img/moss-head.webp" alt="" /></span><span class="q__text">Ask Moss anything else</span><svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                <div class="q__panel" id="a6" role="region" aria-labelledby="q6" inert><div><div class="q__answer">
+                  <p class="moss__say">Not on the list? I know the rest. Pick one.</p>
+                  <div class="chips">
+                    <button class="chip" data-moss-open="first">Which case should I read first?</button>
+                    <button class="chip" data-moss-open="hardest">What&rsquo;s the hardest call she made?</button>
+                    <button class="chip" data-moss-open="locked">Is anything locked?</button>
+                    <button class="chip chip--more" data-moss-open="start">Something else&hellip;</button>
+                  </div>
+                </div></div></div>
+              </div>
+            </div>
+
+            <!-- 3 · PEEK -->
+            <div class="moss__peek">
+              <button type="button" data-moss-open="start" aria-haspopup="dialog" aria-label="Not on the list? Ask Moss anything else">
+                <img src="img/moss-idle.webp" alt="" />
+                <span class="t" aria-hidden="true">
+                  <span class="who">Moss</span>
+                  <span>Not on the list? <span class="offer">Ask me anything else.</span></span>
+                </span>
+                <svg class="q__sign" viewBox="0 0 14 14" aria-hidden="true" fill="none"><path d="M7 1.75v10.5M2.5 7.5 7 12l4.5-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer aria-hidden="true">
+    <p>Let&rsquo;s start with a <em>conversation</em>.</p>
+  </footer>
+
+  <div class="scrim" data-moss-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-label="Moss" id="panel">
+    <header><img src="img/moss-head.webp" alt="" /> Moss <button type="button" data-moss-close aria-label="Close">×</button></header>
+    <div class="msg" id="panel-msg"></div>
+    <p class="note" id="panel-note"></p>
+  </div>
+
+<script>
+  const root = document.documentElement;
+  const notes = {
+    a: 'A — his layout: head in the left half, filled rows in the right; square corners instead of his 12px. Stacks below ~1000px.',
+    b: 'B — same split, but rows on hairlines with 01–05 in mono: the case-study register. Quieter; reads more like a document.',
+    c: 'C — our existing section head (centred serif line, like "Selected work"), the list centred under it, filled rows.',
+    1: '1 — Field: his row as-is (avatar, prompt, send arrow), but it is a button that opens Moss’s panel. Closest to the reference; risk: it looks typeable and isn’t.',
+    2: '2 — Chips: opens like the other rows; Moss offers three of his own questions, each opening his panel at that answer. Honest about what Moss is (buttons).',
+    3: '3 — Peek: Moss himself sits on the row with his “Psst” card voice. Most character; adds a second place Moss lives.',
+  };
+  const say = {
+    start: ['Ah. You found me.', 'I’m Moss. I look after this portfolio. Ask me something and I’ll point you at the good bits.'],
+    first: ['Oh, this one. I like this one.', 'The Okta Integration Network. Most recent, and open.'],
+    hardest: ['Pick one. She has a habit of arguing for the slower option.'],
+    locked: ['One. Rebuilding IAM at Okta is behind a password. I don’t have it. Tiny creature, limited access.'],
+  };
+  function paint() {
+    document.querySelectorAll('[data-set]').forEach(b => b.setAttribute('aria-pressed', root.dataset[b.dataset.set] === b.dataset.v));
+    document.getElementById('mock-note').textContent = notes[root.dataset.layout] + '  ·  ' + notes[root.dataset.moss];
+  }
+  document.querySelectorAll('[data-set]').forEach(b => b.addEventListener('click', () => { root.dataset[b.dataset.set] = b.dataset.v; paint(); }));
+  paint();
+
+  // One open at a time, like his. Closed answers are inert so their links
+  // aren't tabbable; aria-expanded on the button says the state.
+  const rows = [...document.querySelectorAll('.q')];
+  function setOpen(row, on) {
+    row.classList.toggle('is-open', on);
+    row.querySelector('.q__btn').setAttribute('aria-expanded', on);
+    row.querySelector('.q__panel').inert = !on;
+  }
+  rows.forEach(row => row.querySelector('.q__btn').addEventListener('click', () => {
+    const on = !row.classList.contains('is-open');
+    rows.forEach(r => setOpen(r, false));
+    setOpen(row, on);
+  }));
+
+  // Moss's panel stand-in: in the build this calls AskBubble's open(),
+  // jumping to the picked node of pixelTree.
+  let back = null;
+  function openMoss(key, from) {
+    back = from;
+    document.getElementById('panel-msg').innerHTML = say[key].map(s => `<p>${s}</p>`).join('');
+    document.getElementById('panel-note').textContent = `Stand-in. The real panel (AskBubble.astro) opens here at “${key}”, and carries on from there.`;
+    document.body.classList.add('is-moss');
+    document.querySelector('#panel [data-moss-close]').focus();
+  }
+  function closeMoss() { document.body.classList.remove('is-moss'); back?.focus(); }
+  document.querySelectorAll('[data-moss-open]').forEach(b => b.addEventListener('click', () => openMoss(b.dataset.mossOpen, b)));
+  document.querySelectorAll('[data-moss-close]').forEach(b => b.addEventListener('click', closeMoss));
+  addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('is-moss')) closeMoss(); });
+
+  // ?l=b&m=2&mode=dark, for linking straight to a combination
+  const p = new URLSearchParams(location.search);
+  if (p.get('l')) root.dataset.layout = p.get('l');
+  if (p.get('m')) root.dataset.moss = p.get('m');
+  if (p.get('mode')) root.dataset.mode = p.get('mode');
+  if (p.get('open')) setOpen(rows[+p.get('open') - 1], true);
+  paint();
+</script>
+</body>
+</html>

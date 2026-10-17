@@ -98,8 +98,10 @@ const { title, dek, action, photos } = beyond;
   }
   /* 32: above the far cards (1–31), under the near ones (33+). */
   .beyond__centre > * { position: relative; z-index: 32; }
+  /* Capped to the window's content width, not the stage's: on phones the
+     stage runs past the screen's edges. */
   .beyond__dek {
-    width: min(90%, 24rem);
+    width: min(calc(100vw - 2 * var(--gutter)), 24rem);
     margin: 1rem 0 0;
     color: var(--fg-dim);
     font-size: var(--step-body);

@@ -905,3 +905,54 @@
   --ease-ring-swap: cubic-bezier(0.77, 0, 0.175, 1);
   --dur-ring-press: 100ms;                  /* the pill's press and hover scale */
 }
+
+/* ============================================================
+   SMALL TALK (SmallTalk.astro, home page) — the short questions, before
+   the footer. On request, after andreas.vision's "Small talk"
+   (measured off his stylesheet, 2026-10-17), rule for rule: 8px between
+   cards, 20px padding, 17px questions and answers, answers capped at
+   30em, a + that turns to ×, the card's ground growing 3% on hover, and
+   the answer opening on a spring. Our fonts and role colours, not his.
+   The 12px corners are his, kept on request: an exception to the square
+   --radius rule, for this list only.
+   Contrast (on --bg, light / dark): soft 5.1 / 6.0, sign 4.0 / 4.6,
+   chip ink 6.4 / 7.7.
+   ============================================================ */
+:root {
+  --talk-soft: color-mix(in srgb, var(--fg) 62%, var(--bg));     /* answers, dek */
+  --talk-sign: color-mix(in srgb, var(--fg) 55%, var(--bg));     /* the + (his 42% fails 3:1) */
+  --talk-card: color-mix(in srgb, var(--fg) 1.5%, var(--bg));
+  --talk-chip: color-mix(in srgb, var(--fg) 5%, var(--bg));
+  --talk-chip-hover: color-mix(in srgb, var(--fg) 9%, var(--bg));
+  --talk-chip-ink: color-mix(in srgb, var(--fg) 68%, var(--bg));
+  --radius-talk: 12px;
+  --step-talk: 1.0625rem;          /* 17px */
+  --step-talk-chip: 0.9375rem;     /* 15px */
+  --talk-gap: 0.5rem;              /* between cards */
+  --talk-pad: 1.25rem;             /* 20px; 18px on the + side */
+  --talk-pad-end: 1.125rem;
+  /* Moss's field, his .ask.large: 12px around, 14px between, a 32px
+     send button in near-ink, faded to 16% until there's text (disabled
+     controls are exempt from contrast), 16px above the reply and pills */
+  --talk-ask-pad: 0.75rem;
+  --talk-ask-gap: 0.875rem;
+  --talk-ask-under: 1rem;
+  --talk-send: 2rem;
+  --talk-send-bg: color-mix(in srgb, var(--fg) 89%, var(--bg));
+  --talk-send-off: 0.16;
+  --talk-answer-max: 30em;
+  --talk-head-max: 22rem;          /* the dek */
+  --talk-moss: 1.75rem;            /* Moss at the field's start: his pet's 28px */
+  --talk-moss-shadow: color-mix(in srgb, var(--fg) 22%, transparent);
+  --dur-talk-grow: 300ms;          /* hover: the card's ground grows 3% */
+  --ease-talk-grow: cubic-bezier(0.77, 0, 0.175, 1);
+  --dur-talk-sign: 200ms;          /* + to × */
+  --dur-talk-open: 750ms;          /* the spring, settled */
+  /* A damped spring (ζ 0.62): ~8% overshoot at 390ms, settled by ~600.
+     His opens with ~7% overshoot and settles by ~600ms. */
+  --ease-talk-spring: linear(0, 0.017, 0.061, 0.127, 0.206, 0.295, 0.387, 0.48, 0.57, 0.655, 0.733, 0.803, 0.865, 0.918, 0.963, 0.999, 1.028, 1.05, 1.066, 1.076, 1.082, 1.084, 1.082, 1.079, 1.073, 1.067, 1.059, 1.052, 1.044, 1.036, 1.029, 1.023, 1.017, 1.012, 1.007, 1.003, 1, 0.998, 0.996, 0.995, 1);
+  --dur-talk-chip: 260ms;          /* each chip arriving, 40ms apart */
+}
+:root[data-mode='dark'] {
+  --talk-moss-shadow: rgb(0 0 0 / 0.55);
+}

@@ -1,0 +1,451 @@
+---
+/* SmallTalk.astro — "Small talk", the home page's short questions, just
+   before the footer. On request, after andreas.vision's section of the
+   same name, matched rule for rule off his stylesheet and his AskPanel
+   (SMALL TALK in tokens.css): head on the left, cards on the right
+   (stacked under 1200px), one card open at a time, and under them a
+   field: "Ask Moss anything else".
+
+   UX reason: the questions a recruiter asks on a first call (what she
+   does, where she is, what she wants next, how to reach her) answered
+   in one line each, without leaving the page; anything else goes to Moss.
+
+   Cards: the ground grows 3% under the pointer (fine pointers only), the
+   + turns to ×, and the answer opens on a spring (WAAPI, eased with
+   --ease-talk-spring, ~8% overshoot). Closed answers are height 0 and
+   inert, so their links aren't tabbable; aria-expanded says the state.
+   12px corners: his, kept on request — the one rounded list on the site.
+
+   The field, his behaviour: Moss (Pixel in the code), tiny and whole,
+   sits at its start; type a question and press Enter or the arrow (grey
+   and faded until there's text). A "thinking" line rotates, then Moss's
+   answer writes itself out under the field, then suggestion pills
+   appear, 40ms apart. A pill fills the field with its question and
+   answers at once. Escape clears the field; focusing it again selects
+   what's there. The space under the field grows on the same spring.
+   There is no model: a typed question is matched in the browser against
+   Moss's tree (pixelTree / pixelKeys in ask.ts), and when nothing fits
+   he says so (pixelUnknown) rather than guess. Nothing typed is sent
+   anywhere or kept. Answers go to screen readers once, through a polite
+   live region that's busy while the text writes.
+
+   Moss scrubs through his clip as the pointer crosses the band, like he
+   does with the hero, sways while thinking, and perks up when hovered.
+   Fine pointers and full motion only; frame 0 otherwise. Under reduced
+   motion: no spring, grow, sway, typing or pill arrival.
+
+   Questions and answers: src/data/talk.ts. [X] means hers to write. */
+import { talk, talkMoss } from '../data/talk';
+import { pixelTree, pixelKeys, pixelUnknown, pixelThinking } from '../data/ask';
+
+const sign = '<svg class="talk__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+const data = JSON.stringify({ tree: pixelTree, keys: pixelKeys, unknown: pixelUnknown, thinking: pixelThinking });
+---
+<section class="u-section u-shell talk" aria-labelledby="talk-h" data-talk>
+  <div class="talk__grid">
+    <div class="talk__head">
+      <h2 class="u-heading" id="talk-h">Small <em>talk</em></h2>
+      <p class="talk__dek">The short ones are here. For anything else, ask Moss.</p>
+    </div>
+
+    <div class="talk__body">
+      <ul class="talk__list">
+        {talk.map((t, i) => (
+          <li class="talk__card" data-talk-card>
+            <button class="talk__row" type="button" id={`talk-q${i}`} aria-expanded="false" aria-controls={`talk-a${i}`}>
+              <span class="talk__q">{t.q}</span>
+              <Fragment set:html={sign} />
+            </button>
+            <div class="talk__panel" id={`talk-a${i}`} role="region" aria-labelledby={`talk-q${i}`} inert>
+              <div class="talk__answer">
+                {t.a.map((p) => <p set:html={p} />)}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div class="talk__ask" data-talk-ask data-moss={data}>
+        <form class="ask">
+          <span class="talk__moss" aria-hidden="true"><span class="talk__moss-fig" data-talk-moss></span></span>
+          <input type="text" maxlength="280" autocomplete="off" placeholder={talkMoss.placeholder} aria-label={talkMoss.placeholder} />
+          <button type="submit" class="send" aria-label="Ask" disabled>
+            <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M12 6 7 1 2 6M7 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+        </form>
+        <div class="under-wrap"><div class="under" data-under></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* the playground line above already ends on --space-band */
+  .talk { padding-block: 0 var(--space-band); }
+  .talk__grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--col-gap); align-items: start; }
+  .talk__head { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--talk-pad); margin-bottom: var(--space-label); }
+  .talk__body { grid-column: 1 / -1; }
+  .talk__dek {
+    margin: 0; max-width: var(--talk-head-max); color: var(--talk-soft);
+    font-size: var(--step-talk); line-height: 1.42; letter-spacing: 0;
+  }
+  @media (min-width: 75rem) {
+    .talk__head { grid-column: 1 / 7; position: sticky; top: var(--space-band-tight); margin-bottom: 0; }
+    .talk__body { grid-column: 8 / 13; }
+  }
+
+  .talk__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--talk-gap); }
+  .talk__card { position: relative; isolation: isolate; border-radius: var(--radius-talk); }
+  .talk__card::before {
+    content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+    background: var(--talk-card);
+    transition: scale var(--dur-talk-grow) var(--ease-talk-grow);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .talk__card:hover::before { scale: 1.03; }
+  }
+
+  .talk__row {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    margin: 0; padding: var(--talk-pad) var(--talk-pad-end) var(--talk-pad) var(--talk-pad);
+    border: 0; border-radius: var(--radius-talk); background: none; color: var(--fg);
+    font: inherit; font-size: var(--step-talk); line-height: 1.4; letter-spacing: 0;
+    text-align: left; text-wrap: pretty; cursor: pointer;
+  }
+  .talk__row:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+  .talk__q { flex: 1; }
+  .talk__row :global(.talk__sign) {
+    flex: none; width: 1.25rem; height: 1.25rem; color: var(--talk-sign);
+    transition: transform var(--dur-talk-sign) ease-out;
+  }
+  .talk__row[aria-expanded='true'] :global(.talk__sign) { transform: rotate(45deg); }
+
+  .talk__panel { height: 0; overflow: clip; }
+  :global(.talk__card.is-open) .talk__panel { height: auto; }
+  .talk__answer {
+    display: flow-root; max-width: var(--talk-answer-max); padding: 0 var(--talk-pad) var(--talk-pad);
+    color: var(--talk-soft); font-size: var(--step-talk); line-height: 1.5; letter-spacing: 0; text-wrap: pretty;
+  }
+  .talk__answer :global(p) { margin: 0; }
+  .talk__answer :global(p + p) { margin-top: 0.75rem; }
+  .talk__answer :global(a), .under :global(a) { color: var(--fg); text-decoration: underline 1px; text-underline-offset: 3px; }
+  .talk__answer :global(a:hover), .under :global(a:hover) { color: var(--accent); }
+
+  /* ---- Moss's field (his .ask.large) ---- */
+  .talk__ask { margin-top: var(--talk-gap); }
+  .ask {
+    display: flex; align-items: center; gap: var(--talk-ask-gap);
+    padding: var(--talk-ask-pad) var(--talk-ask-pad) var(--talk-ask-pad) var(--talk-pad);
+    border-radius: var(--radius-talk); background: var(--talk-card);
+  }
+  .ask input {
+    flex: 1; min-width: 0; padding: 0.375rem 0; border: 0; outline: none; background: none;
+    color: var(--fg); font: inherit; font-size: var(--step-talk); line-height: 1.2; letter-spacing: 0; text-overflow: ellipsis;
+  }
+  /* Focus: none, exactly his (chosen on request over a deeper ground);
+     the caret is the only sign the field has focus. */
+  /* his placeholder is 28% ink and fails AA; ours is the lightest grey that passes */
+  .ask input::placeholder { color: var(--fg-dim); opacity: 1; }
+  @media (pointer: coarse) { .ask input { font-size: max(16px, var(--step-talk)); } }
+  .send {
+    display: grid; flex: none; place-items: center; width: var(--talk-send); height: var(--talk-send);
+    padding: 0; border: 0; border-radius: var(--radius-pill);
+    background: var(--talk-send-bg); color: var(--bg); cursor: pointer;
+    transition: opacity var(--dur-micro) ease-out, transform var(--dur-micro) ease-out;
+  }
+  .send svg { width: 1rem; height: 1rem; }
+  .send:disabled { opacity: var(--talk-send-off); cursor: default; }
+  .send:not(:disabled):active { transform: scale(0.94); }
+  .send:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .talk__moss {
+    position: relative; flex: none; width: var(--talk-moss); aspect-ratio: 188 / 223;
+    margin-block: -0.35rem -0.2rem;
+    transform-origin: 50% 100%;
+    transition: transform var(--dur-talk-sign) ease-out;
+  }
+  /* contact shadow: what sits him on the field */
+  .talk__moss::before {
+    content: ''; position: absolute; left: 50%; bottom: -8%; translate: -50% 0;
+    width: 100%; height: 18%; border-radius: 50%;
+    background: radial-gradient(closest-side, var(--talk-moss-shadow), transparent);
+  }
+  .talk__moss-fig { position: absolute; inset: 0; background: url(/images/moss/moss-sm.webp) center bottom / contain no-repeat; }
+  .talk__moss-fig.is-scrub { background: url(/images/moss/moss-sprite.webp) 0 0 / 800% 600% no-repeat; }
+  @media (hover: hover) and (pointer: fine) {
+    .ask:hover .talk__moss { transform: translateY(-3px) rotate(8deg); }
+  }
+  .talk__ask.is-thinking .talk__moss { animation: talk-sway 1.2s ease-in-out infinite; }
+  @keyframes talk-sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+
+  /* ---- under the field: reply, then pills ---- */
+  .under-wrap { overflow: clip; }
+  .under { display: grid; gap: var(--talk-ask-under); padding-top: var(--talk-ask-under); }
+  .under:empty { padding-top: 0; }
+  .under :global(.reply) { padding: 0 0.25rem; color: var(--talk-soft); font-size: var(--step-talk); line-height: 1.5; letter-spacing: 0; text-wrap: pretty; }
+  .under :global(.reply p) { margin: 0; }
+  .under :global(.reply p + p) { margin-top: 0.5rem; }
+  .under :global(.reply strong) { color: var(--fg); font-weight: inherit; }
+  .under :global(.thinking) { color: var(--fg-dim); }
+  .under :global(.answer), .under :global(.thinking) { animation: talk-arrive 220ms ease-out; }
+  .under :global(.links) { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; margin-top: 0.5rem; }
+  .under :global(.pills) { display: flex; flex-wrap: wrap; gap: 0.375rem; margin: 0; padding: 0; list-style: none; }
+  .under :global(.pills li) { animation: talk-arrive var(--dur-talk-chip) ease-out both; animation-delay: calc(var(--i) * 40ms); }
+  .under :global(.pills button) {
+    padding: 0.4375rem 0.875rem; border: 0; border-radius: var(--radius-pill);
+    background: var(--talk-chip); color: var(--talk-chip-ink);
+    font: inherit; font-size: var(--step-talk-chip); line-height: 1.4; letter-spacing: 0; text-align: left; cursor: pointer;
+    transition: background-color var(--dur-micro), color var(--dur-micro), transform var(--dur-micro);
+  }
+  @media (hover: hover) { .under :global(.pills button:hover) { background: var(--talk-chip-hover); color: var(--fg); } }
+  .under :global(.pills button:active) { transform: scale(0.97); }
+  .under :global(.pills button:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @keyframes talk-arrive { from { opacity: 0; transform: translateY(4px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .talk__card::before, .talk__row :global(.talk__sign), .talk__moss, .send { transition: none; }
+    .talk__ask.is-thinking .talk__moss { animation: none; }
+    .under :global(.answer), .under :global(.thinking), .under :global(.pills li) { animation: none; }
+  }
+</style>
+
+<script>
+  interface Link { label: string; title?: string; href: string; external?: boolean }
+  interface Node { q: string; say: string[]; cards?: Link[]; exits?: Link[]; next?: string[] }
+
+  const band = document.querySelector<HTMLElement>('[data-talk]');
+  const root = document.documentElement;
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const spring = getComputedStyle(root).getPropertyValue('--ease-talk-spring').trim() || 'ease-out';
+  const dur = parseFloat(getComputedStyle(root).getPropertyValue('--dur-talk-open')) || 750;
+
+  // Animate an element's height from what it was to what it is now.
+  function grow(el: HTMLElement, from: number) {
+    el.getAnimations().forEach((a) => a.cancel());
+    const to = el.getBoundingClientRect().height;
+    if (still.matches || Math.abs(to - from) < 1) return;
+    el.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: dur, easing: spring });
+  }
+
+  if (band) {
+    // ---- the cards: one open at a time ----
+    const cards = [...band.querySelectorAll<HTMLElement>('[data-talk-card]')];
+    function setOpen(card: HTMLElement, on: boolean) {
+      const btn = card.querySelector<HTMLButtonElement>('.talk__row')!;
+      const panel = card.querySelector<HTMLElement>('.talk__panel')!;
+      btn.setAttribute('aria-expanded', String(on));
+      panel.inert = !on;
+      if (card.classList.contains('is-open') === on) return;
+      const from = panel.getBoundingClientRect().height;
+      card.classList.toggle('is-open', on);
+      grow(panel, from);
+    }
+    cards.forEach((card) => card.querySelector('.talk__row')!.addEventListener('click', () => {
+      const on = !card.classList.contains('is-open');
+      cards.forEach((c) => c !== card && setOpen(c, false));
+      setOpen(card, on);
+    }));
+
+    // ---- Moss's field ----
+    const box = band.querySelector<HTMLElement>('[data-talk-ask]')!;
+    const form = box.querySelector('form')!;
+    const input = form.querySelector('input')!;
+    const send = form.querySelector<HTMLButtonElement>('.send')!;
+    const wrap = box.querySelector<HTMLElement>('.under-wrap')!;
+    const under = box.querySelector<HTMLElement>('[data-under]')!;
+    const { tree, keys, unknown, thinking } = JSON.parse(box.dataset.moss!) as {
+      tree: Record<string, Node>; keys: Record<string, string[]>; unknown: Node; thinking: string[];
+    };
+
+    let asked: string[] = [];
+    let current = '';      // the question now answered
+    let busy = false;
+    let run = 0;
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, still.matches ? 0 : ms));
+    const refresh = () => { send.disabled = !input.value.trim() || busy || input.value.trim() === current; };
+
+    // A typed question goes to the node whose words it hits most.
+    const norm = (s: string) => ` ${s.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, ' ').replace(/\s+/g, ' ')} `;
+    function match(text: string): string | null {
+      const t = norm(text);
+      let best: string | null = null, score = 0;
+      for (const [k, words] of Object.entries(keys)) {
+        const s = words.reduce((n, w) => n + (t.includes(` ${w} `) ? (w.includes(' ') ? 2 : 1) : 0), 0);
+        if (s > score) { best = k; score = s; }
+      }
+      return best;
+    }
+
+    // Everything under the field is rebuilt per state; its height follows.
+    function render(build: (u: HTMLElement) => void) {
+      const from = wrap.getBoundingClientRect().height;
+      under.replaceChildren();
+      build(under);
+      grow(wrap, from);
+    }
+    const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string) => {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      return e;
+    };
+    function replyBox(busyNow: boolean) {
+      const r = el('div', 'reply');
+      r.setAttribute('aria-live', 'polite');
+      r.setAttribute('aria-busy', String(busyNow));
+      return r;
+    }
+    function links(node: Node) {
+      const all = [...(node.cards ?? []).map((c) => ({ ...c, label: `${c.label}: ${c.title}` })), ...(node.exits ?? [])];
+      if (!all.length) return null;
+      const p = el('p', 'links');
+      all.forEach((l) => {
+        const a = el('a');
+        a.href = l.href;
+        a.textContent = l.label;
+        if (l.external || /^https?:/.test(l.href)) { a.target = '_blank'; a.rel = 'noopener'; }
+        p.append(a);
+      });
+      return p;
+    }
+    function pills(node: Node, focus: boolean) {
+      const ks = (node.next ?? []).filter((k) => k !== 'bye' && tree[k] && !asked.includes(k));
+      const fill = ['work', 'first', 'available', 'how', 'contact'].filter((k) => !asked.includes(k) && !ks.includes(k));
+      const list = [...ks, ...fill].slice(0, 3);
+      if (!list.length) return null;
+      const ul = el('ul', 'pills');
+      ul.setAttribute('aria-label', 'Questions to ask');
+      list.forEach((k, i) => {
+        const li = el('li');
+        li.style.setProperty('--i', String(i));
+        const b = el('button');
+        b.type = 'button';
+        b.textContent = tree[k].q;
+        b.addEventListener('click', () => { if (!busy) answer(k, false, true); });
+        li.append(b);
+        ul.append(li);
+      });
+      if (focus) requestAnimationFrame(() => ul.querySelector('button')?.focus({ preventScroll: true }));
+      return ul;
+    }
+
+    // Type the reply out paragraph by paragraph (visual only; the live
+    // region is busy until it's whole).
+    async function typeOut(p: HTMLElement, html: string, id: number) {
+      const text = Object.assign(document.createElement('div'), { innerHTML: html }).textContent ?? '';
+      if (!still.matches) {
+        for (let i = 1; i <= text.length; i += 2) {
+          if (id !== run) return;
+          p.textContent = text.slice(0, i);
+          await wait(/[.?!…]/.test(text[i - 1]) ? 180 : 18);
+        }
+      }
+      p.innerHTML = html;   // only ever our own strings from ask.ts
+    }
+
+    // key: a node of the tree, or null for "not on the site".
+    // typed: thinking first and type it out; a pill answers at once, like
+    // his written answers.
+    async function answer(key: string | null, typed: boolean, fromPill = false) {
+      const id = ++run;
+      const node = key ? tree[key] : unknown;
+      if (key) asked.push(key);
+      if (!typed) input.value = node.q || input.value;
+      current = input.value.trim();
+      busy = true;
+      input.readOnly = true;
+      refresh();
+
+      if (typed) {
+        box.classList.add('is-thinking');
+        const line = el('p', 'thinking');
+        const start = (Math.random() * thinking.length) | 0;
+        render((u) => { const r = replyBox(true); r.append(line); u.append(r); });
+        for (let i = 0; i < 2 && id === run; i++) {
+          line.textContent = thinking[(start + i) % thinking.length];
+          await wait(i ? 700 : 900);
+        }
+        box.classList.remove('is-thinking');
+        if (id !== run) return;
+      }
+
+      const r = replyBox(typed);
+      const ans = el('div', 'answer');
+      r.append(ans);
+      const paras = node.say.map(() => ans.appendChild(el('p')));
+      if (typed) {
+        render((u) => u.append(r));
+        for (let i = 0; i < node.say.length; i++) {
+          const from = wrap.getBoundingClientRect().height;
+          await typeOut(paras[i], node.say[i], id);
+          if (id !== run) return;
+          grow(wrap, from);
+        }
+      } else {
+        node.say.forEach((s, i) => { paras[i].innerHTML = s; });
+      }
+      const l = links(node);
+      const pl = pills(node, fromPill);
+      const finish = (u: HTMLElement) => {
+        if (l) ans.append(l);
+        r.setAttribute('aria-busy', 'false');
+        if (!u.contains(r)) u.append(r);
+        if (pl) u.append(pl);
+      };
+      if (typed) {
+        const from = wrap.getBoundingClientRect().height;
+        finish(under);
+        grow(wrap, from);
+      } else {
+        render(finish);
+      }
+      busy = false;
+      input.readOnly = false;
+      refresh();
+    }
+
+    input.addEventListener('input', refresh);
+    input.addEventListener('focus', () => { if (current) input.select(); });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { input.value = ''; refresh(); } });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (!q || busy || q === current) return;
+      answer(match(q), true);
+    });
+
+    // ---- the scrub: the pointer's x across the band picks a frame of
+    // his 48-frame clip, as in the hero; leaving eases back to frame 0.
+    // The sprite is fetched only when the band nears the screen. ----
+    const fig = band.querySelector<HTMLElement>('[data-talk-moss]');
+    if (fig && matchMedia('(hover: hover) and (pointer: fine)').matches && !still.matches) {
+      const COLS = 8, ROWS = 6, N = 48;
+      const io = new IntersectionObserver(([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        const img = new Image();
+        img.src = '/images/moss/moss-sprite.webp';
+        img.decode().then(() => {
+          let cur = 0, target = 0, raf = 0;
+          const show = (f: number) => {
+            const i = Math.round(f) % N;
+            fig.style.backgroundPosition = `${((i % COLS) / (COLS - 1)) * 100}% ${(Math.floor(i / COLS) / (ROWS - 1)) * 100}%`;
+          };
+          const tick = () => {
+            cur += (target - cur) * 0.18;
+            show(cur);
+            raf = Math.abs(target - cur) > 0.3 ? requestAnimationFrame(tick) : (show(target), 0);
+          };
+          const go = (t: number) => { target = t; if (!raf) raf = requestAnimationFrame(tick); };
+          show(0);
+          fig.classList.add('is-scrub');
+          band.addEventListener('pointermove', (ev) => {
+            const r = band.getBoundingClientRect();
+            go(Math.min(N - 1, Math.max(0, ((ev.clientX - r.left) / r.width) * (N - 1))));
+          });
+          band.addEventListener('pointerleave', () => go(0));
+        }).catch(() => {});
+      }, { rootMargin: '400px' });
+      io.observe(band);
+    }
+  }
+</script>
