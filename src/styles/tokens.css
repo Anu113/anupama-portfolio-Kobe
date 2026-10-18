@@ -867,7 +867,12 @@
    his section's, kept on request. Type is ours.
    ============================================================ */
 :root {
-  --ring-h: clamp(40rem, 100svh, 56rem);   /* the band: one screen, capped */
+  /* A little over a screen. Clearance around the words comes from the
+     ring's shape (data/beyond.ts: the far arc lifted above the head, the
+     near arc dropped below the pills), not from a tall band, which made
+     the ring rounder (option E of experiments/beyond-work/oval.html). */
+  --ring-h: clamp(46rem, 116svh, 66rem);
+  --ring-tail: var(--space-band);          /* extra room under the ring, before the playground line */
   /* The ring is laid out inside the page's content edge, not the window:
      its stage is inset by --gutter plus this, as on the reference, so on
      wide screens it centres on the same column as everything else instead
