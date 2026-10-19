@@ -1,0 +1,565 @@
+---
+/* PlayBall — /playground's one screen. On request, a copy of
+   andreas.vision/play, measured off his page on 2026-10-19 (the mocks are
+   in experiments/playground-views/exact.html):
+
+   Cloud  ~120 cards on a ball, facing you, turning slowly about the
+          vertical. Drag spins it like a globe, any direction, and a throw
+          keeps spinning, easing back to the drift. Over a card the drift
+          slows and the card lifts toward you with a shadow; the ball leans
+          a little toward the pointer. "A place for endless
+          experimentation" sits in the middle: the far half of the ball is
+          drawn under it, the near half over it, and cards part around the
+          words so they stay readable. Click a card to open the piece.
+   Grid   the switch pours the ball into one pile per category: the ball
+          holds still and cards leave from the bottom up, one after
+          another, each dropping into its pile, the labels there from the
+          start. Back to Cloud plays it in reverse. Click a pile (or its
+          label) and its pieces lay out in one strip you can drag or move
+          with the arrow keys; ✕ or Escape puts them back.
+
+   Why it's built like this: the ball is drawn on two canvases (behind and
+   in front of the title), as his is in WebGL — 120 rounded DOM layers in
+   CSS 3D ran at ~30fps. The DOM cards stay for keyboard focus, screen
+   readers and the grid, and are invisible in the ball. The 41 pieces
+   repeat to fill it; repeats are aria-hidden and sink out of sight into
+   their pile.
+   Its reason: the playground's work is seen whole at a glance, and the
+   grid sorts it by kind in one press.
+
+   A11y: the stage is one focus stop (arrow keys turn the ball); each
+   real piece is a button ("Open …") that shows where it is when
+   focused; piles are buttons; the opened piece is a dialog that keeps
+   focus and closes on Escape. Under reduced motion nothing drifts or
+   leans and every move is instant.
+   Pieces, categories and the ball's numbers: data/playground.ts.
+   Thumbnails: scripts/playground-thumbs.py. Values: PLAYGROUND in
+   tokens.css. */
+import { playCategories, playThumb, ball } from '../data/playground';
+
+const pieces = playCategories.flatMap(c => c.pieces.map(p => ({
+  src: `/images/${p.file}`,
+  thumb: playThumb(p.file),
+  aspect: Math.min(1.9, Math.max(0.56, p.aspect)),
+  caption: p.caption,
+  cat: c.id,
+  video: p.video ? `/images/${p.video}` : undefined,
+})));
+const cats = playCategories.map(c => ({ id: c.id, name: c.name, n: c.pieces.length }));
+const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelTile) } };
+---
+<section class="playball" data-mode="cloud" aria-labelledby="playball-title" data-config={JSON.stringify(config)}>
+  <h1 id="playball-title" class="playball__h">Playground: sketches, interfaces, art and photos by Anupama Mishra</h1>
+  <div class="playball__space">
+    <canvas class="playball__gl" data-gl="back" aria-hidden="true"></canvas>
+    <p class="playball__title" aria-hidden="true">A place for <em>endless</em><br />experimentation</p>
+    <canvas class="playball__gl" data-gl="front" aria-hidden="true"></canvas>
+    <div class="playball__stage" role="group" tabindex="0"
+         aria-label="Work ball. Drag or use the arrow keys to turn it, and choose a card to open it."></div>
+  </div>
+
+  <div class="playball__striphead">
+    <div><h2 class="playball__stripname"></h2><p class="playball__stripcount"></p></div>
+    <button type="button" class="playball__close" data-close="strip" aria-label="Back to the piles">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12"/></svg>
+    </button>
+  </div>
+
+  <nav class="playball__switch" data-mode="cloud" aria-label="Layout">
+    <button type="button" class="playball__word" data-to="cloud" aria-pressed="true">Cloud</button>
+    <button type="button" class="playball__tile" data-to="toggle" aria-label="Sort the work into a grid">
+      <span class="playball__whole"><img alt="" /></span>
+      <span class="playball__q playball__q0"><img alt="" /></span><span class="playball__q playball__q1"><img alt="" /></span>
+      <span class="playball__q playball__q2"><img alt="" /></span><span class="playball__q playball__q3"><img alt="" /></span>
+    </button>
+    <button type="button" class="playball__word" data-to="grid" aria-pressed="false">Grid</button>
+  </nav>
+
+  <div class="playball__viewer" role="dialog" aria-modal="true" aria-label="Piece" hidden>
+    <button type="button" class="playball__close" data-close="viewer" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12"/></svg>
+    </button>
+    <figure class="playball__fig"></figure>
+  </div>
+</section>
+
+<style is:global>
+  /* Global, prefixed .playball: the cards and labels are made by the
+     script, so scoped styles wouldn't reach them. */
+  .playball {
+    --card: var(--play-card);
+    --card-radius: var(--radius-play-card);
+    position: relative; height: var(--play-h); overflow: hidden;
+    background: var(--bg); color: var(--fg);
+  }
+  @media (max-width: 1199.98px) { .playball { --card: var(--play-card-md); --card-radius: var(--radius-play-card-md); } }
+  @media (max-width: 809.98px) { .playball { --card: var(--play-card-sm); --card-radius: var(--radius-play-card-sm); } }
+  .playball__h { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; }
+  .playball__space { position: absolute; inset: 0; }
+  .playball__gl { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .playball:not([data-mode='cloud']):not([data-mode^='pouring']) .playball__gl { visibility: hidden; }
+
+  .playball__title {
+    position: absolute; left: 50%; top: 50%; translate: -50% -50%; margin: 0; width: max-content;
+    text-align: center; pointer-events: none;
+    font-family: var(--font-serif); font-weight: var(--weight-serif); font-size: var(--step-play-title);
+    letter-spacing: var(--tracking-serif); line-height: 1.05;
+    transition: opacity var(--dur-micro) var(--ease-fade);
+  }
+  .playball__title em { font-style: italic; }
+  .playball:not([data-mode='cloud']):not([data-mode='pouring-back']) .playball__title { opacity: 0; }
+
+  .playball__stage { position: absolute; inset: 0; user-select: none; outline: none; }
+  .playball[data-mode='cloud'] .playball__stage { cursor: grab; touch-action: pan-y; }
+  .playball[data-mode='cloud'] .playball__stage.is-dragging { cursor: grabbing; touch-action: none; }
+  .playball.strip-open .playball__stage { cursor: grab; touch-action: pan-y; }
+  .playball__stage:focus-visible { outline: 2px solid var(--fg); outline-offset: -8px; border-radius: 12px; }
+
+  .playball__card, .playball__label {
+    position: absolute; top: 50%; left: 50%; margin: 0; padding: 0; border: 0; background: none;
+    font: inherit; color: inherit; -webkit-tap-highlight-color: transparent;
+  }
+  .playball__card { width: var(--card); border-radius: var(--card-radius); cursor: pointer; }
+  .playball:not([data-mode='cloud']) .playball__card { will-change: transform; }
+  .playball__card.is-moving { transition: transform var(--dur-play-strip) var(--ease-play), border-radius var(--dur-play-strip) var(--ease-play); }
+  /* in the ball the canvas draws the cards; the DOM ones only show when focused */
+  .playball[data-mode='cloud'] .playball__card:not(:focus-visible),
+  .playball[data-mode^='pouring'] .playball__card { opacity: 0; pointer-events: none; }
+  .playball__card.is-gone { opacity: 0; pointer-events: none; }
+  .playball__face { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: inherit; background: var(--play-placeholder); }
+  .playball__face img, .playball__face video { width: 100%; height: 100%; display: block; object-fit: cover; pointer-events: none; transition: scale var(--dur-play-zoom) var(--ease-play); }
+  @media (hover: hover) and (pointer: fine) { .playball__card:hover .playball__face > * { scale: 1.06; } }
+  .playball__stage.is-dragging .playball__face > * { scale: none; }
+  .playball__card:focus-visible { outline: none; }
+  .playball__card:focus-visible .playball__face { outline: 3px solid var(--fg); outline-offset: 4px; overflow: visible; }
+
+  .playball__label {
+    display: flex; flex-direction: column; align-items: center; gap: 2px; white-space: nowrap;
+    opacity: 0; pointer-events: none; cursor: pointer; transition: opacity var(--dur-micro) var(--ease-fade);
+  }
+  .playball[data-mode='grid']:not(.strip-open) .playball__label { opacity: 1; pointer-events: auto; }
+  .playball[data-mode='pouring'] .playball__label { opacity: 1; }   /* his labels are there as the pour starts */
+  .playball__label:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; border-radius: 4px; }
+  .playball__label-text { font-size: var(--step-play-label); line-height: 1.2; }
+  .playball__label-note { font-size: var(--step-copy); color: var(--fg-dim); font-variant-numeric: tabular-nums; }
+  @media (max-width: 1199.98px) { .playball__label-text { font-size: var(--step-play-label-md); } }
+  @media (max-width: 809.98px) { .playball__label-text { font-size: var(--step-play-label-sm); } }
+
+  .playball__striphead {
+    position: absolute; left: var(--gutter); right: var(--gutter); top: var(--play-strip-top);
+    display: flex; justify-content: space-between; align-items: flex-start; z-index: 3;
+    opacity: 0; pointer-events: none; transition: opacity var(--dur-micro) var(--ease-fade);
+  }
+  .playball.strip-open .playball__striphead { opacity: 1; pointer-events: auto; }
+  .playball__stripname { margin: 0; font-size: var(--step-title); line-height: 1.1; }
+  .playball__stripcount { margin: var(--play-count-gap) 0 0; font-size: var(--step-copy); color: var(--fg-dim); }
+  .playball.strip-open .playball__card { border-radius: calc(var(--radius-play-strip) / var(--s, 1)); }
+
+  .playball__close {
+    width: var(--play-close); height: var(--play-close); border-radius: var(--radius-pill); border: 0; padding: 0;
+    background: var(--fg); color: var(--bg); cursor: pointer; display: grid; place-items: center;
+    transition: transform var(--dur-play-press) var(--ease-fade);
+  }
+  .playball__close:hover { transform: scale(1.04); }
+  .playball__close:active { transform: scale(0.94); }
+  .playball__close:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+
+  /* Cloud [tile] Grid */
+  .playball__switch {
+    position: absolute; left: 50%; bottom: var(--play-switch-bottom); z-index: 4; display: flex; align-items: center;
+    gap: var(--play-switch-gap); padding: var(--play-switch-pad); border-radius: var(--radius-pill);
+    background: var(--bg); box-shadow: 0 0 0 1px var(--play-switch-ring); transform: translateX(-50%);
+  }
+  .playball__switch button { margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .playball__switch button:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+  .playball__switch .playball__word { min-width: 44px; padding: var(--play-switch-word-pad); font-size: var(--step-play-switch); color: var(--fg-dim); transition: color var(--dur-play-press) var(--ease-fade); }
+  .playball__switch .playball__word:hover, .playball__switch .playball__word[aria-pressed='true'] { color: var(--fg); }
+  .playball__tile { position: relative; width: var(--play-switch-tile); height: var(--play-switch-tile); overflow: hidden; transition: transform var(--dur-play-press) var(--ease-fade); }
+  .playball__tile:hover { transform: scale(1.04); }
+  .playball__tile:active { transform: scale(0.94); }
+  .playball__whole, .playball__q { position: absolute; overflow: hidden; }
+  .playball__whole { inset: 0; transition: opacity var(--dur-play-press) var(--ease-fade) var(--dur-play-tile-hold); }
+  .playball__q { width: 50%; height: 50%; transition: transform var(--dur-play-tile) var(--ease-play-spring); }
+  .playball__q0 { top: 0; left: 0; } .playball__q1 { top: 0; left: 50%; } .playball__q2 { top: 50%; left: 0; } .playball__q3 { top: 50%; left: 50%; }
+  .playball__switch img { position: absolute; width: var(--play-switch-tile); height: var(--play-switch-tile); display: block; image-rendering: pixelated; pointer-events: none; }
+  .playball__q1 img, .playball__q3 img { left: -100%; }
+  .playball__q2 img, .playball__q3 img { top: -100%; }
+  .playball__switch[data-mode='grid'] .playball__whole { opacity: 0; transition: opacity var(--dur-play-press) var(--ease-fade); }
+  .playball__switch[data-mode='grid'] .playball__q { transform: scale(0.8); }
+  @media (max-width: 809.98px) { .playball__switch { bottom: var(--play-switch-bottom-sm); gap: var(--play-switch-gap-sm); } }
+
+  .playball__viewer { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: var(--play-scrim); }
+  .playball__viewer[hidden] { display: none; }
+  .playball__fig { margin: 0; max-width: min(1000px, 88vw); }
+  .playball__fig img, .playball__fig video { display: block; max-width: 100%; max-height: 74vh; border-radius: var(--radius-play-card); margin-inline: auto; }
+  .playball__fig figcaption { margin-top: var(--play-caption-gap); text-align: center; font-size: var(--step-copy); color: var(--fg-dim); }
+  .playball__viewer .playball__close { position: absolute; top: var(--play-strip-top); right: var(--gutter); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .playball__card.is-moving, .playball__face img, .playball__face video, .playball__whole, .playball__q,
+    .playball__tile, .playball__word, .playball__title, .playball__label, .playball__striphead { transition: none; }
+  }
+</style>
+
+<script>
+  type Piece = { src: string; thumb: string; aspect: number; caption: string; cat: string; video?: string; sprite?: HTMLCanvasElement };
+  type Cat = { id: string; name: string; n: number; label?: HTMLButtonElement; labelAt?: { x: number; y: number } };
+  type Pose = { x: number; y: number; k: number; z: number; w: number };
+  type Card = { p: Piece; echo: boolean; el: HTMLButtonElement; home: number[]; hov: number; q?: Pose };
+
+  for (const root of document.querySelectorAll<HTMLElement>('.playball')) init(root);
+
+  function init(root: HTMLElement) {
+    const cfg = JSON.parse(root.dataset.config!);
+    const pieces: Piece[] = cfg.pieces, CATS: Cat[] = cfg.cats, B = cfg.ball;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    const css = (n: string) => getComputedStyle(root).getPropertyValue(n).trim();
+    const ms = (n: string) => reduce ? 0 : parseFloat(css(n)) || 0;
+    const stage = root.querySelector<HTMLElement>('.playball__stage')!;
+    const back = root.querySelector<HTMLCanvasElement>('[data-gl="back"]')!, front = root.querySelector<HTMLCanvasElement>('[data-gl="front"]')!;
+    const g2 = back.getContext('2d')!, g3 = front.getContext('2d')!;
+    const titleEl = root.querySelector<HTMLElement>('.playball__title')!;
+    const viewer = root.querySelector<HTMLElement>('.playball__viewer')!, fig = root.querySelector<HTMLElement>('.playball__fig')!;
+    const sw = root.querySelector<HTMLElement>('.playball__switch')!;
+    const GOLD = Math.PI * (3 - Math.sqrt(5));
+    let W = 0, H = 0, lens = { ax: 160, ay: 60 };
+
+    // ---- pieces mixed so neighbours differ, then cards: real ones first, repeats after
+    const mixed: Piece[] = [];
+    { const by = CATS.map(c => pieces.filter(p => p.cat === c.id)); for (let r = 0; mixed.length < pieces.length; r++) by.forEach(l => l[r] && mixed.push(l[r])); }
+    const cards: Card[] = [];
+    for (let i = 0; i < B.cards; i++) {
+      const p = mixed[i % mixed.length], echo = i >= mixed.length;
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = 'playball__card'; el.style.aspectRatio = `${p.aspect} / 1`;
+      if (echo) { el.tabIndex = -1; el.setAttribute('aria-hidden', 'true'); } else el.setAttribute('aria-label', 'Open ' + p.caption);
+      el.innerHTML = `<span class="playball__face">${p.video
+        ? `<video src="${p.video}" poster="${p.thumb}" muted loop playsinline preload="none"></video>`
+        : `<img src="${p.thumb}" alt="" decoding="async" loading="lazy">`}</span>`;
+      // even points on the skin make the outline round; the rest fill the middle
+      const inner = i >= B.shell, j = inner ? i - B.shell : i, n = inner ? B.cards - B.shell : B.shell, rr = inner ? 0.55 : 1;
+      const k = (j + 0.5) / n, y = 1 - 2 * k, r = Math.sqrt(1 - y * y), a = j * GOLD + (inner ? 1 : 0);
+      const card: Card = { p, echo, el, home: [Math.cos(a) * r * rr, y * rr, Math.sin(a) * r * rr], hov: 0 };
+      el.addEventListener('click', () => onCard(card));
+      el.addEventListener('focus', () => { if (mode === 'cloud') focusCard = card; });
+      el.addEventListener('blur', () => { if (focusCard === card) focusCard = null; });
+      stage.appendChild(el); cards.push(card);
+    }
+    let focusCard: Card | null = null;
+
+    for (const c of CATS) {
+      const l = document.createElement('button');
+      l.type = 'button'; l.className = 'playball__label';
+      l.innerHTML = `<span class="playball__label-text">${c.name}</span><span class="playball__label-note">${c.n} pieces</span>`;
+      l.setAttribute('aria-label', `${c.name}, ${c.n} pieces. Open`);
+      l.addEventListener('click', () => openStrip(c.id));
+      stage.appendChild(l); c.label = l;
+    }
+
+    // ---- the switch's pixel tile: her painting at 12×12
+    { const img = new Image(); img.src = B.pixelTile;
+      img.onload = () => { const cv = document.createElement('canvas'); cv.width = cv.height = 12; const x = cv.getContext('2d')!;
+        const s = Math.min(img.width, img.height); x.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 12, 12);
+        const url = cv.toDataURL(); sw.querySelectorAll('img').forEach(i => (i.src = url)); }; }
+
+    // ---- sprites: each piece pre-cut once with its rounded corners, so a frame is just drawImage
+    const cardW = () => parseFloat(getComputedStyle(cards[0].el).width) || 160;
+    const corner = () => parseFloat(getComputedStyle(cards[0].el).borderTopLeftRadius) || 20;
+    function cut(p: Piece) {
+      const img = new Image(); img.decoding = 'async'; img.src = p.thumb;
+      img.onload = () => {
+        const w = Math.round(cardW() * B.scale * 1.8 * dpr), h = Math.round(w / p.aspect), r = w * corner() / cardW();
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        const x = cv.getContext('2d')!;
+        x.beginPath(); x.roundRect(0, 0, w, h, r); x.clip();
+        const s = Math.max(w / img.width, h / img.height);
+        x.drawImage(img, (w - img.width * s) / 2, (h - img.height * s) / 2, img.width * s, img.height * s);
+        p.sprite = cv;
+      };
+    }
+    pieces.forEach(cut);
+
+    function size() {
+      W = root.clientWidth; H = root.clientHeight;
+      for (const c of [back, front]) { c.width = W * dpr; c.height = H * dpr; }
+      const r = titleEl.getBoundingClientRect(); lens = { ax: r.width / 2 + 18, ay: r.height / 2 + 12 };
+    }
+    size();
+    document.fonts?.ready.then(size);
+
+    // ---- orientation: a rotation matrix, so it turns about any axis like a globe
+    let M = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+    const spin = { x: 0, y: 0 }, lean = { x: 0, y: 0 };
+    const mul = (A: number[], Bm: number[]) => [0, 1, 2].flatMap(r => [0, 1, 2].map(c => A[r * 3] * Bm[c] + A[r * 3 + 1] * Bm[3 + c] + A[r * 3 + 2] * Bm[6 + c]));
+    const Ry = (a: number) => { const c = Math.cos(a), s = Math.sin(a); return [c, 0, s, 0, 1, 0, -s, 0, c]; };   // + moves the front right
+    const Rx = (a: number) => { const c = Math.cos(a), s = Math.sin(a); return [1, 0, 0, 0, c, -s, 0, s, c]; };   // − moves the front down
+    function turn(ax: number, ay: number) {
+      M = mul(mul(Ry(ax), Rx(ay)), M);
+      const n = (v: number[]) => { const l = Math.hypot(...v); return v.map(x => x / l); };   // keep it a clean rotation
+      const a = n(M.slice(0, 3)); let b = M.slice(3, 6); const d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; b = n(b.map((x, i) => x - d * a[i]));
+      M = [...a, ...b, a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+    }
+    turn(0, 0.2);
+
+    function project(c: Card): Pose {
+      let [x, y, z] = c.home;
+      [x, y, z] = [M[0] * x + M[1] * y + M[2] * z, M[3] * x + M[4] * y + M[5] * z, M[6] * x + M[7] * y + M[8] * z];
+      const cl = Math.cos(lean.x), sl = Math.sin(lean.x); [x, z] = [x * cl + z * sl, -x * sl + z * cl];
+      const cm = Math.cos(lean.y), sm = Math.sin(lean.y); [y, z] = [y * cm - z * sm, y * sm + z * cm];
+      // his size on wide screens; on phones it keeps most of the width rather than shrinking with it
+      const R = Math.min(B.radius, Math.max(B.radius * Math.min(1, W / 1100, H / 880), Math.min(W * 0.44, H * 0.3))), k = B.perspective / (B.perspective - z * R);
+      const w = cardW() * B.scale * k, h = w / c.p.aspect;
+      let dx = x * R * k, dy = y * R * k;
+      // part around the title: anything whose edge would cover it slides out to an
+      // ellipse round the words (continuous, so cards glide rather than jump)
+      const ex = lens.ax + w / 2, ey = lens.ay + h / 2, d = Math.hypot(dx / ex, dy / ey), EDGE = 1.3;
+      if (d < EDGE) { const nd = 1 + (d / EDGE) * (EDGE - 1); if (d > 1e-3) { dx *= nd / d; dy *= nd / d; } else { dx = ex; dy = 0; } }
+      return { x: W / 2 + dx, y: H / 2 + dy, k, z, w };
+    }
+    function domTo(c: Card, q: Pose) {   // the same pose as a flat DOM transform, for a focused card
+      c.el.style.transform = `translate(-50%, -50%) translate(${q.x - W / 2}px, ${q.y - H / 2}px) scale(${B.scale * q.k})`;
+      c.el.style.zIndex = String(Math.round(500 + q.z * 400));
+    }
+
+    function drawCard(g: CanvasRenderingContext2D, c: Card, x: number, y: number, w: number, rot = 0, lift = 0) {
+      const h = w / c.p.aspect;
+      g.save(); g.translate(x, y); if (rot) g.rotate(rot * Math.PI / 180);
+      if (lift > 0.01) { g.shadowColor = css('--play-shadow'); g.shadowBlur = 28 * lift; g.shadowOffsetY = 10 * lift; }
+      if (c.p.sprite) g.drawImage(c.p.sprite, -w / 2, -h / 2, w, h);
+      else { g.fillStyle = css('--play-placeholder'); g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, w * corner() / cardW()); g.fill(); }
+      g.restore();
+    }
+    const clear = () => { for (const g of [g2, g3]) { g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H); } };
+
+    let hoverCard: Card | null = null, hoverAmt = 0, pointer: { x: number; y: number } | null = null;
+    function drawBall() {
+      clear();
+      const list = cards.map(c => ({ c, q: project(c) })).sort((a, b) => a.q.z - b.q.z);
+      let hit: Card | null = null;
+      if (pointer && !dragging) for (let i = list.length - 1; i >= 0; i--) {
+        const { q, c } = list[i], h = q.w / c.p.aspect;
+        if (Math.abs(pointer.x - q.x) < q.w / 2 && Math.abs(pointer.y - q.y) < h / 2) { hit = c; break; }
+      }
+      stage.style.cursor = hit ? 'pointer' : '';
+      hoverAmt += ((hit ? 1 : 0) - hoverAmt) * 0.12;
+      const lifted: { c: Card; q: Pose }[] = [];
+      for (const { c, q } of list) {
+        c.hov += ((c === hit ? 1 : 0) - c.hov) * (reduce ? 1 : 0.2);   // the hovered card lifts toward you, to the front
+        c.q = q;
+        if (c.hov > 0.01) { lifted.push({ c, q }); continue; }
+        drawCard(q.z < 0 ? g2 : g3, c, q.x, q.y, q.w);   // far half under the title, near half over it
+      }
+      lifted.sort((a, b) => a.c.hov - b.c.hov).forEach(({ c, q }) => drawCard(g3, c, q.x, q.y, q.w * (1 + B.hoverLift * c.hov), 0, c.hov));
+      hoverCard = hit;
+      if (focusCard?.q) domTo(focusCard, focusCard.q);
+    }
+
+    // ---- grid: a pile per category, five-across spacing like his
+    function pileTargets() {
+      // one row of piles; two by two where a row would crowd the labels
+      const cols = W < 640 ? 2 : CATS.length, rows = Math.ceil(CATS.length / cols);
+      const gap = Math.min(220, cols === CATS.length ? (W - 96) / cols : (W - 32) / cols), rowGap = gap * 1.1, cw = cardW(), T = new Map<Card, any>();
+      CATS.forEach((c, ci) => {
+        const col = ci % cols, row = Math.floor(ci / cols);
+        const x = (col - (cols - 1) / 2) * gap, y0 = -H * 0.06 + (row - (rows - 1) / 2) * rowGap;
+        const fit = (k: Card) => Math.min(gap * 0.84 / cw, gap * 0.6 / (cw / k.p.aspect));   // one box per pile, so a tall phone doesn't outgrow it
+        cards.filter(k => !k.echo && k.p.cat === c.id).forEach((k, j) => {
+          const seed = Math.sin((ci * 31 + j + 1) * 12.9898) * 43758.5453, r = seed - Math.floor(seed) - 0.5, top = j < 4;
+          T.set(k, { x: x + (top ? r * 10 : 0), y: y0 - (top ? j * 2 : 0), rot: top ? r * 12 : 0, s: fit(k), z: 100 - j, hidden: !top && j > 6 });
+        });
+        cards.filter(k => k.echo && k.p.cat === c.id).forEach(k => T.set(k, { x, y: y0, rot: 0, s: fit(k), z: 0, hidden: true }));   // repeats sink into their pile
+        c.labelAt = { x, y: y0 + gap * 0.36 };
+      });
+      return T;
+    }
+    function pileLayout() {
+      const T = pileTargets();
+      for (const k of cards) {
+        const t = T.get(k);
+        k.el.style.setProperty('--s', '1');
+        k.el.style.transform = `translate(-50%, -50%) translate(${t.x}px, ${t.y}px) rotate(${t.rot}deg) scale(${t.s})`;
+        k.el.style.zIndex = String(t.z); k.el.classList.toggle('is-gone', t.hidden);
+        if (!k.echo) k.el.tabIndex = -1;   // in the piles, the labels are the controls
+      }
+      for (const c of CATS) c.label!.style.transform = `translate(-50%, 0) translate(${c.labelAt!.x}px, ${c.labelAt!.y}px)`;
+    }
+
+    // ---- an open pile: one strip, dragged sideways
+    let open: string | null = null, stripX = 0, stripMax = 0;
+    function stripLayout(stagger = true) {
+      const list = cards.filter(k => !k.echo && k.p.cat === open);
+      const h = Math.min(320, H * 0.42), gap = 16, cw = cardW(), room = W - 2 * parseFloat(getComputedStyle(root.querySelector('.playball__striphead')!).left);
+      const total = list.reduce((a, k) => a + h * k.p.aspect + gap, -gap);
+      stripMax = Math.max(0, total - room);
+      let x = -Math.min(total, room) / 2 - stripX;
+      list.forEach((k, j) => {
+        const wv = h * k.p.aspect, s = wv / cw;
+        k.el.style.setProperty('--s', String(s));   // 8px corners on screen, whatever the scale
+        k.el.style.transform = `translate(-50%, -50%) translate(${x + wv / 2}px, 20px) rotate(0deg) scale(${s})`;
+        k.el.style.transitionDelay = stagger && !reduce ? `${j * 18}ms` : '';
+        k.el.style.zIndex = '10'; k.el.tabIndex = 0;
+        const img = k.el.querySelector('img'); if (img && !img.dataset.full) { img.dataset.full = '1'; img.src = k.p.src; }   // sharp at strip size
+        x += wv + gap;
+      });
+      for (const k of cards) if (k.echo || k.p.cat !== open) k.el.classList.add('is-gone');
+    }
+    let moveT = 0;
+    function move(fn: () => void) {   // DOM cards gliding between piles and a strip
+      for (const k of cards) { k.el.classList.add('is-moving'); k.el.classList.remove('is-gone'); }
+      fn();
+      clearTimeout(moveT);
+      moveT = window.setTimeout(() => { for (const k of cards) { k.el.classList.remove('is-moving'); k.el.style.transitionDelay = ''; } }, ms('--dur-play-strip') + 200);
+    }
+    const stripName = root.querySelector('.playball__stripname')!, stripCount = root.querySelector('.playball__stripcount')!;
+    function openStrip(cid: string) {
+      open = cid; stripX = 0; root.classList.add('strip-open');
+      const c = CATS.find(c => c.id === cid)!;
+      stripName.textContent = c.name; stripCount.textContent = `${c.n} pieces`;
+      move(stripLayout);
+      root.querySelector<HTMLElement>('[data-close="strip"]')!.focus({ preventScroll: true });
+    }
+    function closeStrip() {
+      const id = open; open = null; root.classList.remove('strip-open');
+      move(pileLayout); CATS.find(c => c.id === id)!.label!.focus({ preventScroll: true });
+    }
+    root.querySelector('[data-close="strip"]')!.addEventListener('click', closeStrip);
+
+    // ---- the pour, after his: the ball holds still and cards leave from the bottom
+    // up, one after another, each dropping into its pile; backwards to return. Drawn
+    // on the canvases, then handed to the DOM piles at the same pixels.
+    const easeIO = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    let pour: any = null;
+    function startPour(toGrid: boolean, done: () => void) {
+      const T = pileTargets(), cw = cardW(), FLIGHT = ms('--dur-play-flight'), SPREAD = ms('--dur-play-spread');
+      const items = cards.map(c => {
+        const q = c.q || project(c), t = T.get(c);
+        return { c, ball: { x: q.x, y: q.y, w: q.w, rot: 0, z: q.z }, pile: { x: W / 2 + t.x, y: H / 2 + t.y, w: cw * t.s, rot: t.rot, a: t.hidden ? 0 : 1, z: t.z } };
+      });
+      [...items].sort((a, b) => b.ball.y - a.ball.y).forEach((it: any, i) => (it.delay = (i / (items.length - 1)) * SPREAD));
+      pour = { toGrid, items, t0: performance.now(), done, FLIGHT, SPREAD };
+    }
+    function drawPour(now: number) {
+      const { FLIGHT, SPREAD } = pour, el = now - pour.t0;
+      clear();
+      const live = pour.items.map((it: any) => {
+        let p = FLIGHT ? Math.max(0, Math.min(1, (el - it.delay) / FLIGHT)) : 1;
+        if (!pour.toGrid) p = FLIGHT ? 1 - Math.max(0, Math.min(1, (el - (SPREAD - it.delay)) / FLIGHT)) : 0;   // last out, first back
+        const e = easeIO(p), A = it.ball, Bp = it.pile, L = (a: number, b: number) => a + (b - a) * e;
+        // in the ball: depth order; in the air: on top; landed: pile order
+        const key = p <= 0 ? A.z : p >= 1 ? 2 + Bp.z / 1000 : 3 + (pour.toGrid ? p : 1 - p);
+        return { c: it.c, x: L(A.x, Bp.x), y: L(A.y, Bp.y), w: L(A.w, Bp.w), rot: L(A.rot, Bp.rot), a: p >= 1 ? Bp.a : 1, key };   // solid in the air
+      }).sort((a: any, b: any) => a.key - b.key);
+      for (const d of live) if (d.a > 0.01) drawCard(d.key < 0 ? g2 : g3, d.c, d.x, d.y, d.w, d.rot);
+      if (el >= SPREAD + FLIGHT) { const done = pour.done; pour = null; done(); }
+    }
+
+    // ---- Cloud / Grid
+    let mode = 'cloud';
+    function setMode(m: string) {
+      if (m === mode && !open) return;
+      mode = m; open = null; stripX = 0; root.classList.remove('strip-open');
+      sw.dataset.mode = m;
+      sw.querySelector('[data-to="cloud"]')!.setAttribute('aria-pressed', String(m === 'cloud'));
+      sw.querySelector('[data-to="grid"]')!.setAttribute('aria-pressed', String(m === 'grid'));
+      sw.querySelector('[data-to="toggle"]')!.setAttribute('aria-label', m === 'cloud' ? 'Sort the work into a grid' : 'Gather the work into a cloud');
+      cards.forEach(k => { k.el.classList.remove('is-moving'); k.el.style.transitionDelay = ''; const v = k.el.querySelector('video'); if (v) m === 'grid' ? v.play().catch(() => {}) : v.pause(); });
+      pileLayout();   // the DOM piles, set (hidden) where the pour lands
+      if (m === 'grid') { root.dataset.mode = 'pouring'; startPour(true, () => { root.dataset.mode = 'grid'; clear(); }); }
+      else {
+        root.dataset.mode = 'pouring-back';
+        startPour(false, () => { root.dataset.mode = 'cloud'; cards.forEach(k => { if (!k.echo) k.el.tabIndex = 0; }); });
+      }
+    }
+    sw.querySelector('[data-to="cloud"]')!.addEventListener('click', () => setMode('cloud'));
+    sw.querySelector('[data-to="grid"]')!.addEventListener('click', () => setMode('grid'));
+    sw.querySelector('[data-to="toggle"]')!.addEventListener('click', () => setMode(mode === 'cloud' ? 'grid' : 'cloud'));
+
+    // ---- opening a piece (in the piles, a card opens its pile first)
+    let back2: HTMLElement | null = null;
+    function onCard(c: Card) {
+      if (moved) return;
+      if (mode === 'grid' && !open) return openStrip(c.p.cat);
+      const p = c.p;
+      fig.innerHTML = (p.video ? `<video src="${p.video}" poster="${p.thumb}" autoplay muted loop playsinline controls></video>` : `<img src="${p.src}" alt="">`) + `<figcaption>${p.caption}</figcaption>`;
+      fig.querySelector('img')?.setAttribute('alt', p.caption);
+      viewer.hidden = false; back2 = c.echo ? stage : c.el;
+      viewer.querySelector<HTMLElement>('.playball__close')!.focus();
+    }
+    function closeViewer() { viewer.hidden = true; fig.innerHTML = ''; back2?.focus({ preventScroll: true }); }
+    viewer.querySelector('.playball__close')!.addEventListener('click', closeViewer);
+    viewer.addEventListener('click', e => { if (e.target === viewer) closeViewer(); });
+    viewer.addEventListener('keydown', e => {   // keep focus inside the dialog
+      if (e.key !== 'Tab') return;
+      const f = [...viewer.querySelectorAll<HTMLElement>('button, video[controls]')];
+      const i = f.indexOf(document.activeElement as HTMLElement);
+      e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length]?.focus();
+    });
+
+    // ---- pointer: hover and click on the canvas; drag turns the ball or slides the strip
+    let dragging = false, moved = false, x0 = 0, y0 = 0, lx = 0, ly = 0, lt = 0;
+    const local = (e: PointerEvent) => { const r = root.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+    stage.addEventListener('pointerdown', e => {
+      if (mode === 'grid' && !open) return;
+      dragging = true; moved = false; x0 = lx = e.clientX; y0 = ly = e.clientY; lt = performance.now();
+      if (!open) { spin.x *= 0.2; spin.y *= 0.2; }   // grabbing a spinning ball catches it
+    });
+    stage.addEventListener('pointermove', e => { pointer = local(e); });
+    stage.addEventListener('pointerleave', () => { pointer = null; });
+    addEventListener('pointermove', e => {
+      if (!dragging) return;
+      if (!moved && Math.hypot(e.clientX - x0, e.clientY - y0) > 6) { moved = true; stage.classList.add('is-dragging'); stage.setPointerCapture?.(e.pointerId); }
+      if (!moved) return;
+      const now = performance.now(), dt = Math.max(0.008, (now - lt) / 1000), dx = e.clientX - lx, dy = e.clientY - ly;
+      if (open) { stripX = Math.max(0, Math.min(stripMax, stripX - dx)); stripLayout(false); }
+      else {
+        const ax = dx / 300, ay = -dy / 300; turn(ax, ay);   // the ball follows the finger, any direction
+        const k = 0.35;   // the release speed, smoothed over the last few moves
+        spin.x = spin.x * (1 - k) + Math.max(-4, Math.min(4, ax / dt)) * k; spin.y = spin.y * (1 - k) + Math.max(-4, Math.min(4, ay / dt)) * k;
+      }
+      lx = e.clientX; ly = e.clientY; lt = now;
+    });
+    addEventListener('pointerup', e => {
+      if (!dragging) return;
+      if (moved && !open && performance.now() - lt > 90) { spin.x = 0; spin.y = 0; }   // held still before letting go: no throw
+      const wasDrag = moved; dragging = false; stage.classList.remove('is-dragging'); setTimeout(() => (moved = false), 0);
+      if (!wasDrag && mode === 'cloud' && !pour && hoverCard && root.contains(e.target as Node)) onCard(hoverCard);
+    });
+
+    root.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { if (!viewer.hidden) closeViewer(); else if (open) closeStrip(); return; }
+      if (!viewer.hidden) return;
+      if (mode === 'cloud' && document.activeElement === stage) {
+        const k = ({ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] } as Record<string, number[]>)[e.key];
+        if (k) { e.preventDefault(); spin.x += k[0] * 0.8; spin.y -= k[1] * 0.8; }
+      }
+      if (open && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && document.activeElement === stage) {
+        e.preventDefault(); stripX = Math.max(0, Math.min(stripMax, stripX + (e.key === 'ArrowRight' ? 200 : -200))); move(stripLayout);
+      }
+    });
+    addEventListener('resize', () => { size(); if (mode === 'grid') open ? stripLayout(false) : pileLayout(); });
+
+    // ---- the loop, only while the stage is on screen
+    let onScreen = true, last = performance.now();
+    new IntersectionObserver(([en]) => { onScreen = en.isIntersecting; }).observe(root);
+    function frame(now: number) {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      if (onScreen && !document.hidden) {
+        if (pour) drawPour(now);
+        else if (mode === 'cloud') {
+          if (!dragging) {
+            // a throw keeps going and eases back to the drift; over a card the drift slows, never the throw
+            const drift = reduce ? 0 : B.drift * (1 - B.hoverSlow * hoverAmt), ease = Math.min(1, B.settle * dt);
+            spin.x += (drift - spin.x) * ease; spin.y += (0 - spin.y) * ease;
+            turn(spin.x * dt, spin.y * dt);
+          }
+          const tx = pointer && !dragging && !reduce ? (pointer.x / W - 0.5) * B.lean[0] : 0, ty = pointer && !dragging && !reduce ? -(pointer.y / H - 0.5) * B.lean[1] : 0;
+          lean.x += (tx - lean.x) * Math.min(1, 2.5 * dt); lean.y += (ty - lean.y) * Math.min(1, 2.5 * dt);
+          drawBall();
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+</script>

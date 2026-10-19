@@ -11,8 +11,10 @@
    in one line each, without leaving the page; anything else goes to Moss.
 
    Cards: the ground grows 3% under the pointer (fine pointers only), the
-   + turns to ×, and the answer opens on a spring (WAAPI, eased with
-   --ease-talk-spring, ~8% overshoot). Closed answers are height 0 and
+   + turns to ×, and the answer's height opens and closes on one curve
+   (WAAPI, --ease-talk-card; no overshoot, so the cards under it glide
+   instead of bouncing) while its words fade and rise in, or fade out.
+   Opening one card closes the other in step. Closed answers are height 0 and
    inert, so their links aren't tabbable; aria-expanded says the state.
    12px corners: his, kept on request — the one rounded list on the site.
 
@@ -121,6 +123,7 @@ const data = JSON.stringify({ tree: pixelTree, keys: pixelKeys, unknown: pixelUn
   .talk__row[aria-expanded='true'] :global(.talk__sign) { transform: rotate(45deg); }
 
   .talk__panel { height: 0; overflow: clip; }
+  .talk__list { overflow-anchor: none; }
   :global(.talk__card.is-open) .talk__panel { height: auto; }
   .talk__answer {
     display: flow-root; max-width: var(--talk-answer-max); padding: 0 var(--talk-pad) var(--talk-pad);
@@ -227,18 +230,44 @@ const data = JSON.stringify({ tree: pixelTree, keys: pixelKeys, unknown: pixelUn
     el.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: dur, easing: spring });
   }
 
+  const css = getComputedStyle(root);
+  const cardEase = css.getPropertyValue('--ease-talk-card').trim() || 'ease-out';
+  const cardDur = parseFloat(css.getPropertyValue('--dur-talk-card')) || 520;
+  const fade = parseFloat(css.getPropertyValue('--dur-talk-card-fade')) || 260;
+  const rise = css.getPropertyValue('--talk-card-rise').trim() || '6px';
+
+  // A card's answer: its height from what it was to what it is now, and
+  // its words fading in (rising) or out. Starts from wherever an
+  // interrupted animation had got to, so quick clicks never jump.
+  function growCard(panel: HTMLElement, answer: HTMLElement, from: number, on: boolean) {
+    // a shut panel's words start from nothing, whatever they rest at
+    const fromOpacity = from < 1 ? '0' : getComputedStyle(answer).opacity;
+    panel.getAnimations().forEach((a) => a.cancel());
+    answer.getAnimations().forEach((a) => a.cancel());
+    const to = panel.getBoundingClientRect().height;
+    if (still.matches || Math.abs(to - from) < 1) return;
+    panel.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: cardDur, easing: cardEase });
+    answer.animate(
+      on
+        ? [{ opacity: fromOpacity, transform: `translateY(${rise})` }, { opacity: 1, transform: 'none' }]
+        : [{ opacity: fromOpacity }, { opacity: 0 }],
+      { duration: on ? cardDur : fade, easing: cardEase, delay: on ? fade / 4 : 0, fill: 'both' },
+    );
+  }
+
   if (band) {
     // ---- the cards: one open at a time ----
     const cards = [...band.querySelectorAll<HTMLElement>('[data-talk-card]')];
     function setOpen(card: HTMLElement, on: boolean) {
       const btn = card.querySelector<HTMLButtonElement>('.talk__row')!;
       const panel = card.querySelector<HTMLElement>('.talk__panel')!;
+      const answer = card.querySelector<HTMLElement>('.talk__answer')!;
       btn.setAttribute('aria-expanded', String(on));
       panel.inert = !on;
       if (card.classList.contains('is-open') === on) return;
       const from = panel.getBoundingClientRect().height;
       card.classList.toggle('is-open', on);
-      grow(panel, from);
+      growCard(panel, answer, from, on);
     }
     cards.forEach((card) => card.querySelector('.talk__row')!.addEventListener('click', () => {
       const on = !card.classList.contains('is-open');
