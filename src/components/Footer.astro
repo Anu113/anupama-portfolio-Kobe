@@ -18,11 +18,6 @@
           shifts a hair so the crayon line "boils". Its reason: a warm, human sign-off on the
           invitation to write. Decorative (empty alt); a still frame
           (smiley.webp) under reduced motion, via <picture>.
-        - her pencil signature in the right-hand corner, on the line the
-          note ends on: a sign-off under the invitation. Her own scribble,
-          re-inked in the footer's ink (the graphite became the alpha), so
-          it reads as pencil on the black. Decorative; under the words on
-          phones.
         - no link columns: Email and LinkedIn are the icons in row 2,
           and the pages are its centre links.
      2. the base line, after carlthomasiv.com's footer: a full-width
@@ -76,14 +71,6 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
         </picture></span>
       </p>
     </div>
-
-    <img
-      class="foot__sign"
-      src="/images/footer/signature.webp"
-      width="508" height="89"
-      alt="" aria-hidden="true"
-      loading="lazy" decoding="async"
-    />
   </div>
 
   <div class="foot__meta u-shell">
@@ -136,18 +123,12 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     padding-inline: calc(var(--gutter-start) + var(--card-pad)) calc(var(--gutter) + var(--card-pad));
   }
 
-  /* --- Row 1: the words, the signature in the right corner ---------- */
+  /* --- Row 1: the words --------------------------------------------- */
   .foot__main {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
     gap: 2rem;
-  }
-  .foot__sign {
-    display: block;
-    flex: none;
-    width: clamp(10rem, 16vw, 15rem);
-    height: auto;
   }
 
   .foot__signoff {
@@ -270,7 +251,6 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
      links sit on their own line under them. */
   @media (max-width: 700px) {
     .foot__main { flex-direction: column; align-items: flex-start; }
-    .foot__sign { width: 9rem; }
     .foot__meta { grid-template-columns: 1fr auto; }
     .foot__nav { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; }
     .foot__legal { flex-direction: column; }

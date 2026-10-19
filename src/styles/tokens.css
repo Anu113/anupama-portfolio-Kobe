@@ -935,6 +935,15 @@
      His opens with ~7% overshoot and settles by ~600ms. */
   --ease-talk-spring: linear(0, 0.017, 0.061, 0.127, 0.206, 0.295, 0.387, 0.48, 0.57, 0.655, 0.733, 0.803, 0.865, 0.918, 0.963, 0.999, 1.028, 1.05, 1.066, 1.076, 1.082, 1.084, 1.082, 1.079, 1.073, 1.067, 1.059, 1.052, 1.044, 1.036, 1.029, 1.023, 1.017, 1.012, 1.007, 1.003, 1, 0.998, 0.996, 0.995, 1);
   --dur-talk-chip: 260ms;          /* each chip arriving, 40ms apart */
+  /* The cards' open and close: one curve and one duration for both, no
+     overshoot. The spring above made the cards under an opening answer
+     bounce, and snapped a closing one shut early (it overshot past 0);
+     sharing the curve lets one card's close and the next one's open
+     trade height in step, so the list moves as one. */
+  --ease-talk-card: var(--ease-out);
+  --dur-talk-card: 520ms;
+  --dur-talk-card-fade: 260ms;     /* the answer's words fading in / out */
+  --talk-card-rise: 0.375rem;      /* and rising 6px as they arrive */
 }
 :root[data-mode='dark'] {
   --talk-moss-shadow: rgb(0 0 0 / 0.55);
