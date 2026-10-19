@@ -948,3 +948,54 @@
 :root[data-mode='dark'] {
   --talk-moss-shadow: rgb(0 0 0 / 0.55);
 }
+
+/* ============================================================
+   PLAYGROUND (PlayBall.astro, /playground) — on request, a copy of
+   andreas.vision/play, measured off his stylesheet on 2026-10-19
+   (mocks in experiments/playground-views/exact.html). A slow ball of
+   cards that spins like a globe under a drag, "A place for endless
+   experimentation" in the middle, and a Cloud / Grid switch that pours
+   the cards into one pile per category; a pile opens into a strip.
+   His rounded cards (20 / 16 / 12px) and the pill switch are a
+   requested exception to the square --radius rule, like BEYOND WORK's.
+   The ball's motion numbers live with the pieces in data/playground.ts.
+   ============================================================ */
+:root {
+  --play-h: max(36rem, 100svh);            /* the stage: one screen */
+  --play-card: 160px;                      /* his 200px × his ball size .8 */
+  --play-card-md: 120px;                   /* under 1200px */
+  --play-card-sm: 88px;                    /* under 810px */
+  --radius-play-card: 20px;
+  --radius-play-card-md: 16px;
+  --radius-play-card-sm: 12px;
+  --radius-play-strip: 8px;                /* cards in an open pile */
+  --step-play-label: 1.25rem;              /* 20px pile name */
+  --step-play-label-md: 1.0625rem;         /* 17px */
+  --step-play-label-sm: 0.9375rem;         /* 15px */
+  --step-play-switch: 1rem;                /* 16px Cloud / Grid */
+  --step-play-title: min(var(--step-heading), 7.4vw);   /* the line in the ball; smaller on phones so the ball shows round it */
+  --play-switch-tile: 42px;                /* the pixel tile between them */
+  --play-switch-gap: 18px;
+  --play-switch-pad: 6px 16px;
+  --play-switch-ring: color-mix(in srgb, var(--fg) 6%, transparent);
+  --play-close: 40px;
+  --play-switch-bottom: 28px;
+  --play-switch-bottom-sm: 20px;           /* under 810px */
+  --play-switch-gap-sm: 14px;
+  --play-switch-word-pad: 10px 2px;
+  --play-strip-top: 6rem;                  /* an open pile's name, clear of the nav */
+  --play-count-gap: 4px;
+  --play-caption-gap: 12px;
+  --play-shadow: rgb(0 0 0 / 0.22);        /* under a hovered card (canvas) */
+  --play-placeholder: var(--screen);       /* a card whose picture hasn't loaded */
+  --play-scrim: color-mix(in srgb, var(--bg) 92%, transparent);   /* behind the opened piece */
+  --ease-play: cubic-bezier(0.77, 0, 0.175, 1);        /* his */
+  --ease-play-spring: cubic-bezier(0.34, 1.36, 0.64, 1);   /* the tile splitting into four */
+  --dur-play-flight: 560ms;                /* one card's flight between ball and pile */
+  --dur-play-spread: 760ms;                /* first card to last, bottom of the ball first */
+  --dur-play-strip: 900ms;                 /* a pile opening into its strip, and back */
+  --dur-play-zoom: 600ms;                  /* a strip picture's 1.06 on hover */
+  --dur-play-press: 100ms;
+  --dur-play-tile: 320ms;                  /* the switch's tile splitting into four, on a spring */
+  --dur-play-tile-hold: 220ms;             /* the whole tile waits this long before showing again */
+}

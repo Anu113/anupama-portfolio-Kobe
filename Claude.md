@@ -260,8 +260,40 @@ effect:
   shows who she is outside the work without a paragraph about it, then
   hands over to About. Home page only, one ring.
 
-Outside those eight moments — hero shader, first-paint loader, the reused
-hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak, BeyondWork — the old rule still applies at full strength:
+- **`PlayBall`, approved on request** (a copy of andreas.vision/play,
+  measured off his page on 2026-10-19; chosen from rounds of mocks in
+  `experiments/playground-views/`, the final one `exact.html`). The
+  whole of /playground: ~120 cards on a ball, facing you, turning
+  slowly about the vertical, with "A place for *endless*
+  experimentation" in the middle (the far half drawn under it, the near
+  half over it, and cards part round the words). Drag spins it like a
+  globe in any direction and a throw keeps going, easing back to the
+  drift; over a card the drift slows and the card lifts with a shadow;
+  the ball leans a little toward the pointer. Tiles are solid (no
+  see-through on overlap) and the motion slow and one-directional, on
+  request, after a round of busier 3D shapes was turned down. His
+  Cloud / Grid pill switches views, with her painting as the pixel
+  tile; Grid pours the ball into one pile per category (Animation,
+  Interfaces, Art, Photos): the ball holds still and cards leave from
+  the bottom up, one after another, each dropping into its pile, the
+  labels there from the start, and back to Cloud plays it in reverse.
+  A pile opens into a strip you can drag. The ball is drawn on two
+  canvases (as his is in WebGL): 120 rounded DOM layers in CSS 3D ran
+  at ~30fps. The DOM cards stay for focus, screen readers and the
+  grid. The 41 pieces repeat to fill the ball; repeats are aria-hidden
+  and sink into their pile. His rounded cards and pill are kept, an
+  exception to the square `--radius` rule, like BeyondWork's. Pieces
+  and the ball's numbers in `data/playground.ts`, thumbnails from
+  `scripts/playground-thumbs.py` into `public/images/playground/`,
+  values under PLAYGROUND in `tokens.css`. Nothing drifts, leans or
+  flies under reduced motion. Its reason: the playground's work seen
+  whole at a glance, sorted by kind in one press. The old endless
+  stream (`InfiniteStream.astro`, `data/play.ts`) is parked, not
+  deleted. Several Animation pieces are stills until clips are
+  recorded.
+
+Outside those nine moments — hero shader, first-paint loader, the reused
+hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak, BeyondWork, PlayBall — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,
