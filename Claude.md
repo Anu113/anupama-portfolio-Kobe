@@ -623,15 +623,17 @@ walked back. Concretely, in the current implementation:
   slot-loading record player with a speaker (`RecordPlayer.astro`,
   RECORD PLAYER in `tokens.css`). On a press the record rises and spins,
   the grille pulses and a lilac pixel display scrolls the song with a
-  clock and level bars; no orange, on request. While it plays it steps
-  through the first five tracks of her Spotify playlist, "My Playlist
-  #2026" (`song` in `data/about.ts`), every `--dur-rp-track`: the display
-  scrolls the song and the record's label cross-fades to that song's
-  cover (saved into `public/images/about/covers/`, so no request goes to
-  Spotify). A round Spotify key opens the playlist in a new tab. Until
-  she adds a clip she has the rights to (`song.audio`), the play key
-  plays a tune made in the browser. No Spotify embed (third-party
-  cookies) unless she asks. Sound only
+  clock and level bars; no orange, on request. It plays her Spotify
+  playlist's real tracks, "My Playlist #2026" (`song` in
+  `data/about.ts`), one after another, through Spotify's embedded
+  player kept out of sight in the tile (on request, 2026-11-11: she
+  asked for her songs over the old made-up tune). The display, count
+  and the record's label (her covers, saved into
+  `public/images/about/covers/`) follow the track playing. Spotify's
+  script and player load only on the first press, so nobody contacts
+  Spotify or gets its cookies without pressing play; signed-in
+  listeners hear whole tracks, others 30-second previews. A round
+  Spotify key opens the playlist in a new tab. Sound only
   after a press, one at a time, stops when the tab is hidden; nothing
   moves under reduced motion. Its reason: one personal detail she can
   share in a press, the way the paintings share hers.

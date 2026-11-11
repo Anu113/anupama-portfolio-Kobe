@@ -1030,7 +1030,6 @@
   --dur-rp-turn: 1.8s;             /* one turn of the record */
   --dur-rp-beat: 320ms;            /* the grille's pulse */
   --dur-rp-ticker: 8s;             /* one song across the display */
-  --dur-rp-track: 8s;              /* how long each song shows before the next */
   --dur-rp-cover: 400ms;           /* the label cross-fading to the next cover */
   --rp-off: 0.14;                  /* the display's unlit text */
   --rp-vinyl: #141414;
