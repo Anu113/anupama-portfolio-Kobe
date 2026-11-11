@@ -309,12 +309,15 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
   .ptile:hover, .ptile:focus-within { z-index: 2; }
   @media (hover: hover) and (pointer: fine) { .ptile:hover::before { scale: 1.03; } }
   .caption {
-    margin: 0; max-width: 34ch; color: var(--fg-dim);
+    margin: 0; width: min(100%, 34ch); color: var(--fg-dim);
     font-size: var(--step-copy); line-height: 1.35; text-align: center; text-wrap: balance;
   }
 
   /* a stack of up to five; each photo moves by its own --x/--y/--r/--s */
-  .deck { position: relative; height: 62cqh; aspect-ratio: 3 / 4; max-width: 46cqw; }
+  /* explicit width, not aspect-ratio: Safari sizes a flex item from its
+     content first, and every photo in here is absolutely placed, so an
+     aspect-ratio-only stack collapsed to a sliver there */
+  .deck { position: relative; flex: none; height: 62cqh; width: min(46cqw, 62cqh * 3 / 4); }
   .shot {
     --x: 0%; --y: 0%; --r: 0deg; --s: 1; --lift: 0%;
     position: absolute; inset: 0; padding: 0; border: 0; overflow: hidden; cursor: zoom-in;
