@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock — Playground as a wall (after andreas.vision/play, Nov 2026)</title>
+<!--
+  A mock, not the site. After andreas.vision/play as it is on 2026-11-10
+  (he replaced the ball with this): an endless flat wall of big rounded
+  tiles you drag or scroll in any direction, and a Mix / Sort pill that
+  regroups the wall into one labelled row per kind. Measured off his page:
+  320px tiles, 28px corners, 56px band for a row's label, caption on a
+  soft black gradient on hover, pill #f8f8fa, 16px words, 6px 16px pad.
+  Her 41 pieces repeat to fill the wall. Serve from the repo root so
+  /public/images resolves.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070; --accent: #b4482a;
+    --screen: #efeeec; --pill: #f3f2f0;
+    --tile: 320px; --gap: 40px; --radius: 28px; --band: 56px;
+    --ease: cubic-bezier(.16,1,.3,1);
+  }
+  @media (max-width: 1200px) { :root { --tile: 260px; --gap: 32px; --radius: 24px; } }
+  @media (max-width: 810px)  { :root { --tile: 180px; --gap: 20px; --radius: 18px; --band: 48px; } }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--fg);
+    font: 600 14px/1.5 Manrope, system-ui, sans-serif; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  /* The site's one-line nav, roughly, so the wall reads in context. */
+  .nav { position: fixed; inset: 0 0 auto; z-index: 5; display: flex; justify-content: space-between;
+    align-items: center; padding: 20px 40px; pointer-events: none; }
+  .nav > * { pointer-events: auto; background: color-mix(in srgb, var(--bg) 88%, transparent);
+    padding: 8px 14px; border-radius: 999px; }
+  .nav .links { display: flex; gap: 22px; font-size: 12px; color: var(--fg-dim); }
+  .nav .links b { color: var(--fg); font-weight: 600; }
+
+  h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  .stage { position: fixed; inset: 0; overflow: hidden; cursor: grab; touch-action: none; outline: none; }
+  .stage.dragging { cursor: grabbing; }
+  .stage:focus-visible::after { content: ''; position: absolute; inset: 6px; border: 2px solid var(--accent);
+    border-radius: 12px; pointer-events: none; }
+
+  .tile { position: absolute; left: 0; top: 0; width: var(--tile); height: var(--tile);
+    border-radius: var(--radius); overflow: hidden; background: var(--screen);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / .05); padding: 0; will-change: transform; }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;
+    transition: transform .6s var(--ease); user-select: none; -webkit-user-drag: none; }
+  .tile .cap { position: absolute; inset: auto 0 0; padding: 42% 16px 14px; text-align: left;
+    color: #fff; font-size: 14px; font-weight: 600;
+    background: linear-gradient(to top, rgb(0 0 0 / .5), rgb(0 0 0 / .27) 34%, rgb(0 0 0 / .1) 65%, transparent);
+    opacity: 0; transition: opacity .5s var(--ease); }
+  .stage:not(.dragging) .tile:hover .cap, .tile:focus-visible .cap { opacity: 1; }
+  .stage:not(.dragging) .tile:hover img { transform: scale(1.03); }
+  .tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .tile.in { animation: tileIn .7s var(--ease) both; }
+  @keyframes tileIn { from { opacity: 0; transform: var(--t) scale(.92); } }
+
+  .kind { position: absolute; left: 0; top: 0; display: flex; align-items: baseline; gap: 8px;
+    font-size: 14px; white-space: nowrap; will-change: transform; }
+  .kind .count { font: 400 11px/1 'Azeret Mono', monospace; color: var(--fg-dim); text-transform: uppercase; letter-spacing: .04em; }
+
+  /* Mix / Sort, his pill: two words either side of a tile that redraws itself. */
+  .switch { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 5;
+    display: flex; align-items: center; gap: 18px; padding: 6px 16px; border-radius: 999px;
+    background: var(--pill); box-shadow: 0 0 0 1px rgb(0 0 0 / .04); }
+  .switch button { font-size: 16px; padding: 10px 2px; color: var(--fg-dim); transition: color .2s; }
+  .switch button[aria-pressed="true"] { color: var(--fg); }
+  .switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .switch .glyph { width: 42px; height: 42px; display: grid; gap: 3px; padding: 4px;
+    grid-template-columns: repeat(3, 1fr); transition: gap .5s var(--ease); }
+  .switch .glyph i { border-radius: 3px; background-size: 300% 300%;
+    background-image: url(/public/images/playground/play-porch.webp);
+    transition: transform .5s var(--ease); }
+  .switch[data-mode="sort"] .glyph { gap: 6px 2px; }
+  .switch[data-mode="sort"] .glyph i:nth-child(3n+1) { transform: translateX(-2px); }
+  .switch[data-mode="sort"] .glyph i:nth-child(3n) { transform: translateX(2px); }
+
+  /* The opened piece. */
+  .viewer { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; gap: 14px;
+    align-content: center; background: color-mix(in srgb, var(--bg) 94%, transparent);
+    opacity: 0; pointer-events: none; transition: opacity .35s var(--ease); }
+  .viewer.open { opacity: 1; pointer-events: auto; }
+  .viewer img { max-width: min(86vw, 1100px); max-height: 74vh; border-radius: 16px;
+    box-shadow: 0 30px 80px -30px rgb(0 0 0 / .35); transform: scale(.96); transition: transform .5s var(--ease); }
+  .viewer.open img { transform: none; }
+  .viewer p { font: 400 12px 'Azeret Mono', monospace; color: var(--fg-dim); text-transform: uppercase; letter-spacing: .04em; }
+  .viewer .close { position: absolute; top: 24px; right: 32px; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--pill); font-size: 18px; }
+  .viewer .close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .hint { position: fixed; left: 40px; bottom: 36px; z-index: 5; font: 400 11px 'Azeret Mono', monospace;
+    color: var(--fg-dim); text-transform: uppercase; letter-spacing: .04em; }
+  @media (max-width: 810px) { .hint { display: none; } .nav { padding: 14px 16px; } .nav .links { gap: 12px; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tile.in { animation: none; }
+    .tile img, .tile .cap, .viewer, .viewer img, .switch .glyph, .switch .glyph i { transition: none; }
+  }
+</style>
+</head>
+<body>
+<header class="nav">
+  <span>Anupama Mishra</span>
+  <nav class="links"><span>Work</span><span>About</span><b>Playground</b><span>Contact</span></nav>
+</header>
+
+<main>
+  <h1>Playground</h1>
+  <div class="stage" id="stage" tabindex="0" role="group"
+       aria-label="Wall of work. Drag, scroll or use the arrow keys to move it; choose a piece to open it."></div>
+</main>
+
+<div class="switch" id="switch" data-mode="mix" role="group" aria-label="Arrange the wall">
+  <button type="button" data-set="mix" aria-pressed="true">Mix</button>
+  <span class="glyph" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+  <button type="button" data-set="sort" aria-pressed="false">Sort</button>
+</div>
+
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Piece">
+  <button class="close" type="button" aria-label="Close">×</button>
+  <img alt="">
+  <p></p>
+</div>
+
+<script>
+/* Her pieces, copied from src/data/playground.ts. */
+const CATS = [
+  ['Animation', ['chase-pay/prototype-poster.jpg|Chase Pay, prototype','footer/smiley-loop.webp|Crayon smiley, 11-frame loop','moss/moss-idle.webp|Moss looking around','hero-idle.webp|Hero portrait scrub','paypal-debit/digital-card.webp|Debit card sign-up, coded prototype']],
+  ['Interfaces', ['paypal-debit/hub.webp|PayPal Debit, hub','paypal-debit/rewards.webp|PayPal Debit, rewards','paypal-debit/offers.webp|PayPal Debit, offers','paypal-privacy/hero.webp|PayPal Privacy','paypal-privacy/contextual.webp|Contextual privacy','paypal-privacy/data-delete.webp|Data deletion','okta/my-apps.webp|Okta, My Apps','okta/integrations.webp|Okta, integrations','chase-pay/hero.png|Chase Pay','chase-pay/settings.png|Chase Pay, settings','archive/mint-app.jpg|Mint credit score','archive/mera-data.jpg|Mera Data','archive/dream-gains.jpg|DreamGains','archive/lenders-app.jpg|Lenders app','archive/wal-e-design-system.jpg|WAL-E design system']],
+  ['Art', ['play-porch.jpg|Reading on the porch, digital','play-earrings.jpg|Earrings, digital','play-hermione.jpg|Hermione, ink and watercolour','play-green-eyes.jpg|Green eyes, digital','play-reading.jpg|Tea and a book, digital','play-care.jpg|Care, watercolour','play-sage.jpg|Sage, digital','play-bob.jpg|Bob, digital','play-mermaid.jpg|Mermaid, watercolour','play-crown.jpg|Crown, acrylic']],
+  ['Photos', ['beyond/talk-smile.webp|On stage, The Saga of Accessibility','beyond/talk-poster.webp|Talk poster, Design Sundays','beyond/baking-cookie.webp|Baking class','beyond/blue-sculpture.webp|Design conference','beyond/event-selfie.webp|Designers, one selfie','beyond/sticky-wall.webp|Sticky-note wall','beyond/office-garden.webp|Office garden','beyond/meetup-group.webp|Design meetup','beyond/baking-icing.webp|Piping chocolate','beyond/blue-sculpture-friend.webp|With a friend','beyond/office-garden-2.webp|Office garden, again']],
+];
+const thumb = f => f.includes('loop') ? `/public/images/${f}` : `/public/images/playground/${f.replace(/\//g,'__').replace(/\.\w+$/,'.webp')}`;
+const cats = CATS.map(([name, list], ci) => ({ name, pieces: list.map(s => { const [file, caption] = s.split('|'); return { file, caption, cat: ci, thumb: thumb(file), full: `/public/images/${file}` }; }) }));
+const all = cats.flatMap(c => c.pieces);
+
+/* Mix: a fixed shuffle laid on a COLS × ROWS lattice that repeats forever.
+   Shuffled so neighbours are never the same kind where it can be helped. */
+const COLS = 7, ROWS = 6;      // 42 cells, 41 pieces + 1 repeat
+function seeded(n){ let s = n; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+const rnd = seeded(11);
+const mix = [...all, all[0]].sort(() => rnd() - .5);
+
+const stage = document.getElementById('stage');
+const sw = document.getElementById('switch');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css = n => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(n));
+let T, G, BAND, STEP;
+function measure(){ T = css('--tile'); G = css('--gap'); BAND = css('--band'); STEP = T + G; }
+measure();
+
+let mode = 'mix';
+const cam = { x: 0, y: 0, vx: 0, vy: 0 };       // the wall's pan, px
+const rows = cats.map(() => ({ x: 0, vx: 0 }));  // Sort: each row pans on its own
+let pool = new Map();                             // key → element, recycled every frame
+const kinds = [];
+
+function tileEl(p){
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'tile';
+  b.setAttribute('aria-label', `Open ${p.caption}`);
+  b.innerHTML = `<img src="${p.thumb}" alt="" loading="lazy" decoding="async"><span class="cap">${p.caption}</span>`;
+  b.addEventListener('click', e => { if (moved > 6) { e.preventDefault(); return; } open(p, b); });
+  return b;
+}
+const mod = (a, n) => ((a % n) + n) % n;
+
+/* Which tiles are on screen, keyed by lattice cell so a tile keeps its
+   element as it pans (no flicker), and anything off screen is dropped. */
+function frame(){
+  const W = innerWidth, H = innerHeight, seen = new Set();
+  const place = (key, p, x, y) => {
+    seen.add(key);
+    let el = pool.get(key);
+    if (!el) { el = tileEl(p); pool.set(key, el); stage.appendChild(el); if (entering) { el.classList.add('in'); el.style.animationDelay = `${Math.min(500, (Math.abs(x - W/2) + Math.abs(y - H/2)) * .35)}ms`; } }
+    const t = `translate3d(${x}px, ${y}px, 0)`;
+    el.style.transform = t; el.style.setProperty('--t', t);
+  };
+  if (mode === 'mix') {
+    const ox = W/2 - T/2 + cam.x, oy = H/2 - T/2 + cam.y;
+    const c0 = Math.floor(-ox / STEP) - 1, c1 = Math.ceil((W - ox) / STEP);
+    const r0 = Math.floor(-oy / STEP) - 1, r1 = Math.ceil((H - oy) / STEP);
+    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
+      const y = oy + r * STEP;
+      if (y > H || y + T < 0) continue;
+      place(`m${c},${r}`, mix[mod(r, ROWS) * COLS + mod(c, COLS)], ox + c * STEP, y);
+    }
+  } else {
+    const RH = BAND + T + G;      // one row: label band, tiles, gap
+    const top = 96 + cam.y, x0 = W < 810 ? 16 : 40;
+    cats.forEach((cat, ci) => {
+      const y = top + ci * RH;
+      const k = kinds[ci]; k.style.transform = `translate3d(${x0}px, ${y + BAND/2 - 14}px, 0)`;
+      k.style.visibility = (y + RH < 0 || y > H) ? 'hidden' : 'visible';
+      const ty = y + BAND; if (ty > H || ty + T < 0) return;
+      const n = cat.pieces.length, ox = x0 + rows[ci].x;
+      const c0 = Math.floor(-ox / STEP) - 1, c1 = Math.ceil((W - ox) / STEP);
+      for (let c = c0; c <= c1; c++) place(`s${ci},${c}`, cat.pieces[mod(c, n)], ox + c * STEP, ty);
+    });
+  }
+  for (const [k, el] of pool) if (!seen.has(k)) { el.remove(); pool.delete(k); }
+  entering = false;
+}
+
+/* Sort mode's row labels. */
+cats.forEach((c, i) => {
+  const k = document.createElement('span'); k.className = 'kind'; k.style.visibility = 'hidden';
+  k.innerHTML = `<span class="name">${c.name}</span><span class="count">${c.pieces.length} pieces</span>`;
+  stage.appendChild(k); kinds[i] = k;
+});
+
+/* Limits for Sort's vertical pan: first row under the nav, last row above the pill. */
+function clampSortY(){
+  const RH = BAND + T + G, total = cats.length * RH;
+  const min = Math.min(0, innerHeight - 96 - total - 90);
+  if (cam.y > 0) cam.y = 0; if (cam.y < min) cam.y = min;
+}
+
+/* Drag with a throw; wheel and trackpad; arrow keys. */
+let drag = null, moved = 0, entering = true, rowHit = -1;
+stage.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  drag = { x: e.clientX, y: e.clientY, t: performance.now() }; moved = 0;
+  rowHit = mode === 'sort' ? rowAt(e.clientY) : -1;
+  cam.vx = cam.vy = 0; rows.forEach(r => r.vx = 0);
+});
+addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y, now = performance.now(), dt = Math.max(1, now - drag.t);
+  moved += Math.abs(dx) + Math.abs(dy);
+  if (moved > 6 && !stage.classList.contains('dragging')) { stage.classList.add('dragging'); stage.setPointerCapture?.(e.pointerId); }
+  if (mode === 'mix') { cam.x += dx; cam.y += dy; cam.vx = dx / dt * 16; cam.vy = dy / dt * 16; }
+  else { if (rowHit >= 0) { rows[rowHit].x += dx; rows[rowHit].vx = dx / dt * 16; } cam.y += dy; cam.vy = dy / dt * 16; clampSortY(); }
+  drag.x = e.clientX; drag.y = e.clientY; drag.t = now;
+});
+addEventListener('pointerup', () => { if (!drag) return; drag = null; setTimeout(() => stage.classList.remove('dragging'), 0); if (reduce) { cam.vx = cam.vy = 0; rows.forEach(r => r.vx = 0); } });
+function rowAt(y){ const RH = BAND + T + G; const i = Math.floor((y - 96 - cam.y) / RH); return i >= 0 && i < cats.length ? i : -1; }
+stage.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (mode === 'mix') { cam.x -= e.deltaX; cam.y -= e.deltaY; }
+  else { const r = rowAt(e.clientY); if (r >= 0) rows[r].x -= e.deltaX; cam.y -= e.deltaY; clampSortY(); }
+}, { passive: false });
+stage.addEventListener('keydown', e => {
+  const d = { ArrowLeft: [1,0], ArrowRight: [-1,0], ArrowUp: [0,1], ArrowDown: [0,-1] }[e.key];
+  if (!d) return; e.preventDefault();
+  const s = reduce ? STEP : STEP * .12;   // a step at a time under reduced motion, else a nudge that glides
+  if (mode === 'mix') { if (reduce) { cam.x += d[0]*s; cam.y += d[1]*s; } else { cam.vx += d[0]*s*.6; cam.vy += d[1]*s*.6; } }
+  else { if (d[0]) rows.forEach(r => reduce ? r.x += d[0]*s : r.vx += d[0]*s*.6); if (d[1]) { reduce ? cam.y += d[1]*s : cam.vy += d[1]*s*.6; } }
+});
+
+function tick(){
+  if (!drag) {
+    cam.x += cam.vx; cam.y += cam.vy; cam.vx *= .93; cam.vy *= .93;
+    rows.forEach(r => { r.x += r.vx; r.vx *= .93; });
+    if (mode === 'sort') clampSortY();
+  }
+  frame(); requestAnimationFrame(tick);
+}
+
+/* Mix ↔ Sort: the tiles on screen fade back, the new arrangement comes in
+   from the centre outward (his does a grey wash, then a fill). */
+function setMode(m){
+  if (m === mode) return;
+  sw.dataset.mode = m;
+  sw.querySelectorAll('[data-set]').forEach(b => b.setAttribute('aria-pressed', b.dataset.set === m));
+  const old = [...pool.values()];
+  old.forEach(el => { el.style.transition = 'opacity .25s, filter .25s'; el.style.opacity = 0; el.style.filter = 'grayscale(1)'; });
+  setTimeout(() => {
+    old.forEach(el => el.remove()); pool.clear();
+    mode = m; cam.x = cam.y = cam.vx = cam.vy = 0; rows.forEach(r => { r.x = 0; r.vx = 0; });
+    kinds.forEach(k => k.style.visibility = 'hidden');
+    entering = !reduce;
+  }, reduce ? 0 : 260);
+}
+sw.addEventListener('click', e => { const b = e.target.closest('[data-set]'); if (b) setMode(b.dataset.set); });
+sw.querySelector('.glyph').addEventListener('click', () => setMode(mode === 'mix' ? 'sort' : 'mix'));
+sw.querySelector('.glyph').style.cursor = 'pointer';
+sw.querySelectorAll('.glyph i').forEach((i, n) => i.style.backgroundPosition = `${(n % 3) * 50}% ${Math.floor(n / 3) * 50}%`);
+
+/* The viewer. */
+const viewer = document.getElementById('viewer'); let opener = null;
+function open(p, from){
+  opener = from;
+  viewer.querySelector('img').src = p.full; viewer.querySelector('img').alt = p.caption;
+  viewer.querySelector('p').textContent = `${cats[p.cat].name} · ${p.caption}`;
+  viewer.classList.add('open'); viewer.querySelector('.close').focus();
+}
+function close(){ viewer.classList.remove('open'); (opener && opener.isConnected ? opener : stage).focus(); }
+viewer.addEventListener('click', e => { if (e.target === viewer || e.target.closest('.close')) close(); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && viewer.classList.contains('open')) close(); });
+viewer.addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); viewer.querySelector('.close').focus(); } });
+
+addEventListener('resize', measure);
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

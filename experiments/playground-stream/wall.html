@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock — Playground as a gallery wall</title>
+<!--
+  Mock, not the site (2026-11-11). /playground/stream answered three notes:
+
+  1 "Doesn't look like a gallery wall, too cluttered."
+    The pieces hang in columns, like a gallery wall: even gutters, nothing
+    overlapping, each piece a little narrower or wider than its column and
+    set left, centre or right in it. The depth stays, gently: each column
+    moves at its own speed (0.88–1.12×) as you scroll, so the wall shifts
+    against itself — but columns never share space, so pieces can't pile up.
+  2 "Too much space before the footer."
+    Each column stops hanging pieces where its last one will sit just above
+    the screen's bottom edge when the page lets go, so the footer's curve
+    rises a fixed 96px under the last row. Nothing is cut by the curve, and
+    there's no empty screen first.
+  3 "The scroll is too fast and quick."
+    The wall follows the page scroll with easing (it glides to where you
+    scrolled instead of jumping), and moves at 0.8× the scroll, so a wheel
+    notch carries it less far.
+
+  The rest as on the page: opens on the heading with the work below its
+  line, the heading drifts slowly then leaves, sideways is endless (drag,
+  sideways swipe, arrow keys), captions on hover. The pill compares the
+  scroll feel. Serve from the repo root so /public/images resolves.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070; --accent: #b4482a; --pill: #f3f2f0;
+    --night: #0e0e0e; --night-ink: #ecebe8; --ease: cubic-bezier(.16,1,.3,1); }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: auto; }
+  body { background: var(--night); color: var(--fg); font: 600 14px/1.5 Manrope, system-ui, sans-serif; overflow-x: clip; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  .nav { position: fixed; inset: 0 0 auto; z-index: 20; display: flex; justify-content: space-between;
+    padding: 22px 40px; font-size: 14px; transition: transform .4s var(--ease), background-color .3s; }
+  .nav .links { display: flex; gap: 22px; font-size: 12px; color: var(--fg-dim); }
+  .nav .links b { color: var(--fg); font-weight: 600; }
+  .nav.solid { background: var(--bg); }
+  .nav.hidden { transform: translateY(-100%); }
+
+  .page { position: relative; z-index: 1; background: var(--bg); border-radius: 0 0 40px 40px; overflow: clip; }
+  .wall { position: relative; height: calc(5 * 100svh); }
+  .stage { position: sticky; top: 0; height: 100svh; overflow: hidden; cursor: grab; user-select: none;
+    touch-action: pan-y; outline: none; }
+  .stage.dragging { cursor: grabbing; }
+  .stage:focus-visible::after { content: ''; position: absolute; inset: 6px; border: 2px solid var(--accent); pointer-events: none; z-index: 9; }
+  .bed { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; pointer-events: none; z-index: 0; }
+  .bed small { display: block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 14px; }
+  .bed h1 { font: 300 clamp(32px, 4vw, 44px)/1.1 'Crimson Pro', serif; letter-spacing: -.01em; }
+  .bed em { font-style: italic; }
+  .words { will-change: transform; }
+
+  .tile { position: absolute; left: 0; top: 0; margin: 0; z-index: 1; will-change: transform; background: #efeeec; }
+  .tile.cut { background: none; }
+  .tile img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none;
+    transition: transform .32s var(--ease); }
+  /* Caption: 10px mono, never wider than its piece and at most two lines,
+     so it always fits in the gap under the piece and never reaches the
+     next one (the gap below is sized for it). */
+  .tile figcaption { position: absolute; left: 0; top: 100%; margin-top: 8px; width: 100%;
+    font: 400 10px/1.3 'Azeret Mono', monospace; letter-spacing: .05em; color: var(--fg);
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+    opacity: 0; transform: translateY(3px); transition: opacity .32s var(--ease), transform .32s var(--ease); pointer-events: none; }
+  @media (hover: hover) {
+    .stage:not(.dragging) .tile:hover { z-index: 5; }
+    .stage:not(.dragging) .tile:hover img { transform: scale(1.03); }
+    .stage:not(.dragging) .tile:hover figcaption { opacity: 1; transform: none; }
+  }
+
+  .footer { position: relative; margin-top: -40px; padding: 120px 40px 48px; background: var(--night); color: var(--night-ink); }
+  .footer h2 { font: 300 32px/1.2 'Crimson Pro', serif; }
+  .footer h2 em { font-style: italic; text-decoration: underline; text-underline-offset: 4px; }
+  .footer p { margin-top: 12px; font-size: 13px; color: #a09d98; }
+  .footer .base { margin-top: 80px; padding-top: 18px; border-top: 1px solid #333; font: 400 11px 'Azeret Mono', monospace; }
+
+  .switch { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 20;
+    display: flex; gap: 4px; padding: 5px; border-radius: 999px; background: var(--pill); }
+  .switch span { align-self: center; padding: 0 10px 0 12px; font-size: 12px; color: var(--fg-dim); }
+  .switch button { padding: 8px 16px; border-radius: 999px; font-size: 13px; color: var(--fg-dim); }
+  .switch button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  @media (max-width: 810px) { .nav { padding: 16px; } .footer { padding-inline: 16px; } }
+</style>
+</head>
+<body>
+<header class="nav" id="nav"><span>Anupama Mishra</span>
+  <nav class="links"><span>Work</span><span>About</span><b>Playground</b><span>Contact</span></nav></header>
+
+<main class="page">
+  <section class="wall" id="wall">
+    <div class="stage" id="stage" tabindex="0" role="region"
+         aria-label="Playground. Scroll to move through the work; drag, swipe sideways or use the left and right arrow keys to pan.">
+      <div class="bed"><div class="words" id="words"><small>The playground</small><h1>A place for <em>endless</em><br>experimentation</h1></div></div>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <h2>Let's start with a <em>conversation</em>.</h2>
+  <p>Open to Staff or Lead Product Designer roles. Projects, questions and feedback are welcome too.</p>
+  <div class="base">© 2026 Anupama Mishra · stand-in footer for the mock</div>
+</footer>
+
+<div class="switch" role="group" aria-label="Scroll feel">
+  <span>Scroll</span>
+  <button type="button" data-s="off">As now</button>
+  <button type="button" data-s="on" aria-pressed="true">Smooth</button>
+</div>
+
+<script>
+const PIECES = [
+  ['play-porch.jpg',1.0,'Before anyone else wakes · painted on a digital canvas'],['play-earrings.jpg',1.33,'Half a thought · painted on a digital canvas'],
+  ['play-hermione.jpg',.73,'The brightest witch of her age · ink and watercolour on paper'],['play-green-eyes.jpg',1.33,'Someone I almost knew · painted on a digital canvas'],
+  ['play-reading.jpg',.85,'The tea went cold · painted on a digital canvas'],['play-care.jpg',.96,'Who holds whom · watercolour on paper'],
+  ['play-sage.jpg',.63,'Quiet, for now · painted on a digital canvas'],['play-mermaid.jpg',.8,'Salt and petals · watercolour on paper'],
+  ['play-crown.jpg',.75,'Heavy is the head · acrylic on canvas'],
+  ['beyond/talk-smile.webp',1,'On stage, talking accessibility'],['beyond/talk-poster.webp',1.78,'The Saga of Accessibility, live'],
+  ['beyond/baking-cookie.webp',.9,'Baking class, cookie in hand'],['beyond/blue-sculpture.webp',.75,'A blue wall at a design conference'],
+  ['beyond/event-selfie.webp',1.37,'Designers, one selfie'],['beyond/sticky-wall.webp',.56,'A wall of sticky notes'],
+  ['beyond/office-garden.webp',1.33,'Out in the office garden'],['beyond/meetup-group.webp',1.96,'A design meetup, all of us'],
+  ['beyond/baking-icing.webp',.59,'Piping chocolate'],['beyond/blue-sculpture-friend.webp',.75,'Between talks at a design conference'],
+  ['beyond/office-garden-2.webp',1.14,'Ten minutes away from the screen'],['hero-idle.webp',.71,'Me, at my laptop'],
+].map(([f, a, c]) => ({ a, c, cut: /hero/.test(f), src: `/public/images/${f}` }));
+const N = PIECES.length;
+
+const small = innerWidth < 810;
+const COL = small ? 190 : 290;          // column width (pieces 74–100% of it, so captions stay in the column)
+const GUT = small ? 40 : 76;            // gutter between columns
+const VGAP = small ? 48 : 64;           // gap between pieces in a column: room for a two-line caption (8 + 2 × 13px) and air
+const PITCH = COL + GUT;
+const SPEEDS = [0.94, 1.08, 0.88, 1.12, 0.98, 1.04, 0.9, 1.1];   // per column: the gentle depth
+const GAP_TOP = 72;                     // heading to first pieces
+const END_GAP = 96;                     // last piece to the footer's curve
+const LEN = 4;                          // screens of scroll before the page lets go (wall is 5 × 100svh)
+const SPEED = 0.8;                      // the wall moves at this share of the scroll
+const HOLD = .6, DRIFT = .3;            // heading: slow for the first .6 screen
+let smooth = true;
+
+let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const mod = (a, n) => ((a % n) + n) % n;
+const stage = document.getElementById('stage'), wall = document.getElementById('wall');
+const words = document.getElementById('words'), nav = document.getElementById('nav');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let edge = 0, H = innerHeight;
+const measure = () => { const t = words.style.transform; words.style.transform = 'none';
+  edge = words.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + GAP_TOP; words.style.transform = t; };
+measure();
+
+/* Hang the wall: columns that repeat sideways; down each column, pieces
+   stacked with an even gap. Piece (c, r) is (5c + r) mod N, so a row
+   never repeats a piece and a column only after N pieces. Each column
+   stops where its last piece would still sit END_GAP above the screen's
+   bottom when the page lets go. */
+const COLS = Math.max(8, Math.ceil(Math.max(2600, innerWidth * 1.5) / PITCH));
+const PW = COLS * PITCH;
+const releaseF = LEN * H * SPEED;       // the wall's travel when the page lets go
+const tiles = [];
+for (let c = 0; c < COLS; c++) {
+  const sp = SPEEDS[c % SPEEDS.length];
+  const limit = releaseF * sp + H - END_GAP;   // a piece's bottom must be above this (wall coords)
+  let y = edge + rnd() * (small ? 60 : 140);   // columns start a little staggered, like a hung wall
+  for (let r = 0; ; r++) {
+    const p = PIECES[mod(c * 5 + r, N)];
+    const w = COL * (0.74 + rnd() * 0.26);
+    const h = w / p.a;
+    if (y + h > limit) break;
+    const align = rnd();
+    const x = c * PITCH + (align < .33 ? 0 : align < .66 ? (COL - w) / 2 : COL - w);
+    const el = document.createElement('figure'); el.className = 'tile' + (p.cut ? ' cut' : '');
+    el.innerHTML = `<img src="${p.src}" alt="" decoding="async"><figcaption>${p.c}</figcaption>`;
+    el.style.width = w + 'px'; el.style.height = h + 'px';
+    stage.appendChild(el);
+    tiles.push({ el, x, y, w, h, sp });
+    y += h + VGAP;
+  }
+}
+
+let camX = (innerWidth - PW) / 2, velX = 0, sp = 0;   // sp: the eased scroll the wall follows
+const progress = () => Math.min(LEN * H, Math.max(0, scrollY - wall.offsetTop));
+const headY = (f) => -(Math.min(f, H * HOLD) * DRIFT + Math.max(0, f - H * HOLD));
+
+let lastY = scrollY;
+function frame(){
+  const W = stage.clientWidth;
+  const p = progress();
+  if (!smooth || reduce) sp = p; else { sp += (p - sp) * 0.1; if (Math.abs(p - sp) < 0.3) sp = p; }
+  const f = sp * (smooth ? SPEED : 1);
+  // At the release, hand over exactly: the wall's own travel stops at releaseF.
+  words.style.transform = `translate3d(0, ${headY(f).toFixed(1)}px, 0)`;
+  camX += velX; velX *= .935; if (Math.abs(velX) < .05) velX = 0;
+  for (const t of tiles) {
+    const x = mod(t.x + camX + PITCH, PW) - PITCH;
+    const y = t.y - f * (reduce ? 1 : t.sp);
+    const off = x + t.w < -40 || x > W + 40 || y + t.h < -60 || y > H + 60;
+    if (off) { if (!t.hid) { t.el.style.visibility = 'hidden'; t.hid = true; } continue; }
+    if (t.hid) { t.el.style.visibility = ''; t.hid = false; }
+    t.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+  }
+  // the site's nav: hides on scroll-down, back on scroll-up on a solid strip
+  const dy = scrollY - lastY;
+  if (scrollY < 60) nav.classList.remove('hidden'); else if (dy > 4) nav.classList.add('hidden'); else if (dy < -4) nav.classList.remove('hidden');
+  nav.classList.toggle('solid', scrollY > 0);
+  if (Math.abs(dy) > 4 || scrollY < 60) lastY = scrollY;
+  requestAnimationFrame(frame);
+}
+
+// sideways: drag, sideways swipe, arrows
+let drag = null;
+stage.addEventListener('pointerdown', e => { if (e.button) return; drag = { x: e.clientX, y: e.clientY, t: performance.now(), touch: e.pointerType !== 'mouse' }; velX = 0; stage.setPointerCapture(e.pointerId); });
+stage.addEventListener('pointermove', e => { if (!drag) return; const now = performance.now(), dt = Math.max(8, now - drag.t);
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 2) stage.classList.add('dragging');
+  camX += dx; velX = dx / dt * 16; if (!drag.touch) scrollBy({ top: -dy, behavior: 'instant' });
+  drag.x = e.clientX; drag.y = e.clientY; drag.t = now; });
+const end = () => { drag = null; stage.classList.remove('dragging'); if (reduce) velX = 0; };
+stage.addEventListener('pointerup', end); stage.addEventListener('pointercancel', end);
+stage.addEventListener('wheel', e => { const dx = e.deltaX || (e.shiftKey ? e.deltaY : 0); if (!dx) return;
+  e.preventDefault(); camX -= dx; if (!e.shiftKey) scrollBy({ top: e.deltaY, behavior: 'instant' }); }, { passive: false });
+stage.addEventListener('keydown', e => { if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; e.preventDefault();
+  const d = e.key === 'ArrowLeft' ? 1 : -1; if (reduce) camX += d * 140; else velX += d * 9; });
+
+document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => {
+  smooth = b.dataset.s === 'on'; document.querySelectorAll('.switch button').forEach(x => x.setAttribute('aria-pressed', x === b));
+}));
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

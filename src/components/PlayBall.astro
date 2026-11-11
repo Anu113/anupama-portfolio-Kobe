@@ -269,7 +269,8 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
     function cut(p: Piece) {
       const img = new Image(); img.decoding = 'async'; img.src = p.thumb;
       img.onload = () => {
-        const w = Math.round(cardW() * B.scale * 1.8 * dpr), h = Math.round(w / p.aspect), r = w * corner() / cardW();
+        // big enough for a card's largest size on a pile, so the hand-over to the DOM piles doesn't sharpen with a pop
+        const w = Math.round(cardW() * 1.4 * dpr), h = Math.round(w / p.aspect), r = w * corner() / cardW();
         const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
         const x = cv.getContext('2d')!;
         x.beginPath(); x.roundRect(0, 0, w, h, r); x.clip();
@@ -366,9 +367,9 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
         const fit = (k: Card) => Math.min(gap * 0.84 / cw, gap * 0.6 / (cw / k.p.aspect));   // one box per pile, so a tall phone doesn't outgrow it
         cards.filter(k => !k.echo && k.p.cat === c.id).forEach((k, j) => {
           const seed = Math.sin((ci * 31 + j + 1) * 12.9898) * 43758.5453, r = seed - Math.floor(seed) - 0.5, top = j < 4;
-          T.set(k, { x: x + (top ? r * 10 : 0), y: y0 - (top ? j * 2 : 0), rot: top ? r * 12 : 0, s: fit(k), z: 100 - j, hidden: !top && j > 6 });
+          T.set(k, { x: x + (top ? r * 10 : 0), y: y0 - (top ? j * 2 : 0), rot: top ? r * 12 : 0, s: fit(k) * (!top && j > 6 ? 0.85 : 1), z: 100 - j, hidden: !top && j > 6 });
         });
-        cards.filter(k => k.echo && k.p.cat === c.id).forEach(k => T.set(k, { x, y: y0, rot: 0, s: fit(k), z: 0, hidden: true }));   // repeats sink into their pile
+        cards.filter(k => k.echo && k.p.cat === c.id).forEach(k => T.set(k, { x, y: y0, rot: 0, s: fit(k) * 0.85, z: 0, hidden: true }));   // repeats sink into their pile, a little smaller so its top card covers them
         c.labelAt = { x, y: y0 + gap * 0.36 };
       });
       return T;
@@ -434,7 +435,7 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
       const T = pileTargets(), cw = cardW(), FLIGHT = ms('--dur-play-flight'), SPREAD = ms('--dur-play-spread');
       const items = cards.map(c => {
         const q = c.q || project(c), t = T.get(c);
-        return { c, ball: { x: q.x, y: q.y, w: q.w, rot: 0, z: q.z }, pile: { x: W / 2 + t.x, y: H / 2 + t.y, w: cw * t.s, rot: t.rot, a: t.hidden ? 0 : 1, z: t.z } };
+        return { c, ball: { x: q.x, y: q.y, w: q.w, rot: 0, z: q.z }, pile: { x: W / 2 + t.x, y: H / 2 + t.y, w: cw * t.s, rot: t.rot, a: t.hidden ? 0 : 1, z: t.z, hidden: t.hidden } };
       });
       [...items].sort((a, b) => b.ball.y - a.ball.y).forEach((it: any, i) => (it.delay = (i / (items.length - 1)) * SPREAD));
       pour = { toGrid, items, t0: performance.now(), done, FLIGHT, SPREAD };
@@ -447,8 +448,13 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
         if (!pour.toGrid) p = FLIGHT ? 1 - Math.max(0, Math.min(1, (el - (SPREAD - it.delay)) / FLIGHT)) : 0;   // last out, first back
         const e = easeIO(p), A = it.ball, Bp = it.pile, L = (a: number, b: number) => a + (b - a) * e;
         // in the ball: depth order; in the air: on top; landed: pile order
-        const key = p <= 0 ? A.z : p >= 1 ? 2 + Bp.z / 1000 : 3 + (pour.toGrid ? p : 1 - p);
-        return { c: it.c, x: L(A.x, Bp.x), y: L(A.y, Bp.y), w: L(A.w, Bp.w), rot: L(A.rot, Bp.rot), a: p >= 1 ? Bp.a : 1, key };   // solid in the air
+        // Stacking, one rule from take-off to landing so nothing swaps layers mid-flight:
+        // still in the ball, its depth (−1…1); once moving, its place in the pile
+        // (2…), so a card bound for the top stays over the ones bound below it; and a
+        // card that ends hidden (repeats, the bottom of a pile) travels under every
+        // visible pile card (1.5…), so it's never seen landing on top and vanishing.
+        const key = p <= 0 ? A.z : Bp.hidden ? 1.5 + Bp.z / 1000 : 2 + Bp.z / 1000;
+        return { c: it.c, x: L(A.x, Bp.x), y: L(A.y, Bp.y), w: L(A.w, Bp.w), rot: L(A.rot, Bp.rot), a: 1, key };   // solid all the way; hidden ones end covered by their pile, and the DOM hand-over drops them unseen
       }).sort((a: any, b: any) => a.key - b.key);
       for (const d of live) if (d.a > 0.01) drawCard(d.key < 0 ? g2 : g3, d.c, d.x, d.y, d.w, d.rot);
       if (el >= SPREAD + FLIGHT) { const done = pour.done; pour = null; done(); }
