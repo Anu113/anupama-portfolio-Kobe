@@ -1,0 +1,246 @@
+---
+/* RecordPlayer.astro — the About page's fourth tile: a slot-loading
+   record player with a speaker ("S5 · Speaker", chosen on request
+   2026-11-11 from the mocks in experiments/about-grid/slots.html, after
+   andreas.vision/about's CD player). Values under RECORD PLAYER in
+   tokens.css; the song in data/about.ts (`song`).
+
+   At rest the record sits low in its slot and the display is dark. Press
+   play and the record rises and spins, the speaker grille pulses gently
+   with the beat, the play key stays down, and the pixel display wakes:
+   "On repeat" with level bars, a song from her Spotify playlist
+   scrolling across, its time and its place ("1/5"). Every
+   --dur-rp-track the player steps to the next song: the display
+   changes and the record's label cross-fades to that song's cover.
+   Stopping keeps the song it was on. A round Spotify key beside the
+   play key opens the playlist in a new tab. Press again (or Escape
+   while it's focused) to stop; it also stops when the tab is hidden.
+   Only ever one sound, only after a press.
+
+   Sound: `song.audio` if set (a file in /public). Until then a short
+   tune is made in the browser (Web Audio) as a stand-in: nothing is
+   fetched, no third-party player, no cookies.
+
+   A11y: one real button with aria-pressed and the playlist in its name; the
+   display is decorative (aria-hidden) and a polite status line says
+   "Playing …" once. Under reduced motion nothing rises, spins, pulses
+   or scrolls (the song shows still) and covers swap without a fade;
+   the sound still plays. */
+import { song } from '../data/about';
+const name = song.title;
+const first = song.tracks[0];
+const line = (t: typeof first) => `${t.title} · ${t.artist}`;
+---
+<div class="rp" data-rp data-audio={song.audio} data-tracks={JSON.stringify(song.tracks.map(line))}>
+  <div class="rp__rec-wrap" aria-hidden="true">
+    <div class="rp__rec"><div class="rp__label">
+      {song.tracks.map((t, i) => <img class={i === 0 ? 'is-on' : undefined} src={t.cover} alt="" loading="lazy" decoding="async" data-rp-cover />)}
+    </div></div>
+  </div>
+  <div class="rp__box">
+    <span class="rp__slot" aria-hidden="true"></span>
+    <span class="rp__grille" aria-hidden="true"></span>
+    <div class="rp__lcd" aria-hidden="true">
+      <div class="rp__glass">
+        <div class="rp__px">
+          <div class="rp__line"><span>On repeat</span><span class="rp__vu"><i></i><i></i><i></i><i></i><i></i></span></div>
+          <div class="rp__line rp__marq"><span class="rp__ticker" data-rp-ticker><span>{line(first)}</span><span>{line(first)}</span></span></div>
+          <div class="rp__line"><span data-rp-time>00:00</span><span data-rp-count>1/{song.tracks.length}</span></div>
+        </div>
+      </div>
+    </div>
+    <a class="rp__spot" href={song.url} target="_blank" rel="noopener" aria-label={`${song.title} on Spotify (opens in a new tab)`}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 9.2c4.3-1.4 9.2-1 13 1.2M6.5 12.6c3.5-1 7.4-.7 10.5 1M7.6 15.9c2.7-.7 5.5-.5 7.9.8" /></svg>
+    </a>
+    <button class="rp__key" type="button" aria-pressed="false" aria-label={`Play ${name}`} data-rp-key>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+    </button>
+  </div>
+  <span class="u-sr-only" role="status" data-rp-status></span>
+</div>
+
+<style>
+  .rp { position: absolute; inset: 0; container-type: size; }
+
+  /* the record: low in its slot at rest, risen and turning while it plays */
+  .rp__rec-wrap {
+    position: absolute; left: 50%; top: 6%; width: 54%; aspect-ratio: 1;
+    translate: -50% 30%; transition: translate var(--dur-rp-rise) var(--ease-out);
+  }
+  .rp.is-on .rp__rec-wrap { translate: -50% 0; }
+  .rp__rec {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: repeating-radial-gradient(circle, var(--rp-vinyl) 0 .32cqw, var(--rp-groove) .32cqw .56cqw), var(--rp-vinyl);
+    box-shadow: var(--rp-rec-shadow);
+    animation: rp-spin var(--dur-rp-turn) linear infinite paused;
+  }
+  .rp__rec::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--rp-sheen);
+    animation: rp-spin var(--dur-rp-turn) linear infinite reverse paused;
+  }
+  .rp__label { position: absolute; inset: 33%; border-radius: 50%; overflow: hidden; }
+  .rp__label img {
+    position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover;
+    opacity: 0; transition: opacity var(--dur-rp-cover) ease-out;
+  }
+  .rp__label img.is-on { opacity: 1; }
+  .rp__label::after { content: ''; position: absolute; inset: 44%; border-radius: 50%; background: var(--rp-spindle); }
+  .rp.is-on .rp__rec, .rp.is-on .rp__rec::after { animation-play-state: running; }
+  @keyframes rp-spin { to { rotate: 360deg; } }
+
+  /* the box */
+  .rp__box {
+    position: absolute; z-index: 1; left: 7%; right: 7%; top: 42%; bottom: 8%;
+    border-radius: 2.6cqw; background: var(--rp-shell); box-shadow: var(--rp-shell-shadow);
+  }
+  .rp__slot {
+    position: absolute; left: 12%; right: 12%; top: -.7cqw; height: 1.8cqw; border-radius: 1cqw;
+    background: var(--rp-slot); box-shadow: var(--rp-slot-shadow);
+  }
+  .rp__grille {
+    position: absolute; left: 6%; top: 16%; bottom: 12%; width: 38%; border-radius: 1.6cqw;
+    background-color: var(--rp-grille-ground);
+    background-image: radial-gradient(circle, var(--rp-grille-dot) .5cqw, transparent .58cqw);
+    background-size: 2.2cqw 2.2cqw;
+  }
+  .rp.is-on .rp__grille { animation: rp-thump var(--dur-rp-beat) ease-in-out infinite alternate; }
+  @keyframes rp-thump { to { transform: scale(1.015); } }
+
+  /* the pixel display, after his: a dot grid, text masked to the same grid */
+  .rp__lcd {
+    position: absolute; left: 49%; right: 6%; top: 16%; height: 44%; padding: .9cqw;
+    border-radius: 2cqw; background: var(--rp-bezel); box-shadow: var(--rp-bezel-shadow);
+  }
+  .rp__glass {
+    --p: .6cqw; --lit: 74%;
+    position: relative; height: 100%; overflow: hidden; border-radius: 1.3cqw;
+    background:
+      linear-gradient(90deg, transparent var(--lit), var(--rp-glass) 0) 0 0 / var(--p) var(--p),
+      linear-gradient(transparent var(--lit), var(--rp-glass) 0) 0 0 / var(--p) var(--p),
+      color-mix(in srgb, var(--rp-ink) 6%, var(--rp-glass));
+    box-shadow: inset 0 .4cqw .8cqw rgb(0 0 0 / .55);
+  }
+  .rp__glass::after { content: ''; position: absolute; inset: 0; background: linear-gradient(170deg, rgb(255 255 255 / .08), transparent 45%); }
+  .rp__px {
+    position: absolute; inset: 0; display: grid; align-content: center; gap: .8cqw; padding: 0 1.6cqw;
+    color: var(--rp-ink); font: 600 2.3cqw/1.2 var(--font-mono); text-transform: uppercase; white-space: nowrap; letter-spacing: .03em;
+    text-shadow: 0 0 .9cqw color-mix(in srgb, var(--rp-ink) 55%, transparent);
+    mask-image: linear-gradient(90deg, #000 var(--lit), transparent 0), linear-gradient(#000 var(--lit), transparent 0);
+    mask-size: var(--p) var(--p); mask-composite: intersect;
+  }
+  .rp__line { display: flex; justify-content: space-between; align-items: center; gap: 2cqw; opacity: var(--rp-off); transition: opacity 150ms ease-out; }
+  .rp.is-on .rp__line { opacity: 1; transition-delay: 300ms; }
+  .rp__marq { overflow: hidden; }
+  .rp__ticker { display: flex; gap: 6cqw; width: max-content; animation: rp-tick var(--dur-rp-ticker) steps(170) infinite paused; }
+  .rp.is-on .rp__ticker { animation-play-state: running; }
+  @keyframes rp-tick { to { translate: -50% 0; } }
+  .rp__vu { display: inline-flex; gap: .5cqw; align-items: flex-end; height: 2.4cqw; }
+  .rp__vu i { width: .9cqw; height: 15%; background: currentColor; }
+  .rp.is-on .rp__vu i { animation: rp-vu 520ms steps(4) infinite alternate; }
+  .rp__vu i:nth-child(2) { animation-delay: -130ms; } .rp__vu i:nth-child(3) { animation-delay: -260ms; }
+  .rp__vu i:nth-child(4) { animation-delay: -390ms; } .rp__vu i:nth-child(5) { animation-delay: -60ms; }
+  @keyframes rp-vu { from { height: 15%; } to { height: 100%; } }
+
+  /* the long key */
+  .rp__spot {
+    position: absolute; left: 49%; bottom: 12%; width: 9cqw; height: 9cqw; border-radius: 50%;
+    display: grid; place-items: center; color: var(--rp-key-ink);
+    background: var(--rp-key); box-shadow: var(--rp-key-up);
+    transition: translate 120ms ease-out, box-shadow 120ms ease-out, color 120ms ease-out;
+  }
+  .rp__spot svg { width: 46%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .rp__spot:hover { color: var(--rp-key-ink-on); }
+  .rp__spot:active { translate: 0 .45cqw; box-shadow: var(--rp-key-down); }
+  .rp__spot:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .rp__key {
+    position: absolute; left: calc(49% + 11cqw); right: 6%; bottom: 12%; height: 9cqw; padding: 0; border: 0; border-radius: 1.6cqw;
+    display: grid; place-items: center; cursor: pointer; color: var(--rp-key-ink);
+    background: var(--rp-key); box-shadow: var(--rp-key-up);
+    transition: translate 120ms ease-out, box-shadow 120ms ease-out, color 120ms ease-out;
+  }
+  .rp__key svg { height: 40%; fill: currentColor; }
+  .rp__key[aria-pressed='true'] { translate: 0 .45cqw; box-shadow: var(--rp-key-down); color: var(--rp-key-ink-on); }
+  .rp__key:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rp__rec-wrap { translate: -50% 0; transition: none; }
+    .rp__rec, .rp__rec::after, .rp__ticker, .rp__vu i, .rp.is-on .rp__grille { animation: none; }
+    .rp__line, .rp__label img { transition: none; }
+    .rp__ticker > span + span { display: none; }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-rp]');
+  if (root) {
+    const key = root.querySelector<HTMLButtonElement>('[data-rp-key]')!;
+    const time = root.querySelector<HTMLElement>('[data-rp-time]')!;
+    const status = root.querySelector<HTMLElement>('[data-rp-status]')!;
+    const name = key.getAttribute('aria-label')!.replace(/^Play /, '');
+    const src = root.dataset.audio;
+    let audio: HTMLAudioElement | null = null;
+    let ctx: AudioContext | null = null, beat = 0, clock = 0, t0 = 0;
+
+    // The stand-in: a soft pentatonic loop, until her song is set.
+    const notes = [0, 3, 5, 7, 10, 12, 10, 7, 5, 3, 7, 5];
+    function tone(t: number, semi: number) {
+      const o = ctx!.createOscillator(), g = ctx!.createGain(), f = ctx!.createBiquadFilter();
+      o.type = 'triangle'; o.frequency.value = 220 * Math.pow(2, semi / 12);
+      f.type = 'lowpass'; f.frequency.value = 1400;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.08, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+      o.connect(f).connect(g).connect(ctx!.destination); o.start(t); o.stop(t + 1);
+    }
+    function sound(on: boolean) {
+      if (src) {
+        audio ??= Object.assign(new Audio(src), { loop: true });
+        on ? audio.play().catch(() => {}) : audio.pause();
+        return;
+      }
+      clearInterval(beat);
+      if (!on) return;
+      ctx ??= new AudioContext(); ctx.resume();
+      let i = 0, next = ctx.currentTime + 0.6;   // starts as the record finishes rising
+      beat = window.setInterval(() => {
+        while (next < ctx!.currentTime + 0.3) {
+          tone(next, notes[i % notes.length]);
+          if (i % 4 === 0) tone(next, notes[i % notes.length] - 12);
+          i++; next += 0.32;
+        }
+      }, 80);
+    }
+    // ---- stepping through the songs ----
+    const tracks = JSON.parse(root.dataset.tracks!) as string[];
+    const covers = [...root.querySelectorAll<HTMLImageElement>('[data-rp-cover]')];
+    const ticker = root.querySelector<HTMLElement>('[data-rp-ticker]')!;
+    const count = root.querySelector<HTMLElement>('[data-rp-count]')!;
+    const css = getComputedStyle(document.documentElement);
+    const stepMs = (parseFloat(css.getPropertyValue('--dur-rp-track')) || 8) * 1000;
+    let at = 0, step = 0;
+    function show(i: number) {
+      at = i;
+      covers.forEach((c, n) => c.classList.toggle('is-on', n === i));
+      ticker.querySelectorAll('span').forEach((s) => { s.textContent = tracks[i]; });
+      ticker.style.animation = 'none'; void ticker.offsetWidth; ticker.style.animation = '';   // from the start
+      count.textContent = `${i + 1}/${tracks.length}`;
+      t0 = performance.now();
+    }
+
+    const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    function set(on: boolean) {
+      root!.classList.toggle('is-on', on);
+      key.setAttribute('aria-pressed', String(on));
+      key.setAttribute('aria-label', `${on ? 'Stop' : 'Play'} ${name}`);
+      status.textContent = on ? `Playing ${name}` : '';
+      sound(on);
+      clearInterval(clock); clearInterval(step);
+      if (on) {
+        t0 = performance.now();
+        clock = window.setInterval(() => { time.textContent = fmt((performance.now() - t0) / 1000); }, 250);
+        step = window.setInterval(() => show((at + 1) % tracks.length), stepMs);
+      } else time.textContent = '00:00';
+    }
+    key.addEventListener('click', () => set(!root.classList.contains('is-on')));
+    key.addEventListener('keydown', (e) => { if (e.key === 'Escape' && root.classList.contains('is-on')) set(false); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden && root.classList.contains('is-on')) set(false); });
+  }
+</script>
