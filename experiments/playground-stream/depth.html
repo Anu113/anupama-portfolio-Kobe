@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock — Playground stream, layered depth</title>
+<!--
+  Mock, not the site (2026-11-10). Option B (index.html) taken further, on
+  request: the depth has to be felt as you move, pieces sliding past and
+  under each other instead of moving as one sheet.
+
+  Three layers, each its own scattered field (a jittered grid that repeats),
+  so each layer stays evenly spread however far the layers slide apart:
+    far   — small, faded, moves at half your speed
+    mid   — mid size, moves with your hand
+    near  — large, with a soft shadow, moves faster than your hand
+  Pan by drag (with a throw), trackpad/wheel in any direction, arrow keys.
+  The pointer alone also shifts the layers a little against each other
+  (near ones most), so the depth shows before you even drag.
+  The pill sets how strong the depth is, to compare.
+  No piece repeats near itself (on request): each piece belongs to one
+  layer, and its copies inside that layer sit 2–3 cells apart.
+
+  Scroll (on request): the page has a top. It opens on the heading, with
+  the work starting below it, from the heading's level down, so nothing
+  appears out of thin air. Scroll on and the heading drifts up at 0.3×
+  for the first ~0.6 screen while the work rises over it, then goes up with the
+  work; the canvas is endless below and to the sides; scroll back to the
+  top for the heading and nav. No fades anywhere: pieces may pass over the
+  heading once they're on the page. The nav hides on scroll-down and
+  returns within 80px on a solid strip.
+
+  Near and middle pieces are a little smaller
+  than the first pass.
+
+  Pieces: her paintings, photos and the hero portrait. No app screens, no
+  Bob painting, Moss or smiley (on request). Under reduced motion: no
+  pointer shift and no throw; panning still works.
+  Serve from the repo root so /public/images resolves.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070; --accent: #b4482a; --pill: #f3f2f0;
+    --ease: cubic-bezier(.16,1,.3,1); }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--fg);
+    font: 600 14px/1.5 Manrope, system-ui, sans-serif; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  .nav { position: fixed; inset: 0 0 auto; z-index: 5; will-change: transform; display: flex; justify-content: space-between;
+    padding: 22px 40px; font-size: 14px; pointer-events: none; }
+  .nav .links { display: flex; gap: 22px; font-size: 12px; color: var(--fg-dim); }
+  .nav .links b { color: var(--fg); font-weight: 600; }
+
+  .bed { position: fixed; inset: 0; z-index: 0; display: grid; place-items: center; text-align: center; pointer-events: none; }
+  .bed small { display: block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 14px; }
+  .bed h1 { font: 300 clamp(32px, 4vw, 44px)/1.1 'Crimson Pro', serif; letter-spacing: -.01em; }
+  .bed em { font-style: italic; }
+
+  .field { position: fixed; inset: 0; overflow: hidden; cursor: grab; touch-action: none; outline: none; }
+  .field.dragging { cursor: grabbing; }
+  .field:focus-visible::after { content: ''; position: absolute; inset: 6px; border: 2px solid var(--accent); pointer-events: none; z-index: 9; }
+  .layer { position: absolute; inset: 0; pointer-events: none; }
+  .layer[data-l="0"] { z-index: 1; }
+  .layer[data-l="1"] { z-index: 2; }
+  .layer[data-l="2"] { z-index: 3; }   /* every layer may pass over the heading (the bed is z 0) */
+
+  .tile { position: absolute; left: 0; top: 0; margin: 0; pointer-events: auto; will-change: transform;
+    transform-origin: 50% 50%; }
+  .tile img { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none;
+    -webkit-user-drag: none; pointer-events: none; }
+  /* Far pieces fade toward the ground with a solid veil, so nothing behind shows through. */
+  .tile::after { content: ''; position: absolute; inset: 0; background: var(--bg); opacity: var(--veil, 0); pointer-events: none; }
+  .tile.cut::after { display: none; }
+    .layer[data-l="2"] .tile:not(.cut) { box-shadow: 0 18px 40px -18px rgb(0 0 0 / .35), 0 2px 6px rgb(0 0 0 / .06); }
+  .layer[data-l="1"] .tile:not(.cut) { box-shadow: 0 8px 20px -12px rgb(0 0 0 / .22); }
+  .tile figcaption { position: absolute; left: 0; top: 100%; margin-top: 8px; width: max-content; max-width: 240px;
+    font: 400 11px/1.25 'Azeret Mono', monospace; letter-spacing: .02em; color: var(--fg-dim);
+    opacity: 0; transform: translateY(4px); transition: opacity .4s var(--ease), transform .4s var(--ease); }
+  .field:not(.dragging) .tile:hover figcaption { opacity: 1; transform: none; }
+
+  .switch { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 5;
+    display: flex; gap: 4px; padding: 5px; border-radius: 999px; background: var(--pill); }
+  .switch span { align-self: center; padding: 0 10px 0 12px; font-size: 12px; color: var(--fg-dim); }
+  .switch button { padding: 8px 16px; border-radius: 999px; font-size: 13px; color: var(--fg-dim); }
+  .switch button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* Away from the top the nav returns on a solid strip, as on the rest of
+     the site, so the links stay readable and clickable over the work. */
+  .nav { transition: background-color .3s var(--ease); }
+  .nav.solid { background: var(--bg); }
+  @media (max-width: 810px) { .nav { padding: 16px; } }
+</style>
+</head>
+<body>
+<header class="nav"><span>Anupama Mishra</span>
+  <nav class="links"><span>Work</span><span>About</span><b>Playground</b><span>Contact</span></nav></header>
+<div class="bed"><div id="words"><small>The playground</small><h1>A place for <em>endless</em><br>experimentation</h1></div></div>
+<div class="field" id="field" tabindex="0" role="region"
+     aria-label="Playground collage. Drag, scroll or use the arrow keys to move it."></div>
+<div class="switch" role="group" aria-label="Depth strength">
+  <span>Depth</span>
+  <button type="button" data-k="0.6" aria-pressed="true">Soft</button>
+  <button type="button" data-k="1">Medium</button>
+  <button type="button" data-k="1.5">Strong</button>
+</div>
+
+<script>
+const PIECES = [
+  ['play-porch.jpg',1.0,'Reading on the porch, digital'],['play-earrings.jpg',1.33,'Earrings, digital'],
+  ['play-hermione.jpg',.73,'Hermione, ink and watercolour'],['play-green-eyes.jpg',1.33,'Green eyes, digital'],
+  ['play-reading.jpg',.85,'Tea and a book, digital'],['play-care.jpg',.96,'Care, watercolour'],
+  ['play-sage.jpg',.63,'Sage, digital'],
+  ['play-mermaid.jpg',.8,'Mermaid, watercolour'],['play-crown.jpg',.75,'Crown, acrylic'],
+  ['beyond/talk-smile.webp',1,'On stage, The Saga of Accessibility'],['beyond/talk-poster.webp',1.78,'Talk poster, Design Sundays'],
+  ['beyond/baking-cookie.webp',.9,'Baking class'],['beyond/blue-sculpture.webp',.75,'Design conference'],
+  ['beyond/event-selfie.webp',1.37,'Designers, one selfie'],['beyond/sticky-wall.webp',.56,'Sticky-note wall'],
+  ['beyond/office-garden.webp',1.33,'Office garden'],['beyond/meetup-group.webp',1.96,'Design meetup'],
+  ['beyond/baking-icing.webp',.59,'Piping chocolate'],['beyond/blue-sculpture-friend.webp',.75,'With a friend'],
+  ['beyond/office-garden-2.webp',1.14,'Office garden, again'],
+  ['hero-idle.webp',.71,'Hero portrait'],
+].map(([f,a,c]) => ({ a, c, cut: /hero/.test(f),
+  src: /hero/.test(f) ? `/public/images/${f}` : `/public/images/${f.startsWith('play-') ? f : 'playground/' + f.replace(/\//g,'__').replace(/\.\w+$/,'.webp')}` }));
+
+const mod = (a, n) => ((a % n) + n) % n;
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const small = innerWidth < 810;
+
+/* The three layers. `par` is how far a layer moves for each pixel you
+   move (the depth); `cell` and `fill` set its spacing and piece size;
+   `veil` fades it toward the ground; `nudge` is how far the pointer
+   alone shifts it. */
+// Pieces ~20–25% bigger than the last pass, on cells ~40% wider, so there
+// is more white round each one (on request).
+const LAYERS = [
+  { par: .5,  cell: small ? 280 : 460, fill: [.45, .55],  veil: .45, nudge: -10 },
+  { par: 1,   cell: small ? 360 : 600, fill: [.44, .54], veil: .1,  nudge: 8 },
+  { par: 1.6, cell: small ? 480 : 840, fill: [.42, .5], veil: 0,   nudge: 26 },
+];
+let K = .6;  // depth strength: Soft, chosen on request (the pill still compares)
+
+const field = document.getElementById('field');
+const named = new Set();
+const tiles = [];
+/* No piece repeats close to itself:
+   - each piece lives on ONE layer, so layers sliding past each other can
+     never bring two copies together;
+   - inside a layer, copies sit on a spread-out lattice: cell (c, r) shows
+     piece (c + s·r) mod n, with the step s picked so the nearest copy is
+     as far away as the layer's pieces allow (about 2–3 cells). */
+const order = PIECES.map((_, k) => k).sort(() => rnd() - .5);
+const share = [8, 7, 6];                     // far, mid, near
+let from = 0;
+LAYERS.forEach((L, li) => {
+  const own = order.slice(from, from += share[li]), n = own.length;
+  // the step that keeps copies furthest apart
+  let best = 1, bestD = 0;
+  for (let st = 1; st < n; st++) {
+    let d = Infinity;
+    for (let dr = -n; dr <= n; dr++) for (let dc = -n; dc <= n; dc++)
+      if ((dc || dr) && mod(dc + st * dr, n) === 0) d = Math.min(d, Math.hypot(dc, dr));
+    if (d > bestD) { bestD = d; best = st; }
+  }
+  const span = Math.max(2600, innerWidth * 1.6, innerHeight * 1.6);
+  L.cols = n * Math.ceil(span / (L.cell * n)); L.rows = L.cols;   // whole repeats, so the wrap is seamless
+  L.PW = L.cols * L.cell; L.PH = L.rows * L.cell;
+  const layer = document.createElement('div'); layer.className = 'layer'; layer.dataset.l = li; field.appendChild(layer);
+  for (let i = 0; i < L.cols * L.rows; i++) {
+    const c = i % L.cols, r = (i / L.cols) | 0;
+    const p = own[mod(c + best * r, n)];
+    const piece = PIECES[p];
+    const f = L.fill[0] + rnd() * (L.fill[1] - L.fill[0]);
+    const side = f * L.cell, w = side * Math.sqrt(piece.a), h = side / Math.sqrt(piece.a);
+    const el = document.createElement('figure'); el.className = 'tile' + (piece.cut ? ' cut' : '');
+    const first = !named.has(p); if (first) named.add(p);
+    el.innerHTML = `<img src="${piece.src}" alt="${first ? piece.c : ''}" decoding="async"><figcaption>${piece.c}</figcaption>`;
+    el.style.width = w + 'px'; el.style.height = h + 'px';
+    el.style.setProperty('--veil', L.veil);
+    layer.appendChild(el);
+    tiles.push({ el, L, w, h,
+      bx: (c + .5 + (rnd() - .5) * .3) * L.cell,
+      by: (r + .5 + (rnd() - .5) * .3) * L.cell });
+  }
+});
+
+const cam = { x: 0, y: 0, vx: 0, vy: 0 };
+const ptr = { x: 0, y: 0, sx: 0, sy: 0 };   // pointer from centre, -1..1, and its smoothed value
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* The page has a top (on request). It opens on the heading, and the work
+   starts BELOW it, from the heading's level down — nothing above that
+   line, so nothing appears out of thin air. Scrolling on, the heading and
+   the work move up together and the canvas goes on without end, below and
+   to both sides; scrolling back you reach the top again, with the nav and
+   heading. No fades: once a piece is on the page it stays, and it may
+   pass over the words (fine, on request).
+   The nav hides on scroll-down and returns within 80px on a solid strip,
+   as on the rest of the site. */
+const words = document.getElementById('words');
+const nav = document.querySelector('.nav');
+let edge = null, navOff = 0, lastY = 0;
+const GAP = 72;                                    // between the heading and the first pieces
+const HOLD = .6;                                   // screens of scroll before the heading moves at full speed
+const DRIFT = .3;                                  // the heading's speed during that stretch, vs the work's
+// How far the heading has moved for a given scroll: slow for the first
+// HOLD screens, then at the page's own speed. Continuous, so no jolt.
+const headY = (y) => { const c = Math.max(0, -y), hold = innerHeight * HOLD;
+  return -(Math.min(c, hold) * DRIFT + Math.max(0, c - hold)); };
+const measureEdge = () => { const r = words.getBoundingClientRect(); edge = r.bottom - headY(cam.y) + GAP; };
+
+function frame(){
+  const W = innerWidth, H = innerHeight;
+  if (cam.y > 0) { cam.y = 0; cam.vy = 0; }        // the top: can't scroll above it
+  if (edge === null) measureEdge();
+  const dy = cam.y - lastY; lastY = cam.y;
+  navOff = Math.min(0, Math.max(-80, navOff + dy));
+  // The heading drifts up slowly for the first stretch of scroll while the
+  // work rises over it, then goes up with the page (on request).
+  words.style.transform = `translate3d(0, ${headY(cam.y).toFixed(1)}px, 0)`;
+  nav.style.transform = `translate3d(0, ${navOff.toFixed(1)}px, 0)`;
+  const solid = cam.y < -20; if (solid !== nav._solid) { nav.classList.toggle('solid', solid); nav._solid = solid; }
+  if (!reduce) { ptr.sx += (ptr.x - ptr.sx) * .06; ptr.sy += (ptr.y - ptr.sy) * .06; }
+  for (const t of tiles) {
+    const { L } = t;
+    const par = 1 + (L.par - 1) * K;                  // Soft / Medium / Strong
+    const nx = L.nudge * K * ptr.sx, ny = L.nudge * K * ptr.sy;
+    const x = mod(t.bx + cam.x * par + nx - W / 2 + L.PW / 2, L.PW) - L.PW / 2 + W / 2;
+    const y = mod(t.by + cam.y * par + ny - H / 2 + L.PH / 2, L.PH) - L.PH / 2 + H / 2;
+    // Where this copy sits on the page itself (before any scroll): only
+    // pieces whose top is below the heading's line exist.
+    const onPage = y - cam.y * par - ny - t.h / 2 >= edge;
+    const off = !onPage || x + t.w / 2 < -40 || x - t.w / 2 > W + 40 || y + t.h / 2 < -40 || y - t.h / 2 > H + 40;
+    if (off) { if (!t.hid) { t.el.style.visibility = 'hidden'; t.hid = true; } continue; }
+    if (t.hid) { t.el.style.visibility = ''; t.hid = false; }
+    if (t.o === undefined) { t.el.style.opacity = t.el.classList.contains('cut') ? 1 - L.veil : 1; t.o = 1; }
+    t.el.style.transform = `translate3d(${(x - t.w / 2).toFixed(1)}px, ${(y - t.h / 2).toFixed(1)}px, 0)`;
+  }
+}
+
+let drag = null, moved = 0;
+field.addEventListener('pointerdown', e => { if (e.button) return; drag = { x: e.clientX, y: e.clientY, t: performance.now() }; moved = 0; cam.vx = cam.vy = 0; field.setPointerCapture(e.pointerId); });
+field.addEventListener('pointermove', e => {
+  ptr.x = (e.clientX / innerWidth - .5) * 2; ptr.y = (e.clientY / innerHeight - .5) * 2;
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y, now = performance.now(), dt = Math.max(8, now - drag.t);
+  moved += Math.abs(dx) + Math.abs(dy); if (moved > 4) field.classList.add('dragging');
+  cam.x += dx; cam.y += dy; cam.vx = dx / dt * 16; cam.vy = dy / dt * 16; drag.x = e.clientX; drag.y = e.clientY; drag.t = now; });
+const end = () => { if (!drag) return; drag = null; field.classList.remove('dragging'); if (reduce) cam.vx = cam.vy = 0; };
+field.addEventListener('pointerup', end); field.addEventListener('pointercancel', end);
+field.addEventListener('pointerleave', () => { if (!drag) { ptr.x = ptr.y = 0; } });
+field.addEventListener('wheel', e => { e.preventDefault(); cam.vx = cam.vy = 0;
+  const u = e.deltaMode === 1 ? 16 : 1; cam.x -= (e.deltaX || (e.shiftKey ? e.deltaY : 0)) * u; if (!e.shiftKey) cam.y -= e.deltaY * u; }, { passive: false });
+field.addEventListener('keydown', e => { const d = { ArrowLeft: [1,0], ArrowRight: [-1,0], ArrowUp: [0,1], ArrowDown: [0,-1] }[e.key]; if (!d) return;
+  e.preventDefault(); if (reduce) { cam.x += d[0] * 140; cam.y += d[1] * 140; } else { cam.vx += d[0] * 9; cam.vy += d[1] * 9; } });
+
+function tick(){ if (!drag) { cam.x += cam.vx; cam.y += cam.vy; cam.vx *= .935; cam.vy *= .935; } frame(); requestAnimationFrame(tick); }
+document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => {
+  K = +b.dataset.k; document.querySelectorAll('.switch button').forEach(x => x.setAttribute('aria-pressed', x === b));
+}));
+addEventListener('resize', measureEdge);
+document.fonts?.ready.then(measureEdge);
+field.appendChild(document.querySelector('.bed'));   // under every layer, inside the field
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

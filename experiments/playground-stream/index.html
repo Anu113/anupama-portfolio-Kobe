@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock — Playground stream as a scattered field</title>
+<!--
+  Mock, not the site (2026-11-10). /playground/stream rebuilt as one
+  scattered field instead of rows, so no row shows one picture repeating:
+  - Pieces: her paintings, photos and the hero portrait. No app screens;
+    no Bob painting, Moss or smiley (on request).
+  - Placement: a jittered grid (each piece gets its own cell, then moves
+    randomly inside it), so spacing stays even but nothing lines up. Same
+    picture never sits next to itself; the whole field repeats only after
+    a full period, far off screen.
+  - Free pan both ways: drag (with a throw), trackpad/wheel, arrow keys.
+  Three depth treatments, switched with the pill at the bottom:
+    A Flat    — the scatter only.
+    B Depth   — every piece at its own depth: far ones smaller, fainter,
+                and slower as you pan (parallax), near ones over them.
+    C Cloud   — the field bends over a ball, like the /playground cloud:
+                biggest in the middle, shrinking and fading to the edges.
+  Serve from the repo root so /public/images resolves.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070; --accent: #b4482a; --pill: #f3f2f0;
+    --ease: cubic-bezier(.16,1,.3,1); }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--fg);
+    font: 600 14px/1.5 Manrope, system-ui, sans-serif; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  .nav { position: fixed; inset: 0 0 auto; z-index: 5; display: flex; justify-content: space-between;
+    padding: 22px 40px; font-size: 14px; pointer-events: none; }
+  .nav .links { display: flex; gap: 22px; font-size: 12px; color: var(--fg-dim); }
+  .nav .links b { color: var(--fg); font-weight: 600; }
+
+  /* The heading sits behind the field, as on the stream page. */
+  .bed { position: fixed; inset: 0; z-index: 0; display: grid; place-items: center; text-align: center; pointer-events: none; }
+  .bed small { display: block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 14px; }
+  .bed h1 { font: 300 clamp(32px, 4vw, 44px)/1.1 'Crimson Pro', serif; letter-spacing: -.01em; }
+  .bed em { font-style: italic; }
+
+  body[data-mode="cloud"] .bed { z-index: 2; }
+  .field { position: fixed; inset: 0; z-index: 1; overflow: hidden; cursor: grab; touch-action: none; outline: none; }
+  .field.dragging { cursor: grabbing; }
+  .field:focus-visible::after { content: ''; position: absolute; inset: 6px; border: 2px solid var(--accent); pointer-events: none; }
+
+  .tile { position: absolute; left: 0; top: 0; transform-origin: 50% 50%; will-change: transform, opacity; }
+  /* Far pieces fade toward the ground with a veil, not opacity, so they
+     stay solid and the heading never shows through them. Cut-outs (Moss,
+     the portrait) have no box to veil, so they use opacity. */
+  .tile::after { content: ''; position: absolute; inset: 0; background: var(--bg);
+    opacity: var(--veil, 0); pointer-events: none; }
+  .tile.cut::after { display: none; }
+  .tile img { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none;
+    -webkit-user-drag: none; pointer-events: none; }
+  .tile figcaption { position: absolute; left: 0; top: 100%; margin-top: 8px; width: max-content; max-width: 240px;
+    font: 400 11px/1.25 'Azeret Mono', monospace; letter-spacing: .02em; color: var(--fg-dim);
+    opacity: 0; transform: translateY(4px); transition: opacity .4s var(--ease), transform .4s var(--ease); }
+  .field:not(.dragging) .tile:hover figcaption { opacity: 1; transform: none; }
+
+  .switch { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 5;
+    display: flex; gap: 4px; padding: 5px; border-radius: 999px; background: var(--pill); }
+  .switch button { padding: 8px 16px; border-radius: 999px; font-size: 13px; color: var(--fg-dim); }
+  .switch button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .note { position: fixed; right: 40px; bottom: 36px; z-index: 5; max-width: 260px; text-align: right;
+    font: 400 11px/1.4 'Azeret Mono', monospace; color: var(--fg-dim); }
+  @media (max-width: 810px) { .note { display: none; } .nav { padding: 16px; } }
+</style>
+</head>
+<body>
+<header class="nav"><span>Anupama Mishra</span>
+  <nav class="links"><span>Work</span><span>About</span><b>Playground</b><span>Contact</span></nav></header>
+<div class="bed"><div><small>The playground</small><h1>A place for <em>endless</em><br>experimentation</h1></div></div>
+<div class="field" id="field" tabindex="0" role="region"
+     aria-label="Playground collage. Drag, scroll or use the arrow keys to move it."></div>
+<div class="switch" role="group" aria-label="Mock">
+  <button type="button" data-v="flat">A · Flat</button>
+  <button type="button" data-v="depth" aria-pressed="true">B · Depth</button>
+  <button type="button" data-v="cloud">C · Cloud</button>
+</div>
+<p class="note" id="note"></p>
+
+<script>
+const PIECES = [
+  ['play-porch.jpg',1.0,'Reading on the porch, digital'],['play-earrings.jpg',1.33,'Earrings, digital'],
+  ['play-hermione.jpg',.73,'Hermione, ink and watercolour'],['play-green-eyes.jpg',1.33,'Green eyes, digital'],
+  ['play-reading.jpg',.85,'Tea and a book, digital'],['play-care.jpg',.96,'Care, watercolour'],
+  ['play-sage.jpg',.63,'Sage, digital'],
+  ['play-mermaid.jpg',.8,'Mermaid, watercolour'],['play-crown.jpg',.75,'Crown, acrylic'],
+  ['beyond/talk-smile.webp',1,'On stage, The Saga of Accessibility'],['beyond/talk-poster.webp',1.78,'Talk poster, Design Sundays'],
+  ['beyond/baking-cookie.webp',.9,'Baking class'],['beyond/blue-sculpture.webp',.75,'Design conference'],
+  ['beyond/event-selfie.webp',1.37,'Designers, one selfie'],['beyond/sticky-wall.webp',.56,'Sticky-note wall'],
+  ['beyond/office-garden.webp',1.33,'Office garden'],['beyond/meetup-group.webp',1.96,'Design meetup'],
+  ['beyond/baking-icing.webp',.59,'Piping chocolate'],['beyond/blue-sculpture-friend.webp',.75,'With a friend'],
+  ['beyond/office-garden-2.webp',1.14,'Office garden, again'],
+  ['hero-idle.webp',.71,'Hero portrait'],
+].map(([f,a,c]) => ({ a, c, src: /loop|moss|hero/.test(f) ? `/public/images/${f}` : `/public/images/${f.startsWith('play-') ? f : 'playground/' + f.replace(/\//g,'__').replace(/\.\w+$/,'.webp')}` }));
+
+/* Seeded so the layout is the same on every load. */
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+/* The field: a COLS × ROWS jittered grid that repeats in both directions.
+   64 cells for 21 pieces, so each appears about three times — never in neighbouring cells. */
+const COLS = 8, ROWS = 8;
+let CELL = innerWidth < 810 ? 220 : 340;
+const grid = [];
+const neighbours = (i) => { const c = i % COLS, r = (i / COLS) | 0, out = [];
+  for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) if (dr || dc)
+    out.push(((r + dr + ROWS) % ROWS) * COLS + (c + dc + COLS) % COLS); return out; };
+const bag = []; const refill = () => bag.push(...PIECES.map((_, i) => i).sort(() => rnd() - .5));
+for (let i = 0; i < COLS * ROWS; i++) {
+  if (bag.length < 6) refill();
+  const near = new Set(neighbours(i).map(n => grid[n]?.p));
+  let k = bag.findIndex(p => !near.has(p)); if (k < 0) k = 0;
+  const p = bag.splice(k, 1)[0];
+  grid.push({
+    p,
+    // a little off the cell's centre: random, with tight, even gaps (a little air between them)
+    jx: (rnd() - .5) * .28, jy: (rnd() - .5) * .28,
+    size: .8 + rnd() * .16,          // longest side, as a fraction of the cell (bigger, on request)
+    z: rnd(),                         // depth for B and C (0 far, 1 near)
+  });
+}
+
+const field = document.getElementById('field');
+const named = new Set();   // alt text on a piece's first appearance only
+const els = grid.map((g, i) => {
+  const p = PIECES[g.p]; const first = !named.has(g.p); named.add(g.p);
+  const f = document.createElement('figure'); f.className = 'tile';
+  if (/moss|hero/.test(p.src)) f.classList.add('cut');
+  f.innerHTML = `<img src="${p.src}" alt="${first ? p.c : ''}" decoding="async"><figcaption>${p.c}</figcaption>`;
+  f._i = i; field.appendChild(f); return f;
+});
+// Each cell is drawn once per screen-tile of the period it falls in; for a
+// period bigger than the screen, one copy per cell is enough, positioned
+// by wrapping. Big screens get a second copy column/row via `copies`.
+let copies = [];
+function layoutCopies(){
+  const PW = COLS * CELL, PH = ROWS * CELL;
+  const nx = Math.ceil(innerWidth * 1.6 / PW) , ny = Math.ceil(innerHeight * 1.6 / PH);
+  copies.forEach(c => c.remove()); copies = [];
+  // extra copies only when the screen is wider than one period
+  for (let cx = 0; cx < nx; cx++) for (let cy = 0; cy < ny; cy++) if (cx || cy)
+    els.forEach(e => { const c = e.cloneNode(true); c.querySelector('img').alt = ''; c.dataset.cx = cx; c.dataset.cy = cy; c._i = e._i; field.appendChild(c); copies.push(c); });
+}
+
+let mode = 'depth';
+const cam = { x: 0, y: 0, vx: 0, vy: 0 };
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NOTES = {
+  flat: 'A — the scatter on its own. Even spacing, random placement and size.',
+  depth: 'B — each piece at its own depth: far ones smaller, fainter and slower as you move.',
+  cloud: 'C — the field bends over a ball, like the /playground cloud: big in the middle, shrinking to the edges.',
+};
+const mod = (a, n) => ((a % n) + n) % n;
+
+function frame(){
+  const W = innerWidth, H = innerHeight, PW = COLS * CELL, PH = ROWS * CELL;
+  const R = Math.min(W, H) * .78;            // C: the ball's radius
+  const list = [...els.map(e => [e, 0, 0]), ...copies.map(c => [c, +c.dataset.cx, +c.dataset.cy])];
+  for (const [el, cx, cy] of list) {
+    const i = el._i, g = grid[i], p = PIECES[g.p];
+    const par = mode === 'depth' ? .8 + .2 * g.z : 1;   // gentle, so gaps don't open up as you pan
+    // cell centre, jittered, panned, wrapped round the screen centre
+    let x = (i % COLS + .5 + g.jx) * CELL + cam.x * par + cx * PW;
+    let y = (((i / COLS) | 0) + .5 + g.jy) * CELL + cam.y * par + cy * PH;
+    const nx = Math.max(1, Math.ceil(W * 1.6 / PW)), ny = Math.max(1, Math.ceil(H * 1.6 / PH));
+    x = mod(x - W / 2 + PW * nx / 2, PW * nx) - PW * nx / 2;   // → around 0 = screen centre
+    y = mod(y - H / 2 + PH * ny / 2, PH * ny) - PH * ny / 2;
+    // sized by area, so a wide photo isn't a thin strip and a tall one isn't a sliver
+    const L = g.size * CELL, w = L * Math.sqrt(p.a), h = L / Math.sqrt(p.a);
+    let s = 1, o = 1, zi = 0, blur = 0;
+    if (mode === 'depth') { s = .78 + .27 * g.z; o = .55 + .45 * g.z; zi = Math.round(g.z * 100); }
+    if (mode === 'cloud') {
+      const d = Math.hypot(x, y), ang = d / R;
+      if (ang >= Math.PI / 2) { el.style.visibility = 'hidden'; continue; }
+      const k = d ? R * Math.sin(ang) / d : 1;      // pull toward the middle, like a globe
+      x *= k; y *= k;
+      const front = Math.cos(ang);                  // 1 in the middle, 0 at the rim
+      s = (.35 + .75 * front) * (.85 + .3 * g.z); o = Math.min(1, .15 + 1.1 * front);
+      zi = Math.round(front * 100 + g.z * 10);
+      // Room for the words, as on the /playground cloud: pieces inside an
+      // oval round the heading shrink back and slip under it.
+      const ox = x / 300, oy = y / 120, e = Math.hypot(ox, oy);
+      if (e < 1.6) { const t = Math.max(0, (e - .7) / .9); s *= .45 + .55 * t; o *= .35 + .65 * t; zi = -1; }
+    }
+    document.body.dataset.mode = mode;
+    el.style.visibility = '';
+    el.style.width = w + 'px'; el.style.height = h + 'px';
+    el.style.transform = `translate3d(${W / 2 + x - w / 2}px, ${H / 2 + y - h / 2}px, 0) scale(${s})`;
+    if (el.classList.contains('cut')) { el.style.opacity = o; } else { el.style.opacity = 1; el.style.setProperty('--veil', (1 - o).toFixed(3)); }
+    el.style.zIndex = zi;
+  }
+}
+
+/* Input: drag with a throw, wheel/trackpad both axes, arrows. */
+let drag = null, moved = 0;
+field.addEventListener('pointerdown', e => { if (e.button) return; drag = { x: e.clientX, y: e.clientY, t: performance.now() }; moved = 0; cam.vx = cam.vy = 0; field.setPointerCapture(e.pointerId); });
+field.addEventListener('pointermove', e => { if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y, now = performance.now(), dt = Math.max(8, now - drag.t);
+  moved += Math.abs(dx) + Math.abs(dy); if (moved > 4) field.classList.add('dragging');
+  cam.x += dx; cam.y += dy; cam.vx = dx / dt * 16; cam.vy = dy / dt * 16; drag.x = e.clientX; drag.y = e.clientY; drag.t = now; });
+const end = () => { if (!drag) return; drag = null; field.classList.remove('dragging'); if (reduce) cam.vx = cam.vy = 0; };
+field.addEventListener('pointerup', end); field.addEventListener('pointercancel', end);
+field.addEventListener('wheel', e => { e.preventDefault(); cam.vx = cam.vy = 0;
+  const u = e.deltaMode === 1 ? 16 : 1; cam.x -= (e.deltaX || (e.shiftKey ? e.deltaY : 0)) * u; if (!e.shiftKey) cam.y -= e.deltaY * u; }, { passive: false });
+field.addEventListener('keydown', e => { const d = { ArrowLeft: [1,0], ArrowRight: [-1,0], ArrowUp: [0,1], ArrowDown: [0,-1] }[e.key]; if (!d) return;
+  e.preventDefault(); if (reduce) { cam.x += d[0] * 140; cam.y += d[1] * 140; } else { cam.vx += d[0] * 9; cam.vy += d[1] * 9; } });
+
+function tick(){ if (!drag) { cam.x += cam.vx; cam.y += cam.vy; cam.vx *= .935; cam.vy *= .935; } frame(); requestAnimationFrame(tick); }
+
+const note = document.getElementById('note');
+document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => {
+  mode = b.dataset.v; note.textContent = NOTES[mode];
+  document.querySelectorAll('.switch button').forEach(x => x.setAttribute('aria-pressed', x === b));
+}));
+note.textContent = NOTES[mode];
+addEventListener('resize', () => { CELL = innerWidth < 810 ? 220 : 340; layoutCopies(); });
+layoutCopies(); requestAnimationFrame(tick);
+</script>
+</body>
+</html>

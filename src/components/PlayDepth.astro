@@ -1,0 +1,366 @@
+---
+/* PlayDepth — /playground/stream: her pieces hung as a gallery wall.
+   Chosen on request (2026-11-11) from experiments/playground-stream/wall.html,
+   replacing the three-layer depth field built the day before, which read as
+   cluttered, left too much space before the footer and scrolled too fast.
+
+   What the visitor sees:
+   - The page opens on the heading, alone, with the nav clear above it. The
+     work starts BELOW the heading's line, so nothing appears out of thin
+     air: the first pieces peek up from the bottom of the screen.
+   - The pieces hang in columns, like a gallery wall: even gutters, nothing
+     overlapping, each piece a little narrower or wider than its column and
+     set left, centre or right in it, columns starting a little staggered.
+   - Scrolling (the page's own scroll) carries the wall up at 0.8x the
+     scroll, eased, so it glides to where you scrolled rather than jumping.
+     Each column moves at its own speed (0.88-1.12x), so the wall shifts
+     gently against itself; columns never share space, so nothing piles up.
+   - The heading drifts up slowly for the first ~0.6 screen while pieces
+     rise over it, then leaves. Scroll back to the top for it again.
+   - Sideways is endless: drag, a sideways trackpad swipe or the arrow keys
+     pan the wall, and a drag throws it.
+   - Each column stops where its last piece will sit 96px above the screen's
+     bottom when the page lets go, so the footer's curve rises under the
+     last row: no piece is cut by it, and there's no empty screen first.
+   - Hover a piece and it lifts a touch with its caption under it: 10px mono,
+     never wider than the piece, three lines at most, so it fits the gap below
+     and never reaches the next piece. Paintings add their medium.
+
+   How: the section is (1 + length) screens tall with a sticky one-screen
+   stage inside, so vertical is the document's scroll (the nav hides and
+   returns as on every other page, and the footer is reachable). Numbers in
+   data/playDepth.ts; colours and caption values under PLAY DEPTH in
+   tokens.css.
+
+   Accessibility: the pictures are decoration over a plain list of the
+   pieces for screen readers. The stage is one focus stop; Left/Right pan,
+   Up/Down scroll the page as usual. Under reduced motion the wall moves as
+   one sheet with the page (no easing, no column speeds), the heading moves
+   with it, and there's no throw. Its reason: the work seen whole as a wall
+   you walk along, at your own pace. */
+import PageHeader from './PageHeader.astro';
+import { depthPieces, wall } from '../data/playDepth';
+---
+<section class="pdepth" data-pdepth style={`--pdepth-len: ${wall.length}`}>
+  <div
+    class="pdepth__stage"
+    data-stage
+    tabindex="0"
+    role="region"
+    aria-label="Playground. Scroll to move through the work; drag, swipe sideways or use the left and right arrow keys to pan."
+  >
+    <div class="pdepth__bed">
+      <div class="pdepth__words" data-words>
+        <PageHeader label="The playground">
+          A place for <em>endless</em> experimentation
+        </PageHeader>
+      </div>
+    </div>
+    <div class="pdepth__wall" data-wall aria-hidden="true"></div>
+  </div>
+  <ul class="u-sr-only">
+    {depthPieces.map((p) => <li>{p.medium ? `${p.title}, ${p.medium}` : p.title}</li>)}
+  </ul>
+</section>
+
+<style>
+  .pdepth {
+    position: relative;
+    height: calc((1 + var(--pdepth-len)) * 100svh);
+  }
+  .pdepth__stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y;             /* vertical stays the browser's on touch; sideways is ours */
+    overscroll-behavior-x: contain;
+    outline: none;
+  }
+  .pdepth__stage:focus-visible::after {
+    content: '';
+    position: absolute;
+    inset: var(--pdepth-focus-inset);
+    border: 2px solid var(--accent);
+    pointer-events: none;
+    z-index: 9;
+  }
+  :global(body.is-depth-panning),
+  :global(body.is-depth-panning) .pdepth__stage { cursor: grabbing; }
+
+  /* The heading sits under the wall: pieces may pass over it. */
+  .pdepth__bed {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: grid;
+    place-items: center;
+    padding-inline: var(--gutter);
+    pointer-events: none;
+  }
+  .pdepth__words { will-change: transform; }
+
+  .pdepth__wall { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .pdepth__wall :global(.pdepth__tile) {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    pointer-events: auto;
+    background: var(--pdepth-placeholder);
+    will-change: transform;
+  }
+  .pdepth__wall :global(.pdepth__tile.is-cut) { background: none; }
+  .pdepth__wall :global(.pdepth__tile img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    -webkit-user-drag: none;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+
+  /* The caption: mono ink under the piece, no ground behind it, never wider
+     than the piece and three lines at most, so it fits the gap below and never
+     reaches the next piece. Shown only while the piece is hovered. */
+  .pdepth__wall :global(.pdepth__tile figcaption) {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    width: 100%;
+    margin-top: var(--pdepth-caption-gap);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--pdepth-caption-size);
+    letter-spacing: var(--tracking-label);
+    line-height: var(--pdepth-caption-leading);
+    color: var(--fg);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity var(--dur-hover) var(--ease-out), transform var(--dur-hover) var(--ease-out);
+    pointer-events: none;
+  }
+  @media (hover: hover) {
+    .pdepth__stage:not(.is-dragging) :global(.pdepth__tile:hover) { z-index: 5; }
+    .pdepth__stage:not(.is-dragging) :global(.pdepth__tile:hover img) { transform: scale(1.03); }
+    .pdepth__stage:not(.is-dragging) :global(.pdepth__tile:hover figcaption) { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pdepth__wall :global(.pdepth__tile figcaption),
+    .pdepth__wall :global(.pdepth__tile img) { transition: none; }
+  }
+</style>
+
+<script>
+  import { depthPieces, wall } from '../data/playDepth';
+
+  const root = document.querySelector<HTMLElement>('[data-pdepth]');
+  const stage = root?.querySelector<HTMLElement>('[data-stage]');
+  const words = root?.querySelector<HTMLElement>('[data-words]');
+  const host = root?.querySelector<HTMLElement>('[data-wall]');
+
+  if (root && stage && words && host) {
+    const still = matchMedia('(prefers-reduced-motion: reduce)');
+    const mod = (a: number, n: number) => ((a % n) + n) % n;
+    const N = depthPieces.length;
+
+    interface Tile { el: HTMLElement; x: number; y: number; w: number; h: number; k: number; hid?: boolean; }
+    let tiles: Tile[] = [];
+    let PW = 0, PITCH = 0;
+    let edge = 0;            // the heading's line, in stage px at the top: the work starts below it
+    let builtFor = '';
+
+    // The wall's travel for a scroll of p, per column factor k.
+    const factor = (c: number) => (still.matches ? 1 : wall.speeds[c % wall.speeds.length]);
+    const speed = () => (still.matches ? 1 : wall.speed);
+
+    // Measured with the heading's own transform taken off, so it's right
+    // however far down the page is (a reload can land mid-page).
+    const measure = () => {
+      const prev = words.style.transform;
+      words.style.transform = 'none';
+      const r = words.getBoundingClientRect(), s = stage.getBoundingClientRect();
+      words.style.transform = prev;
+      edge = r.bottom - s.top + wall.gap;
+    };
+
+    /* Hang the wall: columns that repeat sideways; down each column, pieces
+       stacked with an even gap. Piece (c, r) is (5c + r) mod N, so a row
+       never repeats a piece and a column only after N pieces. Each column
+       stops where its last piece would still sit endGap above the screen's
+       bottom when the page lets go. */
+    const build = () => {
+      const W = innerWidth, H = stage.clientHeight;
+      const key = `${W}x${H}x${still.matches}`;
+      if (key === builtFor) return;
+      builtFor = key;
+      measure();
+      const small = W < 810;
+      const COL = small ? wall.colSm : wall.col;
+      const GUT = small ? wall.gutterSm : wall.gutter;
+      const VGAP = small ? wall.vgapSm : wall.vgap;
+      PITCH = COL + GUT;
+      const COLS = Math.max(8, Math.ceil(Math.max(2600, W * 1.5) / PITCH));
+      PW = COLS * PITCH;
+      const travel = wall.length * H * speed();   // the wall's travel when the page lets go
+      let seed = wall.seed;
+      const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+      host.replaceChildren();
+      tiles = [];
+      const frag = document.createDocumentFragment();
+      for (let c = 0; c < COLS; c++) {
+        const k = factor(c);
+        const limit = travel * k + H - wall.endGap;   // a piece's bottom must stay above this
+        let y = edge + rnd() * (small ? wall.staggerSm : wall.stagger);
+        for (let r = 0; ; r++) {
+          const piece = depthPieces[mod(c * 5 + r, N)];
+          const w = COL * (0.74 + rnd() * 0.26);
+          const h = w / piece.aspect;
+          if (y + h > limit) break;
+          const align = rnd();
+          const x = c * PITCH + (align < 0.33 ? 0 : align < 0.66 ? (COL - w) / 2 : COL - w);
+          const el = document.createElement('figure');
+          el.className = 'pdepth__tile' + (piece.cut ? ' is-cut' : '');
+          const img = document.createElement('img');
+          img.src = `/images/${piece.file}`;
+          img.alt = '';
+          img.decoding = 'async';
+          img.draggable = false;
+          const cap = document.createElement('figcaption');
+          cap.textContent = piece.medium ? `${piece.title} · ${piece.medium}` : piece.title;
+          el.append(img, cap);
+          el.style.width = `${w}px`;
+          el.style.height = `${h}px`;
+          el.style.visibility = 'hidden';
+          frag.append(el);
+          tiles.push({ el, x, y, w, h, k, hid: true });
+          y += h + VGAP;
+        }
+      }
+      host.append(frag);
+      camX = (W - PW) / 2;
+    };
+
+    // --- where things are ---
+    let camX = 0, velX = 0;
+    let sp = -1;             // the eased scroll the wall follows (-1: not yet placed)
+    const progress = () => {
+      const H = stage.clientHeight;
+      return Math.min(wall.length * H, Math.max(0, scrollY - (root.getBoundingClientRect().top + scrollY)));
+    };
+    // How far the heading has moved for the wall's travel f: slow for the
+    // first `hold` screens, then with the wall. Continuous, so no jolt.
+    const headY = (f: number) => {
+      if (still.matches) return -f;
+      const hold = innerHeight * wall.hold;
+      return -(Math.min(f, hold) * wall.drift + Math.max(0, f - hold));
+    };
+
+    // --- the frame ---
+    let running = false;
+    const frame = () => {
+      if (!running) return;
+      const W = stage.clientWidth, H = stage.clientHeight;
+      const quiet = still.matches;
+      const p = progress();
+      if (quiet || sp < 0) sp = p;
+      else { sp += (p - sp) * wall.ease; if (Math.abs(p - sp) < 0.3) sp = p; }
+      const f = sp * speed();
+      words.style.transform = `translate3d(0, ${headY(f).toFixed(1)}px, 0)`;
+
+      if (!drag) {
+        camX += velX;
+        velX *= wall.friction;
+        if (Math.abs(velX) < 0.05) velX = 0;
+      }
+      for (const t of tiles) {
+        const x = mod(t.x + camX + PITCH, PW) - PITCH;
+        const y = t.y - f * t.k;
+        const off = x + t.w < -40 || x > W + 40 || y + t.h < -60 || y > H + 60;
+        if (off) { if (!t.hid) { t.el.style.visibility = 'hidden'; t.hid = true; } continue; }
+        if (t.hid) { t.el.style.visibility = ''; t.hid = false; }
+        t.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+      }
+      requestAnimationFrame(frame);
+    };
+
+    // Only run while the stage is on screen.
+    new IntersectionObserver(([e]) => {
+      const was = running;
+      running = e.isIntersecting;
+      if (running && !was) requestAnimationFrame(frame);
+    }).observe(stage);
+
+    // --- drag: sideways pans (a mouse drag also scrolls the page), a throw glides ---
+    let drag: { x: number; y: number; t: number; id: number; touch: boolean } | null = null;
+    let moved = 0;
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId, touch: e.pointerType !== 'mouse' };
+      moved = 0;
+      velX = 0;
+      stage.setPointerCapture(e.pointerId);
+      if (!drag.touch) document.body.classList.add('is-depth-panning');
+    });
+    stage.addEventListener('pointermove', (e) => {
+      if (!drag || drag.id !== e.pointerId) return;
+      const now = performance.now(), dt = Math.max(8, now - drag.t);
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      moved += Math.abs(dx) + Math.abs(dy);
+      if (moved > 4) stage.classList.add('is-dragging');
+      camX += dx;
+      velX = (dx / dt) * 16;
+      // Touch keeps the browser's own vertical scroll (touch-action: pan-y).
+      if (!drag.touch && dy) scrollBy({ top: -dy, behavior: 'instant' as ScrollBehavior });
+      drag.x = e.clientX; drag.y = e.clientY; drag.t = now;
+    });
+    const endDrag = (e: PointerEvent) => {
+      if (!drag || drag.id !== e.pointerId) return;
+      drag = null;
+      stage.classList.remove('is-dragging');
+      document.body.classList.remove('is-depth-panning');
+      if (still.matches) velX = 0;
+    };
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+
+    // --- wheel / trackpad: a gesture with any sideways part is ours, both
+    // halves of it, so a diagonal stays diagonal; a plain vertical one is
+    // left to the browser. ---
+    stage.addEventListener('wheel', (e) => {
+      if (e.ctrlKey) return;
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1;
+      const dx = (e.deltaX || (e.shiftKey ? e.deltaY : 0)) * unit;
+      const dy = (e.shiftKey ? 0 : e.deltaY) * unit;
+      if (!dx) return;
+      e.preventDefault();
+      velX = 0;
+      camX -= dx;
+      if (dy) scrollBy({ top: dy, behavior: 'instant' as ScrollBehavior });
+    }, { passive: false });
+
+    // --- keyboard: Left/Right pan; Up/Down are the page's own ---
+    stage.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      const d = e.key === 'ArrowLeft' ? 1 : -1;
+      if (still.matches) camX += d * 140;
+      else velX += d * 9;
+    });
+
+    build();
+    let t: number | undefined;
+    addEventListener('resize', () => { clearTimeout(t); t = window.setTimeout(build, 150); });
+    still.addEventListener('change', () => { builtFor = ''; build(); });
+    document.fonts?.ready.then(() => { builtFor = ''; build(); });
+  }
+</script>

@@ -291,6 +291,23 @@ effect:
   stream (`InfiniteStream.astro`, `data/play.ts`) is parked, not
   deleted. Several Animation pieces are stills until clips are
   recorded.
+  `/playground/stream` (hidden, not linked) is a second playground,
+  `PlayDepth.astro`, approved on request (2026-11-11, mocks in
+  `experiments/playground-stream/`, `wall.html`; it replaced a
+  three-layer depth field that read as cluttered): her paintings,
+  photos and portrait (no app screens, no Bob painting, Moss or
+  smiley) hung as a gallery wall — columns with even gutters,
+  nothing overlapping, endless sideways (drag, swipe, arrow keys).
+  It opens on the heading alone; the work starts below its line and
+  rises over it while the heading drifts up slowly, then leaves. No
+  fades. The wall follows the page's own scroll at 0.8x, eased, each
+  column at a slightly different speed; each column ends 96px above
+  the screen's bottom when the page goes on to the footer. Captions
+  on hover only, 10px mono, within the piece's width; paintings get
+  evocative titles and a gallery-label medium, no "by me". Numbers
+  in `data/playDepth.ts`, values under PLAY DEPTH in `tokens.css`.
+  Its reason: the work seen whole as a wall you walk along, at your
+  own pace.
 
 Outside those nine moments — hero shader, first-paint loader, the reused
 hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak, BeyondWork, PlayBall — the old rule still applies at full strength:

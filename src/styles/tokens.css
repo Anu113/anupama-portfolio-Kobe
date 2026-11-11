@@ -999,3 +999,18 @@
   --dur-play-tile: 320ms;                  /* the switch's tile splitting into four, on a spring */
   --dur-play-tile-hold: 220ms;             /* the whole tile waits this long before showing again */
 }
+
+/* ============================================================
+   PLAY DEPTH (PlayDepth.astro, /playground/stream) — her pieces hung
+   as a gallery wall, on request (2026-11-11), from
+   experiments/playground-stream/wall.html (it replaced the three-layer
+   depth field of 2026-11-10). Column and scroll numbers live in
+   data/playDepth.ts. Square pieces, no shadows, like the rest of the site.
+   ============================================================ */
+:root {
+  --pdepth-placeholder: var(--screen);     /* a piece whose picture hasn't loaded */
+  --pdepth-caption-gap: 8px;               /* piece to caption; the gap under a piece (data/playDepth.ts) is sized for gap + three lines */
+  --pdepth-caption-size: 0.625rem;         /* 10px: smaller than --step-fine, on request, so a caption fits its piece's width in three lines */
+  --pdepth-caption-leading: 1.3;
+  --pdepth-focus-inset: 6px;
+}
