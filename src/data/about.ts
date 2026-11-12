@@ -115,26 +115,25 @@ export const tiles: Tile[] = [
 
 // ---- Song ----------------------------------------------------------
 // The record player tile (RecordPlayer.astro): her playlist, "My
-// Playlist #2026" on Spotify (given 2026-11-11). While it plays, the
-// player steps through the first tracks, read off the playlist that day:
-// the display scrolls one track and the record's label shows that
-// track's cover. Covers were saved from Spotify's image server into
-// /public/images/about/covers/ so visitors' browsers never contact
-// Spotify to show them; refresh them if the playlist changes. The
-// Spotify key opens the playlist in a new tab (no embed: Spotify's
-// player sets third-party cookies). If she adds a short clip she has
-// the rights to in /public (`audio`), the play key plays it; until then
-// a tune made in the browser stands in.
+// Playlist #2026" on Spotify (given 2026-11-11). Pressing play plays the
+// real tracks, one after another, through Spotify's own embedded player
+// (on request, 2026-11-11: it used to play a made-up stand-in tune). The
+// player is only loaded after that press, so a visitor who never presses
+// play never contacts Spotify; once loaded it sets Spotify's cookies.
+// Visitors signed in to Spotify hear whole tracks, everyone else Spotify's
+// 30-second previews. `tracks` are the playlist's songs as listed on
+// 2026-11-11 (it had two then; it once had Ishq, Another Man and Rani,
+// whose covers are still in /public/images/about/covers/): `uri` is the
+// track's Spotify id, from its share link. Add a track here when she adds
+// one to the playlist, with its cover saved into covers/ so the label
+// never fetches from Spotify. The Spotify key opens the playlist itself.
 const cv = '/images/about/covers/';
-export interface Track { title: string; artist: string; cover: string }
-export const song: { title: string; url: string; tracks: Track[]; audio?: string } = {
+export interface Track { title: string; artist: string; cover: string; uri: string }
+export const song: { title: string; url: string; tracks: Track[] } = {
   title: 'My Playlist #2026',
   url: 'https://open.spotify.com/playlist/17iWY4vCkVxZGIbwsTYNUO',
   tracks: [
-    { title: 'I Luv U', artist: 'Fred again..', cover: cv + 'i-luv-u.jpg' },
-    { title: 'Candy', artist: 'Lifafa', cover: cv + 'candy.jpg' },
-    { title: 'Ishq', artist: 'Donn Bhat', cover: cv + 'ishq.jpg' },
-    { title: 'Another Man', artist: 'Donn Bhat', cover: cv + 'another-man.jpg' },
-    { title: 'Rani', artist: 'MALFNKTION', cover: cv + 'rani.jpg' },
+    { title: 'I Luv U', artist: 'Fred again..', cover: cv + 'i-luv-u.jpg', uri: 'spotify:track:7MRKWuWtDTOz76kDiqkKZh' },
+    { title: 'Candy', artist: 'Lifafa', cover: cv + 'candy.jpg', uri: 'spotify:track:3eNVm12Ns8BOk4NqgWcGI4' },
   ],
 };
