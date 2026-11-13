@@ -596,6 +596,15 @@ walked back. Concretely, in the current implementation:
   chips with 4px corners — the same labels as its card (`labelsFor()`).
   A requested exception to rule 2: one hue, only on these tags; don't
   spread it to other chips, text or chrome.
+- **The locked case page** (`LockedGate.astro`, the Okta case): mono
+  line, "The interesting parts are *confidential*.", one paragraph, then
+  Role, Scope and Outcome as three of the About page's soft cards (3%
+  ink fill, no border, 28px corners; LOCKED GATE in `tokens.css`), then
+  the passcode form. On request (2026-11-14, option A in grey of
+  `experiments/locked-gate/soft-cards.html`) the numbered contents list
+  with ink redaction bars and the hairlines were removed; don't bring
+  them back. Its corners are a requested exception to the square
+  `--radius` rule, this page only.
 - The old night mode, the named theme palettes, tints/swatches, and the one-off
   effect components (`OneWord`, `CaseDoodle`, `Testimonials`, `Marquee`,
   `Mosaic`, the footer's variable-weight wordmark, the section watermark

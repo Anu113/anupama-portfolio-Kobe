@@ -1078,6 +1078,21 @@
 }
 
 /* ============================================================
+   LOCKED GATE (LockedGate.astro): Role, Scope and Outcome as three soft
+   cards, the About page's (option A, grey, experiments/locked-gate/
+   soft-cards.html, on request 2026-11-14). The 28px corners are an
+   exception to the square --radius rule, this page only.
+   Contrast: the mono labels (--fg-dim) on the card 4.5 : 1 light,
+   5.9 : 1 dark; the text (--fg) far above.
+   ============================================================ */
+:root {
+  --locked-card: color-mix(in srgb, var(--fg) 3%, var(--bg));
+  --radius-locked-card: 28px;
+  --locked-card-pad: 1.4rem 1.5rem 1.5rem;
+  --locked-card-gap: 0.75rem;
+}
+
+/* ============================================================
    ABOUT (pages/about.astro, AskMoss.astro's small size). The tabs,
    Moss's field and the rounded rows are after andreas.vision/about
    (measured 2026-10-17). The layout (2026-11-11, from the mocks in

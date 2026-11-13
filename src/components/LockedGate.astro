@@ -8,20 +8,23 @@
    it shows what's behind the lock instead of only saying so. Everything
    sits in one centred column (on request, experiments/locked-gate/
    centered.html), top to bottom: the case named in a mono line, the
-   headline, one paragraph, the public version — Role, Scope, Outcome in
-   one row of three (no Team, on request) — the passcode form and a way
-   to ask for it, then the case's own sections as a numbered contents
-   list: the first one readable (its heading), the rest as flat ink
-   redaction bars. A hiring manager sees a real, structured case is
-   there; a recruiter gets level and scope without the passcode.
+   headline, one paragraph, the public version — Role, Scope, Outcome as
+   three soft cards (no Team, on request) — then the passcode form and a
+   way to ask for it. A recruiter gets level and scope without the
+   passcode.
+   The cards are the About page's (option A, grey, of the mocks in
+   experiments/locked-gate/soft-cards.html, on request, 2026-11-14): a
+   3% ink fill, no border, 28px corners, under LOCKED GATE in
+   tokens.css — an exception to the square --radius rule, this page
+   only. They replaced a hairline row; the numbered contents list with
+   ink redaction bars under the form was removed with them.
    The passcode field is a single underline (option 1 of six in
    experiments/locked-gate/inputs.html, on request), with the show/hide
    eye at its end and the Unlock pill on its own line under it.
    The paragraph and the facts are 13px (--step-small), not body size:
    in Manrope 600 at 15px the paragraph competed with the headline;
    ozgur.design and allierho.com both keep their gate copy quieter.
-   The bars are decoration (aria-hidden); each redacted row tells screen
-   readers "redacted" in words instead. No motion beyond the shared hover.
+   No motion beyond the shared hover.
    Copy chosen on request from the mock's copy bank.
 
    Same security model as CaseGate — static site, no server, so this is a
@@ -36,13 +39,12 @@ interface Props {
   role: string;
   scope?: string;
   outcome?: string;
-  sections: { nav: string; heading: string }[];
   password: string;
   backHref?: string;
   targetId: string;
 }
 const {
-  slug, caseTitle, company, role, scope, outcome, sections,
+  slug, caseTitle, company, role, scope, outcome,
   password, backHref = '/work', targetId,
 } = Astro.props;
 const mailSubject = encodeURIComponent(`Passcode for "${caseTitle}"`);
@@ -51,10 +53,6 @@ const facts = [
   { term: 'Scope', detail: scope },
   { term: 'Outcome', detail: outcome },
 ].filter((f) => f.detail);
-const num = (i: number) => String(i + 1).padStart(2, '0');
-/* Redaction bar lengths, in %, cycled so the column reads like text with
-   a ragged edge rather than a stack of equal blocks. One or two lines. */
-const bars = [[92, 64], [78, 40], [86], [70, 88], [55], [66], [80, 48]];
 ---
 <div class="locked" data-gate data-slug={slug} data-password={password} data-target={targetId}>
   <div class="locked__col">
@@ -109,25 +107,6 @@ const bars = [[92, 64], [78, 40], [86], [70, 88], [55], [66], [80, 48]];
       No passcode? <a href={`mailto:${site.email}?subject=${mailSubject}`}>Email me</a> and I'll walk you through it.
     </p>
 
-    <ol class="locked__toc" aria-label="Case contents">
-      {sections.map((s, i) => (
-        <li>
-          <span class="u-label-mono locked__num" aria-hidden="true">{num(i)}</span>
-          <span class="u-label-mono locked__sec">{s.nav}</span>
-          {i === 0 ? (
-            <span class="locked__open">{s.heading}</span>
-          ) : (
-            <span class="locked__bars">
-              <span class="u-sr-only">redacted</span>
-              {bars[(i - 1) % bars.length].map((w) => (
-                <span class="locked__bar" style={`width: ${w}%`} aria-hidden="true" />
-              ))}
-            </span>
-          )}
-        </li>
-      ))}
-    </ol>
-
     <a class="locked__back u-label-mono" href={backHref}>
       <span aria-hidden="true">&larr;</span> All work
     </a>
@@ -177,24 +156,24 @@ const bars = [[92, 64], [78, 40], [86], [70, 88], [55], [66], [80, 48]];
     text-wrap: balance;
   }
 
-  /* ---- the public version: one row of three ---- */
+  /* ---- the public version: three soft cards ---- */
   .locked__facts {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--locked-card-gap);
     width: 100%;
-    margin: 0 0 2.25rem;
+    margin: 0 0 2.5rem;
     text-align: left;
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
   }
-  .locked__facts > div { padding: 1rem 1.25rem 1.1rem; }
-  .locked__facts > div + div { border-left: 1px solid var(--rule); }
-  .locked__facts dt { margin-bottom: 0.4rem; }
+  .locked__facts > div {
+    background: var(--locked-card);
+    border-radius: var(--radius-locked-card);
+    padding: var(--locked-card-pad);
+  }
+  .locked__facts dt { margin-bottom: 0.45rem; }
   .locked__facts dd { margin: 0; font-size: var(--step-small); line-height: 1.55; }
   @media (max-width: 700px) {
     .locked__facts { grid-template-columns: 1fr; }
-    .locked__facts > div { padding-inline: 0; }
-    .locked__facts > div + div { border-left: 0; border-top: 1px solid var(--rule); }
   }
 
   /* ---- the form ---- */
@@ -262,32 +241,6 @@ const bars = [[92, 64], [78, 40], [86], [70, 88], [55], [66], [80, 48]];
     transition: color var(--dur-hover) var(--ease-out), text-decoration-color var(--dur-hover) var(--ease-out);
   }
   .locked__reach a:hover { color: var(--accent-text); text-decoration-color: currentColor; }
-
-  /* ---- the contents, redacted ---- */
-  .locked__toc {
-    list-style: none;
-    margin: clamp(3.5rem, 7vw, 5rem) 0 0;
-    padding: 0;
-    width: 100%;
-    text-align: left;
-  }
-  .locked__toc li {
-    display: grid;
-    grid-template-columns: 2rem 11rem minmax(0, 1fr);
-    gap: 1rem;
-    align-items: center;
-    padding: 0.9rem 0;
-    border-top: 1px solid var(--rule);
-  }
-  .locked__toc li:last-child { border-bottom: 1px solid var(--rule); }
-  @media (max-width: 600px) {
-    .locked__toc li { grid-template-columns: 2rem minmax(0, 1fr); row-gap: 0.5rem; }
-    .locked__open, .locked__bars { grid-column: 2; }
-  }
-  .locked__sec { color: var(--fg); }
-  .locked__open { font-size: var(--step-small); line-height: 1.5; }
-  .locked__bars { display: flex; flex-direction: column; gap: 0.4rem; }
-  .locked__bar { display: block; height: 0.55rem; background: var(--fg); opacity: 0.85; }
 
   .locked__back {
     margin-top: 2.5rem;
