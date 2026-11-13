@@ -1,7 +1,7 @@
 ---
 /* ExperienceList.astro — her roles on /work, the page's last block,
    under the Archive.
-   The same rows as the About page's Experience tab (company logo,
+   The same rows as the About page's Experience tab (letter tile,
    company / role, years in mono, a line or two ending on the company's
    site, after felixrieseberg.com), from the same data (`experience` in
    data/about.ts), so the two never drift. Here it's a plain list, not
@@ -20,7 +20,7 @@ import { experience } from '../data/about';
   <ul class="exp__list">
     {experience.map((r) => (
       <li class="row">
-        <img class="tile" src={r.tile.src} alt="" width="44" height="44" loading="lazy" decoding="async" />
+        <span class="tile" aria-hidden="true">{r.tile.letter}</span>
         <span class="text">
           <span class="rhead">
             <span class="name">{r.name}{r.tag && <span class="tag"> / {r.tag}</span>}</span>
@@ -51,8 +51,9 @@ import { experience } from '../data/about';
   }
   .row:hover { background: var(--about-row-hover); }
   .tile {
-    flex: none; width: var(--about-tile); height: var(--about-tile);
-    border-radius: var(--radius-about-row); object-fit: cover; background: var(--about-card);
+    flex: none; display: grid; place-items: center;
+    width: var(--about-tile); height: var(--about-tile); border-radius: var(--radius-about-row);
+    background: var(--about-card); color: var(--about-soft); font-size: 0.9375rem;
   }
   .text { flex: 1; min-width: 0; display: grid; gap: 2px; font-size: var(--step-copy); line-height: 1.3; }
   .rhead { display: flex; justify-content: space-between; gap: 0.5rem; }

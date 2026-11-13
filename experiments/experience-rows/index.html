@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Experience rows — alternatives to logos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  /* Palette and type copied from tokens.css so the mock matches the site. */
+  :root {
+    --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070; --rule: rgb(0 0 0 / 0.1);
+    --row: color-mix(in srgb, var(--fg) 1.5%, var(--bg));
+    --row-hover: color-mix(in srgb, var(--fg) 4.5%, var(--bg));
+    --card: color-mix(in srgb, var(--fg) 3%, var(--bg));
+    --serif: 'Crimson Pro', Georgia, serif;
+    --sans: 'Manrope', system-ui, sans-serif;
+    --mono: 'Azeret Mono', ui-monospace, monospace;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+  }
+  :root[data-mode='dark'] {
+    --bg: #1b1a19; --fg: #ecebe8; --fg-dim: #a09d98; --rule: rgb(255 255 255 / 0.12);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 600 14px/1.5 var(--sans); }
+  .page { max-width: 1440px; margin: 0 auto; padding: 0 56px 120px; }
+
+  .intro { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding: 56px 0 24px; }
+  .intro h1 { font: 300 44px/1.1 var(--serif); margin: 0 0 12px; }
+  .intro h1 em { font-style: italic; }
+  .intro p { margin: 0; color: var(--fg-dim); font-size: 12px; max-width: 620px; }
+  .mode { font: inherit; font-size: 12px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--rule); background: transparent; color: var(--fg); cursor: pointer; }
+
+  .opt { padding: 32px 0 64px; border-top: 1px solid var(--rule); }
+  .opt__head { display: flex; gap: 16px; align-items: baseline; margin-bottom: 32px; }
+  .opt__id { font: 400 11px/1 var(--mono); color: var(--fg-dim); letter-spacing: .04em; }
+  .opt__name { font: 300 26px/1.1 var(--serif); }
+  .opt__note { color: var(--fg-dim); font-size: 12px; max-width: 520px; margin-left: auto; text-align: right; }
+
+  /* the /work layout: label in the left column, rows in the right */
+  .split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; align-items: start; }
+  .label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-dim); }
+  ul { list-style: none; margin: 0; padding: 0; }
+  .line { color: var(--fg-dim); font-size: 12px; line-height: 1.35; text-wrap: pretty; }
+  .site { color: var(--fg); text-decoration: underline 1px color-mix(in srgb, var(--fg) 30%, transparent); text-underline-offset: 3px; }
+  .year { font: 400 11px/1.3 var(--mono); color: var(--fg-dim); white-space: nowrap; }
+  .tag { color: var(--fg-dim); }
+
+  /* 0 · current, logos (for comparison) */
+  .v0 ul { display: grid; gap: 2px; }
+  .v0 li { display: flex; gap: 16px; padding: 8px; border-radius: 8px; background: var(--row); }
+  .v0 img { width: 44px; height: 44px; border-radius: 8px; flex: none; }
+  .v0 .t { flex: 1; display: grid; gap: 2px; font-size: 12px; line-height: 1.3; }
+  .v0 .h { display: flex; justify-content: space-between; gap: 8px; }
+
+  /* A · the Archive's register */
+  .vA li { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 24px; row-gap: 6px; padding: 18px 0; border-top: 1px solid var(--rule); }
+  .vA li:last-child { border-bottom: 1px solid var(--rule); }
+  .vA .co { font: italic 300 25px/1.1 var(--serif); }
+  .vA .meta { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-dim); align-self: center; text-align: right; }
+  .vA .line { grid-column: 1 / -1; max-width: 52ch; }
+
+  /* B · year column */
+  .vB li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); column-gap: 16px; padding: 16px 0; border-top: 1px solid var(--rule); }
+  .vB li:last-child { border-bottom: 1px solid var(--rule); }
+  .vB .year { padding-top: 2px; }
+  .vB .t { display: grid; gap: 4px; }
+  .vB .h { font-size: 13px; }
+
+  /* C · monogram tile */
+  .vC ul { display: grid; gap: 2px; }
+  .vC li { display: flex; gap: 16px; padding: 8px; border-radius: 8px; background: var(--row); transition: background-color 150ms ease-out; }
+  .vC li:hover { background: var(--row-hover); }
+  .vC .mono { width: 44px; height: 44px; border-radius: 8px; flex: none; display: grid; place-items: center; background: var(--card); color: color-mix(in srgb, var(--fg) 68%, var(--bg)); font: italic 300 22px/1 var(--serif); }
+  .vC .t { flex: 1; display: grid; gap: 2px; font-size: 12px; line-height: 1.3; }
+  .vC .h { display: flex; justify-content: space-between; gap: 8px; }
+
+  /* D · timeline */
+  .vD ul { position: relative; }
+  .vD ul::before { content: ''; position: absolute; left: 4px; top: 10px; bottom: 10px; width: 1px; background: var(--rule); }
+  .vD li { position: relative; display: grid; gap: 4px; padding: 0 0 26px 28px; }
+  .vD li:last-child { padding-bottom: 0; }
+  .vD li::before { content: ''; position: absolute; left: 0; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg); border: 1px solid var(--fg-dim); }
+  .vD li:first-child::before { background: var(--fg); border-color: var(--fg); }
+  .vD .h { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+
+  /* E · quiet logos: monochrome marks, no tile */
+  .vE ul { display: grid; gap: 2px; }
+  .vE li { display: flex; gap: 16px; padding: 8px; border-radius: 8px; background: var(--row); }
+  .vE img { width: 44px; height: 44px; flex: none; border-radius: 8px; filter: grayscale(1) contrast(1.1); opacity: .55; mix-blend-mode: multiply; transition: filter 300ms var(--ease), opacity 300ms var(--ease); }
+  :root[data-mode='dark'] .vE img { filter: grayscale(1) invert(1) contrast(1.1); mix-blend-mode: screen; }
+  .vE li:hover img { filter: none; opacity: 1; mix-blend-mode: normal; }
+  .vE .t { flex: 1; display: grid; gap: 2px; font-size: 12px; line-height: 1.3; }
+  .vE .h { display: flex; justify-content: space-between; gap: 8px; }
+
+  @media (max-width: 900px) {
+    .page { padding-inline: 20px; }
+    .split { grid-template-columns: minmax(0, 1fr); row-gap: 24px; }
+    .opt__head { flex-wrap: wrap; } .opt__note { margin-left: 0; text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="intro">
+    <div>
+      <h1>Experience <em>rows</em></h1>
+      <p>Five ways to show the list without colour logos. Each at the real column width (about the same on /work and in the About tab), same words, our type and palette. Toggle dark mode to check both.</p>
+    </div>
+    <button class="mode" type="button" id="mode">Dark</button>
+  </div>
+  <div id="opts"></div>
+</div>
+
+<script>
+  const rows = [
+    { co: 'Okta', role: 'Staff Product Designer', year: '2024–now', logo: 'okta', site: 'okta.com',
+      line: 'Identity and access management for the admins who decide who gets in: entitlements, access reviews and policy, plus the integration flows developers build on. I lead a team of six.' },
+    { co: 'PayPal', role: 'Lead UX Designer', year: '2021–2024', logo: 'paypal', site: 'paypal.com',
+      line: 'Three years on privacy and trust across PayPal, Venmo and Honey: the privacy center, ads consent, ID verification and the Debit Card. I joined as a product designer and left leading UX for Global Data & Privacy.' },
+    { co: 'Walmart Labs', role: 'User Experience Designer', year: '2019–2021', logo: 'walmart', site: 'walmart.com',
+      line: 'Two years on tools for merchants, suppliers and Walmart’s own people, plus Walmart Pay with Chase Pay and Scan & Go. I led interaction design on the design system.' },
+    { co: 'Deloitte Digital', role: 'User Experience Designer', year: '2017–2019', logo: 'deloitte', site: 'deloittedigital.com',
+      line: 'Client work from Bengaluru in finance, healthcare and the public sector, among it Mint’s credit score, personal loans for RatanIndia and quick loans for Dialog in Sri Lanka.' },
+    { co: 'Zomato', role: 'User Interface Designer', year: '2015–2016', logo: 'zomato', site: 'zomato.com',
+      line: 'A year on product, web, branding and marketing design across Zomato’s consumer products.' },
+  ];
+  const line = (r) => `<span class="line">${r.line} <a class="site" href="#">${r.site}</a></span>`;
+  const head = (r) => `<span class="h"><span>${r.co}<span class="tag"> / ${r.role}</span></span><span class="year">${r.year}</span></span>`;
+
+  const opts = [
+    { id: '0', cls: 'v0', name: 'Now: colour logos', note: 'For comparison. Five brand colours in a column pull the eye away from the work above.',
+      row: (r) => `<li><img src="logos/${r.logo}.webp" alt=""><span class="t">${head(r)}${line(r)}</span></li>` },
+    { id: 'A', cls: 'vA', name: 'The Archive’s register', note: 'No tile. Company in the serif italic the Archive uses, role and years in its caps, hairlines between. Reads as one block with the Archive above it.',
+      row: (r) => `<li><span class="co">${r.co}</span><span class="meta">${r.role}, ${r.year}</span>${line(r)}</li>` },
+    { id: 'B', cls: 'vB', name: 'Years first', note: 'The years take the place of the logo, in mono, as a column you can scan down. The career reads as a sequence at a glance.',
+      row: (r) => `<li><span class="year">${r.year}</span><span class="t"><span class="h">${r.co}<span class="tag"> / ${r.role}</span></span>${line(r)}</span></li>` },
+    { id: 'C', cls: 'vC', name: 'Monogram', note: 'What the rows had before the logos: one letter on the same quiet tile, here in the serif italic. Keeps the About tab’s shape with no outside colour.',
+      row: (r) => `<li><span class="mono" aria-hidden="true">${r.co[0]}</span><span class="t">${head(r)}${line(r)}</span></li>` },
+    { id: 'D', cls: 'vD', name: 'Timeline', note: 'A hairline with a dot per role; the current one filled. Shows sequence and that Okta is now, with no colour.',
+      row: (r) => `<li>${head(r)}${line(r)}</li>` },
+    { id: 'E', cls: 'vE', name: 'Quiet logos', note: 'Keeps the logos but in grey, at half strength, and in colour only on hover. Still recognisable; still five extra shapes.',
+      row: (r) => `<li><img src="logos/${r.logo}.webp" alt=""><span class="t">${head(r)}${line(r)}</span></li>` },
+  ];
+
+  document.getElementById('opts').innerHTML = opts.map((o) => `
+    <section class="opt">
+      <div class="opt__head"><span class="opt__id">${o.id}</span><span class="opt__name">${o.name}</span><span class="opt__note">${o.note}</span></div>
+      <div class="split ${o.cls}"><span class="label">Experience</span><ul>${rows.map(o.row).join('')}</ul></div>
+    </section>`).join('');
+
+  const btn = document.getElementById('mode');
+  btn.addEventListener('click', () => {
+    const dark = document.documentElement.dataset.mode !== 'dark';
+    document.documentElement.dataset.mode = dark ? 'dark' : 'light';
+    btn.textContent = dark ? 'Light' : 'Dark';
+  });
+</script>
+</body>
+</html>

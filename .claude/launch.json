@@ -184,6 +184,16 @@
         "4350"
       ],
       "port": 4350
+    },
+    {
+      "name": "experience-rows-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/experience-rows"
+      ],
+      "port": 4358,
+      "autoPort": true
     }
   ]
 }
