@@ -175,6 +175,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Primary: ink at rest, the accent on hover — the accent is saved for
    the moment of intent. Ink on --bg is 14.8:1; white on the accent 5.4:1.
+   The one place the accent still fills a button (kept on request,
+   2026-11-13, when it left every other text, link and button).
    Secondary: outlined at rest, filled with ink on hover.
 
    The hover colour doesn't switch, it rises: a ::before fill sits just
@@ -204,6 +206,25 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn--primary { --btn-fill: var(--accent); background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .btn--primary:hover { border-color: var(--accent); color: var(--on-accent-small); }
+
+/* The primary's fill is liquid (on request): instead of a flat edge, a
+   large rounded square, wider than the pill, sits below it and rises
+   while turning, so the clay's surface rolls across the label like
+   liquid filling the pill, then covers it flat. On leave it drains the
+   same way. Values under MOTION (--liquid-*) in tokens.css. */
+.btn--primary::before {
+  inset: auto;
+  left: 50%;
+  top: 100%;
+  width: var(--liquid-size);
+  aspect-ratio: 1;
+  border-radius: var(--liquid-round);
+  transform: translate(-50%, 0) rotate(0deg);
+  transition: transform var(--dur-liquid) var(--ease-liquid);
+}
+.btn--primary:hover::before {
+  transform: translate(-50%, var(--liquid-rise)) rotate(var(--liquid-turn));
+}
 
 .btn--secondary { --btn-fill: var(--fg); color: var(--fg); border-color: currentColor; }
 .btn--secondary:hover { border-color: var(--fg); color: var(--bg); }
@@ -258,10 +279,10 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Inline text link — for a link sitting inside a sentence (the hero bio's
    "LinkedIn", a footer email, an about-page aside), as opposed to
-   .btn--link's own standalone "View case study →" role. A dotted underline
-   at rest, already visible so the sentence reads as containing a link
-   before any pointer arrives; on hover the line solidifies to full colour
-   and, when the link ends in a .link-ext__mark (an external-link glyph or
+   .btn--link's own standalone "View case study →" role. The LINKS tokens
+   (after felixrieseberg.com): an ink underline at 45%, already visible so
+   the sentence reads as containing a link before any pointer arrives; on
+   hover the line goes solid and thickens and, when the link ends in a .link-ext__mark (an external-link glyph or
    an arrow), that mark nudges up-and-right a couple of pixels — the same
    two-part answer ("this is clickable" at rest, "here's where" on hover)
    reused everywhere a sentence hands off to a link. Deliberately quick
@@ -269,20 +290,18 @@ h1, h2, h3, h4, h5, h6 {
    this is feedback on a link you're already looking at, not new content
    arriving. */
 .link-ext {
-  color: inherit;
+  color: var(--link);
   text-decoration: underline;
-  text-decoration-style: dotted;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.16em;
-  text-decoration-color: color-mix(in oklab, currentColor 38%, transparent);
+  text-decoration-thickness: var(--link-thick);
+  text-underline-offset: var(--link-offset);
+  text-decoration-color: var(--link-line);
   text-decoration-skip-ink: auto;
-  transition: color var(--dur-micro) var(--ease-out),
-              text-decoration-color var(--dur-micro) var(--ease-out);
+  transition: text-decoration-color var(--dur-micro) var(--ease-out);
 }
 .link-ext:hover,
 .link-ext:focus-visible {
-  color: var(--fg);
-  text-decoration-color: currentColor;
+  text-decoration-color: var(--link-line-hover);
+  text-decoration-thickness: var(--link-thick-hover);
 }
 .link-ext__mark {
   display: inline-block;
@@ -304,7 +323,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* --- Focus + reduced motion (do not remove) --------------- */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -315,4 +334,17 @@ h1, h2, h3, h4, h5, h6 {
   }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
 }
-a { color: var(--accent-text); }
+/* Links, after felixrieseberg.com (LINKS in tokens.css): ink, on a thin
+   45% ink underline wherever a link shows one; on hover the line goes
+   solid and thickens. Never the accent. Links that set their own
+   text-decoration: none keep it. */
+a {
+  color: var(--link);
+  text-decoration-color: var(--link-line);
+  text-decoration-thickness: var(--link-thick);
+  text-underline-offset: var(--link-offset);
+}
+a:hover {
+  text-decoration-color: var(--link-line-hover);
+  text-decoration-thickness: var(--link-thick-hover);
+}

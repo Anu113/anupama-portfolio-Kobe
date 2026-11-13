@@ -224,8 +224,8 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
   .words h1 em { font-style: italic; }
   .body { display: grid; gap: 0.75rem; color: var(--fg-dim); font-size: var(--step-body); line-height: var(--leading-body); }
   .body p { margin: 0; }
-  .body a { color: var(--fg); text-decoration: underline 1px; text-underline-offset: 3px; }
-  .body a:hover { color: var(--accent); }
+  .body a { color: var(--fg); text-decoration: underline var(--link-thick) var(--link-line); text-underline-offset: var(--link-offset); }
+  .body a:hover { text-decoration-color: var(--link-line-hover); text-decoration-thickness: var(--link-thick-hover); }
 
   .links { display: flex; gap: 0.5rem; }
   .icon {
@@ -236,7 +236,7 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
   }
   .icon svg { width: 1rem; height: 1rem; }
   .icon:hover { color: var(--fg); background: var(--about-tab); }
-  .icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .icon:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .tipped { position: relative; display: flex; }
   .tip {
     position: absolute; bottom: calc(100% + 6px); left: 50%;
@@ -261,7 +261,7 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
   }
   .tabs button:hover { color: var(--about-soft); }
   .tabs button[aria-selected='true'] { background: var(--about-tab); color: var(--about-soft); }
-  .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tabs button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
   .box {
     height: var(--about-reel-h); overflow-y: auto; scrollbar-width: none; outline: none; cursor: grab;
@@ -270,7 +270,7 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
   .box[hidden] { display: none; }
   .box::-webkit-scrollbar { display: none; }
   .box.is-dragging { cursor: grabbing; user-select: none; }
-  .box:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-about-row); }
+  .box:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-about-row); }
   .reel, .reel ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
   .row {
     display: flex; align-items: flex-start; gap: 1rem; padding: 0.5rem;
@@ -278,7 +278,7 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     transition: background-color var(--dur-micro) ease-out;
   }
   .row:hover { background: var(--about-row-hover); }
-  a.row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  a.row:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
   .tile {
     flex: none; width: var(--about-tile); height: var(--about-tile); border-radius: var(--radius-about-row);
     object-fit: cover; background: var(--about-card);
@@ -330,7 +330,7 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     transition: transform 200ms ease-out, box-shadow 200ms ease-out;
   }
   .shot img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-  .shot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .shot:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .shot:nth-child(1) { z-index: 5; }
   .shot:nth-child(2) { z-index: 4; --x: -30%; --y: 3%; --r: -6deg; --s: 0.82; }
   .shot:nth-child(3) { z-index: 3; --x: 30%; --y: 3%; --r: 6deg; --s: 0.82; }

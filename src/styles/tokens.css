@@ -177,6 +177,18 @@
   --dur-hover: 320ms;
   --dur-micro: 150ms;
   --dur-micro-move: 180ms;
+  /* The primary button's liquid fill (global.css, on request): clay rises
+     into the pill as a slowly turning rounded square, so its surface
+     rolls like liquid, then settles flat. Longer than --dur-hover so the
+     roll can be seen, and its own gentler in-out curve: on --ease-out
+     the surface crossed the label in the first few frames and the roll
+     was never seen. */
+  --dur-liquid: 800ms;
+  --ease-liquid: cubic-bezier(0.45, 0, 0.25, 1);
+  --liquid-size: 300%;    /* the shape's width, against the pill's: bigger = flatter surface */
+  --liquid-rise: -26%;    /* where it stops: just past covering the pill */
+  --liquid-round: 42%;    /* corner rounding: lower = choppier surface */
+  --liquid-turn: 50deg;   /* how far it turns on the way up: less = less tilt */
   /* Archive rows (ArchiveList): the name lightens a little on hover, after
      danield.design's archive. 0.65 keeps the ink at ~4.8:1 on the ground
      in both modes, so the hovered name still passes AA. Its own softer
@@ -303,10 +315,11 @@
   --lamp-colour: color-mix(in srgb, var(--lamp-hue) 10%, transparent);  /* at the centre */
   --lamp-reach: 70%;                                             /* where it has faded out */
   --lamp-follow: 0.22;                                           /* share of the gap to the pointer closed per frame */
-  /* Text shadows from the lamp, dark mode only: text near the pointer
-     casts a short shadow away from it, as if lit by it. Fades out over
-     --lamp-size; alpha is scaled by --hero-night, so light mode has none. */
-  --lamp-cast-alpha: 0.9;        /* black, at the pointer */
+  /* Text shadows from the lamp: switched off on request (2026-11-13) —
+     no text casts a shadow on hover. At 0 the script clears and skips
+     them. (Was 0.9: text near the pointer cast a short shadow away from
+     it.) */
+  --lamp-cast-alpha: 0;          /* off */
   --lamp-cast-length: 5;         /* px, how far the shadow falls */
   --lamp-cast-blur: 3;           /* px */
   --z-lamp: 50;                  /* the lamp's layer; the hero row sits just above it */
@@ -398,13 +411,30 @@
   --rule: var(--line);
   --screen: var(--paper-2);   /* image mounts, fields, placeholders */
   --shell: var(--device);     /* device frames around screenshots */
-  --accent-text: var(--accent);
-  /* A marker-pen wash of the accent, behind accent text (the footer
-     sign-off's highlighted words). Mixed from --accent so it re-inks in
-     dark mode. The text on it stays above 3:1, which is enough for the
-     heading size it's used at. */
-  --accent-wash: color-mix(in srgb, var(--accent) 16%, transparent);
+  /* No text, link or button is in the accent any more (on request,
+     2026-11-13): the token every text use reads now resolves to ink, so
+     anything still asking for "accent text" gets ink in both modes and
+     in the footer. The accent stays for marks only — the cursor trail,
+     Moss's dot, the preloader, the reading strip's progress line. */
+  --accent-text: var(--fg);
+  /* The marker-pen wash behind the footer's "Staff or Lead Product
+     Designer": a neutral highlighter of the ink, not the accent. */
+  --accent-wash: color-mix(in srgb, var(--fg) 14%, transparent);
   --trail: var(--accent);     /* CursorTrail's line */
+
+  /* LINKS, after felixrieseberg.com's reading view (on request): the
+     link is ink, a step stronger than the grey copy around it, on a thin
+     ink underline at 45%; on hover the line goes solid and thickens. The
+     text never changes colour. Mixed from --fg, so it follows dark mode
+     and the black footer. */
+  --link: var(--fg);
+  --link-line: color-mix(in srgb, var(--fg) 45%, transparent);
+  --link-line-hover: var(--fg);
+  --link-thick: 1px;
+  --link-thick-hover: 2px;
+  --link-offset: 3px;
+  /* The keyboard focus ring: ink, not the accent. */
+  --focus: var(--fg);
 }
 
 /* ============================================================

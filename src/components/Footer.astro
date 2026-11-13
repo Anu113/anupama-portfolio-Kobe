@@ -5,12 +5,13 @@
      1. the words, then the links under them.
         - "Let's start with a conversation." — one big serif line in ink.
           The word "conversation" is a link (Gmail compose to `site.email`,
-          new tab): underlined in ink at rest, the accent on hover/focus.
+          new tab), in the site's link style (LINKS in tokens.css): a 45%
+          ink underline that goes solid and thickens on hover/focus.
         - one line under it, in grey at 13px (--step-small), exactly as
           wide as the headline: the ask first ("Open to <site.seeking>
           roles."), then everyone else ("Projects, questions and feedback
-          are welcome too."). The role steps up to ink on a marker-pen
-          wash of the accent, so a recruiter gets it without reading.
+          are welcome too."). The role steps up to ink on a neutral
+          marker-pen wash of the ink, so a recruiter gets it without reading.
           It ends on her crayon smiley, an 11-frame loop at 10fps in the
           rhythm of bradleyziffer.com's — an animated WebP alternating
           two faces: three frames of her drawing exactly as given, then
@@ -41,7 +42,9 @@
    top, so the script below drops the reveal and it scrolls normally —
    the curve stays either way. It re-inks the palette tokens to the
    NIGHT values in tokens.css, so every role colour inside follows. No
-   text rests in the accent; links turn to it on hover.
+   text or link is ever in the accent (on request, 2026-11-13): the page
+   links and icons rest in grey and turn ink on hover, as the top nav's
+   do; "conversation" uses the link underline.
    Type follows allierho.com's system: the sign-off is the serif at
    32px (--step-signoff, as the reference's "Let's chat."), the note body text, links and labels 12px uppercase. */
 import { site } from '../data/site';
@@ -144,13 +147,17 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
   .foot__talk {
     color: inherit;
     text-decoration: underline;
-    text-decoration-thickness: 1px;
+    text-decoration-color: var(--link-line);
+    text-decoration-thickness: var(--link-thick);
     text-underline-offset: 0.14em;
-    transition: color var(--dur-hover) var(--ease-out);
+    transition: text-decoration-color var(--dur-hover) var(--ease-out);
   }
   .foot__talk em { font-style: italic; }
   .foot__talk:hover,
-  .foot__talk:focus-visible { color: var(--accent-text); }
+  .foot__talk:focus-visible {
+    text-decoration-color: var(--link-line-hover);
+    text-decoration-thickness: var(--link-thick-hover);
+  }
 
   /* The words block is as wide as the headline, and the note fills
      exactly that: `contain: inline-size` stops the note's long lines from
@@ -225,14 +232,15 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     font-size: var(--step-fine);
     letter-spacing: 0.04em;
   }
+  /* Grey at rest, ink on hover, as the top nav's links. */
   .foot__nav a {
-    color: var(--fg);
+    color: var(--fg-dim);
     text-decoration: none;
     padding-block: 0.5rem;
     transition: color var(--dur-hover) var(--ease-out);
   }
   .foot__nav a:hover,
-  .foot__nav a:focus-visible { color: var(--accent-text); }
+  .foot__nav a:focus-visible { color: var(--fg); }
 
   .foot__icons { list-style: none; margin: 0; padding: 0; display: flex; justify-content: flex-end; gap: 0.5rem; }
   /* 15px glyph, 32px hit area (the padding), so it's easy to tap. */
@@ -242,11 +250,11 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     padding: 0.5rem;
     margin: -0.5rem;
     margin-inline: 0;
-    color: var(--fg);
+    color: var(--fg-dim);
     transition: color var(--dur-hover) var(--ease-out);
   }
   .foot__icons a:hover,
-  .foot__icons a:focus-visible { color: var(--accent-text); }
+  .foot__icons a:focus-visible { color: var(--fg); }
   .foot__icons svg { display: block; }
 
   /* Narrow screens: copyright and icons share the top line, the page

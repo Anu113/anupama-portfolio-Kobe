@@ -208,15 +208,15 @@ const bars = [[92, 64], [78, 40], [86], [70, 88], [55], [66], [80, 48]];
   .locked__label { display: block; margin: 0 0 0.25rem; }
   .locked__field { width: 100%; }
   /* One underline, no box. --fg at rest (a control's boundary needs 3:1),
-     the accent while focused or wrong. */
+     thicker while focused (ink, never the accent). */
   .locked__input-wrap {
     position: relative;
     border-bottom: 1px solid var(--fg);
     transition: border-color var(--dur-hover) var(--ease-out);
   }
-  /* Focus thickens the line to 2px as well as turning it the accent, so
-     the focus state doesn't rest on colour alone. */
-  .locked__input-wrap:focus-within { border-bottom-color: var(--accent); box-shadow: 0 1px 0 var(--accent); }
+  /* Focus thickens the line to 2px, so the focus state is a change of
+     weight, not of colour. */
+  .locked__input-wrap:focus-within { border-bottom-color: var(--focus); box-shadow: 0 1px 0 var(--focus); }
   .locked__input-wrap:has([aria-invalid='true']) { border-bottom-color: var(--accent-text); }
   .locked__input {
     width: 100%;
@@ -229,7 +229,7 @@ const bars = [[92, 64], [78, 40], [86], [70, 88], [55], [66], [80, 48]];
     padding: 0.6rem 2.5rem;
     text-align: center;
   }
-  /* The underline itself turns the accent on focus, so the field needs no
+  /* The underline itself thickens on focus, so the field needs no
      second ring. */
   .locked__input:focus-visible { outline: none; }
   .locked__peek {
@@ -249,7 +249,7 @@ const bars = [[92, 64], [78, 40], [86], [70, 88], [55], [66], [80, 48]];
     transition: color var(--dur-hover) var(--ease-out);
   }
   .locked__peek:hover { color: var(--fg); }
-  .locked__peek:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+  .locked__peek:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
   .locked__submit { margin-top: 1.5rem; }
 
   .locked__err { margin: 0.6rem 0 0; font-size: var(--step-small); color: var(--accent-text); }

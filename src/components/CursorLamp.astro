@@ -20,12 +20,11 @@
    in tokens.css; strength is --hero-night, so it is zero in light mode
    and fades with the theme over --dur-night.
 
-   Text casts shadows from it: headings, paragraphs and list items within
-   the pool get a short black text-shadow pointing away from the lamp,
-   stronger the closer they are (the CursorTrail line itself casts none,
-   on request). Only text on screen is measured, tracked with an
-   IntersectionObserver; shadows are cleared as text leaves the pool.
-   Values under CURSOR LAMP (--lamp-cast-*); also scaled by --hero-night.
+   Text shadows from it are OFF (on request, 2026-11-13: --lamp-cast-alpha
+   is 0). The code is kept: at a non-zero alpha, headings, paragraphs and
+   list items within the pool get a short black text-shadow pointing away
+   from the lamp, stronger the closer they are. Values under CURSOR LAMP
+   (--lamp-cast-*); also scaled by --hero-night.
 
    It also announces where it is: every move dispatches a `cursor-lamp`
    event on window ({ x, y, on, radius }, viewport px), which

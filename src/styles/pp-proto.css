@@ -157,7 +157,7 @@
   .step:disabled { opacity: 0.45; cursor: default; text-decoration: line-through; }
   .step__n { font-family: var(--font-mono); font-size: var(--step-label); min-width: 1.5em; }
   .cip { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.6rem; font-size: var(--step-body); cursor: pointer; }
-  .cip input { accent-color: var(--accent); margin-top: 0.2em; }
+  .cip input { accent-color: var(--fg); margin-top: 0.2em; }
   .cip__note { grid-column: 2; color: var(--fg-dim); font-size: var(--step-small); }
   .restart {
     justify-self: start; font: inherit; font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase;
