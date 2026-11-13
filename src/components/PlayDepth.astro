@@ -10,8 +10,13 @@
      work starts BELOW the heading's line, so nothing appears out of thin
      air: the first pieces peek up from the bottom of the screen.
    - The pieces hang in columns, like a gallery wall: even gutters, nothing
-     overlapping, each piece a little narrower or wider than its column and
-     set left, centre or right in it, columns starting a little staggered.
+     overlapping, each piece a share of its column's width and set left,
+     centre or right in it, columns starting a little staggered. Paintings
+     hang larger than photos, and the three women ("In order of height",
+     `feature` in data/playDepth.ts) is the largest: the wall opens centred
+     on a wider column whose first piece is that painting, so it's the
+     first thing to rise under the heading, in the middle of the screen;
+     its repeats elsewhere fill their columns (on request, 2026-11-13).
    - Scrolling (the page's own scroll) carries the wall up at 0.8x the
      scroll, eased, so it glides to where you scrolled rather than jumping.
      Each column moves at its own speed (0.88-1.12x), so the wall shifts
@@ -176,7 +181,7 @@ import { depthPieces, wall } from '../data/playDepth';
 
     interface Tile { el: HTMLElement; x: number; y: number; w: number; h: number; k: number; hid?: boolean; }
     let tiles: Tile[] = [];
-    let PW = 0, PITCH = 0;
+    let PW = 0, WRAP = 0;    // the wall's width, and the widest column plus its gutter
     let edge = 0;            // the heading's line, in stage px at the top: the work starts below it
     let builtFor = '';
 
@@ -209,9 +214,17 @@ import { depthPieces, wall } from '../data/playDepth';
       const COL = small ? wall.colSm : wall.col;
       const GUT = small ? wall.gutterSm : wall.gutter;
       const VGAP = small ? wall.vgapSm : wall.vgap;
-      PITCH = COL + GUT;
-      const COLS = Math.max(8, Math.ceil(Math.max(2600, W * 1.5) / PITCH));
-      PW = COLS * PITCH;
+      const COLS = Math.max(8, Math.ceil(Math.max(2600, W * 1.5) / (COL + GUT)));
+      // The feature's column, mid-wall, is wider, and the wall opens
+      // centred on it, so the three women are the first thing to rise.
+      const fc = Math.floor(COLS / 2);
+      const fi = depthPieces.findIndex((p) => p.feature);
+      const FW = Math.min(COL * (small ? wall.featureSm : wall.feature), W - 2 * GUT);
+      const colW = Array.from({ length: COLS }, (_, c) => (c === fc && fi >= 0 ? Math.max(COL, FW) : COL));
+      const colX: number[] = [];
+      PW = 0;
+      for (const cw of colW) { colX.push(PW); PW += cw + GUT; }
+      WRAP = Math.max(...colW) + GUT;
       const travel = wall.length * H * speed();   // the wall's travel when the page lets go
       let seed = wall.seed;
       const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -221,14 +234,19 @@ import { depthPieces, wall } from '../data/playDepth';
       for (let c = 0; c < COLS; c++) {
         const k = factor(c);
         const limit = travel * k + H - wall.endGap;   // a piece's bottom must stay above this
-        let y = edge + rnd() * (small ? wall.staggerSm : wall.stagger);
+        const isF = c === fc && fi >= 0;
+        const stagger = rnd() * (small ? wall.staggerSm : wall.stagger);
+        let y = edge + (isF ? 0 : stagger);
+        const CW = colW[c];
         for (let r = 0; ; r++) {
-          const piece = depthPieces[mod(c * 5 + r, N)];
-          const w = COL * (0.74 + rnd() * 0.26);
+          const piece = depthPieces[isF ? mod(fi + r, N) : mod(c * 5 + r, N)];
+          const [lo, hi] = wall.size[piece.feature ? 'feature' : piece.medium ? 'painting' : 'other'];
+          const sized = COL * (lo + rnd() * (hi - lo));
+          const w = isF && r === 0 ? CW : sized;
           const h = w / piece.aspect;
           if (y + h > limit) break;
           const align = rnd();
-          const x = c * PITCH + (align < 0.33 ? 0 : align < 0.66 ? (COL - w) / 2 : COL - w);
+          const x = colX[c] + (align < 0.33 ? 0 : align < 0.66 ? (CW - w) / 2 : CW - w);
           const el = document.createElement('figure');
           el.className = 'pdepth__tile' + (piece.cut ? ' is-cut' : '');
           const img = document.createElement('img');
@@ -248,7 +266,7 @@ import { depthPieces, wall } from '../data/playDepth';
         }
       }
       host.append(frag);
-      camX = (W - PW) / 2;
+      camX = W / 2 - (colX[fc] + colW[fc] / 2);
     };
 
     // --- where things are ---
@@ -284,7 +302,7 @@ import { depthPieces, wall } from '../data/playDepth';
         if (Math.abs(velX) < 0.05) velX = 0;
       }
       for (const t of tiles) {
-        const x = mod(t.x + camX + PITCH, PW) - PITCH;
+        const x = mod(t.x + camX + WRAP, PW) - WRAP;
         const y = t.y - f * t.k;
         const off = x + t.w < -40 || x > W + 40 || y + t.h < -60 || y > H + 60;
         if (off) { if (!t.hid) { t.el.style.visibility = 'hidden'; t.hid = true; } continue; }
