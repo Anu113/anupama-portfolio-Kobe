@@ -618,7 +618,9 @@ walked back. Concretely, in the current implementation:
   base line, after carlthomasiv.com's footer: a full-width hairline, then
   three equal parts (after ozgur.design): "© year name · Built with Claude
   Code & Astro" in 11px mono (`--step-fine`; "Built with…" in the fainter
-  `--night-ink-faint`, the only faint text in the row — the rest is ink) on the left, Work / About me / Playground centred
+  `--night-ink-faint`, the only faint text in the row — the rest is ink) on the left, Work / About me / Playground / Old
+  portfolio ↗ (her Wix site, `site.oldPortfolio`, new tab; hidden
+  while that is empty, as it is until the Wix site has its own address) centred
   in the same mono, and LinkedIn + email line icons (Lucide, 20px) on the
   right, the email icon opening Gmail. "Astro" is accurate — don't swap
   in another framework name. No illustration, no coffee copy, no Copy button, no

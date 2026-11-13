@@ -24,7 +24,8 @@
         hairline, then three equal parts (after ozgur.design): "© year
         name · Built with Claude Code & Astro" in 11px mono on the left
         (all ink except "Built with…", a step fainter), Work / About me / Playground
-        centred in the same mono, and LinkedIn + email line icons
+        centred in the same mono (then "Old portfolio ↗", her Wix site,
+        `site.oldPortfolio`, in a new tab — only when that is set), and LinkedIn + email line icons
         (Lucide's, 20px) on the right, the email one opening Gmail in a new
         tab. On phones the page links drop to their own line.
    Edges: every row is inset from the page gutter by --card-pad, the
@@ -81,6 +82,7 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
       <a href="/work">Work</a>
       <a href="/about">About me</a>
       <a href="/playground">Playground</a>
+      {site.oldPortfolio && <a href={site.oldPortfolio} target="_blank" rel="noopener">Old portfolio<span aria-hidden="true"> ↗</span><span class="foot__vh"> (opens in a new tab)</span></a>}
     </nav>
     <ul class="foot__icons">
       <li>

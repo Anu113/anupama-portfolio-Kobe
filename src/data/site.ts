@@ -7,6 +7,12 @@ export const site = {
   // sign-off's "Let's connect and chat" opens a Gmail compose window to it.
   email: 'anupama.mishra113@gmail.com',
   linkedin: 'https://www.linkedin.com/in/anupamamishra/',
+  // Her old Wix portfolio, linked from the footer's page links as "Old
+  // portfolio". Empty for now: anupama.design is this site, so the Wix one
+  // has no address of its own yet. Paste its free Wix address here (Wix
+  // dashboard → Settings → Domains, e.g. https://<name>.wixsite.com/<site>)
+  // and the link appears; while empty, the footer leaves it out.
+  oldPortfolio: '',
 
   // The role being sought, written down once. Every band that states the ask
   // reads it from here — the home page, /about and the footer each carried
