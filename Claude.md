@@ -508,10 +508,23 @@ walked back. Concretely, in the current implementation:
   `scripts/hero-sprite.py`; re-run it from her source clip rather than
   editing the webp.
 - **The nav is one line** (`Nav.astro`): the name on the left (14px,
-  ink); on the right, the four links (12px, grey, current page in ink),
-  a hairline and the Light/Dark theme toggle. Links fold into Menu below
-  900px. The old bottom dock (`Dock.astro`) and the page sounds
-  (`scripts/sound.ts`) are gone.
+  ink); on the right, Work · About · Play (12px, grey, current page in
+  ink), a hairline, the sound button and the Light/Dark theme toggle.
+  Links fold into Menu below 900px. "Play" is the label only; the page
+  stays at /playground. There is no Contact link: the /contact page was
+  removed on request (2026-11-11), and the footer carries contact on
+  every page. The old bottom dock (`Dock.astro`) is gone.
+- **Page sound** came back on request (2026-11-11) as a speaker button
+  beside the theme toggle (option 01 of the mocks in
+  `experiments/nav-sound/`; cute note icons were tried and passed
+  over): a slash when off, two waves drawing in when on, on the
+  sun/moon's 15px grid. The rules and sounds are the old dock's, in
+  `scripts/sound.ts`: off by default, on for the tab once pressed (a
+  reload starts off), synthesised in the browser (no files): a tick on
+  hovering the name or a nav link, a tap on clicking one, a short tone
+  on Light/Dark. Its reason: a felt response, only for a visitor who
+  asks for it. Don't wire sounds beyond the nav without asking; the
+  About page's record player plays on its own press, apart from this.
 - **The location line** (`LocalTime.astro`) sits above the hero
   headline, after abstract.systems: a green "available" light with a
   pinging ring, `BANGALORE,IN`, a live weather icon, and 24h time with
@@ -591,8 +604,8 @@ walked back. Concretely, in the current implementation:
   rule, not a free-floating max-width.
 - **Her email is `anupama.mishra113@gmail.com`** (`site.email`). There is
   no `@anupama.design` mailbox — don't reintroduce one. Links to it say
-  "Email" rather than printing the address; /contact is the one page
-  that prints it in full.
+  "Email" rather than printing the address (the /contact page that
+  printed it in full was removed on request, 2026-11-11).
 - The home page is now: hero → "Selected *work*" head + project cards →
   "Beyond *work*" ring → one-line playground pointer → Small talk →
   footer (which carries contact).

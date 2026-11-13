@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nav: Play and a sound button — round 3, cute notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Values copied from src/styles/tokens.css so the bar reads at real size. */
+  :root {
+    --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / 0.1); --accent: #b4482a; --tile: rgb(0 0 0 / 0.025);
+    --font-sans: 'Manrope', system-ui, sans-serif; --font-serif: 'Crimson Pro', serif; --font-mono: 'Azeret Mono', monospace;
+    --step-nav: 0.875rem; --step-label: 0.75rem; --tracking-nav: 0.086em; --tracking-label: 0.067em;
+    --nav-link-gap: clamp(1.5rem, 2.8vw, 2.5rem); --nav-group-gap: 1.25rem;
+    --nav-sep-h: 0.625rem; --nav-icon-btn: 1.75rem; --nav-icon: 0.9375rem;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --dur-hover: 320ms;
+    --gutter: 2.5rem;
+  }
+  :root[data-mode='dark'] { --paper: #1b1a19; --ink: #ecebe8; --ink-dim: #a09d98; --line: rgb(255 255 255 / 0.12); --accent: #e0714f; --tile: rgb(255 255 255 / 0.03); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 600; transition: background .3s, color .3s; }
+  .mono { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); }
+
+  .intro { padding: 3rem var(--gutter) 1.5rem; max-width: 64rem; }
+  .intro h1 { font-family: var(--font-serif); font-weight: 300; font-size: 2.75rem; letter-spacing: -0.03em; margin: 0 0 .75rem; line-height: 1.05; }
+  .intro h1 em { font-style: italic; }
+  .intro p { font-size: .875rem; line-height: 1.6; color: var(--ink-dim); margin: 0 0 .5rem; max-width: 48rem; }
+  .intro p b { color: var(--ink); }
+
+  /* The live nav, pinned so it stays in view while you pick from the grid. */
+  .stage { position: sticky; top: 0; z-index: 5; background: var(--paper); border-block: 1px solid var(--line); margin-top: 1.5rem; transition: background .3s; }
+  .stage__note { padding: 0 var(--gutter) .9rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .nav { display: flex; align-items: center; justify-content: space-between; gap: var(--nav-group-gap); padding: 1.5rem var(--gutter) 1rem; }
+  .nav__mark { font-size: var(--step-nav); letter-spacing: var(--tracking-nav); text-transform: uppercase; color: var(--ink); text-decoration: none; }
+  .nav__right { display: flex; align-items: center; gap: var(--nav-group-gap); }
+  .nav__links { display: flex; gap: var(--nav-link-gap); list-style: none; margin: 0; padding: 0; }
+  .nav__links a { font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--ink-dim); text-decoration: none; position: relative; padding: .25rem 0; transition: color var(--dur-hover) var(--ease-out); }
+  .nav__links a::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform var(--dur-hover) var(--ease-out); }
+  .nav__links a:hover, .nav__links a[aria-current] { color: var(--ink); }
+  .nav__links a:hover::after, .nav__links a[aria-current]::after { transform: scaleX(1); }
+  .nav__sep { width: 1px; height: var(--nav-sep-h); background: var(--ink-dim); opacity: .5; }
+  .nav__icons { display: flex; align-items: center; gap: .25rem; }
+  .icon { width: var(--nav-icon-btn); height: var(--nav-icon-btn); display: grid; place-items: center; border: 0; background: none; color: var(--ink-dim); cursor: pointer; padding: 0; transition: color var(--dur-hover) var(--ease-out); }
+  .icon:hover, .icon:focus-visible { color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .icon svg { width: var(--nav-icon); height: var(--nav-icon); overflow: visible; }
+
+  /* ---------- the icons: every one drawn on a 15px grid at 1.2 stroke,
+     the sun/moon's weight, so it sits as a pair with the theme button.
+     State lives on [data-on] (aria-pressed on the real button). ---------- */
+  svg .s { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+  svg .f { fill: currentColor; }
+  .draw { stroke-dasharray: var(--len, 30); stroke-dashoffset: var(--len, 30); transition: stroke-dashoffset 420ms var(--ease-out); }
+  .draw.d2 { transition-delay: 70ms; } .draw.d3 { transition-delay: 140ms; }
+  .slash { stroke-dasharray: 20; stroke-dashoffset: 0; transition: stroke-dashoffset var(--dur-hover) var(--ease-out); }
+  [data-on='true'] .draw { stroke-dashoffset: 0; }
+  [data-on='true'] .slash { stroke-dashoffset: 20; }
+  .fade { opacity: 0; transition: opacity var(--dur-hover) var(--ease-out); }
+  [data-on='true'] .fade { opacity: 1; }
+  .unfade { transition: opacity var(--dur-hover) var(--ease-out); }
+  [data-on='true'] .unfade { opacity: 0; }
+  .grow { transform-box: fill-box; transform-origin: bottom; transform: scaleY(.18); transition: transform 420ms var(--ease-out); }
+  .grow.c { transform-origin: center; }
+  .grow:nth-child(2) { transition-delay: 40ms; } .grow:nth-child(3) { transition-delay: 80ms; } .grow:nth-child(4) { transition-delay: 120ms; } .grow:nth-child(5) { transition-delay: 160ms; }
+  [data-on='true'] .grow { transform: scaleY(var(--h, 1)); }
+  .flat { transform-box: fill-box; transform-origin: center; transform: scaleY(.06); transition: transform 480ms var(--ease-out); }
+  [data-on='true'] .flat { transform: scaleY(1); }
+  .ink[data-on='true'] { color: var(--ink); }
+  .dotmark { transform-box: fill-box; transform-origin: center; transform: scale(0); transition: transform var(--dur-hover) var(--ease-out); fill: var(--accent); }
+  [data-on='true'] .dotmark { transform: scale(1); }
+
+
+  /* round 3: cute notes */
+  .hop { transform-box: view-box; }
+  [data-on='true'] .hop { animation: hop 520ms var(--ease-out) both; }
+  [data-on='true'] .hop.h2 { animation-delay: 90ms; }
+  @keyframes hop { 0% { transform: translateY(0); } 35% { transform: translateY(-2.2px); } 100% { transform: translateY(0); } }
+  .rise { opacity: 0; transform: translateY(2px); transition: opacity 420ms var(--ease-out), transform 420ms var(--ease-out); }
+  [data-on='true'] .rise { opacity: 1; transform: none; }
+  .lift { transition: transform 420ms var(--ease-out); }
+  [data-on='true'] .lift { transform: translateY(-2.5px); }
+  .fillon { fill: currentColor; fill-opacity: 0; transition: fill-opacity var(--dur-hover) var(--ease-out); }
+  [data-on='true'] .fillon { fill-opacity: 1; }
+  .acc { fill: var(--accent); stroke: none; }
+  .thin { stroke-width: .9 !important; }
+  .crayon { stroke-width: 1.35 !important; }
+
+  /* ---------- the grid ---------- */
+  .groups { padding: 2rem var(--gutter) 4rem; }
+  .group { margin-bottom: 2.5rem; }
+  .group h2 { font-family: var(--font-serif); font-weight: 300; font-size: 1.375rem; letter-spacing: -0.02em; margin: 0 0 .25rem; }
+  .group > p { font-size: .75rem; color: var(--ink-dim); line-height: 1.6; margin: 0 0 1rem; max-width: 52rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+  .card { border-right: 1px solid var(--line) !important; border-bottom: 1px solid var(--line) !important; background: var(--paper); padding: 1.25rem; display: flex; flex-direction: column; gap: .9rem; cursor: pointer; border: 0; text-align: left; font: inherit; color: inherit; transition: background .3s; }
+  .card:hover { background: var(--tile); }
+  .card.is-picked { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .card__big { display: flex; gap: 1.75rem; align-items: center; color: var(--ink); }
+  .card__big svg { width: 2.8125rem; height: 2.8125rem; overflow: visible; }  /* 3x */
+  .card__big .arrow { color: var(--ink-dim); font-size: .75rem; }
+  .card__real { display: flex; gap: 1rem; align-items: center; color: var(--ink-dim); }
+  .card__real svg { width: var(--nav-icon); height: var(--nav-icon); overflow: visible; }
+  .card__name { font-size: .875rem; display: flex; gap: .5rem; align-items: baseline; }
+  .card__name .mono { color: var(--accent); }
+  .card__why { font-size: .75rem; color: var(--ink-dim); line-height: 1.55; margin: 0; }
+  .pill { font: inherit; font-size: .75rem; letter-spacing: .067em; text-transform: uppercase; border: 1px solid var(--line); background: transparent; color: var(--ink); padding: .45rem .85rem; border-radius: 999px; cursor: pointer; }
+  .pill:hover { border-color: var(--ink); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<section class="intro">
+  <h1>Nav: <em>Play</em>, and a sound button</h1>
+  <p><b>Play</b> replaces Playground in the nav. Only the label changes; the page stays at /playground unless you'd like it moved to /play. <b>Contact</b> is gone.</p>
+  <p><b>Icons the site already has:</b> the sun and moon in the nav (carlthomasiv.com's, 15px, thin 1.2 line), Lucide's LinkedIn and mail in the footer (20px, 1.5 line), and the About page's record player. The record player is the one other sound on the site, with a play key and a row of level bars on its display. No speaker icon has been used anywhere. Everything below is drawn on the sun/moon's grid and line so it pairs with the theme button. The sounds are the old dock's, unchanged.</p>
+  <p><b>Round 3, cute notes</b> come first. Rounds 1–2 are below them. Click any card to put it in the bar, then press it and hover the links.</p>
+</section>
+
+<div class="stage">
+  <header class="nav">
+    <a class="nav__mark" href="#">Anupama Mishra</a>
+    <div class="nav__right">
+      <ul class="nav__links">
+        <li><a href="#" aria-current="page">Work</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Play</a></li>
+      </ul>
+      <span class="nav__sep"></span>
+      <div class="nav__icons">
+        <button class="icon" id="sound" type="button" aria-pressed="false" aria-label="Sound" title="Turn sound on" data-on="false"></button>
+        <button class="icon" id="theme" type="button" aria-label="Switch to dark mode" title="Switch to dark mode">
+          <svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M2.93 2.93l1.06 1.06M11.01 11.01l1.06 1.06M2.93 12.07l1.06-1.06M11.01 3.99l1.06-1.06" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <div class="stage__note"><span class="mono" id="picked">In the bar: 01</span><span class="mono" id="state">Sound off</span></div>
+</div>
+
+<div class="groups" id="groups"></div>
+
+<script>
+  const SPK = '<path class="s" d="M1.8 5.6h2.3l3.3-2.8v9.4L4.1 9.4H1.8z"/>';
+  const groups = [
+    { title: 'Notes, cute', note: 'Round 3. A music note with a bit of character, still on the 15px grid so it pairs with the sun and moon. Turning sound on plays one small hop, once; nothing moves at rest. The accent appears only as blush and a heart, the size of Moss\'s dot.', items: [
+      { n: 'N1', name: 'Sleepy note wakes up', pick: true, why: 'Off: eyes shut and a little z. On: eyes open, a smile, one hop. The off state says "asleep", not "broken", which suits sound that starts off. My pick.',
+        svg: '<g class="hop"><circle class="s" cx="5" cy="10.6" r="3"/><path class="s" d="M8 10.4V2.2c1.6.4 3.6 1.6 3.6 3.8"/><circle class="f fade" cx="4" cy="10.2" r=".5"/><circle class="f fade" cx="6" cy="10.2" r=".5"/><path class="s fade thin" d="M4.2 11.6q.8.7 1.6 0"/><path class="s unfade thin" d="M3.3 10.1q.6.6 1.2 0M5.5 10.1q.6.6 1.2 0"/></g><path class="s unfade thin" d="M11 9.4h2l-2 2.3h2"/>' },
+      { n: 'N2', name: 'Note blushes', why: 'Always a face. Off: a flat mouth. On: a smile and two accent cheeks. Cutest of the set; the faces need the 15px to stay crisp.',
+        svg: '<g class="hop"><circle class="s" cx="5" cy="10.6" r="3"/><path class="s" d="M8 10.4V2.2c1.6.4 3.6 1.6 3.6 3.8"/><circle class="f" cx="4" cy="10" r=".45"/><circle class="f" cx="6" cy="10" r=".45"/><path class="s unfade thin" d="M4.3 11.6h1.4"/><path class="s fade thin" d="M4.2 11.3q.8.7 1.6 0"/><circle class="acc fade" cx="3.1" cy="11.4" r=".6"/><circle class="acc fade" cx="6.9" cy="11.4" r=".6"/></g>' },
+      { n: 'N3', name: 'Moss note', why: 'The note head gets Moss\'s two ear tips. Eyes shut off, open on, one hop. Ties the button to the site\'s character, but it\'s a second Moss sighting in the nav.',
+        svg: '<g class="hop"><path class="s" d="M3.3 8.3 2.8 6.3l1.6 1.4M6.7 8.3l.5-2-1.6 1.4"/><circle class="s" cx="5" cy="10.6" r="3"/><path class="s" d="M8 10.4V2.2c1.6.4 3.6 1.6 3.6 3.8"/><circle class="f fade" cx="4" cy="10.4" r=".5"/><circle class="f fade" cx="6" cy="10.4" r=".5"/><path class="s unfade thin" d="M3.3 10.2q.6.6 1.2 0M5.5 10.2q.6.6 1.2 0"/></g>' },
+      { n: 'N4', name: 'Pair of notes fill in', why: 'The ♫ pair. Off: hollow heads. On: they fill and hop one after the other, like a little duet. No face, so it stays quieter.',
+        svg: '<g class="hop"><circle class="s fillon" cx="3.6" cy="11.5" r="1.8"/><path class="s" d="M5.4 11.5V3.4"/></g><g class="hop h2"><circle class="s fillon" cx="10.4" cy="10.3" r="1.8"/><path class="s" d="M12.2 10.3V2.2"/></g><path class="s" style="stroke-width:1.8" d="M5.4 3.4 12.2 2.2"/>' },
+      { n: 'N5', name: 'Note with a heart', why: 'On: a small accent heart floats up beside the note. Sweet, but off is just a note, so the off state is less clear.',
+        svg: '<g class="hop"><circle class="s" cx="4" cy="11.3" r="2.2"/><path class="s" d="M6.2 11.2V2.6"/></g><path class="acc rise" d="M11.5 6.6c-1.7-1-2.4-2-2.4-2.9a1.2 1.2 0 0 1 2.4-.3 1.2 1.2 0 0 1 2.4.3c0 .9-.7 1.9-2.4 2.9z"/>' },
+      { n: 'N6', name: 'Sparkle note', why: 'On: two little sparkles twinkle in round the note. Off is the plain note. Light and friendly, no face.',
+        svg: '<g class="hop"><circle class="s" cx="4.4" cy="11.2" r="2.2"/><path class="s" d="M6.6 11.1V2.3c1.2.4 2.8 1.2 2.8 3"/></g><path class="s draw thin" style="--len:5" d="M12.2 7.4v2.8M10.8 8.8h2.8"/><path class="s draw d2 thin" style="--len:4" d="M12.4 1.6v2M11.4 2.6h2"/>' },
+      { n: 'N7', name: 'Crayon note', why: 'Drawn wobbly, like her crayon smiley in the footer. Slashed off, hops on. Ties to her hand, but a wobble at 15px can look like a rendering fault.',
+        svg: '<g class="hop"><path class="s crayon" d="M3 9.6c1.4-.9 3.6-.4 3.5 1.3-.1 1.6-2.4 2.4-3.7 1.6C1.7 11.8 2 10.2 3 9.6z"/><path class="s crayon" d="M6.4 10.6c.1-2.6-.1-5.5.1-8.3M6.5 2.3c.9 1 2.9 1.4 3.2 3.4.1.6-.2 1.3-.5 1.7"/></g><path class="s slash crayon" d="M1.6 1.8c3.8 3.4 7.6 7.4 11.8 11.4"/>' },
+      { n: 'N8', name: 'Note hops off the line', why: 'Off: the note sits on a line. On: it lifts off and stays up. Plays on the site\'s line motif; the change is small.',
+        svg: '<path class="s" d="M1 13h13"/><g class="lift"><circle class="f" cx="6" cy="11" r="1.8"/><path class="s" d="M7.8 10.9V3c1.2.4 2.8 1.2 2.8 3"/></g>' },
+      { n: 'N9', name: 'Speaker sings a note', why: 'A small speaker; on, a note floats out of it. The clearest "sound" reading of the cute ones; off shows a tiny ×.',
+        svg: '<path class="s" d="M1.5 6.2h1.8l2.6-2.2v7.4L3.3 9.2H1.5z"/><g class="rise"><circle class="f" cx="9.9" cy="10" r="1.3"/><path class="s" d="M11.2 10V4.6c.9.3 2 .9 2 2.2"/></g><path class="s unfade thin" d="M8.6 6.3l2.6 2.6M11.2 6.3 8.6 8.9"/>' },
+    ]},
+    { title: 'Speaker', note: 'The sign everyone reads as "sound" without a label. The four differ only in how off and on are told apart.', items: [
+      { n: '01', name: 'Waves, slash when off', pick: true, why: 'Off: a slash. On: it wipes away and two waves draw out. Both states are unmistakable. The clearest plain option.',
+        svg: SPK + '<path class="s draw" d="M9.7 5.6a2.7 2.7 0 0 1 0 3.8"/><path class="s draw d2" d="M11.5 3.8a5.2 5.2 0 0 1 0 7.4"/><path class="s slash" d="M1.3 1.6l12.4 11.8"/>' },
+      { n: '02', name: 'Waves, × when off', why: 'The standard volume-off: a small × where the waves go. It reads as "muted", which hints that sound is the default, and here it isn\'t.',
+        svg: SPK + '<path class="s draw" d="M9.7 5.6a2.7 2.7 0 0 1 0 3.8"/><path class="s draw d2" d="M11.5 3.8a5.2 5.2 0 0 1 0 7.4"/><g class="unfade"><path class="s" d="M10 5.5l4 4M14 5.5l-4 4"/></g>' },
+      { n: '03', name: 'One wave, grows', why: 'Off: the speaker alone. On: one short wave. The lightest of the speakers; the off state could look like a missing icon.',
+        svg: SPK + '<path class="s draw" d="M10 5.2a3.3 3.3 0 0 1 0 4.6"/>' },
+      { n: '04', name: 'Speaker and the accent dot', why: 'One wave always. On: ink, plus the terracotta dot from Moss\'s card. Quietest, but the state rests on a 5px dot.',
+        svg: SPK + '<path class="s" d="M9.7 5.6a2.7 2.7 0 0 1 0 3.8"/><circle class="dotmark" cx="12.8" cy="3" r="1.4"/>', ink: true },
+    ]},
+    { title: 'Level bars', note: 'These echo the level bars on the About page\'s record player, so the nav and the player would share one sign for "sound playing". All hold still when on: bouncing bars in the nav would be idle animation, which the site rules out.', items: [
+      { n: '05', name: 'Four bars, rise to a chord', why: 'Flat dashes off, a still chord on. From round 1.',
+        svg: ['.55', '1', '.7', '.4'].map((h, i) => `<rect class="f grow" style="--h:${h}" x="${1.8 + i * 3.5}" y="2" width="1.3" height="11" rx=".65"/>`).join('') },
+      { n: '06', name: 'Audio lines, centred', why: 'Five lines that grow from the middle, the shape of a waveform. Reads as audio more than as a meter.',
+        svg: ['.35', '.7', '1', '.6', '.3'].map((h, i) => `<rect class="f grow c" style="--h:${h}" x="${1.6 + i * 2.7}" y="1.5" width="1.2" height="12" rx=".6"/>`).join('') },
+      { n: '07', name: 'Five bars, like the player', why: 'The record player\'s level meter as it is: five square bars from the baseline. The closest echo, but square bars look a little heavy at 15px.',
+        svg: ['.4', '.8', '1', '.55', '.7'].map((h, i) => `<rect class="f grow" style="--h:${h}" x="${1.5 + i * 2.6}" y="2" width="1.5" height="11"/>`).join('') },
+    ]},
+    { title: 'Line', note: 'The site\'s own motif is a line: the cursor trail and Klee\'s "a line is a dot that went for a walk" in the loader. These turn the sign into that line.', items: [
+      { n: '08', name: 'Flat line, becomes a wave', why: 'Off: a level line, silence. On: it swells into a sine. Ties sound to the line motif without a speaker. Less obvious at first sight.',
+        svg: '<path class="s unfade" d="M1 7.5h13"/><path class="s draw" style="--len:26" d="M1 7.5c1.6-4.5 3.2-4.5 4.4 0s2.8 4.5 4.2 0 2.8-4.5 4.4 0"/>' },
+      { n: '09', name: 'Dot with ripples', why: 'Off: one dot. On: two rings draw out round it, like sound spreading. Matches the loader\'s dot. Off alone could read as a radio button.',
+        svg: '<circle class="f" cx="7.5" cy="7.5" r="1.5"/><circle class="s draw" cx="7.5" cy="7.5" r="3.8" style="--len:24"/><circle class="s draw d2" cx="7.5" cy="7.5" r="6.3" style="--len:40"/>' },
+    ]},
+    { title: 'Objects', note: 'Signs for music rather than for sound. The site\'s sounds are clicks and ticks, not music, so these over-promise a little.', items: [
+      { n: '10', name: 'Note', why: 'An eighth note, slashed when off. Friendly, but it suggests music will play.',
+        svg: '<path class="s" d="M6 11.2V2.6l6 -1.3v8.3"/><circle class="s" cx="4.4" cy="11.3" r="1.7"/><circle class="s" cx="10.4" cy="9.8" r="1.7"/><path class="s slash" d="M1.3 1.6l12.4 11.8"/>' },
+      { n: '11', name: 'Headphones', why: 'Slashed when off. A clear sign, though it hints you need headphones.',
+        svg: '<path class="s" d="M2 10V7.5a5.5 5.5 0 0 1 11 0V10"/><rect class="s" x="1.8" y="9" width="2.6" height="4" rx="1"/><rect class="s" x="10.6" y="9" width="2.6" height="4" rx="1"/><path class="s slash" d="M1.3 1.6l12.4 11.8"/>' },
+      { n: '12', name: 'Record', why: 'The About page\'s record, small. On: the grooves draw in. Ties to the player, but a record in the nav is a stretch.',
+        svg: '<circle class="s" cx="7.5" cy="7.5" r="6"/><circle class="f" cx="7.5" cy="7.5" r="1.1"/><circle class="s draw" cx="7.5" cy="7.5" r="3.6" style="--len:23;stroke-width:.8"/><path class="s slash" d="M1.3 1.6l12.4 11.8"/>' },
+    ]},
+  ];
+
+  const all = groups.flatMap((g) => g.items);
+  const svg = (it, on) => `<span data-on="${on}" ${it.ink ? 'class="ink"' : ''} style="display:contents"><svg viewBox="0 0 15 15" aria-hidden="true">${it.svg}</svg></span>`;
+  document.getElementById('groups').innerHTML = groups.map((g) => `
+    <section class="group"><h2>${g.title}</h2><p>${g.note}</p><div class="grid">
+      ${g.items.map((it) => `
+        <button class="card" type="button" data-n="${it.n}" aria-label="Put ${it.n} ${it.name} in the bar">
+          <div class="card__big">${svg(it, false)}<span class="arrow">→</span>${svg(it, true)}</div>
+          <div class="card__real"><span class="mono">15px</span>${svg(it, false)}${svg(it, true)}</div>
+          <div class="card__name"><span class="mono">${it.n}</span>${it.name}</div>
+          <p class="card__why">${it.why}</p>
+        </button>`).join('')}
+    </div></section>`).join('');
+
+  const btn = document.getElementById('sound');
+  let on = false, cur = all[0];
+  const paint = () => {
+    btn.innerHTML = `<svg viewBox="0 0 15 15" aria-hidden="true">${cur.svg}</svg>`;
+    btn.classList.toggle('ink', !!cur.ink);
+    document.querySelectorAll('.card').forEach((c) => c.classList.toggle('is-picked', c.dataset.n === cur.n));
+    document.getElementById('picked').textContent = `In the bar: ${cur.n} · ${cur.name}`;
+  };
+  const sync = () => {
+    btn.dataset.on = on; btn.setAttribute('aria-pressed', on);
+    btn.title = on ? 'Turn sound off' : 'Turn sound on';
+    document.getElementById('state').textContent = on ? 'Sound on' : 'Sound off';
+  };
+  paint(); sync();
+
+  // The old sound.ts synth, unchanged.
+  let ac = null;
+  const ctx = () => (ac ??= new (window.AudioContext || window.webkitAudioContext)());
+  const env = (a, peak, at, rel) => { const g = a.createGain(), t = a.currentTime; g.gain.setValueAtTime(1e-4, t); g.gain.exponentialRampToValueAtTime(peak, t + at); g.gain.exponentialRampToValueAtTime(1e-4, t + at + rel); g.connect(a.destination); return g; };
+  const tick = () => { if (!on) return; const a = ctx(), t = a.currentTime, o = a.createOscillator(); o.frequency.setValueAtTime(1500, t); o.frequency.exponentialRampToValueAtTime(620, t + .06); o.connect(env(a, .16, .003, .07)); o.start(t); o.stop(t + .09); };
+  const tap = () => { if (!on) return; const a = ctx(), t = a.currentTime, b = a.createBuffer(1, a.sampleRate * .15, a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 1.2; s.connect(f); f.connect(env(a, .12, .004, .11)); s.start(t); s.stop(t + .15); };
+  const tone = (dark) => { if (!on) return; const a = ctx(), t = a.currentTime, o = a.createOscillator(); o.frequency.setValueAtTime(dark ? 1046 : 659, t); o.frequency.exponentialRampToValueAtTime(dark ? 523 : 1318, t + .07); o.connect(env(a, .05, .006, .085)); o.start(t); o.stop(t + .1); };
+
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.card');
+    if (card) { cur = all.find((i) => i.n === card.dataset.n); paint(); sync(); tap(); return; }
+    if (e.target.closest('#sound')) { on = !on; ctx().resume(); sync(); tap(); return; }
+    if (e.target.closest('#theme')) {
+      const dark = document.documentElement.dataset.mode !== 'dark';
+      document.documentElement.dataset.mode = dark ? 'dark' : 'light';
+      const t = document.getElementById('theme'); t.title = t.ariaLabel = dark ? 'Switch to light mode' : 'Switch to dark mode';
+      tone(dark); return;
+    }
+    if (e.target.closest('.nav a')) { e.preventDefault(); tap(); }
+  });
+  document.addEventListener('pointerover', (e) => { const a = e.target.closest('.nav a'); if (a && !a.contains(e.relatedTarget)) tick(); });
+</script>
+</body>
+</html>

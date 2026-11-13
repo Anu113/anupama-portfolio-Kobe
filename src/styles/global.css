@@ -257,7 +257,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Inline text link — for a link sitting inside a sentence (the hero bio's
-   "LinkedIn", a contact-page email, an about-page aside), as opposed to
+   "LinkedIn", a footer email, an about-page aside), as opposed to
    .btn--link's own standalone "View case study →" role. A dotted underline
    at rest, already visible so the sentence reads as containing a link
    before any pointer arrives; on hover the line solidifies to full colour

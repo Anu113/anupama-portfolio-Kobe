@@ -3,11 +3,14 @@
      Name   "Anupama Mishra", top-left, alone. It's the home link, and
             the one thing in the bar set larger and in ink.
      Right  Everything else, tucked in one group against the right edge:
-            Work · About · Playground · Contact (12px, the label role), a
-            hairline, then the theme button. (Her location and time
+            Work · About · Play (12px, the label role), a hairline, then
+            the sound button and the theme button. "Play" is the
+            label only; the page stays at /playground. There's no
+            Contact link (the page was removed on request, 2026-11-11):
+            the footer carries the email and LinkedIn on every page. (Her location and time
             live above the hero: LocalTime.astro.)
-   Below 900px the four links fold into a "Menu" button; the theme
-   button and Menu stay on the right. Menu opens the links as a panel
+   Below 900px the three links fold into a "Menu" button; the sound
+   and theme buttons and Menu stay on the right. Menu opens the links as a panel
    under the bar; Escape or a second press closes it and hands
    focus back to the button.
    Name and bar sit on the page's own --gutter, so they share one left
@@ -33,14 +36,24 @@
    bio's); the current page, and whatever's hovered or focused, turn to
    ink. The current page is also underlined; hover/focus draws the same
    underline in from the left.
+   The sound button (speaker "01", chosen on request from the mocks in
+   experiments/nav-sound/) is drawn on the sun/moon's 15px grid and
+   line so the two read as a pair. Off: a speaker with a slash. On:
+   the slash wipes away and two waves draw out from the speaker, one
+   after the other. It's aria-pressed, labelled "Sound"; the tooltip
+   says what a press does. Its rules and sounds live in
+   scripts/sound.ts: off by default, on for the tab once pressed, a
+   tick on hovering the name or a link, a tap on clicking one, a short
+   tone on Light/Dark. Its reason: the sounds give the nav a felt,
+   physical response, and only for a visitor who asks for them.
+
    Reduced motion: no slide, no underline draw, icons swap in place. */
 import { site } from '../data/site';
 const path = Astro.url.pathname;
 const links = [
   { label: 'Work', href: '/work' },
   { label: 'About', href: '/about' },
-  { label: 'Playground', href: '/playground' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'Play', href: '/playground' },
 ];
 const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
 ---
@@ -58,13 +71,26 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 
     <span class="nav__sep" aria-hidden="true"></span>
 
-    <!-- Theme: one button cycling System → Light → Dark, after
-         carlthomasiv.com (icons are theirs). The label says what the
-         next press does; the icon shows the current mode. -->
+    <div class="nav__icons">
+    <!-- Sound: speaker 01. The slash and the waves are drawn with
+         stroke-dash so they wipe in and out. -->
+    <button type="button" class="nav__icon nav__sound" aria-pressed="false" aria-label="Sound" title="Turn sound on" data-nav-sound>
+      <svg viewBox="0 0 15 15" fill="none" aria-hidden="true">
+        <path d="M1.8 5.6h2.3l3.3-2.8v9.4L4.1 9.4H1.8z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+        <path class="nav__wave" d="M9.7 5.6a2.7 2.7 0 0 1 0 3.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <path class="nav__wave nav__wave--far" d="M11.5 3.8a5.2 5.2 0 0 1 0 7.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <path class="nav__mute" d="M1.3 1.6l12.4 11.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <!-- Theme: Light ↔ Dark, after carlthomasiv.com (icons are theirs).
+         The label says what the next press does; the icon shows the
+         current mode. -->
     <button type="button" class="nav__icon" aria-label="Switch to light mode" title="Switch to light mode" data-nav-mode>
       <span class="nav__glyph" data-glyph="light"><svg viewBox="0 0 15 15" fill="none" aria-hidden="true"><circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M2.93 2.93l1.06 1.06M11.01 11.01l1.06 1.06M2.93 12.07l1.06-1.06M11.01 3.99l1.06-1.06" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>
       <span class="nav__glyph" data-glyph="dark"><svg viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M7.5 1.5A6 6 0 1 0 13.5 7.5 4.5 4.5 0 0 1 7.5 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></span>
     </button>
+    </div>
 
     <button type="button" class="nav__menu" aria-expanded="false" aria-controls="nav-links" data-nav-menu>Menu</button>
   </div>
@@ -176,6 +202,22 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
   .nav__glyph[data-snap] { transition: none; }
   .nav__glyph svg { width: var(--nav-icon); height: var(--nav-icon); display: block; }
 
+  /* Sound and theme sit as a pair, their glyphs one group-gap apart
+     (each button's negative margin already trims its hit area). */
+  .nav__icons { display: flex; align-items: center; gap: var(--nav-group-gap); }
+  .nav__sound svg { width: var(--nav-icon); height: var(--nav-icon); display: block; margin: auto; overflow: visible; }
+  .nav__wave {
+    stroke-dasharray: var(--nav-sound-dash); stroke-dashoffset: var(--nav-sound-dash);
+    transition: stroke-dashoffset var(--dur-hover) var(--ease-out);
+  }
+  .nav__wave--far { transition-delay: var(--nav-sound-stagger); }
+  .nav__mute {
+    stroke-dasharray: var(--nav-sound-mute-dash); stroke-dashoffset: 0;
+    transition: stroke-dashoffset var(--dur-hover) var(--ease-out);
+  }
+  .nav__sound[aria-pressed='true'] .nav__wave { stroke-dashoffset: 0; }
+  .nav__sound[aria-pressed='true'] .nav__mute { stroke-dashoffset: var(--nav-sound-mute-dash); }
+
   .nav__menu { display: none; background: none; border: 0; padding: 0; color: var(--fg); cursor: pointer; }
 
   /* --- Below 900px: links fold into Menu ------------------------------ */
@@ -184,6 +226,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     /* The folded list still sits in the row as an empty item, so the
        group's gap is dropped here and each item carries its own. */
     .nav__right { gap: 0; }
+    .nav__icons { gap: var(--nav-group-gap-tight); }
     .nav__icon { margin-left: 0; }
     .nav__menu { display: block; margin-left: var(--nav-group-gap-tight); }
     /* The one list doubles as the menu panel: stacked under the bar on
@@ -202,11 +245,13 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .nav, .nav__links a, .nav__links a::after, .nav__icon, .nav__glyph { transition: none; }
+    .nav, .nav__links a, .nav__links a::after, .nav__icon, .nav__glyph, .nav__wave, .nav__mute { transition: none; }
   }
 </style>
 
 <script>
+  import { isSoundOn, setSoundOn, onSoundChange, playTick, playTap, playThemeTone } from '../scripts/sound';
+
   // The bar adopts the theme of the section currently behind it.
   const nav = document.getElementById('site-nav');
   const bands = [...document.querySelectorAll('[data-themeband]')];
@@ -312,6 +357,21 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       });
     };
 
+    // Sound: the speaker button, and the ticks and taps it unlocks on the
+    // name and the links (each plays nothing while sound is off).
+    const snd = nav.querySelector<HTMLButtonElement>('[data-nav-sound]')!;
+    const paintSound = (on: boolean) => {
+      snd.setAttribute('aria-pressed', String(on));
+      snd.title = on ? 'Turn sound off' : 'Turn sound on';
+    };
+    paintSound(isSoundOn());
+    onSoundChange(paintSound);
+    snd.addEventListener('click', () => setSoundOn(!isSoundOn()));
+    nav.querySelectorAll<HTMLAnchorElement>('.nav__mark, .nav__links a').forEach((a) => {
+      a.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') playTick(); });
+      a.addEventListener('click', () => playTap());
+    });
+
     show(current()); label(current());
     btn2.addEventListener('click', () => {
       const prev = current();
@@ -319,6 +379,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       try { localStorage.setItem('mode', next); } catch {}
       root.dataset.modePref = next;
       apply(next); show(next, prev); label(next);
+      playThemeTone(next === 'dark');
     });
   }
 
