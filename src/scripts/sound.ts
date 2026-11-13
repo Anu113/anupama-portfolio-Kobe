@@ -9,9 +9,9 @@
 //   - Nothing plays until the visitor turns it on.
 // The sounds are synthesised with Web Audio rather than loaded as files:
 // no assets to license or download, and each is well under a second.
-//   tick   — hovering the name or a nav link
-//   tap    — clicking the name or a nav link, and once as sound turns
-//            on, so the press is heard (turning off is silent)
+//   tick   — unused (hover sound removed on request, 2026-11-13)
+//   tap    — once as sound turns on, so the press is heard (turning
+//            off is silent). Links no longer tap on click (2026-11-13).
 //   theme  — switching Light/Dark: a ~100ms sine, falling toward Dark and
 //            rising toward Light (was the old day/night button's tick)
 
