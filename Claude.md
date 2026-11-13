@@ -520,9 +520,10 @@ walked back. Concretely, in the current implementation:
   over): a slash when off, two waves drawing in when on, on the
   sun/moon's 15px grid. The rules and sounds are the old dock's, in
   `scripts/sound.ts`: off by default, on for the tab once pressed (a
-  reload starts off), synthesised in the browser (no files): a tick on
-  hovering the name or a nav link, a tap on clicking one, a short tone
-  on Light/Dark. Its reason: a felt response, only for a visitor who
+  reload starts off), synthesised in the browser (no files): a tap as
+  sound turns on and a short tone on Light/Dark, nothing else. The name
+  and links make no sound on hover or click (removed on request,
+  2026-11-13); don't add one back. Its reason: a felt response, only for a visitor who
   asks for it. Don't wire sounds beyond the nav without asking; the
   About page's record player plays on its own press, apart from this.
 - **The location line** (`LocalTime.astro`) sits above the hero

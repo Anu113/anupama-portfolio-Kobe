@@ -43,8 +43,9 @@
    after the other. It's aria-pressed, labelled "Sound"; the tooltip
    says what a press does. Its rules and sounds live in
    scripts/sound.ts: off by default, on for the tab once pressed, a
-   tick on hovering the name or a link, a tap on clicking one, a short
-   tone on Light/Dark. Its reason: the sounds give the nav a felt,
+   tap as it turns on, and a short tone on Light/Dark. The name and the
+   links make no sound, on hover or click (removed on request,
+   2026-11-13). Its reason: the sounds give the nav a felt,
    physical response, and only for a visitor who asks for them.
 
    Reduced motion: no slide, no underline draw, icons swap in place. */
@@ -250,7 +251,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 </style>
 
 <script>
-  import { isSoundOn, setSoundOn, onSoundChange, playTick, playTap, playThemeTone } from '../scripts/sound';
+  import { isSoundOn, setSoundOn, onSoundChange, playThemeTone } from '../scripts/sound';
 
   // The bar adopts the theme of the section currently behind it.
   const nav = document.getElementById('site-nav');
@@ -357,8 +358,8 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       });
     };
 
-    // Sound: the speaker button, and the ticks and taps it unlocks on the
-    // name and the links (each plays nothing while sound is off).
+    // Sound: the speaker button. It taps as it turns on (scripts/sound.ts);
+    // the theme button's tone is the only other sound.
     const snd = nav.querySelector<HTMLButtonElement>('[data-nav-sound]')!;
     const paintSound = (on: boolean) => {
       snd.setAttribute('aria-pressed', String(on));
@@ -367,10 +368,6 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     paintSound(isSoundOn());
     onSoundChange(paintSound);
     snd.addEventListener('click', () => setSoundOn(!isSoundOn()));
-    nav.querySelectorAll<HTMLAnchorElement>('.nav__mark, .nav__links a').forEach((a) => {
-      a.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') playTick(); });
-      a.addEventListener('click', () => playTap());
-    });
 
     show(current()); label(current());
     btn2.addEventListener('click', () => {
