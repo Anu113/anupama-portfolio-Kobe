@@ -35,7 +35,6 @@ export const beyond = {
     { src: 'art-earrings.webp', alt: 'Her digital painting: a woman in profile with a hair bun and earrings', aspect: 1.33 },
     { src: 'event-selfie.webp', alt: 'A group selfie with designers at an event', aspect: 1.37 },
     { src: 'art-hermione.webp', alt: 'Her ink and watercolour drawing of Hermione with her wand', aspect: 0.73 },
-    { src: 'office-garden.webp', alt: 'With a colleague in the office garden', aspect: 1.33 },
     { src: 'talk-smile.webp', alt: 'On stage with a mic, laughing at a question', aspect: 1 },
     { src: 'art-reading.webp', alt: 'Her illustration: reading on a sofa with a cup of tea', aspect: 0.85 },
     { src: 'sticky-wall.webp', alt: 'With friends at a conference wall of sticky notes', aspect: 0.56 },
@@ -43,8 +42,6 @@ export const beyond = {
     { src: 'baking-icing.webp', alt: 'Piping chocolate onto cookies at a baking class', aspect: 0.59 },
     { src: 'meetup-group.webp', alt: 'A design meetup, everyone in one photo', aspect: 1.96 },
     { src: 'art-sage.webp', alt: 'Her digital painting: a woman with long black hair, eyes closed', aspect: 0.63 },
-    { src: 'blue-sculpture-friend.webp', alt: 'With a friend in front of the blue sculpture', aspect: 0.75 },
-    { src: 'office-garden-2.webp', alt: 'Arms crossed with a colleague in the office garden', aspect: 1.14 },
   ].map((p): BeyondPhoto & { soft: string } => ({
     ...p,
     // No card taller than 2:3, as on the reference: the tallest photos are

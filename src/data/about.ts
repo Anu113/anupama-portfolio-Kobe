@@ -83,7 +83,6 @@ export const tiles: Tile[] = [
     { src: b + 'talk-poster.webp', alt: 'Poster for her talk, The Saga of Accessibility, on Design Sundays' },
     { src: b + 'sticky-wall.webp', alt: 'With friends at a conference wall of sticky notes' },
     { src: b + 'event-selfie.webp', alt: 'A group selfie with designers at an event' },
-    { src: b + 'office-garden.webp', alt: 'With a colleague in the office garden' },
   ] },
   { title: 'Making', caption: 'Painting, baking, and writing poems and books', shots: [
     { src: b + 'art-sage.webp', alt: 'Her digital painting: a woman with long black hair, eyes closed' },
