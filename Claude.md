@@ -690,8 +690,10 @@ walked back. Concretely, in the current implementation:
   `experiments/about-grid/slots.html`, after his CD player): a
   slot-loading record player with a speaker (`RecordPlayer.astro`,
   RECORD PLAYER in `tokens.css`). On a press the record rises and spins,
-  the grille pulses and a lilac pixel display scrolls the song with a
-  clock and level bars; no orange, on request. It plays her Spotify
+  the dome in its small round speaker bumps and a neon green pixel
+  display scrolls the song with a clock and level bars (speaker and
+  colour chosen on request, 2026-11-14, from
+  `experiments/record-player-cute/`); no orange, on request. It plays her Spotify
   playlist's real tracks, "My Playlist #2026" (`song` in
   `data/about.ts`), one after another, through Spotify's embedded
   player kept out of sight in the tile (on request, 2026-11-11: she
