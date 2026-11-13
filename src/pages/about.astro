@@ -139,7 +139,7 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
                               <span class="name">{r.name}{r.tag && <span class="tag"> / {r.tag}</span>}</span>
                               {r.year && <span class="year">{r.year}</span>}
                             </span>
-                            <span class="line">{r.line}</span>
+                            <span class="line">{r.line}{r.site && <> <a class="site" href={r.site.href} target="_blank" rel="noopener">{r.site.label}</a></>}</span>
                           </span>
                         </Tag>
                       </li>
@@ -290,6 +290,9 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
   .tag { color: var(--fg-dim); }
   .year { flex: none; color: var(--fg-dim); font-family: var(--font-mono); font-size: var(--step-fine); }
   .line { color: var(--fg-dim); text-wrap: pretty; }
+  .site { color: var(--fg); text-decoration: underline var(--link-thick) var(--link-line); text-underline-offset: var(--link-offset); }
+  .site:hover { text-decoration-color: var(--link-line-hover); text-decoration-thickness: var(--link-thick-hover); }
+  .site:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
   /* ---- the three tiles ---- */
   .tiles {

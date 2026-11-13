@@ -1,0 +1,71 @@
+---
+/* ExperienceList.astro — her roles on /work, the page's last block,
+   under the Archive.
+   The same rows as the About page's Experience tab (company logo,
+   company / role, years in mono, a line or two ending on the company's
+   site, after felixrieseberg.com), from the same data (`experience` in
+   data/about.ts), so the two never drift. Here it's a plain list, not
+   the About tab's self-scrolling reel: five rows fit on screen, and a
+   recruiter scanning the work page wants the whole career at a glance.
+
+   Laid out on the case cards' two columns: the label in the left one,
+   the rows in the right, so the list sits on the page's grid. The gap
+   above it is --space-band (set in work.astro), smaller than the gap
+   between bands, so it reads as part of the Archive's band. One
+   column under 900px. No motion beyond the row's hover ground. */
+import { experience } from '../data/about';
+---
+<section class="exp" aria-labelledby="exp-h">
+  <h2 class="exp__head u-label" id="exp-h">Experience</h2>
+  <ul class="exp__list">
+    {experience.map((r) => (
+      <li class="row">
+        <img class="tile" src={r.tile.src} alt="" width="44" height="44" loading="lazy" decoding="async" />
+        <span class="text">
+          <span class="rhead">
+            <span class="name">{r.name}{r.tag && <span class="tag"> / {r.tag}</span>}</span>
+            {r.year && <span class="year">{r.year}</span>}
+          </span>
+          <span class="line">{r.line}{r.site && <> <a class="site" href={r.site.href} target="_blank" rel="noopener">{r.site.label}</a></>}</span>
+        </span>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .exp {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(1.5rem, 2.5vw, 2rem);
+    align-items: start;
+  }
+  .exp__head { margin: 0; color: var(--fg-dim); }
+  .exp__list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+
+  /* Row values match the About page's tab rows (ABOUT in tokens.css). */
+  .row {
+    display: flex; align-items: flex-start; gap: 1rem; padding: 0.5rem;
+    border-radius: var(--radius-about-row); background: var(--about-row);
+    transition: background-color var(--dur-micro) ease-out;
+  }
+  .row:hover { background: var(--about-row-hover); }
+  .tile {
+    flex: none; width: var(--about-tile); height: var(--about-tile);
+    border-radius: var(--radius-about-row); object-fit: cover; background: var(--about-card);
+  }
+  .text { flex: 1; min-width: 0; display: grid; gap: 2px; font-size: var(--step-copy); line-height: 1.3; }
+  .rhead { display: flex; justify-content: space-between; gap: 0.5rem; }
+  .name { color: var(--fg); }
+  .tag { color: var(--fg-dim); }
+  .year { flex: none; color: var(--fg-dim); font-family: var(--font-mono); font-size: var(--step-fine); }
+  .line { color: var(--fg-dim); text-wrap: pretty; }
+  .site { color: var(--fg); text-decoration: underline var(--link-thick) var(--link-line); text-underline-offset: var(--link-offset); }
+  .site:hover { text-decoration-color: var(--link-line-hover); text-decoration-thickness: var(--link-thick-hover); }
+  .site:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  @media (max-width: 900px) {
+    .exp { grid-template-columns: minmax(0, 1fr); row-gap: 1.5rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { .row { transition: none; } }
+</style>
