@@ -219,6 +219,9 @@
   --status-ring: 12px;
   --dur-status-ring: 2.5s;
 
+  --nav-sound-dash: 12;                          /* sound button: wave length, in the 15px grid's units */
+  --nav-sound-mute-dash: 18;                     /* sound button: the slash's length */
+  --nav-sound-stagger: 60ms;                     /* sound button: far wave follows the near one */
   /* Home hero layout (index.astro, HeroIllustration.astro). */
   --hero-copy-w: clamp(22rem, 46vw, 50rem);
   /* The band's top padding: the nav → headline gap (index.astro). */
