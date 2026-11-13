@@ -93,7 +93,7 @@ export const pixelTree: Record<string, PixelNode> = {
     say: ['Fintech, mostly: payments, cards, privacy. Then enterprise and developer tools, the kind with forty settings and one dangerous one. These three are open:'],
     cards: [
       oin,
-      { label: 'PayPal', title: 'Privacy settings people can read', sub: 'Lead product designer', href: '/work/paypal-privacy' },
+      { label: 'PayPal', title: 'Privacy settings people can read', sub: 'Owned the design', href: '/work/paypal-privacy' },
       { label: 'Walmart Labs', title: 'Scan & Go, in-store', sub: 'End-to-end designer', href: '/work/walmart-scan-go' },
     ],
     next: ['first', 'locked'],

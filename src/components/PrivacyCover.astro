@@ -1,0 +1,161 @@
+---
+/* PrivacyCover.astro — the Privacy case's main image: a composed,
+   annotated mockup on the project hue, after rachelatwork.com's case
+   covers (on request, in place of a strip of cropped screenshots). The
+   redesigned Data and privacy page in a phone, three pieces of the
+   redesign floating beside it, and a numbered note on each naming the
+   decision it shows, in the same words as the craft section's claims.
+
+   Static on purpose (her call): it's a cover, read in a glance. The
+   phone is the coded screen (PrivacyScreen.astro), so it's sharp at any
+   size; the pieces are drawn here from her screens' copy. Everything is
+   laid out on one fixed canvas and scaled whole to the frame, so nothing
+   is ever cropped. Where the frame is too small for the notes to read,
+   only the phone shows.
+
+   Decorative to assistive tech except for its one label (the case's
+   hero alt). Values under PRIVACY COVER in tokens.css. */
+import PrivacyScreen from './PrivacyScreen.astro';
+import '../styles/pp-sans.css';
+
+interface Props { alt: string }
+const { alt } = Astro.props;
+---
+<div class="cv" data-cv role="img" aria-label={alt}>
+  <div class="cv__canvas" aria-hidden="true">
+    <svg class="cv__wires" viewBox="0 0 1200 525">
+      <path d="M487 150 C 460 150, 452 128, 426 128" />
+      <path d="M487 360 C 468 360, 462 382, 440 382" />
+      <path d="M713 300 C 740 300, 748 322, 772 322" />
+      <path d="M713 118 C 734 118, 740 88, 760 88" />
+      <circle cx="487" cy="150" r="3" /><circle cx="487" cy="360" r="3" /><circle cx="713" cy="300" r="3" /><circle cx="713" cy="118" r="3" />
+    </svg>
+
+    <div class="cv__phone">
+      <div class="cv__screen" inert>
+        <div class="cv__draw">
+          <div class="sb"><span>9:41</span><span class="sb__icons"><i></i><i></i><i></i></span></div>
+          <div class="cv__scr"><PrivacyScreen id="hub" /></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="cv__note" style="left: 760px; top: 71px;"><b>01</b>One page, three headings</p>
+
+    <div class="cv__piece" style="left: 106px; top: 66px; width: 320px;">
+      <div class="pc-row">
+        <span class="pc-t">Get personalized offers</span>
+        <span class="pc-switch"><i></i></span>
+      </div>
+      <p class="pc-d">Personalized deals and offers is turned off. Turn it on to get money saving deals that are personalized to you.</p>
+      <p class="pc-link">Learn how it works</p>
+    </div>
+    <p class="cv__note" style="left: 106px; top: 22px;"><b>02</b>A switch that says what’s on</p>
+
+    <div class="cv__piece" style="left: 140px; top: 322px; width: 300px;">
+      <div class="pc-row">
+        <span class="pc-t">Personal info</span>
+        <span class="pc-check"></span>
+      </div>
+      <p class="pc-d">This helps us keep your account safe, personalize your experience, and contact you when needed.</p>
+      <p class="pc-link">What’s included ⌄</p>
+    </div>
+    <p class="cv__note" style="left: 140px; top: 470px;"><b>03</b>One tick per data type</p>
+
+    <div class="cv__piece cv__piece--on" style="left: 772px; top: 262px; width: 320px;">
+      <div class="pc-row pc-row--start">
+        <span class="pc-t">Clean up your data</span>
+        <span class="pc-new">New</span>
+      </div>
+      <p class="pc-d">Delete your non-essential data such as marketing data, face scan etc., without closing your account.</p>
+    </div>
+    <p class="cv__note" style="left: 772px; top: 392px;"><b>04</b>Clean up, without closing the account</p>
+  </div>
+</div>
+
+<style>
+  /* The frame gives the size; the canvas is scaled to fit it whole. */
+  .cv { position: relative; width: 100%; height: 100%; overflow: hidden; container-type: size; }
+  .cv__canvas {
+    position: absolute; left: 50%; top: 50%;
+    width: 1200px; height: 525px;
+    transform: translate(-50%, -50%) scale(var(--cv-k, 1));
+  }
+
+  .cv__wires { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .cv__wires path { fill: none; stroke: var(--cover-wire); stroke-width: 1.25; stroke-dasharray: 3 4; }
+  .cv__wires circle { fill: var(--cover-wire); }
+
+  /* The phone: the coded screen at its own size, scaled into a bezel. */
+  .cv__phone {
+    position: absolute; left: 487px; top: 22px; width: 226px; height: 481px;
+    padding: var(--cover-bezel-w); border-radius: var(--radius-cover-device);
+    background: var(--device-bezel); box-shadow: var(--device-shadow);
+  }
+  .cv__screen {
+    position: relative; width: 100%; height: 100%; overflow: hidden;
+    border-radius: var(--radius-cover-screen); background: var(--pp-surface);
+  }
+  .cv__draw {
+    width: var(--pp-screen-w); height: var(--pp-screen-h); position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+    transform: scale(calc(218 / 288)); transform-origin: 0 0;
+    color: var(--pp-ink); font-family: var(--pp-sans); font-size: var(--pp-text-md); font-weight: var(--pp-w-reg); line-height: 1.35;
+  }
+  .cv__scr { position: relative; flex: 1; overflow: hidden; }
+  .sb { position: relative; z-index: 3; background: var(--pp-surface); display: flex; justify-content: space-between; align-items: center; padding: 14px 24px 4px; font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); flex: none; }
+  .sb__icons { display: flex; gap: 4px; align-items: flex-end; }
+  .sb__icons i { display: block; width: 4px; height: 6px; background: var(--pp-ink); border-radius: 1px; }
+  .sb__icons i:nth-child(2) { height: 8px; }
+  .sb__icons i:nth-child(3) { width: 18px; height: 8px; border-radius: 2px; }
+
+  /* The pieces: whole components from the redesign, in the app's type. */
+  .cv__piece {
+    position: absolute; padding: 16px 18px;
+    background: var(--pp-surface); border-radius: var(--pp-radius-tile);
+    box-shadow: var(--cover-piece-shadow);
+    color: var(--pp-ink); font-family: var(--pp-sans); font-weight: var(--pp-w-reg); line-height: 1.4;
+  }
+  .cv__piece--on { box-shadow: 0 0 0 1.5px var(--pp-illo-deep), var(--cover-piece-shadow); }
+  .cv__piece p { margin: 0; }
+  .pc-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .pc-row--start { justify-content: flex-start; }
+  .pc-t { font-size: var(--cover-type-title); font-weight: var(--pp-w-med); }
+  .pc-d { margin-top: 6px !important; font-size: var(--cover-type-body); color: var(--pp-ink-dim); }
+  .pc-link { margin-top: 10px !important; font-size: var(--cover-type-body); font-weight: var(--pp-w-med); color: var(--pp-blue); }
+  .pc-switch { flex: none; position: relative; width: 44px; height: 24px; border-radius: var(--radius-pill); background: var(--pp-line); }
+  .pc-switch i { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--pp-surface); box-shadow: var(--pp-tile-shadow); }
+  .pc-check { flex: none; position: relative; width: 20px; height: 20px; border-radius: 4px; background: var(--pp-illo-deep); }
+  .pc-check::after { content: ''; position: absolute; left: 7px; top: 3px; width: 5px; height: 10px; border: solid var(--pp-surface); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .pc-new { padding: 2px 8px; border-radius: 4px; background: var(--pp-new); color: var(--pp-surface); font-size: var(--cover-type-badge); font-weight: var(--pp-w-med); }
+
+  /* The notes: numbered, in the site's mono, the decision each piece shows. */
+  .cv__note {
+    position: absolute; margin: 0; display: flex; gap: 10px; align-items: baseline;
+    padding: 7px 12px; border-radius: var(--radius-pill);
+    background: var(--cover-note-bg); color: var(--cover-note-ink);
+    font-family: var(--font-mono); font-size: var(--cover-type-note); letter-spacing: 0.02em; white-space: nowrap;
+  }
+  .cv__note b { font-weight: inherit; color: var(--cover-note-num); }
+
+  /* Too small to read the notes: the phone alone, centred. */
+  @container (max-width: 560px) {
+    .cv__wires, .cv__note, .cv__piece { display: none; }
+  }
+</style>
+
+<script>
+  // Scale the canvas to fit its frame whole, never cropped. Narrow, only
+  // the phone shows, so fit that instead.
+  document.querySelectorAll<HTMLElement>('[data-cv]').forEach((el) => {
+    const canvas = el.querySelector<HTMLElement>('.cv__canvas')!;
+    const fit = () => {
+      const w = el.clientWidth, h = el.clientHeight;
+      const narrow = w <= 560;
+      const k = narrow ? h / 525 : Math.min(w / 1200, h / 525);
+      canvas.style.setProperty('--cv-k', String(k));
+    };
+    new ResizeObserver(fit).observe(el);
+    fit();
+  });
+</script>

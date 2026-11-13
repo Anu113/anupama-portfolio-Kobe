@@ -1,0 +1,260 @@
+---
+/* CaseStrip.astro — the reading strip across the top of a case study.
+   After felixrieseberg.com's posts (on request): one thin line under the
+   nav with "◂ Work" on the left, the case title beside it once the
+   reader has scrolled past the real one, "Part 2/7 ▾" on the right, and
+   a 2px accent line along its bottom edge that fills with the reader's
+   progress through the case.
+
+   Its reason: on a long case study the reader always knows where they
+   are, how much is left, and has one click back to the work or to any
+   section. The progress line is tied 1:1 to scroll, so it's direct
+   feedback, not ambient motion, and it runs under reduced motion too.
+
+   Fixed, under the site nav. The nav hides on scroll-down and returns on
+   scroll-up (Nav.astro); the strip rides with it — tucked under the nav
+   while it shows, at the very top while it's away — on the nav's own
+   curve and duration, so the two move as one piece.
+
+   "Part n/N" counts Start plus each section, and reads the current one
+   from CaseRail's `case:section` event, so the rail and the strip never
+   disagree. Pressing it opens the contents as a menu (the only contents
+   on screens under 1080px, where the rail is hidden): Escape or a second
+   press closes it and returns focus; choosing a section closes it.
+
+   Back link in the grey, ink on hover — no accent text at rest. The
+   accent is only the progress line. Values under CASE STRIP in
+   tokens.css. */
+interface Props {
+  title: string;
+  sections: { id: string; nav: string }[];
+  backHref?: string;
+  backLabel?: string;
+}
+const { title, sections, backHref = '/work', backLabel = 'Work' } = Astro.props;
+const parts = [{ id: 'top', nav: 'Start' }, ...sections];
+---
+<div class="strip" data-strip>
+  <div class="strip__in">
+    <a class="strip__back" href={backHref}><span aria-hidden="true">◂</span> {backLabel}</a>
+    <span class="strip__title" aria-hidden="true" data-strip-title>{title}</span>
+    <button type="button" class="strip__part" aria-expanded="false" aria-controls="strip-menu"
+            aria-haspopup="true" aria-label={`Contents, part 1 of ${parts.length}`} data-strip-part>
+      Part <span data-strip-n>1</span>/{parts.length}
+      <span class="strip__caret" aria-hidden="true">▾</span>
+    </button>
+  </div>
+  <div class="strip__bar" aria-hidden="true" data-strip-bar></div>
+  <nav class="strip__menu" id="strip-menu" aria-label="Contents" hidden data-strip-menu>
+    <ol>
+      {parts.map((p, i) => (
+        <li>
+          <a href={`#${p.id}`} aria-current={i === 0 ? 'true' : undefined}>
+            <span class="strip__menu-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            {p.nav}
+          </a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+</div>
+
+<style>
+  .strip {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    /* Just under the nav (z 50), so the nav slides over it, never under. */
+    z-index: 49;
+    background: var(--bg);
+    border-bottom: 1px solid var(--rule);
+    transform: translateY(var(--strip-offset, var(--nav-h)));
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .strip__in {
+    height: var(--strip-h);
+    padding-inline: var(--gutter);
+    display: flex;
+    align-items: center;
+    gap: 1.2ch;
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-fine);
+    letter-spacing: var(--tracking-mono-label);
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+  .strip__back {
+    color: var(--fg-dim);
+    text-decoration: none;
+    transition: color var(--dur-micro) ease;
+  }
+  .strip__back:hover,
+  .strip__back:focus-visible { color: var(--accent-text); }
+
+  /* The title only arrives once the real one has scrolled away, so the
+     page never shows it twice. */
+  .strip__title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-sans);
+    font-weight: var(--weight-sans);
+    font-size: var(--step-copy);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--fg);
+    opacity: 0;
+    transition: opacity var(--dur-hover) var(--ease-out);
+  }
+  .strip.is-titled .strip__title { opacity: 1; }
+
+  .strip__part {
+    margin-inline-start: auto;
+    flex: 0 0 auto;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0.25rem 0;
+    cursor: pointer;
+    transition: color var(--dur-micro) ease;
+  }
+  .strip__part:hover,
+  .strip__part:focus-visible,
+  .strip__part[aria-expanded='true'] { color: var(--fg); }
+  .strip__caret {
+    display: inline-block;
+    transition: transform var(--dur-micro) ease;
+  }
+  .strip__part[aria-expanded='true'] .strip__caret { transform: rotate(180deg); }
+
+  /* The progress line: the bottom edge of the strip, filled from the left
+     by scaleX. Sits over the hairline so it reads as the hairline filling. */
+  .strip__bar {
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: var(--progress-h);
+    background: var(--accent);
+    transform-origin: left center;
+    transform: scaleX(var(--progress, 0));
+  }
+
+  .strip__menu {
+    position: absolute;
+    top: calc(100% + 1px);
+    right: var(--gutter);
+    min-width: 16rem;
+    max-height: calc(100vh - var(--nav-h) - var(--strip-h) - 2rem);
+    overflow-y: auto;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    padding: 0.5rem 0;
+  }
+  .strip__menu ol { list-style: none; margin: 0; padding: 0; }
+  .strip__menu a {
+    display: flex;
+    gap: 1.2ch;
+    padding: 0.4rem 1rem;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-copy);
+    line-height: 1.4;
+    color: var(--fg-dim);
+    text-decoration: none;
+    transition: color var(--dur-micro) ease;
+  }
+  .strip__menu a:hover,
+  .strip__menu a:focus-visible,
+  .strip__menu a[aria-current='true'] { color: var(--fg); }
+  .strip__menu-n { opacity: 0.5; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .strip, .strip__title, .strip__caret { transition: none; }
+  }
+</style>
+
+<script>
+  const strip = document.querySelector<HTMLElement>('[data-strip]');
+  const nav = document.getElementById('site-nav');
+
+  if (strip) {
+    const bar = strip.querySelector<HTMLElement>('[data-strip-bar]')!;
+    const n = strip.querySelector<HTMLElement>('[data-strip-n]')!;
+    const btn = strip.querySelector<HTMLButtonElement>('[data-strip-part]')!;
+    const menu = strip.querySelector<HTMLElement>('[data-strip-menu]')!;
+    const items = [...menu.querySelectorAll<HTMLAnchorElement>('a')];
+    const heading = document.querySelector<HTMLElement>('.hero__title');
+    const article = strip.closest('main')?.querySelector<HTMLElement>('.body') ?? document.body;
+
+    // Ride with the nav: under it while it shows, at the top while it's
+    // hidden. Mirrors Nav.astro's own rule for when it's actually hidden.
+    const follow = () => {
+      if (!nav) return;
+      const hidden = nav.classList.contains('is-hidden')
+        && !nav.classList.contains('is-open')
+        && !nav.matches(':focus-within');
+      strip.style.setProperty('--strip-offset', hidden ? '0px' : `${nav.offsetHeight}px`);
+    };
+
+    // Progress through the case: 0 at the top of the page, 1 when the
+    // article's end reaches the bottom of the window.
+    let queued = false;
+    const measure = () => {
+      queued = false;
+      const end = article.getBoundingClientRect().bottom + scrollY - innerHeight;
+      const p = end > 0 ? Math.min(1, Math.max(0, scrollY / end)) : 1;
+      strip.style.setProperty('--progress', p.toFixed(4));
+      if (heading) strip.classList.toggle('is-titled', heading.getBoundingClientRect().bottom < strip.getBoundingClientRect().bottom);
+      follow();
+    };
+    const queue = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(measure);
+    };
+    measure();
+    addEventListener('scroll', queue, { passive: true });
+    addEventListener('resize', queue);
+    if (nav) new MutationObserver(follow).observe(nav, { attributes: true, attributeFilter: ['class'] });
+    nav?.addEventListener('focusin', follow);
+    nav?.addEventListener('focusout', () => setTimeout(follow));
+
+    // Part n/N, from CaseRail's spy.
+    addEventListener('case:section', ((e: CustomEvent<{ index: number }>) => {
+      const i = e.detail.index;
+      n.textContent = String(i + 1);
+      btn.setAttribute('aria-label', `Contents, part ${i + 1} of ${items.length}`);
+      items.forEach((a, k) => {
+        if (k === i) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+    }) as EventListener);
+
+    // The contents menu.
+    const setOpen = (open: boolean, returnFocus = false) => {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      if (open) (items.find((a) => a.getAttribute('aria-current') === 'true') ?? items[0])?.focus();
+      else if (returnFocus) btn.focus();
+    };
+    btn.addEventListener('click', () => setOpen(menu.hidden));
+    items.forEach((a) => a.addEventListener('click', () => setOpen(false)));
+    strip.addEventListener('keydown', (e) => {
+      if (menu.hidden) return;
+      if (e.key === 'Escape') { e.preventDefault(); setOpen(false, true); return; }
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      e.preventDefault();
+      const at = items.indexOf(document.activeElement as HTMLAnchorElement);
+      const next = (at + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+      items[next].focus();
+    });
+    document.addEventListener('click', (e) => {
+      if (!menu.hidden && !strip.contains(e.target as Node)) setOpen(false);
+    });
+  }
+</script>

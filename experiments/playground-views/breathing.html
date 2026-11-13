@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Playground — title room mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  /* /playground as a copy of andreas.vision/play, values read off his
+     stylesheet and DOM on 2026-10-19:
+       ball     drawn on one canvas, as his is (WebGL there): 120 rounded
+                DOM layers in CSS 3D ran at ~30fps. Perspective 1000px, every
+                card at scale .56 × depth, facing you, solid. 100 cards sit
+                evenly on the skin so the outline is round, 20 fill the middle.
+                The DOM cards stay for focus and fly into the grid. Card width
+                200px × --ball(.8), 150px under 1200, 110px under 810;
+                corners 20 / 16 / 12px. A filled ball, radius ~343px,
+                turning slowly on one axis; drag throws it, arrows turn it.
+       hover    his scales the picture 1.06; ours, on request (too still),
+                lifts the card 22% with a shadow, brings it to the front and
+                slows the turn; the ball also leans a little toward the pointer.
+       title    round 1's line sits in the middle; far cards pass under it,
+                near cards over it, and cards part around the words.
+       switch   pill at bottom 28px: "Cloud" [42px pixel tile] "Grid", words
+                16px/400 at 40% until pressed; pill padding 6px 16px, gap
+                18px, 1px ring at 6% ink. In Grid the tile splits into four
+                quarters at .8 on a springy curve.
+       grid     a pile per category, a label under each: name 20px/600,
+                count 12px at 50% ink. Click a pile: its pieces lay out in
+                one strip you can drag, corners 8px, name + count top left,
+                a round close button top right.
+     Ours: her four categories (no "Thank you" pile), Manrope instead of
+     his face, and her own painting as the pixel tile. 41 pieces repeat
+     to ~120 cards to fill the ball (repeats are hidden from screen
+     readers and gone in the grid). Serve from the repo root. */
+  :root {
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070;
+    --ring: color-mix(in srgb, var(--fg) 6%, transparent);
+    --ball: 0.8;
+    --card: calc(200px * var(--ball));
+    --card-radius: 20px;
+    --ease-ref: cubic-bezier(.77, 0, .175, 1);
+    --dur-move: 900ms;
+  }
+  @media (max-width: 1199.98px) { :root { --card: calc(150px * var(--ball)); --card-radius: 16px; } }
+  @media (max-width: 809.98px) { :root { --card: calc(110px * var(--ball)); --card-radius: 12px; } }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font-family: var(--font-sans); }
+  button { font: inherit; color: inherit; }
+
+  .play { position: fixed; inset: 0; overflow: hidden; }
+  .play h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .space { position: absolute; inset: 0; }
+  .gl { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .play:not([data-mode='cloud']):not([data-mode^='pouring']) .gl { visibility: hidden; }
+  .play[data-mode^='pouring'] .card { opacity: 0; pointer-events: none; }
+  /* the title from round 1, back in the middle: the far half of the ball
+     is drawn under it, the near half over it, and cards part around it */
+  .ballTitle { position: absolute; left: 50%; top: calc(50% - 10px); translate: -50% -50%; margin: 0; text-align: center; pointer-events: none;
+    font-family: 'Crimson Pro', Georgia, serif; font-weight: 300; font-size: clamp(2rem, 1.721rem + 1.143vw, 2.75rem); letter-spacing: -0.03em; line-height: 1.05;
+    width: max-content; transition: opacity 300ms ease-out; }
+  .ballTitle em { font-style: italic; }
+  .play:not([data-mode='cloud']):not([data-mode='pouring-back']) .ballTitle { opacity: 0; }
+  .stage { position: absolute; inset: 0; user-select: none; outline: none; }
+  /* in the ball the canvas draws the cards; the DOM ones stay for focus */
+  .play[data-mode='cloud'] .card:not(:focus-visible) { opacity: 0; pointer-events: none; will-change: auto; }
+  .play[data-mode='cloud'] .stage { cursor: grab; touch-action: none; }
+  .play[data-mode='cloud'] .stage.is-dragging, .play[data-mode='cloud'] .stage.is-dragging .card { cursor: grabbing; }
+  .stage:focus-visible { outline: 2px solid var(--fg); outline-offset: -8px; border-radius: 12px; }
+
+  .card, .label { position: absolute; top: 50%; left: 50%; margin: 0; padding: 0; border: 0; background: none; -webkit-tap-highlight-color: transparent; }
+  .play:not([data-mode='cloud']) .card { will-change: transform; }
+  .card { width: var(--card); border-radius: var(--card-radius); cursor: pointer; transition: border-radius var(--dur-move) var(--ease-ref); }
+  .card.is-moving { transition: transform var(--dur-move) var(--ease-ref), opacity 400ms ease-out, border-radius var(--dur-move) var(--ease-ref); }
+  .face { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: inherit; background: #eee; }
+  .face img, .face video { width: 100%; height: 100%; display: block; object-fit: cover; pointer-events: none; transition: scale 600ms var(--ease-ref); }
+  @media (hover: hover) and (pointer: fine) { .card:hover .face > * { scale: 1.06; } }
+  .stage.is-dragging .card .face > * { scale: none; }
+  .card:focus-visible { outline: none; }
+  .card:focus-visible .face { outline: 3px solid var(--fg); outline-offset: 4px; overflow: visible; }
+  .card.is-gone { opacity: 0; pointer-events: none; }
+  .play.strip-open .card { border-radius: 8px; }
+
+  .label { display: flex; flex-direction: column; align-items: center; gap: 2px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 300ms ease-out; }
+  .play[data-mode='grid']:not(.strip-open) .label { opacity: 1; pointer-events: auto; cursor: pointer; }
+  .play[data-mode='pouring'] .label { opacity: 1; }   /* his labels are there as the pour starts */
+  .label:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; border-radius: 4px; }
+  .label .text { font-size: 20px; font-weight: 600; line-height: 1.2; }
+  .label .note { font-size: 12px; color: color-mix(in srgb, var(--fg) 50%, transparent); font-variant-numeric: tabular-nums; }
+  @media (max-width: 1199.98px) { .label .text { font-size: 17px; } }
+  @media (max-width: 809.98px) { .label .text { font-size: 15px; } }
+
+  /* open strip header */
+  .striphead { position: absolute; left: 48px; right: 48px; top: 96px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 30;
+    opacity: 0; pointer-events: none; transition: opacity 300ms ease-out; }
+  .play.strip-open .striphead { opacity: 1; pointer-events: auto; transition-delay: 300ms; }
+  .striphead h2 { margin: 0; font-size: 28px; font-weight: 600; line-height: 1.1; }
+  .striphead p { margin: 4px 0 0; font-size: 12px; color: color-mix(in srgb, var(--fg) 50%, transparent); }
+  .close { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--fg); color: var(--bg); cursor: pointer; display: grid; place-items: center; transition: transform 100ms ease-out; }
+  .close:hover { transform: scale(1.04); }
+  .close:active { transform: scale(.94); }
+  .close:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+  @media (max-width: 809.98px) { .striphead { left: 20px; right: 20px; top: 72px; } }
+
+  /* Cloud [tile] Grid */
+  .switch { --tile: 42px; position: fixed; left: 50%; bottom: 28px; z-index: 40; display: flex; align-items: center; gap: 18px; padding: 6px 16px;
+    border-radius: 999px; background: var(--bg); box-shadow: 0 0 0 1px var(--ring); transform: translateX(-50%); }
+  .switch button { margin: 0; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .switch button:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+  .switch .word { min-width: 44px; padding: 10px 2px; font-size: 16px; font-weight: 400; opacity: .4; transition: opacity 100ms ease-out; }
+  .switch .word:hover, .switch .word[aria-pressed='true'] { opacity: 1; }
+  .switch .tile { position: relative; width: var(--tile); height: var(--tile); overflow: hidden; transition: transform 100ms ease-out; }
+  .switch .tile:hover { transform: scale(1.04); }
+  .switch .tile:active { transform: scale(.94); }
+  .switch .whole, .switch .quarter { position: absolute; overflow: hidden; }
+  .switch .whole { inset: 0; transition: opacity 80ms ease-out 220ms; }
+  .switch .quarter { width: 50%; height: 50%; transition: transform 320ms cubic-bezier(.34, 1.36, .64, 1); }
+  .switch .q0 { top: 0; left: 0; } .switch .q1 { top: 0; left: 50%; } .switch .q2 { top: 50%; left: 0; } .switch .q3 { top: 50%; left: 50%; }
+  .switch img { position: absolute; width: var(--tile); height: var(--tile); display: block; image-rendering: pixelated; pointer-events: none; }
+  .switch .q1 img, .switch .q3 img { left: -100%; }
+  .switch .q2 img, .switch .q3 img { top: -100%; }
+  .switch[data-mode='grid'] .whole { opacity: 0; transition: opacity 60ms ease-out; }
+  .switch[data-mode='grid'] .quarter { transform: scale(.8); }
+  @media (max-width: 809.98px) { .switch { bottom: 20px; gap: 14px; } }
+
+  /* viewer */
+  .viewer { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 92%, transparent);
+    opacity: 0; pointer-events: none; transition: opacity 300ms ease-out; }
+  .viewer.is-on { opacity: 1; pointer-events: auto; }
+  .viewer figure { margin: 0; max-width: min(1000px, 88vw); }
+  .viewer img, .viewer video { display: block; max-width: 100%; max-height: 74vh; border-radius: 20px; margin-inline: auto; }
+  .viewer figcaption { margin-top: 12px; text-align: center; font-size: 12px; color: var(--fg-dim); }
+  .viewer .close { position: absolute; top: 24px; right: 48px; }
+
+  /* mock chrome */
+  .vbar { position: fixed; top: 12px; left: 50%; translate: -50% 0; z-index: 90; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 4px; background: var(--fg); border-radius: 22px; font-family: var(--font-mono); font-size: 11px; max-width: calc(100vw - 24px); }
+  .vbar button { border: 0; background: none; color: #bdbdbd; padding: 6px 12px; border-radius: 999px; cursor: pointer; font: inherit; }
+  .vbar button[aria-pressed='true'] { background: var(--bg); color: var(--fg); }
+  .vnote { position: fixed; left: 24px; bottom: 24px; z-index: 90; max-width: 30ch; margin: 0; font-family: var(--font-mono); font-size: 11px; line-height: 1.5; color: var(--fg-dim); background: var(--bg); padding: 8px 10px; box-shadow: 0 0 0 1px var(--ring); }
+  .vnote b { display: block; color: var(--fg); font-weight: 400; }
+  @media (max-width: 760px) { .vnote { display: none; } }
+  /* C: the words always on top, on a soft ground-coloured glow */
+  html[data-v='halo'] .ballTitle { z-index: 3; text-shadow: 0 0 10px var(--bg), 0 0 18px var(--bg), 0 0 28px var(--bg), 0 0 40px var(--bg); }
+  html[data-v='halo'] #glFront { z-index: 2; }
+  /* D: the title under the ball, like a caption */
+  html[data-v='caption'] .ballTitle { top: auto; bottom: 108px; translate: -50% 0; font-size: clamp(1.5rem, 1.3rem + 0.8vw, 2rem); }
+  @media (prefers-reduced-motion: reduce) {
+    .card.is-moving, .card, .face img, .face video, .switch .whole, .switch .quarter, .switch .tile, .switch .word { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <nav class="vbar" aria-label="Mock variant">
+    <button data-v="now">Now</button>
+    <button data-v="clear">A · Wider clearing</button>
+    <button data-v="recede">B · Recede</button>
+    <button data-v="halo">C · Halo</button>
+    <button data-v="caption">D · Title below</button>
+    <button data-v="hollow">E · Hollow globe</button>
+  </nav>
+  <p class="vnote" id="vnote"></p>
+  <section class="play" id="play" data-mode="cloud" aria-labelledby="play-title">
+    <h1 id="play-title">Playground</h1>
+    <div class="space">
+      <canvas class="gl" id="gl" aria-hidden="true"></canvas>
+      <p class="ballTitle" id="ballTitle" aria-hidden="true">A place for <em>endless</em><br />experimentation</p>
+      <canvas class="gl" id="glFront" aria-hidden="true"></canvas>
+      <div class="stage" id="stage" role="group" tabindex="0" aria-label="Work ball. Drag or use the arrow keys to turn it, and choose a card to open it."></div>
+    </div>
+    <div class="striphead">
+      <div><h2 id="stripname"></h2><p id="stripcount"></p></div>
+      <button class="close" id="stripclose" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <nav class="switch" id="switch" data-mode="cloud" aria-label="Layout">
+    <button type="button" class="word" id="w-cloud" aria-pressed="true">Cloud</button>
+    <button type="button" class="tile" id="w-tile" aria-label="Sort the work into a grid">
+      <span class="whole"><img alt="" /></span>
+      <span class="quarter q0"><img alt="" /></span><span class="quarter q1"><img alt="" /></span>
+      <span class="quarter q2"><img alt="" /></span><span class="quarter q3"><img alt="" /></span>
+    </button>
+    <button type="button" class="word" id="w-grid" aria-pressed="false">Grid</button>
+  </nav>
+
+  <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Piece">
+    <button class="close" id="vclose" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>
+    </button>
+    <figure id="vfig"></figure>
+  </div>
+
+<script>
+const I = '/public/images/';
+const thumb = f => f.includes('loop') ? I + f : 'thumbs/' + f.replace(/\//g, '__').replace(/\.\w+$/, '.webp');
+const CATS = [
+  { id: 'anim', name: 'Animation' }, { id: 'ui', name: 'Interfaces' },
+  { id: 'art', name: 'Art' }, { id: 'photo', name: 'Photos' },
+];
+const RAW = {
+  anim: [
+    ['chase-pay/prototype-poster.jpg', 0.56, 'Chase Pay, prototype', { video: 'chase-pay/prototype.mp4' }],
+    ['footer/smiley-loop.webp', 1, 'Crayon smiley, 11-frame loop'],
+    ['moss/moss-idle.webp', 0.84, 'Moss looking around'],
+    ['hero-idle.webp', 0.71, 'Hero portrait scrub'],
+    ['paypal-debit/digital-card.webp', 1.71, 'Debit card sign-up, coded prototype'],
+  ],
+  ui: [
+    ['paypal-debit/hub.webp', 1.29, 'PayPal Debit, hub'], ['paypal-debit/rewards.webp', 1.71, 'PayPal Debit, rewards'],
+    ['paypal-debit/offers.webp', 1.71, 'PayPal Debit, offers'], ['paypal-privacy/hero.webp', 2.09, 'PayPal Privacy'],
+    ['paypal-privacy/contextual.webp', 1.98, 'Contextual privacy'], ['paypal-privacy/data-delete.webp', 1.37, 'Data deletion'],
+    ['okta/my-apps.webp', 1.86, 'Okta, My Apps'], ['okta/integrations.webp', 1.94, 'Okta, integrations'],
+    ['chase-pay/hero.png', 2.23, 'Chase Pay'], ['chase-pay/settings.png', 1.8, 'Chase Pay, settings'],
+    ['archive/mint-app.jpg', 1.65, 'Mint credit score'], ['archive/mera-data.jpg', 1.65, 'Mera Data'],
+    ['archive/dream-gains.jpg', 1.65, 'DreamGains'], ['archive/lenders-app.jpg', 1.65, 'Lenders app'],
+    ['archive/wal-e-design-system.jpg', 1.65, 'WAL-E design system'],
+  ],
+  art: [
+    ['play-porch.jpg', 1.0, 'Reading on the porch, digital'], ['play-earrings.jpg', 1.33, 'Earrings, digital'],
+    ['play-hermione.jpg', 0.73, 'Hermione, ink and watercolour'], ['play-green-eyes.jpg', 1.33, 'Green eyes, digital'],
+    ['play-reading.jpg', 0.85, 'Tea and a book, digital'], ['play-care.jpg', 0.96, 'Care, watercolour'],
+    ['play-sage.jpg', 0.63, 'Sage, digital'], ['play-bob.jpg', 1.25, 'Bob, digital'],
+    ['play-mermaid.jpg', 0.8, 'Mermaid, watercolour'], ['play-crown.jpg', 0.75, 'Crown, acrylic'],
+  ],
+  photo: [
+    ['beyond/talk-smile.webp', 1.0, 'On stage, The Saga of Accessibility'], ['beyond/talk-poster.webp', 1.78, 'Talk poster, Design Sundays'],
+    ['beyond/baking-cookie.webp', 0.9, 'Baking class'], ['beyond/blue-sculpture.webp', 0.75, 'Design conference'],
+    ['beyond/event-selfie.webp', 1.37, 'Designers, one selfie'], ['beyond/sticky-wall.webp', 0.56, 'Sticky-note wall'],
+    ['beyond/office-garden.webp', 1.33, 'Office garden'], ['beyond/meetup-group.webp', 1.96, 'Design meetup'],
+    ['beyond/baking-icing.webp', 0.59, 'Piping chocolate'], ['beyond/blue-sculpture-friend.webp', 0.75, 'With a friend'],
+    ['beyond/office-garden-2.webp', 1.14, 'Office garden, again'],
+  ],
+};
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const play = document.getElementById('play'), stage = document.getElementById('stage');
+const TOTAL = 120;           // cards in the ball (his has 137)
+const BALL_R = 330;          // ball radius in px at full size (his ~343)
+const SCALE = 0.56;          // a card's scale in the ball, his
+const PERSP = 1000;          // his perspective, px
+const GOLD = Math.PI * (3 - Math.sqrt(5));
+const dpr = Math.min(2, devicePixelRatio || 1);
+
+// ---- pieces, mixed so neighbours differ
+const pieces = [];
+for (const c of CATS) RAW[c.id].forEach(([f, aspect, cap, x = {}]) =>
+  pieces.push({ src: I + f, thumb: thumb(f), aspect: Math.min(1.9, Math.max(0.56, aspect)), cap, cat: c.id, video: x.video && I + x.video }));
+const mixed = []; { const by = CATS.map(c => pieces.filter(p => p.cat === c.id)); for (let r = 0; mixed.length < pieces.length; r++) by.forEach(l => l[r] && mixed.push(l[r])); }
+
+// ---- cards. The ball is drawn on one canvas (as his is, in WebGL): 120
+// rounded, clipped DOM layers in 3D ran at ~30fps. The DOM cards stay for
+// focus, screen readers and the flight into the grid, invisible in the ball.
+const cards = [];
+const SHELL = 100;   // even points on the skin make the outline round; the rest fill the middle
+for (let i = 0; i < TOTAL; i++) {
+  const p = mixed[i % mixed.length], echo = i >= mixed.length;
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'card'; b.style.aspectRatio = `${p.aspect} / 1`;
+  if (echo) { b.tabIndex = -1; b.setAttribute('aria-hidden', 'true'); } else b.setAttribute('aria-label', 'Open ' + p.cap);
+  b.innerHTML = `<span class="face">${p.video ? `<video src="${p.video}" poster="${p.thumb}" muted loop playsinline preload="none"></video>` : `<img src="${p.thumb}" alt="" decoding="async">`}</span>`;
+  let home;
+  if (i < SHELL) { const k = (i + 0.5) / SHELL, y = 1 - 2 * k, r = Math.sqrt(1 - y * y), a = i * GOLD; home = [Math.cos(a) * r, y, Math.sin(a) * r]; }
+  else { const j = i - SHELL, n = TOTAL - SHELL, k = (j + 0.5) / n, y = 1 - 2 * k, r = Math.sqrt(1 - y * y), a = j * GOLD + 1; home = [Math.cos(a) * r * 0.55, y * 0.55, Math.sin(a) * r * 0.55]; }
+  const card = { p, echo, el: b, home, hov: 0, shell: i < SHELL };
+  b.addEventListener('click', () => onCard(card));
+  b.addEventListener('focus', () => { if (mode === 'cloud') focusCard = card; });
+  b.addEventListener('blur', () => { if (focusCard === card) focusCard = null; });
+  stage.appendChild(b); cards.push(card);
+}
+let focusCard = null;
+
+// ---- labels for the piles
+for (const c of CATS) {
+  c.n = pieces.filter(p => p.cat === c.id).length;
+  const l = document.createElement('button');
+  l.type = 'button'; l.className = 'label';
+  l.innerHTML = `<span class="text">${c.name}</span><span class="note">${c.n} pieces</span>`;
+  l.addEventListener('click', () => openStrip(c.id));
+  stage.appendChild(l); c.label = l;
+}
+
+// ---- the pixel tile in the switch: her painting at 12×12
+{ const img = new Image(); img.src = thumb('play-porch.jpg');
+  img.onload = () => { const cv = document.createElement('canvas'); cv.width = cv.height = 12; const x = cv.getContext('2d');
+    const s = Math.min(img.width, img.height); x.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 12, 12);
+    const url = cv.toDataURL(); document.querySelectorAll('.switch img').forEach(i => i.src = url); }; }
+
+// ---- sprites: each piece pre-cut once with its rounded corners, so a frame is just drawImage
+const cardW = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card')) || parseFloat(getComputedStyle(cards[0].el).width);
+const cornerOf = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card-radius')) || 20;
+for (const p of pieces) {
+  const img = new Image(); img.decoding = 'async'; img.src = p.thumb;
+  img.onload = () => {
+    const w = Math.round(cardW() * SCALE * 1.8 * dpr), h = Math.round(w / p.aspect), r = w * cornerOf() / cardW();
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    const x = cv.getContext('2d');
+    x.beginPath(); x.roundRect(0, 0, w, h, r); x.clip();
+    const s = Math.max(w / img.width, h / img.height);
+    x.drawImage(img, (w - img.width * s) / 2, (h - img.height * s) / 2, img.width * s, img.height * s);
+    p.sprite = cv;
+  };
+}
+
+// ---- ball
+const gl = document.getElementById('gl'), g2 = gl.getContext('2d');
+const glF = document.getElementById('glFront'), g3 = glF.getContext('2d');
+const titleEl = document.getElementById('ballTitle');
+let lens = { ax: 160, ay: 60 };
+function sizeCanvas() {
+  for (const c of [gl, glF]) { c.width = innerWidth * dpr; c.height = innerHeight * dpr; }
+  const r = titleEl.getBoundingClientRect();
+  const pad = { now: [18, 12], clear: [56, 44], recede: [40, 30], halo: [8, 4], caption: [0, 0], hollow: [64, 50] }[V] || [18, 12];
+  lens = { ax: r.width / 2 + pad[0], ay: r.height / 2 + pad[1] };
+}
+document.fonts?.ready.then(sizeCanvas);
+sizeCanvas();
+let mode = 'cloud', open = null, flying = false;
+// The ball's orientation is a rotation matrix, so it turns freely about
+// any axis like a globe: no pitch limit, no spring back. Drag turns it
+// about the screen's axes under your finger; let go and it keeps that
+// spin, easing back to the slow drift about the vertical.
+let M = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+const spin = { x: 0, y: 0 };   // rad/s about the screen's vertical (x) and horizontal (y) axes
+const mul = (A, B) => [0, 1, 2].flatMap(r => [0, 1, 2].map(c => A[r * 3] * B[c] + A[r * 3 + 1] * B[3 + c] + A[r * 3 + 2] * B[6 + c]));
+const Ry = a => { const c = Math.cos(a), s = Math.sin(a); return [c, 0, s, 0, 1, 0, -s, 0, c]; };   // + moves the front to the right
+const Rx = a => { const c = Math.cos(a), s = Math.sin(a); return [1, 0, 0, 0, c, -s, 0, s, c]; };   // − moves the front down
+function turn(ax, ay) {
+  M = mul(mul(Ry(ax), Rx(ay)), M);
+  // keep it a clean rotation (re-orthonormalise the rows)
+  let a = M.slice(0, 3), b = M.slice(3, 6); const n = v => { const l = Math.hypot(...v); return v.map(x => x / l); };
+  a = n(a); const d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; b = n(b.map((x, i) => x - d * a[i]));
+  const c = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  M = [...a, ...b, ...c];
+}
+turn(0, 0.2);
+const lean = { x: 0, y: 0 };   // the ball leans a little toward the pointer
+const DRIFT = reduce ? 0 : 0.12;   // rad/s: one slow turn, one axis
+let pointer = null;
+function project(c) {   // → screen centre, on-screen width, depth
+  let [x, y, z] = c.home;
+  [x, y, z] = [M[0] * x + M[1] * y + M[2] * z, M[3] * x + M[4] * y + M[5] * z, M[6] * x + M[7] * y + M[8] * z];
+  // the lean toward the pointer, on top
+  const cl = Math.cos(lean.x), sl = Math.sin(lean.x); [x, z] = [x * cl + z * sl, -x * sl + z * cl];
+  const cm = Math.cos(lean.y), sm = Math.sin(lean.y); [y, z] = [y * cm - z * sm, y * sm + z * cm];
+  const R = BALL_R * Math.min(1, innerWidth / 1100, innerHeight / 880) * (V === 'caption' ? 0.82 : 1);
+  const k = PERSP / (PERSP - z * R);
+  let w = cardW() * SCALE * k; const h0 = w / c.p.aspect, cx = innerWidth / 2, cy0 = innerHeight / 2 - 10 - (V === 'caption' ? 70 : 0);
+  let dx = x * R * k, dy = y * R * k, back = false;
+  if (V === 'caption') return { x: cx + dx, y: cy0 + dy, k, z, w };
+  // the card as a circle of its half-diagonal (except Now), so its corners clear the words too
+  const half = V === 'now' ? null : Math.hypot(w, h0) / 2;
+  const ex = lens.ax + (half ?? w / 2), ey = lens.ay + (half ?? h0 / 2), d = Math.hypot(dx / ex, dy / ey);
+  const EDGE = { now: 1.3, clear: 1.6, recede: 1.5, halo: 1.25, hollow: 1.7 }[V];
+  if (V === 'recede') {
+    // near the words a card shrinks back and goes behind them, instead of only sliding away
+    if (d < EDGE) { const t = Math.max(0, Math.min(1, d / EDGE)), sm = t * t * (3 - 2 * t); w *= 0.45 + 0.55 * sm; back = sm < 0.9;
+      const nd = 0.75 + (d / EDGE) * (EDGE - 0.75); if (d > 1e-3) { dx *= nd / d; dy *= nd / d; } else { dx = ex * 0.75; dy = 0; } }
+  } else if (d < EDGE) { const nd = 1 + (d / EDGE) * (EDGE - 1); if (d > 1e-3) { dx *= nd / d; dy *= nd / d; } else { dx = ex; dy = 0; } }
+  return { x: cx + dx, y: cy0 + dy, k, z, w, back };
+}
+function domTo(c, q, hover = 0) {   // the same pose as a flat DOM transform, for the flights
+  c.el.style.transform = `translate(-50%, -50%) translate(${q.x - innerWidth / 2}px, ${q.y - innerHeight / 2}px) scale(${SCALE * q.k * (1 + hover)})`;
+  c.el.style.zIndex = Math.round(500 + q.z * 400);
+}
+let drawn = [];
+let hoverAmt = 0;
+function card(g, c, q, lift) {
+  const w = q.w * (1 + 0.22 * lift), h = w / c.p.aspect;
+  if (lift > 0.01) { g.save(); g.shadowColor = `rgba(0,0,0,${0.22 * lift})`; g.shadowBlur = 28 * lift; g.shadowOffsetY = 10 * lift; }
+  if (c.p.sprite) g.drawImage(c.p.sprite, q.x - w / 2, q.y - h / 2, w, h);
+  else { g.fillStyle = '#eee'; g.beginPath(); g.roundRect(q.x - w / 2, q.y - h / 2, w, h, w * cornerOf() / cardW()); g.fill(); }
+  if (lift > 0.01) g.restore();
+}
+function drawBall() {
+  for (const g of [g2, g3]) { g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, innerWidth, innerHeight); }
+  const list = cards.filter(c => V !== 'hollow' || c.shell).map(c => ({ c, q: project(c) })).sort((a, b) => a.q.z - b.q.z);
+  let hit = null;
+  if (pointer && !dragging) for (let i = list.length - 1; i >= 0; i--) { const { q, c } = list[i], w = q.w, h = w / c.p.aspect;
+    if (Math.abs(pointer.x - q.x) < w / 2 && Math.abs(pointer.y - q.y) < h / 2) { hit = c; break; } }
+  stage.style.cursor = hit ? 'pointer' : '';
+  hoverAmt += ((hit ? 1 : 0) - hoverAmt) * 0.12;
+  let top = null;
+  for (const { c, q } of list) {
+    c.hov += ((c === hit ? 1 : 0) - c.hov) * 0.2;   // the hovered card lifts toward you and comes to the front
+    c.q = q;
+    if (c.hov > 0.01) { if (!top || c.hov > top.c.hov) top = { c, q }; continue; }
+    card(q.z < 0 || q.back ? g2 : g3, c, q, 0);   // far half under the title, near half over it
+  }
+  for (const { c, q } of list) if (c.hov > 0.01 && c !== top?.c) card(g3, c, q, c.hov);
+  if (top) card(g3, top.c, top.q, top.c.hov);
+  drawn = list; hoverCard = hit;
+  if (focusCard) domTo(focusCard, focusCard.q);
+}
+// ---- the pour, after his: Cloud → Grid, the ball holds still and cards leave
+// it from the bottom up, one after another, each dropping into its pile; the
+// labels are there from the start. Grid → Cloud plays it backwards. Drawn on
+// the canvas like the ball, then handed to the DOM piles at the same pixels.
+const FLIGHT = 560, SPREAD = 760;          // ms per card, ms from first to last
+const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+let pour = null;
+function startPour(toGrid, done) {
+  const T = pileTargets(), cx = innerWidth / 2, cy = innerHeight / 2, cw = cardW();
+  const items = cards.map(c => {
+    const q = c.q || project(c), t = T.get(c);
+    return { c, ball: { x: q.x, y: q.y, w: q.w, rot: 0, a: 1, z: q.z }, pile: { x: cx + t.x, y: cy + t.y, w: cw * t.s, rot: t.rot, a: t.hidden ? 0 : 1, z: t.z } };
+  });
+  // bottom of the ball leaves first (and, coming back, the top returns first)
+  const order = [...items].sort((a, b) => b.ball.y - a.ball.y);
+  order.forEach((it, i) => it.delay = (i / (order.length - 1)) * SPREAD);
+  pour = { toGrid, items, t0: performance.now(), done };
+  if (reduce) pour.t0 -= FLIGHT + SPREAD;
+}
+function drawPour(now) {
+  const el = now - pour.t0;
+  for (const g of [g2, g3]) { g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, innerWidth, innerHeight); }
+  const live = pour.items.map(it => {
+    let p = Math.max(0, Math.min(1, (el - it.delay) / FLIGHT));
+    if (!pour.toGrid) p = 1 - Math.max(0, Math.min(1, (el - (SPREAD - it.delay)) / FLIGHT));   // reversed: last out, first back
+    const e = easeIO(p), A = it.ball, B = it.pile, L = (a, b) => a + (b - a) * e;
+    // still in the ball: depth order; in the air: on top; landed: pile order
+    const key = p <= 0 ? A.z : p >= 1 ? 2 + B.z / 1000 : 3 + (pour.toGrid ? p : 1 - p);
+    return { it, x: L(A.x, B.x), y: L(A.y, B.y), w: L(A.w, B.w), rot: L(A.rot, B.rot), a: p >= 1 ? B.a : 1, key };   // solid in the air; repeats vanish only once tucked under their pile
+  }).sort((a, b) => a.key - b.key);
+  for (const d of live) {
+    if (d.a <= 0.01) continue;
+    const c = d.it.c, h = d.w / c.p.aspect, g = d.key < 0 ? g2 : g3;
+    g.save(); g.globalAlpha = d.a; g.translate(d.x, d.y); g.rotate(d.rot * Math.PI / 180);
+    if (c.p.sprite) g.drawImage(c.p.sprite, -d.w / 2, -h / 2, d.w, h);
+    g.restore();
+  }
+  if (el >= SPREAD + FLIGHT) { const done = pour.done; pour = null; done(); }
+}
+let hoverCard = null, dragging = false, moved = false, last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (pour) drawPour(now);
+  else if (mode === 'cloud' && !flying) {
+    if (!dragging) {
+      // a throw keeps going and eases (over ~2s) back to the drift; over a
+      // card the drift itself slows, never the throw
+      const driftNow = DRIFT * (1 - 0.85 * hoverAmt), ease = Math.min(1, 0.55 * dt);
+      spin.x += (driftNow - spin.x) * ease; spin.y += (0 - spin.y) * ease;
+      turn(spin.x * dt, spin.y * dt);
+    }
+    const tx = pointer && !dragging && !reduce ? (pointer.x / innerWidth - 0.5) * 0.3 : 0, ty = pointer && !dragging && !reduce ? -(pointer.y / innerHeight - 0.5) * 0.22 : 0;
+    lean.x += (tx - lean.x) * Math.min(1, 2.5 * dt); lean.y += (ty - lean.y) * Math.min(1, 2.5 * dt);
+    drawBall();
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---- grid: a pile per category, five-across spacing like his
+function pileTargets() {   // per card: offset from the centre, turn, scale, stack order, hidden
+  const w = innerWidth, gap = Math.min(220, (w - 96) / CATS.length), y0 = -innerHeight * 0.06, cw = cardW(), T = new Map();
+  CATS.forEach((c, ci) => {
+    const x = (ci - (CATS.length - 1) / 2) * gap;
+    const fit = k => Math.min(gap * 0.84 / cw, gap * 0.6 / (cw / k.p.aspect));   // one box per pile, so a tall phone doesn't outgrow it
+    cards.filter(k => !k.echo && k.p.cat === c.id).forEach((k, j) => {
+      const seed = Math.sin((ci * 31 + j + 1) * 12.9898) * 43758.5453, r = seed - Math.floor(seed) - 0.5, top = j < 4;
+      T.set(k, { x: x + (top ? r * 10 : 0), y: y0 - (top ? j * 2 : 0), rot: top ? r * 12 : 0, s: fit(k), z: 100 - j, hidden: !top && j > 6 });
+    });
+    cards.filter(k => k.echo && k.p.cat === c.id).forEach(k => T.set(k, { x, y: y0, rot: 0, s: fit(k), z: 0, hidden: true }));   // repeats sink into their pile
+    c.labelAt = { x, y: y0 + gap * 0.36 };
+  });
+  return T;
+}
+function pileLayout() {
+  const T = pileTargets();
+  for (const k of cards) {
+    const t = T.get(k);
+    k.el.style.borderRadius = '';
+    k.el.style.transform = `translate(-50%, -50%) translate(${t.x}px, ${t.y}px) rotate(${t.rot}deg) scale(${t.s})`;
+    k.el.style.zIndex = t.z; k.el.classList.toggle('is-gone', t.hidden);
+  }
+  for (const c of CATS) c.label.style.transform = `translate(-50%, 0) translate(${c.labelAt.x}px, ${c.labelAt.y}px)`;
+}
+// ---- open strip: one row, dragged sideways
+let stripX = 0, stripMax = 0;
+function stripLayout() {
+  const list = cards.filter(k => !k.echo && k.p.cat === open);
+  const h = Math.min(320, innerHeight * 0.42), gap = 16, cw = cardW();
+  const total = list.reduce((a, k) => a + h * k.p.aspect + gap, -gap);
+  stripMax = Math.max(0, total - (innerWidth - 96));
+  let x = -Math.min(total, innerWidth - 96) / 2 - stripX;
+  list.forEach((k, j) => {
+    const wv = h * k.p.aspect, s = wv / cw;
+    k.el.style.transform = `translate(-50%, -50%) translate(${x + wv / 2}px, 20px) rotate(0deg) scale(${s})`;
+    k.el.style.transitionDelay = `${j * 18}ms`;
+    k.el.style.borderRadius = `${8 / s}px`;               // 8px on screen, whatever the scale
+    k.el.style.zIndex = 10;
+    const img = k.el.querySelector('img'); if (img && !img.dataset.full) { img.dataset.full = 1; img.src = k.p.src; }   // sharp at strip size
+    x += wv + gap;
+  });
+  for (const k of cards) if (k.echo || k.p.cat !== open) k.el.classList.add('is-gone');
+}
+
+// ---- flights between the ball (canvas) and the grid (DOM)
+function fly(fn, done) {
+  flying = true; play.classList.add('is-flying');
+  for (const k of cards) { k.el.classList.add('is-moving'); k.el.classList.remove('is-gone'); }
+  fn();
+  clearTimeout(fly.t);
+  fly.t = setTimeout(() => { flying = false; play.classList.remove('is-flying'); for (const k of cards) { k.el.classList.remove('is-moving'); k.el.style.transitionDelay = ''; } done?.(); }, reduce ? 0 : 1100);
+}
+function setMode(m) {
+  if (m === mode && !open) return;
+  const from = mode;
+  mode = m; open = null; stripX = 0;
+  play.classList.remove('strip-open');
+  document.getElementById('switch').dataset.mode = m;
+  document.getElementById('w-cloud').setAttribute('aria-pressed', m === 'cloud');
+  document.getElementById('w-grid').setAttribute('aria-pressed', m === 'grid');
+  document.getElementById('w-tile').setAttribute('aria-label', m === 'cloud' ? 'Sort the work into a grid' : 'Gather the work into a cloud');
+  cards.forEach(k => { const v = k.el.querySelector('video'); if (v) m === 'grid' ? v.play().catch(() => {}) : v.pause(); });
+  for (const k of cards) { k.el.classList.remove('is-moving'); k.el.style.transitionDelay = ''; }
+  if (m === 'grid') {
+    pileLayout();                              // DOM piles set (hidden) where the pour will land
+    play.dataset.mode = 'pouring';
+    startPour(true, () => { play.dataset.mode = 'grid'; for (const g of [g2, g3]) g.clearRect(0, 0, innerWidth, innerHeight); });
+  } else {
+    pileLayout();                              // from a strip, start from the piles
+    play.dataset.mode = 'pouring-back';
+    startPour(false, () => { play.dataset.mode = 'cloud'; });
+  }
+}
+function openStrip(cid) {
+  open = cid; stripX = 0; play.classList.add('strip-open');
+  const c = CATS.find(c => c.id === cid);
+  document.getElementById('stripname').textContent = c.name;
+  document.getElementById('stripcount').textContent = `${c.n} pieces`;
+  fly(stripLayout);
+  document.getElementById('stripclose').focus({ preventScroll: true });
+}
+function closeStrip() {
+  const id = open; open = null; play.classList.remove('strip-open');
+  fly(pileLayout); CATS.find(c => c.id === id).label.focus({ preventScroll: true });
+}
+document.getElementById('stripclose').addEventListener('click', closeStrip);
+document.getElementById('w-cloud').addEventListener('click', () => setMode('cloud'));
+document.getElementById('w-grid').addEventListener('click', () => setMode('grid'));
+document.getElementById('w-tile').addEventListener('click', () => setMode(mode === 'cloud' ? 'grid' : 'cloud'));
+
+// ---- cards open the piece (in the grid, a pile opens its strip first)
+const viewer = document.getElementById('viewer');
+function onCard(c) {
+  if (moved) return;
+  if (mode === 'grid' && !open) return openStrip(c.p.cat);
+  const p = c.p;
+  document.getElementById('vfig').innerHTML = (p.video ? `<video src="${p.video}" poster="${p.thumb}" autoplay muted loop playsinline controls></video>` : `<img src="${p.src}" alt="${p.cap}">`) + `<figcaption>${p.cap}</figcaption>`;
+  viewer.classList.add('is-on'); viewer.back = c.echo ? stage : c.el; document.getElementById('vclose').focus();
+}
+const closeViewer = () => { viewer.classList.remove('is-on'); document.getElementById('vfig').innerHTML = ''; viewer.back?.focus({ preventScroll: true }); };
+document.getElementById('vclose').addEventListener('click', closeViewer);
+viewer.addEventListener('click', e => e.target === viewer && closeViewer());
+
+// ---- pointer: hover and click on the canvas, drag turns the ball or slides the strip
+let x0 = 0, y0 = 0, lx = 0, ly = 0, lt = 0;
+stage.addEventListener('pointerdown', e => {
+  if (mode === 'grid' && !open) return;
+  dragging = true; moved = false; x0 = lx = e.clientX; y0 = ly = e.clientY; lt = performance.now();
+  if (!open) { spin.x *= 0.2; spin.y *= 0.2; }   // grabbing a spinning ball catches it
+});
+addEventListener('pointermove', e => {
+  pointer = { x: e.clientX, y: e.clientY };
+  if (!dragging) return;
+  if (!moved && Math.hypot(e.clientX - x0, e.clientY - y0) > 6) { moved = true; stage.classList.add('is-dragging'); }
+  if (!moved) return;
+  const now = performance.now(), dt = Math.max(0.008, (now - lt) / 1000), dx = e.clientX - lx, dy = e.clientY - ly;
+  if (open) { stripX = Math.max(0, Math.min(stripMax, stripX - dx)); stripLayout(); }
+  else { const ax = dx / 300, ay = -dy / 300; turn(ax, ay);   // the ball follows the finger, any direction
+    const k = 0.35;   // smooth the release speed over the last few moves
+    spin.x = spin.x * (1 - k) + Math.max(-4, Math.min(4, ax / dt)) * k; spin.y = spin.y * (1 - k) + Math.max(-4, Math.min(4, ay / dt)) * k; }
+  lx = e.clientX; ly = e.clientY; lt = now;
+});
+addEventListener('pointerup', e => {
+  if (dragging && moved && !open && performance.now() - lt > 90) { spin.x = 0; spin.y = 0; }   // held still before letting go: no throw
+  const wasDrag = moved; dragging = false; stage.classList.remove('is-dragging'); setTimeout(() => moved = false, 0);
+  if (!wasDrag && mode === 'cloud' && !flying && hoverCard && e.target.closest('#stage')) onCard(hoverCard);
+});
+document.addEventListener('pointerleave', () => pointer = null);
+
+addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (viewer.classList.contains('is-on')) closeViewer(); else if (open) closeStrip(); return; }
+  if (viewer.classList.contains('is-on')) return;
+  if (mode === 'cloud' && document.activeElement === stage) {
+    const k = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[e.key];
+    if (k) { e.preventDefault(); spin.x += k[0] * 0.8; spin.y -= k[1] * 0.8; }
+  }
+  if (open && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { stripX = Math.max(0, Math.min(stripMax, stripX + (e.key === 'ArrowRight' ? 200 : -200))); fly(stripLayout); }
+});
+addEventListener('resize', () => { sizeCanvas(); if (mode === 'grid') open ? stripLayout() : pileLayout(); });
+
+// ---- mock variants
+const NOTES = {
+  now: ['Now', 'What is live: cards stop right at a tight oval round the words, and their corners still cut in.'],
+  clear: ['A · Wider clearing', 'A bigger, softer clearing: each card counts as a circle of its corners, so nothing touches the words, with ~50px of air.'],
+  recede: ['B · Recede', 'Cards near the words shrink back and slip behind them, so the ball stays full but the middle reads as depth, not a hole.'],
+  halo: ['C · Halo', 'The ball stays tight; the words always sit on top, on a soft glow of the page colour. Closest to the ball as it is.'],
+  caption: ['D · Title below', 'The ball is left whole and a little smaller; the line sits under it like a caption.'],
+  hollow: ['E · Hollow globe', 'Only the skin of the ball, no cards in the middle, and a wide clearing: you look through the globe to the words.'],
+};
+var V = (location.hash.slice(1) in NOTES) ? location.hash.slice(1) : 'clear';
+function setV(v) {
+  V = v; document.documentElement.dataset.v = v; history.replaceState(null, '', '#' + v);
+  document.querySelectorAll('.vbar button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v));
+  const [n, t] = NOTES[v]; document.getElementById('vnote').innerHTML = `<b>${n}</b>${t}`;
+  sizeCanvas();
+}
+document.querySelectorAll('.vbar button').forEach(b => b.addEventListener('click', () => setV(b.dataset.v)));
+setV(V);
+</script>
+</body>
+</html>

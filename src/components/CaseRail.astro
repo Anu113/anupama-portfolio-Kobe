@@ -1,86 +1,38 @@
 ---
 /* CaseRail.astro — the sticky left rail on a case study page.
-   A back link, then one row per section, highlighting whichever section is
-   currently under the nav. Ported from the rachelchen.tech/projects layout,
-   which puts navigation in a fixed left column and gives the body the rest
-   for the WHOLE page — [slug].astro renders this alongside the eyebrow,
-   title, hero image and meta row, not just the section content below them,
-   so the rail is visible from the first scroll rather than only appearing
-   once the reader passes the hero.
+   Structured after felixrieseberg.com's posts (on request): a "Contents"
+   label in mono caps, then one plain mono line per section, "Start"
+   first. Every line sits in the grey; the section you're reading turns
+   to ink. No dash, no numbers, no hover shimmer — the reference has
+   none, and the quiet list is what makes the one ink line read as "you
+   are here". The back link moved to the top strip (CaseStrip.astro),
+   where the reference keeps it.
 
-   It sticks inside its band, not the viewport, so it scrolls away when the
-   body ends — same as the reference. `top` clears the fixed nav via
-   --nav-h (tokens.css), flush against it, matching the reference; if the
-   nav's padding changes, change that token.
+   It sticks inside its band, not the viewport, so it scrolls away when
+   the body ends. `top` clears the nav and the strip.
 
-   Link labels are plain case (not the all-caps `.u-label` treatment the
-   back link above uses) and keep the site's original type for this rail —
-   no font-family override here. No index numbers: the reference doesn't
-   number its sections either, and a rail this short doesn't need a
-   wayfinding aid beyond the labels themselves.
+   The spy lives here: an IntersectionObserver with a band across the
+   upper reading area (same approach as Reveal.astro), not a scroll
+   handler. It marks the current link with aria-current and announces
+   the index as a `case:section` event, which CaseStrip reads for its
+   "Part 2/7" counter and menu — one source for "where am I" on the page.
+   It degrades to a plain anchor list without JS.
 
-   The spy is an IntersectionObserver with a top-of-viewport rootMargin, not
-   a scroll handler — same approach as Reveal.astro. It degrades to a plain
-   anchor list without JS, and the anchors work regardless.
-
-   Below 1080px the rail stops being a column and becomes a horizontal
-   scroller pinned under the nav — a 9-item vertical list above the content
-   would push the case study a screen and a half down on a phone.
-
-   THE PROXIMITY SHIMMER — adapted from React Bits' LineSidebar. As the
-   cursor nears a link (vertically), its colour eases toward --accent-text
-   and its label slides right; a single rAF loop lerps each link's own
-   --effect (0–1) toward a target, the same "one continuously-animating
-   custom property drives every derived style" technique the source uses,
-   for the reason it gives: separate CSS transitions on a value JS is
-   already easing every frame double up and mush the motion. It is a
-   reimplementation, not a port of the source's React tree — this rail has
-   no React, and CLAUDE.md rules out adding it (rule: components ported from
-   React sources are rewritten as plain .astro).
-
-   Three deliberate departures from the source, each because this rail is a
-   page-anchor nav, not a generic reusable sidebar:
-     1. NO SEPARATE MARKER GUTTER. The source's marker line sits in a
-        dedicated 60px+ column outside the label. --rail-width (tokens.css)
-        is a 9–12rem column; a 60px gutter would eat a third of it. The
-        existing inline dash (::before) takes the marker's job instead,
-        scoped down to fit, and the in-between tick has no equivalent here —
-        there is no gutter to put it in, and the rail's own item gap already
-        separates rows without one.
-     2. THE CURRENT SECTION'S STATE IS NOT --effect. The source folds
-        "active" (click-selected) into the same 0–1 value the hover
-        proximity animates, because that value is its only channel for
-        both. This rail already has an accessible, unconditional signal for
-        "you are here" — the aria-current rule below, driven by the
-        IntersectionObserver — and it is independent of pointer support,
-        motion preference and viewport width on purpose. Folding it into
-        --effect would make the current section's marker disappear for
-        anyone who can't hover. The shimmer is added on top as a separate,
-        purely decorative layer; it never gates the real state.
-     3. GATED SHUT ONE LEVEL HARDER THAN CursorTrail. CursorTrail (the
-        site's only other rAF loop) disables under reduced motion and on
-        no-hover devices. This adds a third gate — under 1080px, where the
-        rail is a horizontal strip and a pointer's vertical distance to a
-        link stops meaning anything. The three conditions are ANDed into one
-        media query and mirrored exactly in the script's early-return, so
-        the loop never even starts where it couldn't be seen. */
+   Below 1080px the rail is hidden: the strip's Part menu carries the
+   contents there, as on the reference. The spy still runs, so the strip
+   still knows the section. */
 interface Props {
   sections: { id: string; nav: string }[];
-  backHref?: string;
-  backLabel?: string;
 }
-const { sections, backHref = '/work', backLabel = 'All work' } = Astro.props;
+const { sections } = Astro.props;
 ---
-<nav class="rail" aria-label="Case study sections">
-  <a class="rail__back u-label" href={backHref}>
-    <span aria-hidden="true">&larr;</span> {backLabel}
-  </a>
-  <ol class="rail__list" data-rail-list>
+<nav class="rail" aria-label="Contents">
+  <p class="rail__head u-label-mono" aria-hidden="true">Contents</p>
+  <ol class="rail__list">
+    <li><a class="rail__link" href="#top" data-rail-link="" aria-current="true">Start</a></li>
     {sections.map((s) => (
       <li>
-        <a class="rail__link" href={`#${s.id}`} data-rail-link={s.id}>
-          <span class="rail__text">{s.nav}</span>
-        </a>
+        <a class="rail__link" href={`#${s.id}`} data-rail-link={s.id}>{s.nav}</a>
       </li>
     ))}
   </ol>
@@ -89,147 +41,61 @@ const { sections, backHref = '/work', backLabel = 'All work' } = Astro.props;
 <style>
   .rail {
     position: sticky;
-    /* Flush under the fixed nav, matching the reference — the rail now
-       runs the whole page (see [slug].astro) rather than starting partway
-       down it, so it no longer needs the extra breathing room a lower,
-       shorter rail wanted. */
-    top: var(--nav-h);
+    top: calc(var(--nav-h) + var(--strip-h) + var(--rail-top-gap));
     align-self: start;
   }
-  .rail__back {
-    display: inline-block;
-    color: var(--fg);
-    text-decoration: none;
-    margin-bottom: 2.5rem;
-  }
-  .rail__back:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .rail__head { margin: 0 0 0.625rem; }
 
   .rail__list {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
   }
   .rail__link {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    font-size: var(--step-body);
-    line-height: 1.35;
+    display: block;
+    padding-block: 0.25rem;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-copy);
+    line-height: 1.4;
+    color: var(--fg-dim);
     text-decoration: none;
-    padding-inline-start: 1.35rem;
-    position: relative;
-    /* Colour and the label's slide both read the one --effect value below.
-       Its fallback (0) reproduces the old resting state exactly, so an
-       environment that never sets --effect — no JS, or the shimmer gated
-       off further down — looks identical to before this was added. */
-    color: color-mix(in srgb, var(--accent-text) calc(var(--effect, 0) * 100%), var(--fg-dim));
-    transform: translateX(calc(var(--effect, 0) * var(--rail-shift)));
-    transition: color var(--dur-hover) var(--ease-out),
-                transform var(--dur-hover) var(--ease-out);
+    text-wrap: pretty;
+    transition: color var(--dur-micro) ease;
   }
-  /* The dash is the marker line, scaled down to fit inline rather than in a
-     dedicated gutter (see the header comment). It now scales and tints
-     continuously with --effect instead of only two states. */
-  .rail__link::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.62em;
-    width: calc(0.6rem + var(--effect, 0) * 0.4rem);
-    height: 1px;
-    background: color-mix(in srgb, var(--accent-text) calc(var(--effect, 0) * 100%), currentColor);
-    opacity: calc(0.45 + var(--effect, 0) * 0.55);
-    transition: width var(--dur-hover) var(--ease-out),
-                opacity var(--dur-hover) var(--ease-out);
-  }
-  /* A snap to full effect on the exact hovered link — CSS-only, so it works
-     everywhere the shimmer is gated off too (reduced motion, a narrow
-     window, no JS). The continuous gradient on NEARBY links is the rAF
-     loop's job and only runs where the gate below allows it. */
-  .rail__link:hover { --effect: 1; }
-  /* Independent of --effect on purpose (see the header comment): the current
-     section must stay legible with no pointer, no hover support, and no
-     motion, so it never depends on anything the shimmer depends on. */
-  .rail__link[aria-current='true'] { color: var(--fg); font-weight: var(--weight-sans); }
-  .rail__link[aria-current='true']::before { width: 1rem; opacity: 1; background: currentColor; }
+  .rail__link:hover,
+  .rail__link:focus-visible,
+  .rail__link[aria-current='true'] { color: var(--fg); }
 
-  /* Where the proximity gradient actually runs (see the script below) — the
-     one CSS transitions would fight a value JS is already re-setting every
-     frame, per the source component's own note, so they're turned off only
-     here, where that conflict could occur. */
-  @media (hover: hover) and (min-width: 1081px) and (prefers-reduced-motion: no-preference) {
-    .rail__link,
-    .rail__link::before {
-      transition: none;
-    }
-  }
-
-  /* --- Under 1080px: a horizontal strip, pinned under the nav --------- */
   @media (max-width: 1080px) {
-    .rail {
-      top: var(--nav-h);
-      z-index: 20;
-      background: var(--bg);
-      margin-inline: calc(var(--gutter) * -1);
-      padding: 0.85rem var(--gutter);
-      border-bottom: 1px solid var(--rule);
-    }
-    .rail__back { margin-bottom: 0.85rem; }
-    .rail__list {
-      flex-direction: row;
-      gap: 1.35rem;
-      overflow-x: auto;
-      scrollbar-width: none;
-      /* The strip is a scroll container, so it needs to be reachable and
-         scrollable from the keyboard. */
-      scroll-snap-type: x proximity;
-    }
-    .rail__list::-webkit-scrollbar { display: none; }
-    .rail__list li { flex: 0 0 auto; scroll-snap-align: start; }
-    .rail__link {
-      padding-inline-start: 0;
-      padding-bottom: 0.35rem;
-      white-space: nowrap;
-    }
-    .rail__link::before {
-      left: 0;
-      top: auto;
-      bottom: 0;
-      width: 100%;
-      opacity: 0;
-    }
-    .rail__link[aria-current='true']::before { width: 100%; opacity: 1; }
+    .rail { display: none; }
   }
 </style>
 
 <script>
-  // Highlights the section currently under the nav. rootMargin pushes the
-  // detection line down past the fixed nav and up from the bottom, so the
-  // "current" section is the one occupying the top of the reading area
-  // rather than whichever one happens to be largest on screen.
+  // Marks the section under the upper reading area as current. Nothing
+  // in the band (above the first section) means "Start".
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-rail-link]')];
   const targets = links
-    .map((l) => document.getElementById(l.dataset.railLink!))
+    .map((l) => (l.dataset.railLink ? document.getElementById(l.dataset.railLink) : null))
     .filter((el): el is HTMLElement => Boolean(el));
 
-  if (links.length && targets.length) {
+  if (links.length) {
     const visible = new Set<string>();
+    let last = -1;
 
     const paint = () => {
       // Document order wins, so scrolling up and down lands on the same
       // section at the same scroll position.
-      const current = targets.find((t) => visible.has(t.id))?.id;
-      for (const l of links) {
-        if (l.dataset.railLink === current) l.setAttribute('aria-current', 'true');
+      const id = targets.find((t) => visible.has(t.id))?.id ?? '';
+      const index = Math.max(0, links.findIndex((l) => l.dataset.railLink === id));
+      links.forEach((l, i) => {
+        if (i === index) l.setAttribute('aria-current', 'true');
         else l.removeAttribute('aria-current');
-      }
-      // Keep the active chip in view in the horizontal (narrow) rail.
-      if (current && matchMedia('(max-width: 1080px)').matches) {
-        const active = links.find((l) => l.dataset.railLink === current);
-        active?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      });
+      if (index !== last) {
+        last = index;
+        dispatchEvent(new CustomEvent('case:section', { detail: { index } }));
       }
     };
 
@@ -244,105 +110,5 @@ const { sections, backHref = '/work', backLabel = 'All work' } = Astro.props;
       { rootMargin: '-25% 0px -60% 0px', threshold: 0 }
     );
     targets.forEach((t) => io.observe(t));
-  }
-
-  // --- The proximity shimmer --------------------------------------------
-  // A single rAF loop eases each link's own --effect (0–1) toward a target
-  // set by cursor distance, then writes it straight onto the element — the
-  // colour, the label's slide and the marker's width in the CSS above all
-  // read that one value, so nothing drifts out of step. Same shape as
-  // CursorTrail's loop: it parks the moment every value has settled, rather
-  // than ticking forever.
-  //
-  // Gated to exactly the conditions the CSS above assumes hold whenever it
-  // turns transitions off (hover-capable, wide enough to be a column, motion
-  // allowed) — see the header comment for why a fourth, narrower gate exists
-  // here than on CursorTrail. The check is re-read on every pointer event
-  // rather than cached once, so resizing across 1080px or toggling the OS
-  // motion setting takes effect immediately, no reload required.
-  const rail = document.querySelector<HTMLElement>('[data-rail-list]');
-
-  if (rail && links.length) {
-    const gate = matchMedia(
-      '(hover: hover) and (min-width: 1081px) and (prefers-reduced-motion: no-preference)'
-    );
-
-    const num = (prop: string, fallback: number) => {
-      const raw = getComputedStyle(document.documentElement).getPropertyValue(prop);
-      const n = parseFloat(raw);
-      return Number.isFinite(n) ? n : fallback;
-    };
-    const proximity = num('--rail-proximity', 90);
-    // Same easing pace as everything else that responds to a hover — reuses
-    // the token rather than inventing a second "how fast do interactions
-    // feel" number.
-    const tau = num('--dur-hover', 320) / 1000;
-    // p*p*(3-2p) — an ease that starts and ends flat, so a link doesn't
-    // visibly "switch on" the instant it enters the proximity radius.
-    const smooth = (p: number) => p * p * (3 - 2 * p);
-
-    const current = links.map(() => 0);
-    const target = links.map(() => 0);
-    let rafId: number | null = null;
-    let last = 0;
-
-    const frame = (now: number) => {
-      rafId = null;
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-      const k = 1 - Math.exp(-dt / tau);
-      let moving = false;
-
-      links.forEach((link, i) => {
-        const next = current[i] + (target[i] - current[i]) * k;
-        const settled = Math.abs(target[i] - next) < 0.0015;
-        current[i] = settled ? target[i] : next;
-        link.style.setProperty('--effect', current[i].toFixed(4));
-        if (!settled) moving = true;
-      });
-
-      if (moving) rafId = requestAnimationFrame(frame);
-    };
-
-    const startLoop = () => {
-      if (rafId != null) return;
-      last = performance.now();
-      rafId = requestAnimationFrame(frame);
-    };
-
-    rail.addEventListener(
-      'pointermove',
-      (e: PointerEvent) => {
-        if (!gate.matches) {
-          // The gate can close mid-hover (a resize, or the OS motion setting
-          // changing) — relax back to rest instead of leaving a link stuck
-          // mid-shimmer with no more events to unstick it.
-          if (target.some((v) => v !== 0)) {
-            target.fill(0);
-            startLoop();
-          }
-          return;
-        }
-        const listTop = rail.getBoundingClientRect().top;
-        const pointerY = e.clientY - listTop;
-        links.forEach((link, i) => {
-          const r = link.getBoundingClientRect();
-          const center = r.top - listTop + r.height / 2;
-          const distance = Math.abs(pointerY - center);
-          target[i] = smooth(Math.max(0, 1 - distance / proximity));
-        });
-        startLoop();
-      },
-      { passive: true }
-    );
-
-    rail.addEventListener(
-      'pointerleave',
-      () => {
-        target.fill(0);
-        startLoop();
-      },
-      { passive: true }
-    );
   }
 </script>

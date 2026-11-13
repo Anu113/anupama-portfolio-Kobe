@@ -1,0 +1,255 @@
+---
+/* ContextualPrivacy.astro — her contextual privacy map, in the Privacy
+   case (the `diagram` block, name 'contextual-privacy'): how data is
+   used in context and how to control it, the four moments that lead
+   there, what the product explains at each, and what you can do next.
+   Her map's words, order and greens, drawn as a node canvas.
+
+   How it moves, on request, after gauravi.design's first case card (a
+   workflow wiring itself node by node): on a dotted canvas, cards
+   appear one at a time, each wire draws out of the card before it, and
+   the view follows the map as it grows; then it pulls back to show the
+   whole map, the wires run (flowing dashes), and it starts again. It
+   plays only while on screen.
+
+   Under reduced motion, or without the script, it's the whole map at
+   full size, still, in a canvas you scroll sideways (arrow keys once
+   it has focus).
+
+   Nodes sit at fixed places on a fixed canvas (NODES below), so the
+   wires are drawn from those numbers, not measured. Every word is real
+   text, in reading order: start, then each row left to right. The
+   canvas is the product surface, so its colours are fixed, the same in
+   light and dark mode. Values under CONTEXTUAL PRIVACY in tokens.css. */
+interface Props { caption?: string }
+const { caption } = Astro.props;
+
+type Kind = 'start' | 'moment' | 'explain' | 'next';
+interface Node { id: string; kind: Kind; text: string; x: number; y: number; w: number; step: number }
+// Columns (x, width) and row centres on a 1460 × 560 canvas.
+const C = { start: [20, 180], moment: [260, 220], step: [530, 210], explain: [800, 220], setting: [1080, 170], cont: [1290, 150] } as const;
+const R = [80, 205, 330, 455];
+const H = { card: 84, out: 64 };
+const SET = 'Contextual setting / preview';
+const EXPLAIN = 'Explain how data is used / protected related to product';
+const n = (id: string, kind: Kind, text: string, col: readonly [number, number], cy: number, step: number, h = H.card): Node =>
+  ({ id, kind, text, x: col[0], y: cy - h / 2, w: col[1], step });
+
+// Her map, word for word, in reading order. `step` is when each card
+// appears: 0 start, 1 moments, 2 the logged-in row's extra stop,
+// 3 explanations, 4 what you can do next.
+const NODES: Node[] = [
+  n('start', 'start', 'How data is used in context & how to control', C.start, 267.5, 0),
+  n('m0', 'moment', 'View marketing / education about a PayPal product or capability', C.moment, R[0], 1),
+  n('e0', 'explain', EXPLAIN, C.explain, R[0], 3),
+  n('o0', 'next', 'Sign up for product or account', C.setting, R[0], 4, H.out),
+  n('m1', 'moment', 'Visiting for the first time', C.moment, R[1], 1),
+  n('e1', 'explain', 'Explain that we use cookies (banner)', C.explain, R[1], 3),
+  n('s1', 'next', SET, C.setting, R[1] + 50, 4, H.out),
+  n('c1', 'next', 'Continue with site', C.cont, R[1], 4, H.out),
+  n('m2', 'moment', 'Logged into PayPal (web or app)', C.moment, R[2], 1),
+  n('p2', 'moment', 'Have privacy concern within product flows / experiences (during a task)', C.step, R[2], 2),
+  n('e2', 'explain', EXPLAIN, C.explain, R[2], 3),
+  n('s2', 'next', SET, C.setting, R[2] + 50, 4, H.out),
+  n('c2', 'next', 'Continue in flow', C.cont, R[2], 4, H.out),
+  n('m3', 'moment', 'Within 3rd party contexts (e.g. shopping integrations)', C.moment, R[3], 1),
+  n('e3', 'explain', EXPLAIN, C.explain, R[3], 3),
+  n('s3', 'next', SET, C.setting, R[3] + 50, 4, H.out),
+  n('c3', 'next', 'Continue in context', C.cont, R[3], 4, H.out),
+];
+const at = Object.fromEntries(NODES.map((x) => [x.id, x]));
+const h = (x: Node) => (x.kind === 'next' ? H.out : H.card);
+const right = (x: Node) => [x.x + x.w, x.y + h(x) / 2];
+const left = (x: Node) => [x.x, x.y + h(x) / 2];
+// Wires: from, to, and the step they draw in (just before their card).
+const EDGES: [string, string][] = [
+  ['start', 'm0'], ['start', 'm1'], ['start', 'm2'], ['start', 'm3'],
+  ['m2', 'p2'],
+  ['m0', 'e0'], ['m1', 'e1'], ['p2', 'e2'], ['m3', 'e3'],
+  ['e0', 'o0'], ['e1', 'c1'], ['e1', 's1'], ['e2', 'c2'], ['e2', 's2'], ['e3', 'c3'], ['e3', 's3'],
+  ['s1', 'c1'], ['s3', 'c3'],
+];
+const wires = EDGES.map(([a, b]) => {
+  const [x1, y1] = right(at[a]); const [x2, y2] = left(at[b]);
+  const m = (x1 + x2) / 2;
+  const back = at[a].kind === 'next';
+  return { d: `M${x1},${y1} C${m},${y1} ${m},${y2} ${x2},${y2}`, step: back ? 5 : at[b].step };
+});
+const sources = new Set(EDGES.map(([a]) => a));
+const sinks = new Set(EDGES.map(([, b]) => b));
+const TAG: Record<Kind, string> = { start: 'Start', moment: 'Moment', explain: 'Explain', next: 'Next' };
+---
+<figure class="cx" data-cx>
+  <div class="cx__view" data-cx-view tabindex="-1" role="group" aria-label="Contextual privacy map">
+    <div class="cx__bar" aria-hidden="true">
+      <span class="cx__name">Contextual privacy</span>
+      <span class="cx__status" data-cx-status>Mapped</span>
+    </div>
+    <div class="cx__canvas" data-cx-canvas>
+      <svg class="cx__wires" viewBox="0 0 1460 560" aria-hidden="true">
+        {wires.map((w) => <path class="w" d={w.d} pathLength="1" data-step={w.step} />)}
+        {wires.map((w) => <path class="w-run" d={w.d} />)}
+      </svg>
+      {NODES.map((x) => (
+        <div
+          class:list={['cx__node', `cx__node--${x.kind}`]}
+          data-step={x.step}
+          style={`left:${x.x}px; top:${x.y}px; width:${x.w}px; height:${h(x)}px;`}
+        >
+          <span class="cx__tag" aria-hidden="true"><i></i>{TAG[x.kind]}</span>
+          <span class="cx__t">{x.text}</span>
+          {sinks.has(x.id) && <span class="cx__port cx__port--in" aria-hidden="true"></span>}
+          {sources.has(x.id) && <span class="cx__port cx__port--out" aria-hidden="true"></span>}
+        </div>
+      ))}
+    </div>
+  </div>
+  {caption && <figcaption class="cx__cap u-label-mono">{caption}</figcaption>}
+</figure>
+
+<style>
+  .cx { margin: 0; display: grid; gap: 1rem; container-type: inline-size; }
+  .cx__cap { margin: 0; max-width: var(--measure); color: var(--fg-dim); }
+
+  /* The canvas: a product surface, dotted, framed like the reference. */
+  .cx__view {
+    position: relative; overflow: auto; overscroll-behavior: contain;
+    aspect-ratio: var(--map-view-ratio);
+    border: 1px solid var(--map-frame); border-radius: var(--radius-map-view);
+    background-color: var(--map-canvas);
+    background-image: radial-gradient(var(--map-dot) 1px, transparent 1.2px);
+    background-size: var(--map-dot-gap) var(--map-dot-gap);
+  }
+  .cx__view:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  @container (max-width: 40rem) { .cx__view { aspect-ratio: var(--map-view-ratio-narrow); } }
+  .cx__bar {
+    position: sticky; top: 0; left: 0; z-index: 3;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.7rem 0.9rem; pointer-events: none;
+    font-family: var(--font-mono); font-size: var(--step-fine); letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--map-ink);
+  }
+  .cx__status {
+    padding: 0.35em 0.8em; border-radius: var(--radius-pill);
+    background: var(--map-ink); color: var(--map-canvas);
+  }
+
+  .cx__canvas {
+    position: absolute; left: 0; top: 0; width: 1460px; height: 560px;
+    transform-origin: 0 0;
+    transform: translate(var(--cx-x, 0px), var(--cx-y, 0px)) scale(var(--cx-s, 1));
+  }
+  [data-cx].is-live .cx__view { overflow: hidden; }
+  [data-cx].is-live .cx__canvas { transition: transform var(--dur-map-camera) var(--ease-map-camera); }
+
+  .cx__wires { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .w { fill: none; stroke: var(--map-line); stroke-width: 1.5; stroke-dasharray: 1; stroke-dashoffset: 0; }
+  .w-run { fill: none; stroke: var(--map-root-line); stroke-width: 1.5; stroke-dasharray: 5 7; opacity: 0; }
+
+  /* Cards: whole, square-ish product nodes; the explain nodes in her green. */
+  .cx__node {
+    position: absolute; box-sizing: border-box;
+    display: flex; align-items: center; padding: 0 16px;
+    background: var(--map-card); border-radius: var(--radius-map-node);
+    box-shadow: var(--map-card-shadow);
+    color: var(--map-ink); font-family: var(--font-sans); font-weight: var(--weight-sans);
+    font-size: var(--map-type); line-height: 1.35;
+  }
+  .cx__node--start { border: 1.5px solid var(--map-root-line); border-radius: var(--radius-map-root); justify-content: center; text-align: center; }
+  .cx__node--explain { background: var(--map-node); color: var(--map-node-ink); }
+  .cx__node--next { box-shadow: none; background: transparent; border: 1px dashed var(--map-line); }
+  .cx__tag {
+    position: absolute; left: 10px; top: -11px; display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 8px; border-radius: var(--radius-pill);
+    background: var(--map-tag); color: var(--map-ink-dim);
+    font-family: var(--font-mono); font-size: var(--map-type-tag); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1;
+  }
+  .cx__tag i { width: 5px; height: 5px; border-radius: 50%; background: var(--map-root-line); }
+  .cx__port { position: absolute; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--map-card); border: 1.5px solid var(--map-line); }
+  .cx__port--in { left: -5px; } .cx__port--out { right: -5px; }
+
+  /* The timeline: hidden until its step, then in. */
+  [data-cx].is-live .cx__node { transition: opacity var(--dur-map-pop) var(--ease-out), transform var(--dur-map-pop) var(--ease-out); }
+  [data-cx].is-live .cx__node:not(.is-on) { opacity: 0; transform: translateY(6px) scale(0.96); }
+  [data-cx].is-live .w { transition: stroke-dashoffset var(--dur-map-wire) var(--ease-out); }
+  [data-cx].is-live .w:not(.is-on) { stroke-dashoffset: 1; }
+  [data-cx].is-running .w { opacity: 0.35; }
+  [data-cx].is-running .w-run { opacity: 1; animation: cx-run var(--dur-map-run) linear infinite; }
+  /* A new loop starts from nothing at once, rather than drawing backwards. */
+  [data-cx].is-reset :is(.cx__node, .w) { transition: none !important; }
+  [data-cx].is-fading .cx__canvas { opacity: 0; transition: opacity var(--dur-map-pop) var(--ease-out); }
+  @keyframes cx-run { to { stroke-dashoffset: -24; } }
+</style>
+
+<script>
+  // The timeline, in ms from the start of a loop. Each step brings in its
+  // cards (and the wires that lead to them a beat before), and points the
+  // view at what's new; then the whole map, running, then round again.
+  const STEPS = [0, 900, 2500, 3700, 5300, 6900];
+  const OVERVIEW = 7700, FADE = 12600, LOOP = 13300;
+  const NODE_LAG = 110;      // cards in one step, one after another
+  const CAP = 1.15;          // never zoom in further than this
+  const PAD = 48;            // breathing room round what the view frames
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-cx]').forEach((root) => {
+    const view = root.querySelector<HTMLElement>('[data-cx-view]')!;
+    const canvas = root.querySelector<HTMLElement>('[data-cx-canvas]')!;
+    const status = root.querySelector<HTMLElement>('[data-cx-status]')!;
+    const nodes = [...root.querySelectorAll<HTMLElement>('.cx__node')];
+    const wires = [...root.querySelectorAll<SVGPathElement>('.w')];
+
+    if (reduce) { view.tabIndex = 0; return; }
+
+    let timers: number[] = [], playing = false;
+    const later = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+    const box = (els: HTMLElement[]) => {
+      const xs = els.map((e) => e.offsetLeft), ys = els.map((e) => e.offsetTop);
+      const x2 = els.map((e) => e.offsetLeft + e.offsetWidth), y2 = els.map((e) => e.offsetTop + e.offsetHeight);
+      return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...x2) - Math.min(...xs), h: Math.max(...y2) - Math.min(...ys) };
+    };
+    const frame = (els: HTMLElement[], cap = CAP) => {
+      const b = box(els), vw = view.clientWidth, vh = view.clientHeight;
+      const s = Math.min(cap, (vw - PAD * 2) / b.w, (vh - PAD * 2) / b.h);
+      canvas.style.setProperty('--cx-s', String(s));
+      canvas.style.setProperty('--cx-x', `${vw / 2 - s * (b.x + b.w / 2)}px`);
+      canvas.style.setProperty('--cx-y', `${vh / 2 - s * (b.y + b.h / 2)}px`);
+    };
+    const inStep = (k: number) => nodes.filter((e) => Number(e.dataset.step) === k);
+
+    const reset = () => {
+      timers.forEach(clearTimeout); timers = [];
+      root.classList.add('is-reset');
+      root.classList.remove('is-running', 'is-fading');
+      requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('is-reset')));
+      nodes.forEach((e) => e.classList.remove('is-on'));
+      wires.forEach((w) => w.classList.remove('is-on'));
+      status.textContent = 'Growing…';
+    };
+    const play = () => {
+      reset();
+      STEPS.forEach((t, k) => {
+        later(t, () => {
+          wires.filter((w) => Number(w.dataset.step) === k).forEach((w) => w.classList.add('is-on'));
+          const fresh = inStep(k);
+          // Frame what's new together with what it grew from.
+          const prev = k > 0 ? inStep(k - 1) : [];
+          if (fresh.length) frame([...prev, ...fresh]);
+          fresh.forEach((e, i) => later(300 + i * NODE_LAG, () => e.classList.add('is-on')));
+        });
+      });
+      later(OVERVIEW, () => { frame(nodes, 1); root.classList.add('is-running'); status.textContent = 'Running…'; });
+      later(FADE, () => root.classList.add('is-fading'));
+      later(LOOP, () => { if (playing) play(); });
+    };
+
+    root.classList.add('is-live');
+    reset();
+    frame(inStep(0));
+    new IntersectionObserver(([en]) => {
+      if (en.isIntersecting && !playing) { playing = true; play(); }
+      else if (!en.isIntersecting && playing) { playing = false; reset(); frame(inStep(0)); }
+    }, { threshold: 0.4 }).observe(root);
+    new ResizeObserver(() => { if (root.classList.contains('is-running')) frame(nodes, 1); }).observe(view);
+  });
+</script>

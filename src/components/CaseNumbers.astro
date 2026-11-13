@@ -1,0 +1,141 @@
+---
+/* CaseNumbers.astro — a case study's headline numbers, right under its
+   cover, before the case snapshot. Every case study opens the same way:
+   title → snippet → cover → numbers → case snapshot → sections.
+
+   The numbers are not authored twice: [slug].astro passes the first
+   metrics block of the case's own Impact section. Placeholders ("[X]")
+   and dates are dropped, and the row only shows with two or more real
+   numbers left, so nothing unconfirmed reaches the top of the page. The
+   block's own label ("After launch in early 2023") is the source note
+   under the row, after gauravi.design/case-fxonline.html.
+
+   ROLLING NUMBERS, after the same reference (on request): when the row
+   comes into view, each number counts up from 0 over --dur-count with an
+   ease-out, one after another --count-stagger apart, and replays each
+   time the row comes back into view, as the reference does. Only the
+   first number in a value rolls; whatever is around it ("%", "/5",
+   " pts") stays put. Its reason: the outcome is the first thing a
+   skimming recruiter's eye lands on. The final value is always in the
+   DOM for screen readers and stays in place (only its ink is hidden
+   while the count runs on top of it), so nothing shifts. Static under
+   reduced motion and without JS. Values under CASE NUMBERS in
+   tokens.css. */
+interface Props {
+  items: { value: string; label: string }[];
+  note?: string;
+}
+const { items, note } = Astro.props;
+---
+<div class="numbers" data-numbers>
+  <p class="u-label-mono numbers__label">Impact</p>
+  <dl class="numbers__stats" style={`--cols: ${Math.min(items.length, 4)};`}>
+    {items.map((it) => (
+      <div class="numbers__stat">
+        <dt class="numbers__value">
+          <span class="roll" data-roll={it.value}>
+            <span class="roll__final">{it.value}</span>
+            <span class="roll__live" aria-hidden="true"></span>
+          </span>
+        </dt>
+        <dd class="numbers__desc">{it.label}</dd>
+      </div>
+    ))}
+  </dl>
+  {note && <p class="u-label-mono numbers__note">{note}</p>}
+</div>
+
+<style>
+  .numbers { margin-block: var(--space-case); }
+  .numbers__label { margin: 0 0 1.5rem; }
+  .numbers__stats {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+    gap: 2rem var(--col-gap);
+  }
+  .numbers__stat { border-top: 1px solid var(--rule); padding-top: 1rem; }
+  .numbers__value {
+    font-family: var(--font-serif);
+    font-size: var(--step-heading);
+    font-weight: var(--weight-serif);
+    letter-spacing: var(--tracking-serif);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .numbers__desc {
+    margin: 0.75rem 0 0;
+    color: var(--fg-dim);
+    font-size: var(--step-small);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+  .numbers__note { margin: 1.25rem 0 0; }
+
+  /* The final value holds the space; the count is laid over it. */
+  .roll { position: relative; display: inline-block; white-space: nowrap; }
+  .roll__live { position: absolute; inset: 0 auto auto 0; white-space: nowrap; }
+  .roll.is-rolling .roll__final { color: transparent; }
+
+  @media (max-width: 820px) {
+    .numbers__stats { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  const num = (prop: string, fallback: number) => {
+    const n = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(prop));
+    return Number.isFinite(n) ? n : fallback;
+  };
+  // Prefix, the first number (commas and decimals kept), the rest.
+  const PARTS = /^([^\d]*)(\d[\d,]*(?:\.\d+)?)([\s\S]*)$/;
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll<HTMLElement>('[data-numbers]').forEach((row) => {
+    const rolls = [...row.querySelectorAll<HTMLElement>('[data-roll]')];
+    const dur = num('--dur-count', 1000);
+    const stagger = num('--count-stagger', 180);
+    const runs = new Map<HTMLElement, number>();
+
+    const roll = (el: HTMLElement, i: number) => {
+      const m = el.dataset.roll!.match(PARTS);
+      if (!m) return;
+      const [, pre, raw, post] = m;
+      const target = parseFloat(raw.replace(/,/g, ''));
+      const decimals = raw.split('.')[1]?.length ?? 0;
+      const commas = raw.includes(',');
+      const live = el.querySelector<HTMLElement>('.roll__live')!;
+      const fmt = (v: number) => {
+        const s = v.toFixed(decimals);
+        return commas ? Number(s).toLocaleString('en-US', { minimumFractionDigits: decimals }) : s;
+      };
+      const id = (runs.get(el) ?? 0) + 1;
+      runs.set(el, id);
+      el.classList.add('is-rolling');
+      live.textContent = pre + fmt(0) + post;
+      setTimeout(() => {
+        let t0 = 0;
+        const step = (now: number) => {
+          if (runs.get(el) !== id) return;
+          t0 ||= now;
+          const p = Math.min(1, (now - t0) / dur);
+          const e = 1 - Math.pow(1 - p, 3);
+          live.textContent = pre + fmt(target * e) + post;
+          if (p < 1) requestAnimationFrame(step);
+          else { el.classList.remove('is-rolling'); live.textContent = ''; }
+        };
+        requestAnimationFrame(step);
+      }, i * stagger);
+    };
+
+    // Count up each time the row comes into view; reset when it leaves,
+    // so the next entry starts from 0 rather than flashing the result.
+    new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (still.matches) continue;
+        if (e.isIntersecting) rolls.forEach(roll);
+        else rolls.forEach((el) => { runs.set(el, (runs.get(el) ?? 0) + 1); el.classList.remove('is-rolling'); });
+      }
+    }, { threshold: 0.4 }).observe(row);
+  });
+</script>

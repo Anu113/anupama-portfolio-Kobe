@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hero merge — mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  /* Hero merge, after andreas.vision's hero (studied live, 2026-10-17):
+     headline A on first paint; scrolling pins the hero, A clears, and
+     headline B's words slide in from the two edges while something from
+     A collapses into a small chip that sits *inside* B's first line
+     ("Design ▣ Engineer"). The paragraph under it never changes.
+     His collapsing thing is a pixel sky — tried here and reverted, so
+     these three mocks use something that is already ours instead:
+       A  the word "pixel" breaks into dots, the dots gather into the chip
+       B  her portrait folds down into the chip
+       C  the chip is a window onto her work, and keeps growing into the
+          first project card
+     Primary = her current hero sentence, unchanged. Secondary = pick
+     from the top bar. Values copied from tokens.css. */
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --accent: #b4482a; --status: #2f9e5b;
+    --hue-paypal: #e0d6ef;
+    --step-display: clamp(34px, 3.6vw, 50px);
+    --step-copy: 12px; --step-label: 12px;
+    --gutter: clamp(16px, 4vw, 56px);
+    --ease: cubic-bezier(.16, 1, .3, 1);
+  }
+  :root[data-mode='dark'] {
+    --bg: #1b1a19; --fg: #ecebe8; --fg-dim: #a09d98; --line: rgb(255 255 255 / 0.12);
+    --accent: #e0714f;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); color: var(--fg); }
+  body { margin: 0; font-family: var(--font-sans); font-weight: 600; overflow-x: clip; }
+
+  /* ── mock chrome ─────────────────────────────────────── */
+  .bar {
+    position: fixed; inset: 0 0 auto; z-index: 50;
+    display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+    padding: 10px var(--gutter);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    border-bottom: 1px solid var(--line);
+    font: 400 11px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .04em;
+  }
+  .bar b { font-weight: 400; color: var(--fg-dim); }
+  .seg { display: inline-flex; gap: 2px; }
+  .seg button {
+    font: inherit; text-transform: inherit; letter-spacing: inherit;
+    border: 1px solid var(--line); background: none; color: var(--fg-dim);
+    padding: 5px 9px; border-radius: 999px; cursor: pointer;
+  }
+  .seg button[aria-pressed='true'] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .bar .note { flex-basis: 100%; text-transform: none; letter-spacing: 0; color: var(--fg-dim); }
+
+  /* ── scene: tall scroll track, sticky stage ──────────── */
+  .scene { height: 300vh; position: relative; }
+  .stage {
+    position: sticky; top: 0; height: 100vh; overflow: hidden;
+    display: grid; align-items: center;
+    padding: 96px var(--gutter) 48px;
+  }
+  .row { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); gap: 48px; align-items: center; }
+  @media (max-width: 860px) {
+    .row { grid-template-columns: 1fr; gap: 24px; }
+    .portrait { order: -1; justify-self: start; }
+  }
+
+  .eyebrow { font: 400 12px/1 var(--font-mono); text-transform: uppercase; color: var(--fg-dim); display: flex; gap: 8px; align-items: center; margin-bottom: 20px; }
+  .eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--status); }
+
+  .heads { display: grid; position: relative; }
+  .head-a, .head-b { grid-area: 1 / 1; margin: 0; font: 300 var(--step-display)/1.08 var(--font-serif); letter-spacing: -0.01em; }
+  .head-a { max-width: 26ch; text-wrap: pretty; }
+  .head-a em, .head-b em { font-style: italic; }
+  .head-a .w { display: inline-block; will-change: transform, opacity, filter; }
+  .head-b { align-self: center; pointer-events: none; }
+  .head-b .line { display: block; white-space: nowrap; }
+  .head-b .w { display: inline-block; will-change: transform, opacity; }
+
+  /* The slot in B's first line where the chip lands. */
+  .slot {
+    display: inline-block; vertical-align: -0.06em;
+    width: 0.92em; height: 0.74em; margin: 0 0.22em;
+    position: relative;
+  }
+
+  .more { font-size: var(--step-copy); line-height: 1.6; color: var(--fg-dim); max-width: 54ch; margin: 24px 0 0; }
+  .more span { color: var(--fg); }
+  .ctas { display: flex; gap: 8px; margin-top: 20px; }
+  .btn { font: 600 12px/1 var(--font-sans); padding: 11px 18px; border-radius: 999px; border: 1px solid var(--fg); color: var(--fg); text-decoration: none; }
+  .btn--primary { background: var(--fg); color: var(--bg); }
+
+  .portrait { position: relative; width: min(100%, 420px); aspect-ratio: 700 / 980; justify-self: center; }
+  @media (max-width: 860px) { .portrait { width: 150px; } }
+  .portrait img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+  /* Travelling layers (positioned in stage coordinates by JS). */
+  canvas.dots { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .fly { position: absolute; left: 0; top: 0; overflow: hidden; pointer-events: none; will-change: transform, width, height; }
+  .fly img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .fly--portrait img { object-fit: cover; }
+  .fly--work { background: var(--hue-paypal); }
+  .fly--work img { object-fit: contain; object-position: 50% 30%; }
+
+  .card-cap { position: absolute; left: 0; top: 0; font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; color: var(--fg-dim); pointer-events: none; }
+
+  .after { padding: 96px var(--gutter); min-height: 70vh; border-top: 1px solid var(--line); }
+  .after h2 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 12px; }
+  .after p { font-size: 12px; color: var(--fg-dim); max-width: 60ch; line-height: 1.6; }
+
+  .scrollhint { position: absolute; bottom: 20px; left: 50%; translate: -50% 0; font: 400 11px/1 var(--font-mono); text-transform: uppercase; color: var(--fg-dim); }
+</style>
+</head>
+<body>
+  <div class="bar" role="toolbar" aria-label="Mock controls">
+    <b>Merge</b>
+    <span class="seg" data-group="v">
+      <button data-val="a" aria-pressed="true">A · Pixel gathers</button>
+      <button data-val="b" aria-pressed="false">B · She folds in</button>
+      <button data-val="c" aria-pressed="false">C · Work peeks in</button>
+    </span>
+    <b>Second line</b>
+    <span class="seg" data-group="copy">
+      <button data-val="0" aria-pressed="true">Fintech first</button>
+      <button data-val="1" aria-pressed="false">Staff designer</button>
+      <button data-val="2" aria-pressed="false">PayPal to Okta</button>
+    </span>
+    <span class="seg" data-group="mode">
+      <button data-val="light" aria-pressed="true">Light</button>
+      <button data-val="dark" aria-pressed="false">Dark</button>
+    </span>
+    <span class="note" data-note></span>
+  </div>
+
+  <section class="scene" data-scene>
+    <div class="stage" data-stage>
+      <div class="row">
+        <div class="copy">
+          <div class="eyebrow"><i></i>Bangalore,IN · 14:32:07</div>
+          <div class="heads">
+            <h1 class="head-a" data-a>
+              <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn <span data-pixel>pixel</span>.
+            </h1>
+            <p class="head-b" data-b aria-hidden="true"></p>
+          </div>
+          <p class="more">10+ years in fintech, enterprise software and developer tools, most recently @&nbsp;<span>Okta</span>. Previously at <span>PayPal</span>, <span>Walmart Labs</span>, and <span>Deloitte</span>.</p>
+          <p class="ctas"><a class="btn btn--primary" href="#">Resume</a><a class="btn" href="#">LinkedIn</a></p>
+        </div>
+        <div class="portrait" data-portrait><img src="../../public/images/hero-idle.webp" alt="" /></div>
+      </div>
+      <canvas class="dots" data-dots></canvas>
+      <div class="fly fly--portrait" data-fly-portrait hidden><img src="../../public/images/hero-idle.webp" alt="" /></div>
+      <div class="fly fly--work" data-fly-work hidden><img src="../../public/images/paypal-privacy/phone-1.webp" alt="" /></div>
+      <div class="card-cap" data-card-cap hidden>PayPal · Privacy hub</div>
+      <p class="scrollhint" data-hint>Scroll</p>
+    </div>
+  </section>
+  <section class="after">
+    <h2>Selected <em>work</em></h2>
+    <p>The project cards start here. Scroll back up to replay.</p>
+  </section>
+
+<script>
+const NOTES = {
+  a: 'A — "pixel" breaks into dots (like PixelBreak), the rest of the sentence clears, and the dots gather into a small accent square between the two words of the second line. Portrait and Moss stay put.',
+  b: 'B — her portrait folds down into the chip and becomes an inline avatar inside the second line. Closest to his merge; costs the portrait (and Moss) after the first scroll.',
+  c: 'C — the chip is a window onto her work (PayPal Privacy, on its hue). Keep scrolling and it grows into the first project card, so the hero hands straight over to the evidence.',
+};
+const COPY = [
+  ['Fintech', 'first,', 'then enterprise <em>and dev tools</em>'],
+  ['Staff Product', 'Designer', '<em>ten years,</em> fintech first'],
+  ['From PayPal', 'to Okta', '<em>ten years</em> of shipping'],
+];
+
+const $ = (s) => document.querySelector(s);
+const state = { v: 'a', copy: 0 };
+const scene = $('[data-scene]'), stage = $('[data-stage]');
+const headA = $('[data-a]'), headB = $('[data-b]');
+const portrait = $('[data-portrait]'), flyP = $('[data-fly-portrait]'), flyW = $('[data-fly-work]');
+const cap = $('[data-card-cap]'), hint = $('[data-hint]');
+const canvas = $('[data-dots]'), ctx = canvas.getContext('2d');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Wrap A's words so they can leave one by one. */
+function wrapWords(node) {
+  [...node.childNodes].forEach((n) => {
+    if (n.nodeType === 3) {
+      const frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach((t) => {
+        if (!t) return;
+        if (/^\s+$/.test(t)) frag.append(t);
+        else { const s = document.createElement('span'); s.className = 'w'; s.textContent = t; frag.append(s); }
+      });
+      n.replaceWith(frag);
+    } else if (n.nodeType === 1 && !n.hasAttribute('data-pixel')) wrapWords(n);
+    else if (n.nodeType === 1) n.classList.add('w');
+  });
+}
+wrapWords(headA);
+const wordsA = [...headA.querySelectorAll('.w')];
+const pixelWord = headA.querySelector('[data-pixel]');
+
+function buildB() {
+  const [l, r, two] = COPY[state.copy];
+  headB.innerHTML = `<span class="line"><span class="w" data-l>${l}</span><span class="slot" data-slot></span><span class="w" data-r>${r}</span></span><span class="line"><span class="w" data-two>${two}</span></span>`;
+  layout();
+}
+
+/* ── geometry ── */
+let geo = {};
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (p, a, b) => clamp((p - a) / (b - a));
+const ease = (t) => 1 - Math.pow(1 - t, 4);
+const io = (t) => (t < .5 ? 8 * t ** 4 : 1 - Math.pow(-2 * t + 2, 4) / 2);
+const lerp = (a, b, t) => a + (b - a) * t;
+function rel(el) {
+  const s = stage.getBoundingClientRect(), r = el.getBoundingClientRect();
+  return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height };
+}
+
+let dots = [];
+function sampleDots() {
+  // Read the word "pixel" as it's set, and put a dot on every ~5px of ink.
+  const r = rel(pixelWord), cs = getComputedStyle(pixelWord);
+  const dpr = 1, pad = 4, W = Math.ceil(r.w + pad * 2), H = Math.ceil(r.h + pad * 2);
+  const off = document.createElement('canvas'); off.width = W; off.height = H;
+  const o = off.getContext('2d');
+  o.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  o.textBaseline = 'alphabetic';
+  const fs = parseFloat(cs.fontSize);
+  o.fillText(pixelWord.textContent, pad, pad + r.h * 0.5 + fs * 0.32);
+  const data = o.getImageData(0, 0, W, H).data, step = 4, pts = [];
+  for (let y = 0; y < H; y += step) for (let x = 0; x < W; x += step) if (data[(y * W + x) * 4 + 3] > 110) pts.push([r.x - pad + x, r.y - pad + y]);
+  // Chip: an 8×6 grid of dots filling the slot.
+  const s = geo.slot, cols = 8, rows = 6, cells = [];
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) cells.push([s.x + (i + .5) * s.w / cols, s.y + (j + .5) * s.h / rows]);
+  dots = pts.map((p, k) => ({
+    x0: p[0], y0: p[1],
+    x1: cells[k % cells.length][0], y1: cells[k % cells.length][1],
+    // a little scatter on the way, and a per-dot delay so they don't move as one sheet
+    sx: (Math.random() - .5) * 120, sy: (Math.random() - .5) * 90,
+    d: Math.random() * .35,
+  }));
+}
+
+function layout() {
+  const dpr = devicePixelRatio || 1, s = stage.getBoundingClientRect();
+  canvas.width = s.width * dpr; canvas.height = s.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // measure with B at rest
+  headB.querySelectorAll('.w').forEach((w) => (w.style.transform = 'none'));
+  geo.slot = rel(headB.querySelector('[data-slot]'));
+  geo.portrait = rel(portrait);
+  geo.stage = { w: s.width, h: s.height };
+  wordsA.forEach((w) => (w.style.transform = w.style.opacity = w.style.filter = ''));
+  if (document.fonts.status === 'loaded') sampleDots();
+  render();
+}
+
+/* ── per-frame ── */
+function progress() {
+  const r = scene.getBoundingClientRect();
+  return clamp(-r.top / (r.height - innerHeight));
+}
+function frame() { render(); requestAnimationFrame(frame); }
+function render() {
+  const p = progress(), v = state.v;
+  const out = seg(p, .04, .38), inn = seg(p, .26, .62), grow = seg(p, .66, .96);
+  hint.style.opacity = 1 - seg(p, 0, .05);
+
+  // A leaves word by word (a quick wave left→right), except "pixel" in variant A
+  const n = wordsA.length;
+  wordsA.forEach((w, i) => {
+    const t = ease(seg(out, (i / n) * .55, (i / n) * .55 + .45));
+    if (v === 'a' && w === pixelWord) { w.style.opacity = 1 - seg(out, 0, .18); return; }
+    w.style.opacity = 1 - t;
+    w.style.transform = `translateY(${-0.35 * t}em)`;
+    w.style.filter = t > 0 && t < 1 ? `blur(${t * 6}px)` : '';
+  });
+
+  // B arrives from the two edges, second line rises
+  const L = headB.querySelector('[data-l]'), R = headB.querySelector('[data-r]'), T = headB.querySelector('[data-two]');
+  const k = ease(inn), W = geo.stage.w;
+  L.style.transform = `translateX(${-(1 - k) * W * .55}px)`; L.style.opacity = seg(inn, 0, .4);
+  R.style.transform = `translateX(${(1 - k) * W * .55}px)`; R.style.opacity = seg(inn, 0, .4);
+  const k2 = ease(seg(inn, .35, 1));
+  T.style.transform = `translateY(${(1 - k2) * 0.6}em)`; T.style.opacity = k2;
+
+  // the merge itself
+  ctx.clearRect(0, 0, geo.stage.w, geo.stage.h);
+  flyP.hidden = flyW.hidden = cap.hidden = true;
+  portrait.style.opacity = 1;
+  if (v === 'a') drawDots(seg(p, .02, .6));
+  if (v === 'b') foldPortrait(seg(p, .1, .62));
+  if (v === 'c') workChip(seg(p, .1, .62), grow);
+}
+
+function drawDots(t) {
+  if (t <= 0) return;
+  const css = getComputedStyle(document.documentElement);
+  const fg = css.getPropertyValue('--fg'), ac = css.getPropertyValue('--accent');
+  const r = 1.4;
+  for (const d of dots) {
+    const u = io(seg(t, d.d * .6, d.d * .6 + .6));
+    // arc out through a scattered midpoint, then home into the chip
+    const mx = lerp(d.x0, d.x1, .5) + d.sx, my = Math.min(d.y0, d.y1) - 40 + d.sy;
+    const x = (1 - u) ** 2 * d.x0 + 2 * (1 - u) * u * mx + u * u * d.x1;
+    const y = (1 - u) ** 2 * d.y0 + 2 * (1 - u) * u * my + u * u * d.y1;
+    ctx.fillStyle = u > .5 ? ac : fg;
+    ctx.globalAlpha = t < .04 ? t / .04 : 1;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function place(el, a, b, u) {
+  el.hidden = false;
+  el.style.width = lerp(a.w, b.w, u) + 'px';
+  el.style.height = lerp(a.h, b.h, u) + 'px';
+  el.style.transform = `translate(${lerp(a.x, b.x, u)}px, ${lerp(a.y, b.y, u)}px)`;
+}
+function foldPortrait(t) {
+  if (t <= 0) return;
+  const u = io(t);
+  portrait.style.opacity = 0;
+  place(flyP, geo.portrait, geo.slot, u);
+  // crop moves onto her face as it shrinks
+  flyP.querySelector('img').style.objectPosition = `50% ${lerp(50, 0, u)}%`;
+  flyP.querySelector('img').style.transform = `scale(${lerp(1, 3, u)})`;
+  flyP.querySelector('img').style.transformOrigin = '52% 18%';
+}
+function workChip(t, g) {
+  // portrait steps back, a lilac window opens in the slot, then grows into the first card
+  portrait.style.opacity = 1 - ease(seg(t, 0, .5));
+  portrait.style.transform = `translateY(${ease(seg(t, 0, .5)) * -24}px)`;
+  const k = ease(seg(t, .45, 1));
+  if (k <= 0) return;
+  const s = geo.slot;
+  const chip = { x: s.x + s.w / 2 * (1 - k), y: s.y + s.h / 2 * (1 - k), w: s.w * k, h: s.h * k };
+  if (g <= 0) { place(flyW, chip, chip, 0); return; }
+  const W = geo.stage.w, H = geo.stage.h, gut = Math.max(16, Math.min(56, W * .04));
+  const card = { x: gut, y: H * .5, w: W - gut * 2, h: H * .62 };
+  place(flyW, s, card, io(g));
+  headB.style.transform = `translateY(${-io(g) * H * .22}px)`;
+  document.querySelector('.eyebrow').style.opacity = 1 - seg(g, 0, .3);
+  document.querySelector('.more').style.opacity = 1 - seg(g, 0, .4);
+  document.querySelector('.ctas').style.opacity = 1 - seg(g, 0, .4);
+  if (g > .85) {
+    cap.hidden = false;
+    cap.style.opacity = seg(g, .85, 1);
+    cap.style.transform = `translate(${card.x}px, ${card.y - 22}px)`;
+  }
+}
+
+/* resets between variants */
+function reset() {
+  headB.style.transform = '';
+  document.querySelector('.eyebrow').style.opacity = '';
+  portrait.style.transform = '';
+  document.querySelector('.more').style.opacity = '';
+  document.querySelector('.ctas').style.opacity = '';
+  $('[data-note]').textContent = NOTES[state.v];
+}
+
+document.querySelectorAll('.seg').forEach((g) => g.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+  const key = g.dataset.group, val = b.dataset.val;
+  if (key === 'mode') document.documentElement.dataset.mode = val;
+  if (key === 'v') { state.v = val; reset(); }
+  if (key === 'copy') { state.copy = +val; buildB(); }
+  if (key !== 'mode') scrollTo({ top: 0 });
+}));
+
+addEventListener('resize', layout);
+document.fonts.ready.then(() => { buildB(); reset(); });
+buildB(); reset();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

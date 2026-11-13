@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en" data-variant="a">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Playground views — mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  /* Mocks for /playground with two views, after andreas.vision/play
+     (studied 2026-10-17): his Cloud packs every piece into one cluster;
+     his Grid gathers them into piles per category ("Animations · 30
+     pieces"); opening a pile lays its pieces out in a row with a close
+     button. Here the "other" view is her ring (the BeyondWork maths from
+     data/beyond.ts), as asked.
+
+     Pick the shape and the grid separately in the bar at the top:
+       Shapes  Cloud (the reference's), Flower, Sunflower, Spiral, Helix,
+               Ring (BeyondWork's), Dots
+       Grids   Piles (the reference's), Columns, Rows
+     The URL hash keeps the pair, e.g. #flower-a.
+
+     Serve from the repo root (images are /public/images/…). Values are
+     copied from tokens.css; ring numbers from data/beyond.ts. Animation
+     is thin today: two real loops, the rest are stills marked STAND-IN
+     until clips are recorded. */
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --bg-2: #f2f2f1; --fg: #262626; --fg-dim: #707070;
+    --line: rgb(0 0 0 / 0.1); --accent: #b4482a;
+    --scrim: rgb(252 252 252 / 0.9);
+    --step-heading: clamp(2rem, 1.721rem + 1.143vw, 2.75rem);
+    --step-body: 0.875rem; --step-label: 0.75rem; --step-fine: 0.6875rem;
+    --tracking-serif: -0.03em; --tracking-mono: 0.08em;
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+    --dur-reveal: 560ms; --dur-hover: 200ms; --dur-morph: 900ms;
+    --gutter: clamp(16px, 4vw, 48px);
+    --tile-radius: 10px; /* BeyondWork's rounded cards, kept for the same objects */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font-family: var(--font-sans); font-weight: 600; font-size: var(--step-body); overflow-x: clip; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* mock chrome, not part of the design */
+  .mockbar { position: fixed; top: 12px; left: 50%; translate: -50% 0; z-index: 50; display: flex; gap: 4px;
+    padding: 4px; background: var(--fg); border-radius: 999px; font-family: var(--font-mono); font-size: var(--step-fine); }
+  .mockbar button { border: 0; background: none; color: #bdbdbd; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+  .mockbar button[aria-pressed='true'] { background: var(--bg); color: var(--fg); }
+  .mockbar { flex-wrap: wrap; justify-content: center; align-items: center; width: max-content; max-width: calc(100vw - 24px); border-radius: 22px; }
+  .mockbar__k { color: #8a8885; padding: 0 4px 0 10px; text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+  .mockbar__k + button { margin-left: 0; }
+  .note { position: fixed; left: var(--gutter); bottom: 22px; max-width: 30ch; z-index: 40;
+    font-family: var(--font-mono); font-size: var(--step-fine); color: var(--fg-dim); line-height: 1.5; letter-spacing: 0.02em; background: var(--bg); padding: 8px 10px; box-shadow: 0 0 0 1px var(--line); }
+  .note b { color: var(--fg); font-weight: 400; display: block; margin-bottom: 2px; }
+  @media (max-width: 760px) { .note { display: none; } }
+
+  /* page */
+  .head { position: absolute; top: 72px; left: var(--gutter); right: var(--gutter); display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--font-mono); font-size: var(--step-fine); letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--fg-dim); z-index: 5; }
+  .head span:first-child { color: var(--fg); }
+
+  .stage { position: relative; height: 100svh; min-height: 600px; overflow: hidden; touch-action: pan-y; }
+  .stage.is-tall { height: auto; overflow: visible; }
+  .stage.is-ring { cursor: grab; }
+  .stage.is-dragging { cursor: grabbing; }
+
+  .title { position: absolute; left: 50%; top: 50%; translate: -50% -50%; margin: 0; text-align: center; z-index: 500;
+    font-family: var(--font-serif); font-weight: 300; font-size: var(--step-heading); letter-spacing: var(--tracking-serif);
+    line-height: 1.05; pointer-events: none; transition: opacity var(--dur-reveal) var(--ease-out); width: max-content; }
+  .title em { font-style: italic; }
+  .title small { display: block; margin-top: 10px; font-family: var(--font-mono); font-size: var(--step-fine); letter-spacing: var(--tracking-mono);
+    text-transform: uppercase; color: var(--fg-dim); }
+  .stage:not(.is-ring) .title, .stage.is-notitle .title { opacity: 0; }
+
+  /* tiles: one absolutely placed box each, moved only by transform */
+  .tile { position: absolute; left: 0; top: 0; padding: 0; border: 0; background: var(--bg-2); cursor: pointer;
+    border-radius: var(--tile-radius); overflow: hidden; transform-origin: 50% 50%; will-change: transform;
+    box-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 6px 18px -8px rgb(0 0 0 / .18); }
+  .tile img, .tile video { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+  .tile.is-morph { transition: transform var(--dur-morph) var(--ease-out), opacity var(--dur-reveal) var(--ease-out),
+    clip-path var(--dur-morph) var(--ease-out), border-radius var(--dur-morph) var(--ease-out); }
+  .tile.is-hidden { opacity: 0; pointer-events: none; }
+  .stage.is-ring .tile { cursor: inherit; }
+  .tag { position: absolute; left: 6px; top: 6px; padding: 2px 5px; border-radius: 4px; background: rgb(0 0 0 / .62); color: #fff;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; pointer-events: none; }
+  .stage.is-ring .tag, .stage.is-dots .tag { display: none; }
+
+  /* caption revealed on hover in grid views (the sitewide hover system: withheld info, one curve) */
+  .cap { position: absolute; inset: auto 0 0 0; padding: 18px 8px 6px; color: #fff; text-align: left; font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: .04em; background: linear-gradient(transparent, rgb(0 0 0 / .55)); opacity: 0;
+    transform: translateY(4px); transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out); pointer-events: none; }
+  .stage.is-cols .tile:hover .cap, .stage.is-rows .tile:hover .cap, .stage.is-open .tile:hover .cap,
+  .stage.is-cols .tile:focus-visible .cap, .stage.is-rows .tile:focus-visible .cap { opacity: 1; transform: none; }
+
+  /* labels for grid views */
+  .labels { position: absolute; inset: 0; pointer-events: none; z-index: 600; }
+  .lab { position: absolute; left: 0; top: 0; pointer-events: auto; opacity: 0; transition: opacity var(--dur-reveal) var(--ease-out) 200ms;
+    border: 0; background: none; padding: 0; text-align: center; cursor: default; }
+  .stage.is-piles .lab--pile, .stage.is-cols .lab--col, .stage.is-rows .lab--row { opacity: 1; }
+  .lab--pile { cursor: pointer; width: 180px; }
+  .lab__name { display: block; font-size: var(--step-body); color: var(--fg); }
+  .lab__count { display: block; margin-top: 3px; font-family: var(--font-mono); font-size: var(--step-fine); color: var(--fg-dim); letter-spacing: .04em; }
+  .lab--col, .lab--row { text-align: left; display: flex; gap: 10px; align-items: baseline; font-family: var(--font-mono);
+    font-size: var(--step-fine); letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--fg-dim); }
+  .lab--col .lab__name, .lab--row .lab__name { font-family: var(--font-mono); font-size: var(--step-fine); color: var(--fg); }
+  .lab--col .lab__count, .lab--row .lab__count { margin: 0; }
+  .lab--col { border-top: 1px solid var(--fg); padding-top: 10px; }
+  .lab--row { flex-direction: column; gap: 4px; }
+  .lab--row .lab__name { font-family: var(--font-serif); font-size: 22px; letter-spacing: var(--tracking-serif); text-transform: none; font-weight: 300; }
+  .lab:not(.lab--pile) { pointer-events: none; }
+
+  /* open pile (A) */
+  .openhead { position: absolute; left: var(--gutter); right: var(--gutter); top: 120px; display: flex; justify-content: space-between;
+    align-items: flex-start; z-index: 700; opacity: 0; pointer-events: none; transition: opacity var(--dur-reveal) var(--ease-out); }
+  .stage.is-open .openhead { opacity: 1; pointer-events: auto; }
+  .openhead h2 { margin: 0; font-family: var(--font-serif); font-weight: 300; font-size: var(--step-heading); letter-spacing: var(--tracking-serif); line-height: 1; }
+  .openhead p { margin: 6px 0 0; font-family: var(--font-mono); font-size: var(--step-fine); color: var(--fg-dim); }
+  .close { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--fg); color: var(--bg); cursor: pointer; font-size: 16px; }
+  .stage.is-piles .tile:hover { z-index: 999 !important; }
+
+  /* the view switch, bottom centre, after the reference's Cloud ⇄ Grid pill */
+  .switch { position: fixed; bottom: 22px; left: 50%; translate: -50% 0; z-index: 800; display: flex; align-items: center; gap: 2px;
+    padding: 4px; border-radius: 999px; background: var(--bg); box-shadow: 0 0 0 1px var(--line), 0 8px 24px -12px rgb(0 0 0 / .25); }
+  .switch button { display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 8px 14px; border-radius: 999px;
+    color: var(--fg-dim); cursor: pointer; font-size: var(--step-label); transition: color var(--dur-hover) var(--ease-out), background var(--dur-hover) var(--ease-out); }
+  .switch button:hover { color: var(--fg); }
+  .switch button[aria-pressed='true'] { background: var(--fg); color: var(--bg); }
+  .switch svg { width: 14px; height: 14px; }
+
+  /* dots (C) */
+  .stage.is-dots .tile { box-shadow: none; background: transparent; }
+  .stage.is-dots .tile img, .stage.is-dots .tile video { filter: saturate(1.2) contrast(1.08); }
+
+  /* viewer */
+  .viewer { position: fixed; inset: 0; z-index: 900; display: grid; place-items: center; background: var(--scrim); opacity: 0;
+    pointer-events: none; transition: opacity var(--dur-reveal) var(--ease-out); }
+  .viewer.is-on { opacity: 1; pointer-events: auto; }
+  .viewer figure { margin: 0; max-width: min(1000px, 90vw); }
+  .viewer img, .viewer video { display: block; max-width: 100%; max-height: 74vh; border-radius: var(--tile-radius); margin-inline: auto; }
+  .viewer figcaption { margin-top: 12px; text-align: center; font-family: var(--font-mono); font-size: var(--step-fine); color: var(--fg-dim); }
+  .viewer .close { position: absolute; top: 20px; right: var(--gutter); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tile.is-morph { transition-duration: 1ms; }
+  }
+</style>
+</head>
+<body>
+  <nav class="mockbar" aria-label="Mock options">
+    <span class="mockbar__k">Shape</span>
+    <button data-shape="cloud">Cloud</button>
+    <button data-shape="flower">Flower</button>
+    <button data-shape="sunflower">Sunflower</button>
+    <button data-shape="spiral">Spiral</button>
+    <button data-shape="helix">Helix</button>
+    <button data-shape="ring">Ring</button>
+    <button data-shape="dots">Dots</button>
+    <span class="mockbar__k">Grid</span>
+    <button data-v="a">Piles</button>
+    <button data-v="b">Columns</button>
+    <button data-v="c">Rows</button>
+  </nav>
+
+  <main>
+    <section class="stage is-ring" id="stage" aria-label="Playground" tabindex="-1">
+      <div class="head"><span>Playground</span><span id="headcount"></span></div>
+      <h1 class="title">A place for <em>endless</em><br />experimentation<small id="hint">Drag to turn</small></h1>
+      <div class="labels" id="labels"></div>
+      <div class="openhead" id="openhead">
+        <div><h2 id="openname"></h2><p id="opencount"></p></div>
+        <button class="close" id="openclose" aria-label="Back to all piles">✕</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="switch" role="group" aria-label="View">
+    <button id="sw-ring" aria-pressed="true">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="8" cy="8" rx="6.5" ry="3.6"/><circle cx="8" cy="4.4" r="1.4" fill="currentColor" stroke="none"/></svg>
+      <span id="sw-ring-l">Cloud</span>
+    </button>
+    <button id="sw-grid" aria-pressed="false">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/></svg>
+      <span>Grid</span>
+    </button>
+  </div>
+
+  <p class="note" id="note"></p>
+
+  <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Piece">
+    <button class="close" id="vclose" aria-label="Close">✕</button>
+    <figure id="vfig"></figure>
+  </div>
+
+<script>
+const I = '/public/images/';
+const CATS = [
+  { id: 'anim', name: 'Animation' },
+  { id: 'ui', name: 'Interfaces' },
+  { id: 'art', name: 'Art' },
+  { id: 'photo', name: 'Photos' },
+];
+// [file, aspect, caption, extra]
+const RAW = {
+  anim: [
+    ['chase-pay/prototype-poster.jpg', 0.56, 'Chase Pay, prototype', { video: 'chase-pay/prototype.mp4' }],
+    ['footer/smiley-loop.webp', 1, 'Crayon smiley, 11-frame loop'],
+    ['moss/moss-idle.webp', 0.84, 'Moss looking around', { stand: 1 }],
+    ['hero-idle.webp', 0.71, 'Hero portrait scrub', { stand: 1 }],
+    ['paypal-debit/digital-card.webp', 1.71, 'Debit card sign-up, coded prototype', { stand: 1 }],
+  ],
+  ui: [
+    ['paypal-debit/hub.webp', 1.29, 'PayPal Debit, hub'],
+    ['paypal-debit/rewards.webp', 1.71, 'PayPal Debit, rewards'],
+    ['paypal-debit/offers.webp', 1.71, 'PayPal Debit, offers'],
+    ['paypal-privacy/hero.webp', 2.09, 'PayPal Privacy'],
+    ['paypal-privacy/contextual.webp', 1.98, 'Contextual privacy'],
+    ['paypal-privacy/data-delete.webp', 1.37, 'Data deletion'],
+    ['okta/my-apps.webp', 1.86, 'Okta, My Apps'],
+    ['okta/integrations.webp', 1.94, 'Okta, integrations'],
+    ['chase-pay/hero.png', 2.23, 'Chase Pay'],
+    ['chase-pay/settings.png', 1.8, 'Chase Pay, settings'],
+    ['archive/mint-app.jpg', 1.65, 'Mint credit score'],
+    ['archive/mera-data.jpg', 1.65, 'Mera Data'],
+    ['archive/dream-gains.jpg', 1.65, 'DreamGains'],
+    ['archive/lenders-app.jpg', 1.65, 'Lenders app'],
+    ['archive/wal-e-design-system.jpg', 1.65, 'WAL-E design system'],
+  ],
+  art: [
+    ['play-porch.jpg', 1.0, 'Reading on the porch, digital'],
+    ['play-earrings.jpg', 1.33, 'Earrings, digital'],
+    ['play-hermione.jpg', 0.73, 'Hermione, ink and watercolour'],
+    ['play-green-eyes.jpg', 1.33, 'Green eyes, digital'],
+    ['play-reading.jpg', 0.85, 'Tea and a book, digital'],
+    ['play-care.jpg', 0.96, 'Care, watercolour'],
+    ['play-sage.jpg', 0.63, 'Sage, digital'],
+    ['play-bob.jpg', 1.25, 'Bob, digital'],
+    ['play-mermaid.jpg', 0.8, 'Mermaid, watercolour'],
+    ['play-crown.jpg', 0.75, 'Crown, acrylic'],
+  ],
+  photo: [
+    ['beyond/talk-smile.webp', 1.0, 'On stage, The Saga of Accessibility'],
+    ['beyond/talk-poster.webp', 1.78, 'Talk poster, Design Sundays'],
+    ['beyond/baking-cookie.webp', 0.9, 'Baking class'],
+    ['beyond/blue-sculpture.webp', 0.75, 'Design conference'],
+    ['beyond/event-selfie.webp', 1.37, 'Designers, one selfie'],
+    ['beyond/sticky-wall.webp', 0.56, 'Sticky-note wall'],
+    ['beyond/office-garden.webp', 1.33, 'Office garden'],
+    ['beyond/meetup-group.webp', 1.96, 'Design meetup'],
+    ['beyond/baking-icing.webp', 0.59, 'Piping chocolate'],
+    ['beyond/blue-sculpture-friend.webp', 0.75, 'With a friend'],
+    ['beyond/office-garden-2.webp', 1.14, 'Office garden, again'],
+  ],
+};
+
+const ITEMS = [];
+for (const c of CATS) RAW[c.id].forEach(([f, a, cap, x = {}], k) => ITEMS.push({ src: I + f, aspect: a, cap, cat: c.id, k, ...x, video: x.video && I + x.video }));
+// Interleave for the ring so categories mix around it
+const ringOrder = [];
+{ const by = CATS.map(c => ITEMS.filter(i => i.cat === c.id)); let r = 0;
+  while (ringOrder.length < ITEMS.length) { by.forEach(l => l[r] && ringOrder.push(l[r])); r++; } }
+ringOrder.forEach((it, i) => it.ri = i);
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const stage = document.getElementById('stage');
+const labels = document.getElementById('labels');
+const BASE = 200; // a tile's own width; layouts scale it
+document.getElementById('headcount').textContent = `${ITEMS.length} pieces`;
+
+// ---- build tiles
+for (const it of ITEMS) {
+  const ar = Math.min(2.1, Math.max(0.56, it.aspect));
+  it.w = BASE; it.h = Math.round(BASE / ar);
+  const b = document.createElement('button');
+  b.className = 'tile';
+  b.style.width = it.w + 'px'; b.style.height = it.h + 'px';
+  b.setAttribute('aria-label', it.cap);
+  b.innerHTML = it.video
+    ? `<video src="${it.video}" poster="${it.src}" muted loop playsinline preload="none"></video>`
+    : `<img src="${it.src}" alt="" decoding="async">`;
+  b.innerHTML += (it.stand ? '<span class="tag">STAND-IN</span>' : it.video || it.src.includes('loop') ? '<span class="tag">LOOP</span>' : '') + `<span class="cap">${it.cap}</span>`;
+  b.addEventListener('click', () => onTile(it));
+  it.el = b;
+  stage.appendChild(b);
+}
+// ---- labels
+for (const c of CATS) {
+  const n = ITEMS.filter(i => i.cat === c.id).length;
+  c.n = n;
+  for (const kind of ['pile', 'col', 'row']) {
+    const l = document.createElement(kind === 'pile' ? 'button' : 'div');
+    l.className = `lab lab--${kind}`;
+    l.innerHTML = `<span class="lab__name">${c.name}</span><span class="lab__count">${n} ${kind === 'pile' ? 'pieces' : ''}</span>`;
+    if (kind === 'pile') l.addEventListener('click', () => openPile(c.id));
+    c[kind] = l; labels.appendChild(l);
+  }
+}
+
+// ---- state
+let variant = 'a', shape = 'cloud', view = 'shape', open = null;
+let turn = 0, speed = reduce ? 0 : 0.16, target = speed, morphing = false;
+const RING = { drift: reduce ? 0 : 0.16, easeRate: 1.6, spreadX: 0.9, spreadY: 0.66, fade: 0.45 };
+let hover = null;
+
+function setT(it, x, y, s, r = 0, z = 1, o = 1) {
+  it.x = x; it.y = y; it.s = s;
+  it.el.style.transform = `translate(${x - it.w / 2}px, ${y - it.h / 2}px) rotate(${r}deg) scale(${s})`;
+  it.el.style.zIndex = z; it.el.style.opacity = o;
+}
+const W = () => stage.clientWidth, H = () => (stage.classList.contains('is-tall') ? innerHeight : stage.clientHeight);
+
+// ---- ring (A, B) — two tilted rings so ~40 pieces aren't a wall
+function ringPose(it, t0) {
+  const n = ITEMS.length, inner = it.ri % 2 === 1;
+  const t = (it.ri / n) * Math.PI * 2 + t0 * (inner ? -0.8 : 1);
+  const depth = (Math.cos(t) + 1) / 2;
+  const rx = (W() / 2) * RING.spreadX * (inner ? 0.62 : 1);
+  const ry = (H() / 2) * RING.spreadY * (inner ? 0.7 : 1);
+  const x = W() / 2 + Math.sin(t) * rx;
+  const y = H() / 2 + (inner ? -0.05 : 0.08) * H() + (0.3 + 0.7 * Math.cos(t)) * ry * 0.85 - ry * 0.25;
+  const fit = Math.min(1, W() / 1400) * 0.7;
+  const s = (0.55 + 0.45 * depth) * fit * (inner ? 0.8 : 1);
+  const z = Math.round(depth * 1000) - (depth < 0.5 ? 0 : 0);
+  return { x, y, s, z: depth > 0.5 ? 500 + z : z, o: RING.fade + (1 - RING.fade) * depth, depth };
+}
+// ---- dots (C) — one oval of dots that bloom near the pointer
+function dotPose(it, t0) {
+  const n = ITEMS.length;
+  const t = (it.ri / n) * Math.PI * 2 + t0;
+  const depth = (Math.cos(t) + 1) / 2;
+  const rx = W() * 0.38, ry = H() * 0.26;
+  const x = W() / 2 + Math.sin(t) * rx;
+  const y = H() / 2 + Math.cos(t) * ry * 0.9 + 10;
+  let s = 0.1 + 0.06 * depth;
+  if (hover) { const d = Math.hypot(hover.x - x, hover.y - y); s = Math.max(s, 0.7 * Math.max(0, 1 - d / 170) ** 1.6); }
+  return { x, y, s, z: Math.round(s * 1000) + (depth > 0.5 ? 500 : 0), o: 0.55 + 0.45 * depth };
+}
+function dotClip(it, s) {
+  // a circle of ~12px on screen when small, the full tile when bloomed
+  const open = Math.min(1, Math.max(0, (s - 0.14) / 0.4));
+  const d = Math.min(it.w, it.h);
+  const ix = ((it.w - d) / 2) * (1 - open), iy = ((it.h - d) / 2) * (1 - open);
+  return `inset(${iy}px ${ix}px round ${Math.max(10, (d / 2) * (1 - open))}px)`;
+}
+
+// ---- the other shapes. All share one centre and one size unit, R.
+const geo = () => { const w = W(), h = H(); return { cx: w / 2, cy: h / 2 + 16, R: Math.min(w * 0.42, h * 0.36), fit: Math.min(1, w / 1400) }; };
+const rnd = i => { const v = Math.sin((i + 1) * 12.9898) * 43758.5453; return v - Math.floor(v); };
+// Cloud: a few overlapping puffs packed with tiles, after the reference
+const PUFFS = [[-0.62, 0.12, 0.4], [-0.2, -0.18, 0.56], [0.32, -0.1, 0.52], [0.72, 0.16, 0.36], [0.06, 0.24, 0.46]];
+const PUFF = (() => { const n = ITEMS.length, a = PUFFS.map(p => p[2] ** 2), sum = a.reduce((x, y) => x + y);
+  const c = a.map(v => Math.floor(v / sum * n)); c[1] += n - c.reduce((x, y) => x + y);
+  const out = []; c.forEach((cnt, j) => { for (let m = 0; m < cnt; m++) out.push([j, m, cnt]); }); return out; })();
+function magnify(p, R) {
+  if (!hover) return p;
+  const f = Math.max(0, 1 - Math.hypot(hover.x - p.x, hover.y - p.y) / (R * 0.45)) ** 2;
+  return { ...p, s: p.s * (1 + 0.9 * f), z: p.z + Math.round(f * 2000) };
+}
+function shapePose(it, t) {
+  const { cx, cy, R, fit } = geo(), i = it.ri, n = ITEMS.length;
+  let x, y, s, z = 10, o = 1, r = 0;
+  if (shape === 'cloud') {
+    const [j, m, c] = PUFF[i];
+    const [px, py, pr] = PUFFS[j], rr = pr * Math.sqrt((m + 0.5) / c), a = m * 2.39996 + j * 1.7;
+    x = cx + (px * 0.8 + Math.cos(a) * rr) * R * 0.85; y = cy + (py * 0.8 + Math.sin(a) * rr * 0.85) * R * 0.85;
+    x += Math.cos(t * 2.2 + i * 1.3) * 3; y += Math.sin(t * 1.8 + i) * 4;   // a slow float, not a spin
+    s = (0.44 + 0.14 * rnd(i)) * fit * 1.6; z = Math.round(rnd(i + 7) * 400);
+  } else if (shape === 'flower') {
+    if (i < 6) { const a = i / 6 * Math.PI * 2 + t * 0.4; x = cx + Math.cos(a) * R * 0.09; y = cy + Math.sin(a) * R * 0.09; s = 0.3 * fit * 1.6; z = 900 - i; }
+    else {
+      // five petals, seven slots each: base, two pairs, then the tip
+      const SLOTS = [[0.22, 0], [0.42, -1], [0.42, 1], [0.64, -1], [0.64, 1], [0.84, 0], [1.02, 0]];
+      const q = i - 6, petals = 5, pet = q % petals, k = Math.floor(q / petals), [u, side] = SLOTS[k] || [1.15, 0];
+      const phi = pet / petals * Math.PI * 2 + t * 0.4 - Math.PI / 2;
+      const d = R * (0.2 + 0.82 * u), lat = side * Math.sin(Math.PI * Math.min(u, 0.9)) * R * 0.15;
+      x = cx + Math.cos(phi) * d - Math.sin(phi) * lat; y = cy + Math.sin(phi) * d + Math.cos(phi) * lat;
+      s = (0.24 + 0.1 * Math.sin(Math.PI * Math.min(u, 1))) * fit * 1.6; z = 500 - k * 10;
+    }
+  } else if (shape === 'sunflower') {
+    const k = (i + 0.6) / n, a = i * 2.39996 + t * 0.25;
+    x = cx + Math.cos(a) * R * 0.86 * Math.sqrt(k); y = cy + Math.sin(a) * R * 0.86 * Math.sqrt(k);
+    s = (0.2 + 0.3 * Math.sqrt(k)) * fit * 1.6; z = 1000 - i;
+  } else if (shape === 'spiral') {
+    const arm = i % 2, k = Math.floor(i / 2) / Math.ceil(n / 2), a = arm * Math.PI + k * 4.2 + t * 0.35;
+    x = cx + Math.cos(a) * R * (0.1 + 1.05 * k) * 1.15; y = cy + Math.sin(a) * R * (0.1 + 1.05 * k) * 0.78;
+    s = (0.14 + 0.3 * k) * fit * 1.6; z = Math.round(k * 900);
+  } else if (shape === 'helix') {
+    // two strands crossing the page; tiles turn toward you as they cross
+    const strand = i % 2, k = Math.floor(i / 2) / Math.ceil(n / 2), span = W() + 260;
+    const u = ((k + t * 0.03) % 1 + 1) % 1, ph = u * Math.PI * 4 + strand * Math.PI;
+    const depth = (Math.cos(ph) + 1) / 2;
+    x = -130 + u * span; y = cy + Math.sin(ph) * R * 0.62;
+    s = (0.2 + 0.2 * depth) * fit * 1.5; z = depth > 0.5 ? 600 + Math.round(depth * 300) : Math.round(depth * 400); o = 0.5 + 0.5 * depth;
+  }
+  return magnify({ x, y, s, z, o, r }, R);
+}
+function pose(it) {
+  if (shape === 'ring') return ringPose(it, turn);
+  if (shape === 'dots') return dotPose(it, turn);
+  return shapePose(it, turn);
+}
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (view === 'shape' && !morphing) {
+    speed += (target - speed) * Math.min(1, RING.easeRate * dt);
+    if (!dragging) target += (RING.drift - target) * Math.min(1, RING.easeRate * dt);
+    turn += speed * dt;
+    for (const it of ITEMS) {
+      const p = pose(it);
+      setT(it, p.x, p.y, p.s, p.r || 0, p.z, p.o);
+      if (shape === 'dots') it.el.style.clipPath = dotClip(it, p.s);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---- grid layouts
+const gut = () => parseFloat(getComputedStyle(document.querySelector('.head')).left) || 32;
+function piles() {
+  const w = W(), h = H(), gap = Math.min(220, w / 4.6), cx = w / 2, cy = h * 0.46;
+  // every piece fits one box, so a tall phone doesn't outgrow its pile
+  const bw = gap * 0.74, bh = bw * 0.78;
+  CATS.forEach((c, ci) => {
+    const px = cx + (ci - 1.5) * gap;
+    const list = ITEMS.filter(i => i.cat === c.id);
+    list.forEach((it, k) => {
+      const seed = Math.sin((it.ri + 1) * 12.9898) * 43758.5453; const r = (seed - Math.floor(seed)) - 0.5;
+      const top = k < 4, s = Math.min(bw / it.w, bh / it.h);
+      setT(it, px + (top ? r * 14 : 0), cy + (top ? -k * 3 : 0), s * (top ? 1 : 0.96), top ? r * 10 : 0, 100 - k, top ? 1 : 0);
+    });
+    c.pile.style.transform = `translate(${px - 90}px, ${cy + bh / 2 + 22}px)`;
+  });
+}
+function pileOpen(cid) {
+  const w = W(), h = H(), list = ITEMS.filter(i => i.cat === cid);
+  const gap = 16, max = w - 2 * gut(), room = h - 210 - 90;
+  // shrink the row height until the wrapped rows fit the screen
+  let rowH = Math.min(280, h * 0.4), rows;
+  for (;;) {
+    rows = [[]]; let rx = 0;
+    for (const it of list) { const p = { it, s: rowH / it.h }, ww = it.w * p.s; if (rx + ww > max && rows.at(-1).length) { rows.push([]); rx = 0; } rows.at(-1).push(p); rx += ww + gap; }
+    if (rows.length * (rowH + gap) - gap <= room || rowH < 60) break;
+    rowH *= 0.94;
+  }
+  const sc = 1;
+  rows.forEach((row, ri) => {
+    const tw = row.reduce((a, p) => a + p.it.w * p.s * sc + gap, -gap); let cx = (w - tw) / 2;
+    row.forEach(p => { const ww = p.it.w * p.s * sc; setT(p.it, cx + ww / 2, 210 + ri * (rowH * sc + gap) + rowH * sc / 2, p.s * sc, 0, 10, 1); cx += ww + gap; });
+  });
+  for (const it of ITEMS) if (it.cat !== cid) { it.el.style.opacity = 0; it.el.classList.add('is-hidden'); }
+}
+function cols() {
+  const w = W(), g = gut();
+  const n = w < 700 ? 2 : 4, gap = 16, cw = (w - 2 * g - (n - 1) * gap) / n;
+  const yTop = 140; let maxY = 0;
+  const ys = Array(n).fill(yTop);
+  CATS.forEach((c, ci) => {
+    const col = n === 4 ? ci : ci % 2; let y = ys[col];
+    if (n === 2 && ci >= 2) y += 40;
+    const x0 = g + col * (cw + gap);
+    c.col.style.transform = `translate(${x0}px, ${y}px)`; c.col.style.width = cw + 'px';
+    y += 44;
+    ITEMS.filter(i => i.cat === c.id).forEach(it => {
+      const s = cw / it.w; setT(it, x0 + cw / 2, y + it.h * s / 2, s, 0, 10, 1); y += it.h * s + gap;
+    });
+    ys[col] = y; maxY = Math.max(maxY, y);
+  });
+  stage.style.height = maxY + 120 + 'px';
+}
+function rows() {
+  const w = W(), g = gut();
+  const labW = w < 700 ? 0 : 150, rowH = w < 700 ? 110 : 150, gap = 10;
+  let y = 140;
+  CATS.forEach(c => {
+    c.row.style.transform = `translate(${g}px, ${y}px)`;
+    if (labW === 0) y += 48;
+    let x = g + labW, line = 0;
+    ITEMS.filter(i => i.cat === c.id).forEach(it => {
+      const s = rowH / it.h, ww = it.w * s;
+      if (x + ww > w - g) { x = g + labW; line++; }
+      setT(it, x + ww / 2, y + line * (rowH + gap) + rowH / 2, s, 0, 10, 1); x += ww + gap;
+    });
+    y += (line + 1) * (rowH + gap) + 36;
+  });
+  stage.style.height = y + 100 + 'px';
+}
+
+// ---- switching
+function morph(fn) {
+  morphing = true;
+  for (const it of ITEMS) { it.el.classList.add('is-morph'); it.el.classList.remove('is-hidden'); }
+  fn();
+  clearTimeout(morph.t);
+  morph.t = setTimeout(() => { for (const it of ITEMS) it.el.classList.remove('is-morph'); morphing = false; }, reduce ? 10 : 950);
+}
+function setView(v) {
+  const grid = v === 'grid';
+  open = null;
+  stage.classList.remove('is-open');
+  view = grid ? 'grid' : 'shape';
+  document.getElementById('sw-ring').setAttribute('aria-pressed', !grid);
+  document.getElementById('sw-grid').setAttribute('aria-pressed', grid);
+  stage.className = 'stage ' + (grid ? { a: 'is-piles', b: 'is-cols is-tall', c: 'is-rows is-tall' }[variant] : 'is-ring' + (shape === 'dots' ? ' is-dots' : '') + (['ring', 'dots', 'helix'].includes(shape) ? '' : ' is-notitle'));
+  stage.style.height = '';
+  ITEMS.forEach(it => { const v = it.el.querySelector('video'); if (v) grid ? v.play().catch(() => {}) : v.pause(); });
+  if (grid) {
+    for (const it of ITEMS) it.el.style.clipPath = 'inset(0px 0px round 10px)';
+    morph({ a: piles, b: cols, c: rows }[variant]);
+    scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  } else {
+    // fly back to where the ring is now, then let it drift on
+    morph(() => { for (const it of ITEMS) { const p = pose(it); setT(it, p.x, p.y, p.s, p.r || 0, p.z, p.o); it.el.style.clipPath = shape === 'dots' ? dotClip(it, p.s) : 'inset(0px 0px round 10px)'; } });
+  }
+}
+function openPile(cid) {
+  open = cid; stage.classList.add('is-open'); stage.classList.remove('is-piles');
+  const c = CATS.find(c => c.id === cid);
+  document.getElementById('openname').textContent = c.name;
+  document.getElementById('opencount').textContent = `${c.n} pieces`;
+  morph(() => pileOpen(cid));
+  document.getElementById('openclose').focus({ preventScroll: true });
+}
+document.getElementById('openclose').addEventListener('click', () => {
+  stage.classList.remove('is-open'); stage.classList.add('is-piles'); const id = open; open = null; morph(piles);
+  CATS.find(c => c.id === id).pile.focus({ preventScroll: true });
+});
+
+// ---- tile clicks
+function onTile(it) {
+  if (moved) return;
+  if (view === 'grid' && variant === 'a' && !open) return openPile(it.cat);
+  const fig = document.getElementById('vfig');
+  fig.innerHTML = (it.video ? `<video src="${it.video}" poster="${it.src}" autoplay muted loop playsinline controls></video>` : `<img src="${it.src}" alt="${it.cap}">`) + `<figcaption>${CATS.find(c => c.id === it.cat).name} · ${it.cap}</figcaption>`;
+  viewer.classList.add('is-on'); viewer.lastFocus = it.el; document.getElementById('vclose').focus();
+}
+const viewer = document.getElementById('viewer');
+const closeViewer = () => { viewer.classList.remove('is-on'); document.getElementById('vfig').innerHTML = ''; viewer.lastFocus?.focus({ preventScroll: true }); };
+document.getElementById('vclose').addEventListener('click', closeViewer);
+viewer.addEventListener('click', e => e.target === viewer && closeViewer());
+addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (viewer.classList.contains('is-on')) closeViewer(); else if (open) document.getElementById('openclose').click(); }
+  if (view === 'shape' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !viewer.classList.contains('is-on')) target += (e.key === 'ArrowLeft' ? -1 : 1) * 1.4;
+});
+
+// ---- drag to throw (ring/dots)
+let dragging = false, moved = false, px0 = 0, lastX = 0, lastT = 0;
+stage.addEventListener('pointerdown', e => {
+  if (view === 'grid') return; dragging = true; moved = false; px0 = lastX = e.clientX; lastT = performance.now();
+});
+addEventListener('pointermove', e => {
+  const r = stage.getBoundingClientRect(); hover = view === 'shape' && shape !== 'ring' ? { x: e.clientX - r.left, y: e.clientY - r.top } : null;
+  if (!dragging) return;
+  if (!moved && Math.abs(e.clientX - px0) > 6) { moved = true; stage.classList.add('is-dragging'); }
+  if (moved) { const now = performance.now(), dx = e.clientX - lastX; const v = (dx / W()) * 3.2 / Math.max(0.008, (now - lastT) / 1000);
+    turn += (dx / W()) * 3.2; speed = target = v; lastX = e.clientX; lastT = now; }
+});
+addEventListener('pointerup', () => { dragging = false; stage.classList.remove('is-dragging'); setTimeout(() => moved = false, 0); });
+stage.addEventListener('pointerleave', () => hover = null);
+
+document.getElementById('sw-ring').addEventListener('click', () => setView('ring'));
+document.getElementById('sw-grid').addEventListener('click', () => setView('grid'));
+addEventListener('resize', () => { if (view === 'grid') ({ a: open ? () => pileOpen(open) : piles, b: cols, c: rows })[variant](); });
+
+// ---- variants
+const SHAPES = {
+  cloud: ['Cloud', 'Everything packed into one cloud, after the reference. Tiles float a little; the ones under the pointer lift.', 'Move over the cloud'],
+  flower: ['Flower', 'Six petals around a centre of six, turning slowly. Close to her hand-drawn side.', 'Drag to turn'],
+  sunflower: ['Sunflower', 'Seed-head spiral (golden angle): small pieces at the heart, larger ones at the rim.', 'Drag to turn'],
+  spiral: ['Spiral', 'Two arms winding out from the centre, like a galaxy.', 'Drag to turn'],
+  helix: ['Helix', 'Two strands crossing the page behind the title, tiles turning toward you as they cross.', 'Drag to turn'],
+  ring: ['Ring', 'The tilted ring from Beyond work. Note: the home page already has it.', 'Drag to turn'],
+  dots: ['Dots', 'Every piece a dot on an oval; pieces bloom as the pointer passes.', 'Move over the dots'],
+};
+const GRIDS = { a: 'Piles: click a pile to lay it out.', b: 'Columns: every category visible at once.', c: 'Rows: one labelled row per category.' };
+function sync() {
+  document.querySelectorAll('.mockbar [data-shape]').forEach(b => b.setAttribute('aria-pressed', b.dataset.shape === shape));
+  document.querySelectorAll('.mockbar [data-v]').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === variant));
+  const [name, text, hint] = SHAPES[shape];
+  document.getElementById('sw-ring-l').textContent = name;
+  document.getElementById('hint').textContent = hint;
+  document.getElementById('note').innerHTML = `<b>${name} ↔ Grid</b>${text}<br><br>Grid · ${GRIDS[variant]}`;
+  history.replaceState(null, '', `#${shape}-${variant}`);
+}
+function setShape(v) { shape = v; sync(); setView('shape'); }
+function setVariant(v) { variant = v; document.documentElement.dataset.variant = v; sync(); setView(view === 'grid' ? 'grid' : 'shape'); }
+document.querySelectorAll('.mockbar [data-shape]').forEach(b => b.addEventListener('click', () => setShape(b.dataset.shape)));
+document.querySelectorAll('.mockbar [data-v]').forEach(b => b.addEventListener('click', () => setVariant(b.dataset.v)));
+{ const [sh, gv] = location.hash.slice(1).split('-'); if (SHAPES[sh]) shape = sh; if (GRIDS[gv]) variant = gv; sync(); setView('shape'); }
+</script>
+</body>
+</html>

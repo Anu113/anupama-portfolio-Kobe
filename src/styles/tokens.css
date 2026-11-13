@@ -147,8 +147,21 @@
   /* The top bar is 64px tall on the reference. */
   --nav-h: 4rem;
   --rail-width: clamp(9rem, 13vw, 12rem);
-  --rail-proximity: 90px;
-  --rail-shift: 0.65rem;
+  --rail-top-gap: 1.5rem;   /* rail's sticky top, under nav + strip */
+
+  /* --- CASE STRIP ---------------------------------------
+     The reading strip under the nav on a case study
+     (CaseStrip.astro), after felixrieseberg.com: back link,
+     title, "Part n/N", and a progress line along its edge. */
+  --strip-h: 2.5rem;
+  --progress-h: 2px;
+
+  /* --- CASE NUMBERS -------------------------------------
+     The headline numbers on a case study (CaseNumbers.astro)
+     count up from 0 when they come into view, one after
+     another, after gauravi.design. */
+  --dur-count: 1000ms;
+  --count-stagger: 180ms;
 
   /* --- SHAPE --------------------------------------------
      Square everywhere; the one round thing is the pill button. */
@@ -206,6 +219,9 @@
   --nav-icon-btn: 1.75rem;                       /* 28px hit area, over the 24px minimum */
   --nav-icon: 0.9375rem;                         /* 15px glyph */
   --nav-glyph-shift: 8px;                        /* theme icon swap, after carlthomasiv.com */
+  --nav-sound-dash: 12;                          /* sound button: wave length, in the 15px grid's units */
+  --nav-sound-mute-dash: 18;                     /* sound button: the slash's length */
+  --nav-sound-stagger: 60ms;                     /* sound button: far wave follows the near one */
 
   /* Location line above the hero headline (LocalTime.astro), after
      abstract.systems: light, city, weather, time. Their line is 12px
@@ -219,9 +235,6 @@
   --status-ring: 12px;
   --dur-status-ring: 2.5s;
 
-  --nav-sound-dash: 12;                          /* sound button: wave length, in the 15px grid's units */
-  --nav-sound-mute-dash: 18;                     /* sound button: the slash's length */
-  --nav-sound-stagger: 60ms;                     /* sound button: far wave follows the near one */
   /* Home hero layout (index.astro, HeroIllustration.astro). */
   --hero-copy-w: clamp(22rem, 46vw, 50rem);
   /* The band's top padding: the nav → headline gap (index.astro). */
@@ -739,6 +752,8 @@
   --compare-pin-after: #b4482a;    /* the fix: the light-mode accent, 5.6:1 with the pin ink */
   --compare-pin-ink: #ffffff;
   --compare-pin-size: 22px;
+  --compare-pin-size-sm: 16px;     /* on the short web strip, on phones */
+  --compare-handle-size-sm: 26px;
   --compare-tag-bg: rgb(255 255 255 / 0.95);
   --compare-tag-ink: #262626;
   --compare-tag-edge: rgb(0 0 0 / 0.08);
@@ -746,6 +761,73 @@
   --compare-tag-after-ink: #ffffff;
   --dur-compare-flip: 360ms;       /* a note turning from Before to After, a pin moving */
   --dur-compare-ring: 700ms;       /* the ring that marks a pin as it appears */
+  --cmp-browser-dot: #d6d6d6;      /* the web pair's plain browser frame */
+  /* The web account settings, redrawn from her screenshots: drawn at this
+     size, scaled to the frame. PayPal's blues, read off them. */
+  --cmp-web-w: 960px;
+  --cmp-web-h: 240px;
+  --cmp-web-ratio: 960 / 240;
+  --pp-web-nav: #155bb5;
+  --pp-web-sub-old: #0f4c9e;
+  --pp-web-sub-old-ink: #d6e4f7;
+  --pp-web-ground: #f5f7fa;
+  --pp-web-skeleton: #e3e7ec;
+}
+
+/* PRIVACY COVER (PrivacyCover.astro) — the Privacy case's main image:
+   a static, annotated mockup on the project hue, after rachelatwork.com.
+   Drawn on a 1200 × 525 canvas and scaled whole, so its type sizes are
+   the canvas's own, not the page's. The phone is smaller than a device
+   box's, so a thinner bezel and tighter corners in proportion. It sits
+   on the fixed lilac hue, so its colours are fixed too. */
+:root {
+  --cover-bezel-w: 4px;
+  --radius-cover-device: 24px;
+  --radius-cover-screen: 20px;
+  --cover-wire: rgb(38 38 38 / 0.45);
+  --cover-piece-shadow: 0 12px 32px -12px rgb(30 20 60 / 0.28), 0 2px 6px rgb(30 20 60 / 0.08);
+  --cover-note-bg: #262626;
+  --cover-note-ink: #ffffff;
+  --cover-note-num: #c9c3d6;
+  --cover-type-title: 17px;
+  --cover-type-body: 13px;
+  --cover-type-badge: 11px;
+  --cover-type-note: 13px;
+}
+
+/* CONTEXTUAL PRIVACY (ContextualPrivacy.astro) — her contextual privacy
+   map as a node canvas that builds itself, after gauravi.design's first
+   case card: cards appear one by one, wires draw out of them, the view
+   follows, then pulls back and the wires run. The canvas is a product
+   surface, so its colours are fixed in both modes; the greens and the
+   rounded root are her map's own (they belong to the work, rule 2).
+   Type sizes are the canvas's own (1460 × 560), scaled with it. */
+:root {
+  --map-view-ratio: 16 / 8.5;
+  --map-view-ratio-narrow: 4 / 5;
+  --radius-map-view: 12px;
+  --radius-map-root: 28px;
+  --radius-map-node: 10px;
+  --map-frame: #e6e3dc;
+  --map-canvas: #fbfaf7;
+  --map-dot: rgb(0 0 0 / 0.13);
+  --map-dot-gap: 18px;
+  --map-card: #ffffff;
+  --map-card-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 6px 18px -8px rgb(0 0 0 / 0.18);
+  --map-tag: #f0eee8;
+  --map-ink: #262626;
+  --map-ink-dim: #5c5c5c;       /* 6.6:1 on the tag */
+  --map-line: #8fd16a;
+  --map-root-line: #5cc23a;
+  --map-node: #e3f5d8;
+  --map-node-ink: #1f3314;      /* 13:1 on the node */
+  --map-type: 15px;
+  --map-type-tag: 9px;
+  --dur-map-camera: 1100ms;     /* the view moving to what's new */
+  --ease-map-camera: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-map-pop: 450ms;         /* a card appearing */
+  --dur-map-wire: 700ms;        /* a wire drawing out */
+  --dur-map-run: 900ms;         /* one beat of the running dashes */
 }
 
 /* ============================================================
@@ -953,6 +1035,107 @@
 }
 
 /* ============================================================
+   ABOUT (pages/about.astro, AskMoss.astro's small size). The tabs,
+   Moss's field and the rounded rows are after andreas.vision/about
+   (measured 2026-10-17). The layout (2026-11-11, from the mocks in
+   experiments/about-grid/): her portrait held on the left while her
+   words and the tabs scroll beside it, then three tiles of fanned
+   photos that spread on hover and open large on click. The 28px photo
+   and tile corners, 8px rows and 17px tab pills are kept on request: an
+   exception to the square --radius rule, this page only.
+   Contrast (on --bg, light / dark): caption 4.9 / 5.6, row line 4.9 / 5.6;
+   lightbox caption on its scrim 13 : 1.
+   ============================================================ */
+:root {
+  --about-intro-max: 36rem;        /* 576px */
+  --about-picks: 23.625rem;        /* 378px */
+  --about-top-gap: 2.25rem;        /* intro ↔ tabs, and tabs ↔ grid */
+  --about-grid-gap: 1.5rem;
+  --about-card: color-mix(in srgb, var(--fg) 3%, var(--bg));
+  --about-row: color-mix(in srgb, var(--fg) 1.5%, var(--bg));
+  --about-row-hover: color-mix(in srgb, var(--fg) 4.5%, var(--bg));
+  --about-tab: color-mix(in srgb, var(--fg) 5%, var(--bg));
+  --about-quiet: var(--fg-dim);    /* his 36% fails AA; this is the lightest that passes */
+  --about-soft: color-mix(in srgb, var(--fg) 68%, var(--bg));
+  --about-icon: color-mix(in srgb, var(--fg) 5%, var(--bg));
+  --radius-about-card: 28px;
+  --radius-about-row: 8px;
+  --radius-about-shot: 12px;
+  --radius-about-icon: 10px;
+  --radius-about-tab: 17px;
+  --about-reel-h: 9.75rem;         /* 156px: two and a bit rows */
+  --about-reel-speed: 18;          /* px per second, at rest */
+  --about-tile: 2.75rem;           /* 44px */
+  --step-about-h: 1.5rem;          /* 24px, his h1 */
+  --step-about-tab: 0.8125rem;     /* 13px */
+  --dur-about-rise: 480ms;         /* the intro rising in, 50ms apart */
+  --dur-about-fan: 360ms;          /* a deck fanning out under the pointer */
+  --ease-about-fan: cubic-bezier(0.2, 0.715, 0.205, 0.99);
+  --ease-about-flow: cubic-bezier(0.16, 1, 0.3, 1);
+  --about-stamp-paper: #ffffff;
+  --about-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 6px 16px rgb(0 0 0 / 0.1);
+  --about-shadow-lift: 0 2px 4px rgb(0 0 0 / 0.1), 0 16px 32px rgb(0 0 0 / 0.18);
+  --about-head-gap: 4rem;          /* portrait ↔ words */
+  --about-photo-ratio: 4 / 5;
+  --about-photo-max: 30rem;        /* the portrait once the page is one column */
+  --about-sticky-top: 1.5rem;
+  /* the lightbox: always dark, in both modes */
+  --about-lb-scrim: rgb(15 15 15 / 0.88);
+  --about-lb-ink: #ecebe8;         /* 15 : 1 on the scrim */
+  --about-lb-dim: #a09d98;         /* 6.9 : 1 */
+  --about-lb-btn: rgb(255 255 255 / 0.12);
+  --about-lb-btn-hover: rgb(255 255 255 / 0.22);
+  --about-lb-max-w: 86vw;
+  --about-lb-max-h: 76vh;
+  /* Moss's field at his About size: 8px corners, 28px send, 13px type */
+  --step-amoss-sm: 0.8125rem;
+  --amoss-sm-pad: 0.5rem;
+  --amoss-sm-pad-start: 1rem;
+  --amoss-sm-send: 1.75rem;
+  --amoss-sm-radius: 8px;
+  --amoss-sm-under: 0.75rem;
+}
+
+/* ============================================================
+   RECORD PLAYER (RecordPlayer.astro, the About page's fourth tile) —
+   a slot-loading record player with a speaker, "S5 · Speaker" from the
+   mocks in experiments/about-grid/slots.html, after andreas.vision's
+   CD player. Like project hues and the bookshelf's spines, these
+   colours belong to the object, so they stay the same in dark mode.
+   No orange, on request: the display's lilac is its only colour.
+   Display ink on its glass: 11 : 1.
+   ============================================================ */
+:root {
+  --dur-rp-rise: 900ms;            /* the record rising out of its slot */
+  --dur-rp-turn: 1.8s;             /* one turn of the record */
+  --dur-rp-beat: 320ms;            /* the grille's pulse */
+  --dur-rp-ticker: 8s;             /* one song across the display */
+  --dur-rp-track: 8s;              /* how long each song shows before the next */
+  --dur-rp-cover: 400ms;           /* the label cross-fading to the next cover */
+  --rp-off: 0.14;                  /* the display's unlit text */
+  --rp-vinyl: #141414;
+  --rp-groove: #222;
+  --rp-rec-shadow: 0 0.6cqw 1.4cqw rgb(0 0 0 / 0.3);
+  --rp-sheen: conic-gradient(transparent 20deg, rgb(255 255 255 / 0.14) 40deg, transparent 60deg, transparent 200deg, rgb(255 255 255 / 0.1) 220deg, transparent 240deg);
+  --rp-spindle: #d9d4cc;
+  --rp-shell: linear-gradient(170deg, #f3f1ec, #e3e0d9);
+  --rp-shell-shadow: inset 0 0.3cqw 0 #fff, 0 0.8cqw 0 #d1cdc4, 0 2cqw 4cqw -1cqw rgb(0 0 0 / 0.25);
+  --rp-slot: #111;
+  --rp-slot-shadow: inset 0 0.3cqw 0.4cqw rgb(0 0 0 / 0.8), 0 0.15cqw 0 rgb(255 255 255 / 0.5);
+  --rp-grille-ground: #ebe8e2;
+  --rp-grille-dot: #6a665f;
+  --rp-bezel: #d8d4cc;
+  --rp-bezel-shadow: inset 0 0.35cqw 0.6cqw rgb(0 0 0 / 0.16), inset 0 -0.15cqw 0.2cqw rgb(255 255 255 / 0.7);
+  --rp-glass: #140f1e;
+  --rp-ink: #cdb8ff;
+  --rp-key: linear-gradient(#fbfaf7, #e9e6df);
+  --rp-key-ink: #6e6a62;           /* 4.6 : 1 on the key */
+  --rp-key-ink-on: #262626;
+  --rp-key-up: inset 0 0.25cqw 0 #fff, 0 0.55cqw 0 #cfcbc2, 0 0.8cqw 1.2cqw rgb(0 0 0 / 0.14);
+  --rp-key-down: inset 0 0.25cqw 0 #fff, 0 0.1cqw 0 #cfcbc2, 0 0.3cqw 0.6cqw rgb(0 0 0 / 0.14);
+}
+
+/* ============================================================
    PLAYGROUND (PlayBall.astro, /playground) — on request, a copy of
    andreas.vision/play, measured off his stylesheet on 2026-10-19
    (mocks in experiments/playground-views/exact.html). A slow ball of
@@ -977,7 +1160,10 @@
   --step-play-label-sm: 0.9375rem;         /* 15px */
   --step-play-switch: 1rem;                /* 16px Cloud / Grid */
   --step-play-title: min(var(--step-heading), 7.4vw);   /* the line in the ball; smaller on phones so the ball shows round it */
-  --play-switch-tile: 42px;                /* the pixel tile between them */
+  --play-switch-tile: 42px;                /* the icon between them: four of her pieces */
+  --play-switch-photo: 18px;               /* one piece in it */
+  --radius-play-switch-photo: 4px;
+  --play-switch-photo-ring: 1.5px;          /* a ground-coloured edge, so the heap reads as separate cards */
   --play-switch-gap: 18px;
   --play-switch-pad: 6px 16px;
   --play-switch-ring: color-mix(in srgb, var(--fg) 6%, transparent);
@@ -999,8 +1185,7 @@
   --dur-play-strip: 900ms;                 /* a pile opening into its strip, and back */
   --dur-play-zoom: 600ms;                  /* a strip picture's 1.06 on hover */
   --dur-play-press: 100ms;
-  --dur-play-tile: 320ms;                  /* the switch's tile splitting into four, on a spring */
-  --dur-play-tile-hold: 220ms;             /* the whole tile waits this long before showing again */
+  --dur-play-tile: 420ms;                  /* the icon's heap settling into 2 × 2, on a spring */
 }
 
 /* ============================================================

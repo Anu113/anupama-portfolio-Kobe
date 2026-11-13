@@ -103,6 +103,16 @@
       "autoPort": true
     },
     {
+      "name": "before-after-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory /private/tmp/claude-501/-Users-bhaveshupadhyay-Projects-anupama-portfolio/ee7ad2a5-c570-4e10-b134-3f331b29916f/scratchpad/bamock"
+      ],
+      "port": 4347,
+      "autoPort": true
+    },
+    {
       "name": "moss-walk-mockup",
       "runtimeExecutable": "sh",
       "runtimeArgs": [
@@ -111,6 +121,69 @@
       ],
       "port": 4339,
       "autoPort": true
+    },
+    {
+      "name": "laptop-screen-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/laptop-screen"
+      ],
+      "port": 4347,
+      "autoPort": true
+    },
+    {
+      "name": "beyond-work-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\""
+      ],
+      "port": 4349,
+      "autoPort": true
+    },
+    {
+      "name": "small-talk-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/small-talk"
+      ],
+      "port": 4353,
+      "autoPort": true
+    },
+    {
+      "name": "beyond-build",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory /private/tmp/claude-501/-Users-bhaveshupadhyay-Projects-anupama-portfolio/dba0ddee-acc0-42c4-81ff-4e59a89ccb00/scratchpad/site"
+      ],
+      "port": 4351,
+      "autoPort": true
+    },
+    {
+      "name": "about-grid-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/about-grid"
+      ],
+      "port": 4357,
+      "autoPort": true
+    },
+    {
+      "name": "record-spotify",
+      "runtimeExecutable": "/Users/bhaveshupadhyay/.nvm/versions/node/v22.23.1/bin/node",
+      "runtimeArgs": [
+        "/Users/bhaveshupadhyay/Projects/anupama-portfolio/.claude/worktrees/record-spotify/node_modules/astro/bin/astro.mjs",
+        "dev",
+        "--root",
+        "/Users/bhaveshupadhyay/Projects/anupama-portfolio/.claude/worktrees/record-spotify",
+        "--port",
+        "4350"
+      ],
+      "port": 4350
     }
   ]
 }

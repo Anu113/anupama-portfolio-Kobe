@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en" data-mode="light" data-layout="centre" data-size="his">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hero headers — mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  /* Round 2 of the hero merge: copy cut the way andreas.vision cuts his.
+     His hero is two short headlines in the same place:
+       A  "Designer who / ships with vision"        (first paint)
+       B  "Design ▣ Engineer / who ships growth"    (after one scroll)
+     A clears word by word, B's first two words slide in from the two
+     edges, and the thing A was made of collapses into a chip between
+     them. The paragraph under it never changes.
+     Here her one long sentence ("I ship, I nudge, I craft, from systems
+     and strategy to the last stubborn pixel") is split into six A → B
+     pairs. In every pair the word "pixel" (or the last word of A) breaks
+     into dots, and the dots gather into the chip — the pixel becomes the
+     chip, so the merge is ours rather than his sky.
+     Two size settings: "His scale" (~88px, a departure from our 50px
+     display cap, flagged) and "Ours" (tokens.css --step-display). */
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --accent: #b4482a; --status: #2f9e5b;
+    --gutter: clamp(16px, 4vw, 56px);
+    --head: clamp(34px, 3.6vw, 50px);
+  }
+  :root[data-size='his'] { --head: clamp(44px, 7vw, 92px); }
+  :root[data-mode='dark'] {
+    --bg: #1b1a19; --fg: #ecebe8; --fg-dim: #a09d98; --line: rgb(255 255 255 / 0.12);
+    --accent: #e0714f;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); color: var(--fg); }
+  body { margin: 0; font-family: var(--font-sans); font-weight: 600; overflow-x: clip; }
+
+  /* ── mock chrome ── */
+  .bar {
+    position: fixed; inset: 0 0 auto; z-index: 50;
+    display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center;
+    padding: 10px var(--gutter);
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+    border-bottom: 1px solid var(--line);
+    font: 400 11px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .04em;
+  }
+  .bar b { font-weight: 400; color: var(--fg-dim); }
+  .seg { display: inline-flex; flex-wrap: wrap; gap: 2px; }
+  .seg button {
+    font: inherit; text-transform: inherit; letter-spacing: inherit;
+    border: 1px solid var(--line); background: none; color: var(--fg-dim);
+    padding: 5px 9px; border-radius: 999px; cursor: pointer;
+  }
+  .seg button[aria-pressed='true'] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .bar .note { flex-basis: 100%; text-transform: none; letter-spacing: 0; color: var(--fg-dim); }
+
+  /* ── scene ── */
+  .scene { height: 280vh; position: relative; }
+  .stage { position: sticky; top: 0; height: 100vh; overflow: hidden; display: grid; align-items: center; padding: 120px var(--gutter) 48px; }
+  .row { display: grid; gap: 48px; align-items: center; }
+  :root[data-layout='side'] .row { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+  :root[data-layout='centre'] .row { justify-items: center; text-align: center; }
+  :root[data-layout='centre'] .portrait { display: none; }
+  @media (max-width: 860px) { :root[data-layout='side'] .row { grid-template-columns: 1fr; } .portrait { width: 140px; order: -1; } }
+
+  .eyebrow { font: 400 12px/1 var(--font-mono); text-transform: uppercase; color: var(--fg-dim); display: inline-flex; gap: 8px; align-items: center; margin-bottom: 28px; }
+  .eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--status); }
+
+  .heads { display: grid; }
+  .head { grid-area: 1 / 1; margin: 0; font: 300 var(--head)/1.02 var(--font-serif); letter-spacing: -0.015em; }
+  .head em { font-style: italic; }
+  .head .line { display: block; white-space: nowrap; }
+  .head .w { display: inline-block; will-change: transform, opacity, filter; }
+  .head-b { pointer-events: none; }
+  .slot { display: inline-block; vertical-align: -0.04em; width: 0.86em; height: 0.7em; margin: 0 0.2em; }
+
+  .more { font-size: 12px; line-height: 1.6; color: var(--fg-dim); max-width: 54ch; margin: 28px auto 0; }
+  :root[data-layout='side'] .more { margin-inline: 0; }
+  .more span { color: var(--fg); }
+  .ctas { display: flex; gap: 8px; margin-top: 20px; }
+  :root[data-layout='centre'] .ctas { justify-content: center; }
+  .btn { font: 600 12px/1 var(--font-sans); padding: 11px 18px; border-radius: 999px; border: 1px solid var(--fg); color: var(--fg); text-decoration: none; }
+  .btn--primary { background: var(--fg); color: var(--bg); }
+
+  .portrait { width: min(100%, 380px); aspect-ratio: 700 / 980; justify-self: center; }
+  .portrait img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+  canvas.dots { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .scrollhint { position: absolute; bottom: 20px; left: 50%; translate: -50% 0; font: 400 11px/1 var(--font-mono); text-transform: uppercase; color: var(--fg-dim); }
+
+  .after { padding: 96px var(--gutter); min-height: 70vh; border-top: 1px solid var(--line); }
+  .after h2 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 12px; }
+  .after p { font-size: 12px; color: var(--fg-dim); }
+
+  @media (prefers-reduced-motion: reduce) { .head .w { will-change: auto; } }
+</style>
+</head>
+<body>
+  <div class="bar" role="toolbar" aria-label="Mock controls">
+    <b>Pair</b>
+    <span class="seg" data-group="pair"></span>
+    <b>Size</b>
+    <span class="seg" data-group="size">
+      <button data-val="his" aria-pressed="true">His scale</button>
+      <button data-val="ours" aria-pressed="false">Ours (50px)</button>
+    </span>
+    <b>Layout</b>
+    <span class="seg" data-group="layout">
+      <button data-val="centre" aria-pressed="true">Centred</button>
+      <button data-val="side" aria-pressed="false">With portrait</button>
+    </span>
+    <span class="seg" data-group="mode">
+      <button data-val="light" aria-pressed="true">Light</button>
+      <button data-val="dark" aria-pressed="false">Dark</button>
+    </span>
+    <span class="note" data-note></span>
+  </div>
+
+  <section class="scene" data-scene>
+    <div class="stage" data-stage>
+      <div class="row">
+        <div class="copy">
+          <div class="eyebrow"><i></i>Bangalore,IN · 14:32:07</div>
+          <div class="heads">
+            <h1 class="head head-a" data-a></h1>
+            <p class="head head-b" data-b aria-hidden="true"></p>
+          </div>
+          <p class="more">Staff Product Designer, 10+ years in fintech, enterprise software and developer tools, most recently @&nbsp;<span>Okta</span>. Previously at <span>PayPal</span>, <span>Walmart Labs</span>, and <span>Deloitte</span>.</p>
+          <p class="ctas"><a class="btn btn--primary" href="#">Resume</a><a class="btn" href="#">LinkedIn</a></p>
+        </div>
+        <div class="portrait"><img src="../../public/images/hero-idle.webp" alt="" /></div>
+      </div>
+      <canvas class="dots" data-dots></canvas>
+      <p class="scrollhint" data-hint>Scroll</p>
+    </div>
+  </section>
+  <section class="after"><h2>Selected <em>work</em></h2><p>Project cards start here. Scroll back up to replay.</p></section>
+
+<script>
+/* Each pair: A is two lines (the word in [brackets] breaks into dots);
+   B is "left ▣ right" on line one and a second line. All words come from
+   her current sentence, plus "growth" after his. */
+const PAIRS = [
+  {
+    name: '1 · Ships growth',
+    a: ['<em>Designer</em> who', 'ships every [pixel]'],
+    b: ['Product', 'Designer', 'who ships <em>growth</em>'],
+    note: 'Closest to his, word for word: A is the claim, B the title and the outcome. "growth" is his word; say it only if her work can back it (metrics in cases.ts are still [X]).',
+  },
+  {
+    name: '2 · Ship, nudge, craft',
+    a: ['I ship, I nudge,', 'I <em>craft</em> the [pixel]'],
+    b: ['Systems', 'Strategy', 'down to the <em>last pixel</em>'],
+    note: 'Her own three verbs as A, untouched. B is the second half of her sentence; the chip sits between "Systems" and "Strategy" as the thing that connects them.',
+  },
+  {
+    name: '3 · Systems to pixels',
+    a: ['From <em>systems</em>', 'and strategy'],
+    b: ['to the', 'last', '<em>stubborn pixel</em>'],
+    note: 'Her sentence cut in half, read across the scroll: A asks the question, B finishes it. The chip lands right before "last", standing in for the pixel the line names. Breaks from "strategy".',
+    breakWord: 'strategy',
+  },
+  {
+    name: '4 · Fintech growth',
+    a: ['<em>Designer</em> who', 'ships for [fintech]'],
+    b: ['Staff', 'Designer', 'who ships <em>growth</em>'],
+    note: 'Leads with fintech, as CLAUDE.md asks, and B states the level she is asking for. Most recruiter-friendly of the six.',
+  },
+  {
+    name: '5 · Hi, Anupama',
+    a: ['<em>Hi, I’m</em>', '[Anupama]'],
+    b: ['Product', 'Designer', 'from systems <em>to pixels</em>'],
+    note: 'Keeps her greeting as A (her current opening). Her name breaks into the dots, so the chip is "her" — the most personal one, but the name leaves the headline.',
+  },
+  {
+    name: '6 · Nudge to growth',
+    a: ['I <em>nudge</em> products', 'pixel by [pixel]'],
+    b: ['Craft', 'Growth', 'shipped <em>at scale</em>'],
+    note: 'The shortest B: two nouns either side of the chip, like his "Design ▣ Engineer". Punchier, but "at scale" needs a real number behind it on the page.',
+  },
+];
+
+const $ = (s) => document.querySelector(s);
+const scene = $('[data-scene]'), stage = $('[data-stage]');
+const headA = $('[data-a]'), headB = $('[data-b]'), hint = $('[data-hint]');
+const canvas = $('[data-dots]'), ctx = canvas.getContext('2d');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let pair = 0, wordsA = [], breakEl = null, dots = [], geo = {};
+
+const pairSeg = document.querySelector('[data-group="pair"]');
+pairSeg.innerHTML = PAIRS.map((p, i) => `<button data-val="${i}" aria-pressed="${i === 0}">${p.name}</button>`).join('');
+
+const words = (html) => html.replace(/\[([^\]]+)\]/g, '<span data-break>$1</span>');
+function wrap(node) {
+  [...node.childNodes].forEach((n) => {
+    if (n.nodeType === 3) {
+      const f = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach((t) => {
+        if (!t) return;
+        if (/^\s+$/.test(t)) f.append(t);
+        else { const s = document.createElement('span'); s.className = 'w'; s.textContent = t; f.append(s); }
+      });
+      n.replaceWith(f);
+    } else if (n.nodeType === 1 && n.hasAttribute('data-break')) n.classList.add('w');
+    else if (n.nodeType === 1) wrap(n);
+  });
+}
+
+function build() {
+  const p = PAIRS[pair];
+  headA.innerHTML = p.a.map((l) => `<span class="line">${words(l)}</span>`).join('');
+  wrap(headA);
+  wordsA = [...headA.querySelectorAll('.w')];
+  breakEl = headA.querySelector('[data-break]')
+    || wordsA.find((w) => w.textContent.replace(/\W/g, '') === p.breakWord)
+    || wordsA[wordsA.length - 1];
+  headB.innerHTML = `<span class="line"><span class="w" data-l>${p.b[0]}</span><span class="slot" data-slot></span><span class="w" data-r>${p.b[1]}</span></span><span class="line"><span class="w" data-two>${p.b[2]}</span></span>`;
+  $('[data-note]').textContent = p.note;
+  layout();
+}
+
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (p, a, b) => clamp((p - a) / (b - a));
+const ease = (t) => 1 - Math.pow(1 - t, 4);
+const io = (t) => (t < .5 ? 8 * t ** 4 : 1 - Math.pow(-2 * t + 2, 4) / 2);
+const lerp = (a, b, t) => a + (b - a) * t;
+function rel(el) {
+  const s = stage.getBoundingClientRect(), r = el.getBoundingClientRect();
+  return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height };
+}
+
+function sample() {
+  // Put a dot on every few px of the breaking word's ink, as set.
+  const r = rel(breakEl), cs = getComputedStyle(breakEl), fs = parseFloat(cs.fontSize);
+  const pad = 6, W = Math.ceil(r.w + pad * 2), H = Math.ceil(r.h + pad * 2);
+  const off = document.createElement('canvas'); off.width = W; off.height = H;
+  const o = off.getContext('2d');
+  o.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  o.fillText(breakEl.textContent, pad, pad + r.h * .5 + fs * .3);
+  const step = Math.max(4, Math.round(fs / 16)), data = o.getImageData(0, 0, W, H).data, pts = [];
+  for (let y = 0; y < H; y += step) for (let x = 0; x < W; x += step) if (data[(y * W + x) * 4 + 3] > 110) pts.push([r.x - pad + x, r.y - pad + y]);
+  const s = geo.slot, cols = 8, rows = 6, cells = [];
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) cells.push([s.x + (i + .5) * s.w / cols, s.y + (j + .5) * s.h / rows]);
+  geo.dotR = Math.max(1.3, s.w / cols * .3);
+  dots = pts.map((p, k) => ({
+    x0: p[0], y0: p[1], x1: cells[k % cells.length][0], y1: cells[k % cells.length][1],
+    sx: (Math.random() - .5) * 160, sy: (Math.random() - .5) * 110, d: Math.random() * .35,
+  }));
+}
+
+function layout() {
+  const dpr = devicePixelRatio || 1, s = stage.getBoundingClientRect();
+  canvas.width = s.width * dpr; canvas.height = s.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  headB.querySelectorAll('.w').forEach((w) => (w.style.transform = 'none'));
+  wordsA.forEach((w) => (w.style.cssText = ''));
+  geo.slot = rel(headB.querySelector('[data-slot]'));
+  geo.w = s.width; geo.h = s.height;
+  sample();
+  render();
+}
+
+function progress() { const r = scene.getBoundingClientRect(); return clamp(-r.top / (r.height - innerHeight)); }
+
+function render() {
+  const p = progress();
+  const out = seg(p, .04, .4), inn = seg(p, .28, .7), fly = seg(p, .02, .66);
+  hint.style.opacity = 1 - seg(p, 0, .05);
+
+  if (reduce) {
+    // No travel: A and B cross-fade, the chip is simply there.
+    const k = seg(p, .3, .5);
+    headA.style.opacity = 1 - k; headB.style.opacity = k;
+    headB.querySelectorAll('.w').forEach((w) => (w.style.cssText = ''));
+    drawChip(k);
+    return;
+  }
+
+  const n = wordsA.length;
+  wordsA.forEach((w, i) => {
+    if (w === breakEl) { w.style.opacity = 1 - seg(out, 0, .12); return; }
+    const t = ease(seg(out, (i / n) * .55, (i / n) * .55 + .45));
+    w.style.opacity = 1 - t;
+    w.style.transform = `translateY(${-0.3 * t}em)`;
+    w.style.filter = t > 0 && t < 1 ? `blur(${t * 8}px)` : '';
+  });
+
+  const L = headB.querySelector('[data-l]'), R = headB.querySelector('[data-r]'), T = headB.querySelector('[data-two]');
+  const k = ease(inn);
+  L.style.transform = `translateX(${-(1 - k) * geo.w * .6}px)`; L.style.opacity = seg(inn, 0, .35);
+  R.style.transform = `translateX(${(1 - k) * geo.w * .6}px)`; R.style.opacity = seg(inn, 0, .35);
+  const k2 = ease(seg(inn, .35, 1));
+  T.style.transform = `translateY(${(1 - k2) * .5}em)`; T.style.opacity = k2;
+
+  ctx.clearRect(0, 0, geo.w, geo.h);
+  if (fly <= 0) return;
+  const css = getComputedStyle(document.documentElement);
+  const fg = css.getPropertyValue('--fg'), ac = css.getPropertyValue('--accent');
+  for (const d of dots) {
+    const u = io(seg(fly, d.d * .6, d.d * .6 + .6));
+    const mx = lerp(d.x0, d.x1, .5) + d.sx, my = Math.min(d.y0, d.y1) - 60 + d.sy;
+    const x = (1 - u) ** 2 * d.x0 + 2 * (1 - u) * u * mx + u * u * d.x1;
+    const y = (1 - u) ** 2 * d.y0 + 2 * (1 - u) * u * my + u * u * d.y1;
+    ctx.fillStyle = u > .5 ? ac : fg;
+    ctx.globalAlpha = fly < .04 ? fly / .04 : 1;
+    ctx.beginPath(); ctx.arc(x, y, lerp(1.4, geo.dotR, u), 0, 7); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+function drawChip(k) {
+  ctx.clearRect(0, 0, geo.w, geo.h);
+  const ac = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+  ctx.globalAlpha = k; ctx.fillStyle = ac;
+  const s = geo.slot;
+  for (let j = 0; j < 6; j++) for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.arc(s.x + (i + .5) * s.w / 8, s.y + (j + .5) * s.h / 6, geo.dotR, 0, 7); ctx.fill(); }
+  ctx.globalAlpha = 1;
+}
+
+function loop() { render(); requestAnimationFrame(loop); }
+
+document.querySelectorAll('.seg').forEach((g) => g.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+  const key = g.dataset.group, val = b.dataset.val;
+  if (key === 'pair') { pair = +val; scrollTo({ top: 0 }); build(); }
+  else { document.documentElement.dataset[key] = val; scrollTo({ top: 0 }); layout(); }
+}));
+addEventListener('resize', layout);
+const start = +new URLSearchParams(location.search).get('pair') || 0;
+if (start) { pair = start; pairSeg.querySelectorAll('button').forEach((x, i) => x.setAttribute('aria-pressed', i === start)); }
+document.fonts.ready.then(build);
+build();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

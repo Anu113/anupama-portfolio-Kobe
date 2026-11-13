@@ -74,7 +74,32 @@ const products = [
 const OFFERS_OFF = 'Personalized deals and offers is turned off. Turn it on to get money saving deals that are personalized to you.';
 const OFFERS_ON = 'Personalized deals and offers is on. We’ll show you deals based on where you’ve used PayPal.';
 
-const sheets = ['shop-how', 'del-choice', 'ctx-sheet'];
+// The old Data and Privacy page and the first redesign (four tiles, a
+// sheet behind each), read off her boards.
+const oldRows = [
+  { i: 'i-lock', t: 'Permissions you’ve given', d: 'Keep track of the data and permissions you’re sharing with the apps and sites you use.' },
+  { i: 'i-cookie', t: 'Manage your cookies', d: 'Control how we use cookies and manage your browsing experience.' },
+  { i: 'i-heart', t: 'Interest-based marketing', d: 'See offers and promotions based on your interest on and off PayPal.' },
+  { i: 'i-bag', t: 'PayPal Shopping', d: 'Automatically keep track of the things left in your shopping cart and receive exclusive offers.' },
+  { i: 'i-download', t: 'Download, correct and Delete your data', d: '' },
+];
+const v1Tiles = [
+  { i: 'i-lock', t: 'Profile Privacy', d: 'Your profile and info', go: 'v1-profile' },
+  { i: 'i-apps', t: 'Feature Preferences', d: 'Control your PayPal experience', go: 'v1-features' },
+  { i: 'i-bell', t: 'Notifications', d: 'Control how PayPal sends you receipts and account updates', go: 'v1-notify' },
+  { i: 'i-deals', t: 'Ads and Data', d: 'Your data in your hands' },
+];
+const v1Sheets: Record<string, { i: string; t: string; d: string; rows: { i: string; t: string }[] }> = {
+  'v1-profile': { i: 'i-lock', t: 'Profile Privacy', d: 'Your profile and info', rows: [
+    { i: 'i-search', t: 'Search settings' }, { i: 'i-heart', t: 'Display when sending/donating' }, { i: 'i-blocked', t: 'Blocked Contacts' } ] },
+  'v1-notify': { i: 'i-bell', t: 'Service Notifications', d: 'Control how PayPal sends you receipts and account updates', rows: [
+    { i: 'i-card', t: 'Payments and Purchases' }, { i: 'i-sparkle', t: 'Rewards Status and Updates' }, { i: 'i-megaphone', t: 'General Marketing' }, { i: 'i-bag', t: 'PayPal Shopping' } ] },
+  'v1-features': { i: 'i-apps', t: 'Feature Preferences', d: 'Control your PayPal experience', rows: [
+    { i: 'i-person', t: 'Personalization' }, { i: 'i-sparkle', t: 'Enabled Features' }, { i: 'i-store', t: 'Connected Apps/Services' } ] },
+};
+const v1Sheet = v1Sheets[id];
+
+const sheets = ['shop-how', 'del-choice', 'ctx-sheet', 'v1-profile', 'v1-notify', 'v1-features'];
 const isSheet = sheets.includes(id);
 ---
 <section class:list={['scr', isSheet && 'scr--sheet']} data-screen={id} data-sheet={isSheet ? '' : undefined}>
@@ -113,6 +138,63 @@ const isSheet = sheets.includes(id);
           <span><span class="tile__t">Emails and notifications</span><span class="tile__d">Choose the marketing emails and notifications you get.</span></span>
           <span class="chev" aria-hidden="true">›</span>
         </button>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- The old Data and Privacy page (before) ---------- */}
+  {id === 'hub-old' && (
+    <div class="old old--list">
+      <div class="nav"><span class="back" aria-hidden="true">←</span><span class="old__mark">P</span><span class="close">✕</span></div>
+      <p class="oldlist__h">Manage your privacy settings</p>
+      {oldRows.map((r) => (
+        <div class="oldlist__row">
+          <Illo name={r.i} size={20} />
+          <span><span class="oldlist__t">{r.t}</span>{r.d && <span class="oldlist__d">{r.d}</span>}</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* ---------- First version: four tiles ---------- */}
+  {id === 'v1-hub' && (
+    <div class="hub">
+      <div class="hub__top">
+        <span class="back" aria-hidden="true">←</span>
+        <div class="art"><Illo name="lock-person" size={112} /></div>
+        <p class="title title--c" data-focus tabindex="-1">Data and Privacy</p>
+        <p class="sub">Control how info is displayed and who sees it.</p>
+      </div>
+      <div class="ground">
+        <div class="v1">
+          {v1Tiles.map((t) => (
+            <button class="b v1__tile" data-go={t.go} data-stub={t.go ? undefined : t.t}>
+              <span class="v1__icon"><Illo name={t.i} size={20} /></span>
+              <span class="v1__t">{t.t}</span>
+              <span class="v1__d">{t.d}</span>
+            </button>
+          ))}
+        </div>
+        <p class="v1__foot">Privacy hub link<br /><span class="link" data-stub="The privacy hub">Learn more</span></p>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- First version: the sheet behind each tile ---------- */}
+  {v1Sheet && (
+    <div class="sheeted">
+      <div class="behind behind--grey"></div>
+      <div class="sheet v1s" role="dialog" aria-label={v1Sheet.t}>
+        <button class="b close close--r" data-back aria-label="Close">✕</button>
+        <span class="v1__icon v1__icon--lg"><Illo name={v1Sheet.i} size={24} /></span>
+        <p class="v1s__t" data-focus tabindex="-1">{v1Sheet.t}</p>
+        <p class="v1s__d">{v1Sheet.d}</p>
+        <div class="v1s__rows">
+          {v1Sheet.rows.map((r) => (
+            <button class="b v1s__row" data-stub={r.t}><span class="v1__icon"><Illo name={r.i} size={18} /></span><span>{r.t}</span></button>
+          ))}
+        </div>
       </div>
     </div>
   )}
@@ -505,7 +587,7 @@ const isSheet = sheets.includes(id);
   .box--sm { width: 12px; height: 12px; }
   .box--sm.is-on::after { left: 3px; top: 0.5px; width: 3px; height: 6px; }
   .btn { display: block; width: 100%; text-align: center; padding: 12px 14px; border-radius: var(--radius-pill); background: var(--pp-illo-deep); color: var(--pp-surface); font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); margin-top: 12px; }
-  .btn--foot { position: absolute; left: 16px; right: 16px; bottom: 18px; margin: 0; }
+  .btn--foot { position: absolute; left: 16px; right: 16px; bottom: 18px; width: auto; margin: 0; }
   .never { display: grid; justify-items: center; gap: 6px; margin-top: 28px; text-align: center; }
   .never--row { display: flex; justify-content: center; align-items: center; margin: 10px 0 0; }
 
@@ -573,6 +655,30 @@ const isSheet = sheets.includes(id);
   /* The old screens: flatter, greyer, as they were. */
   .ps--before .ps__draw { color: var(--pp-ink); }
   .old { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 18px 22px; flex: 1; }
+  /* The old Data and Privacy page: one list, dotted rules, no groups. */
+  .old--list { gap: 0; padding: 4px 0 18px; background: var(--pp-surface); }
+  .old--list .nav { padding: 8px 16px; }
+  .old__mark { justify-self: center; font-size: var(--pp-text-lg); font-weight: var(--pp-w-med); font-style: italic; color: var(--pp-illo-deep); }
+  .oldlist__h { margin: 16px 22px 6px !important; padding-bottom: 12px; border-bottom: 1px dotted var(--pp-line); font-size: var(--pp-text-md); font-weight: var(--pp-w-med); }
+  .oldlist__row { display: grid; grid-template-columns: 20px 1fr 10px; gap: 12px; align-items: start; margin: 0 22px; padding: 14px 0; border-bottom: 1px dotted var(--pp-line); color: var(--pp-ink); }
+  .oldlist__row .illo { margin-top: 1px; }
+  .oldlist__t { display: block; font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); }
+  .oldlist__d { display: block; margin-top: 4px; font-size: var(--pp-text-sm); color: var(--pp-before-ink); line-height: 1.45; }
+
+  /* The first redesign: four tiles in a grid, each opening a sheet. */
+  .v1 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .v1__tile { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-height: 128px; padding: 12px; background: var(--pp-surface); border-radius: var(--pp-radius-field); box-shadow: var(--pp-tile-shadow); text-align: left; }
+  .v1__icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--pp-illo-glow); flex: none; }
+  .v1__icon--lg { width: 44px; height: 44px; align-self: center; }
+  .v1__tile .v1__icon { margin-bottom: 10px; }
+  .v1__t { font-size: var(--pp-text-sm); font-weight: var(--pp-w-med); }
+  .v1__d { font-size: var(--pp-text-xs); color: var(--pp-ink-dim); line-height: 1.4; }
+  .v1__foot { margin-top: 10px !important; text-align: center; font-size: var(--pp-text-xs); color: var(--pp-ink-dim); line-height: 1.6; }
+  .v1s { align-items: stretch; gap: 2px; padding: 22px 18px 26px; }
+  .v1s__t { margin-top: 8px !important; text-align: center; font-size: var(--pp-text-md); font-weight: var(--pp-w-med); }
+  .v1s__d { text-align: center; font-size: var(--pp-text-sm); color: var(--pp-ink-dim); }
+  .v1s__rows { display: grid; gap: 4px; margin-top: 12px; }
+  .v1s__row { display: flex; align-items: center; gap: 12px; padding: 8px 2px; font-size: var(--pp-text-sm); text-align: left; }
   .old__title { font-size: var(--pp-text-title); text-align: center; margin: 28px 0 4px !important; }
   .old__title--l { text-align: left; font-size: var(--pp-text-lg); margin: 8px 0 0 !important; }
   .old__p { font-size: var(--pp-text-sm); color: var(--pp-before-ink); line-height: 1.6; }

@@ -35,7 +35,7 @@ import DeviceBox from './DeviceBox.astro';
 import PrivacyScreen from './PrivacyScreen.astro';
 import '../styles/pp-sans.css';
 
-export type PrivacySet = 'hub' | 'shopping' | 'request' | 'delete' | 'contextual';
+export type PrivacySet = 'hub' | 'shopping' | 'request' | 'delete' | 'contextual' | 'first' | 'evolution';
 interface Props { set: PrivacySet; caption?: string }
 const { set, caption } = Astro.props;
 
@@ -63,6 +63,19 @@ const sets: Record<PrivacySet, Phone[]> = {
     { id: 'ctx-card', label: 'In Deals & Offers' },
     { id: 'ctx-sheet', label: 'Shopping and Privacy' },
   ],
+  // The hard call: the first redesign, a tile page and the sheet behind
+  // three of its tiles, then the old page, that version and the revised one.
+  first: [
+    { id: 'v1-hub', label: 'Four tiles' },
+    { id: 'v1-profile', label: 'Profile Privacy' },
+    { id: 'v1-notify', label: 'Service Notifications' },
+    { id: 'v1-features', label: 'Feature Preferences' },
+  ],
+  evolution: [
+    { id: 'hub-old', label: 'Before', before: true, alt: 'Before: Manage your privacy settings, one list of five rows: Permissions you’ve given, Manage your cookies, Interest-based marketing, PayPal Shopping, and Download, correct and Delete your data.' },
+    { id: 'v1-hub', label: 'First version' },
+    { id: 'hub', label: 'Revised' },
+  ],
 };
 const phones = sets[set];
 
@@ -75,10 +88,11 @@ const links: Record<string, string[]> = {
   'del-clean': ['del-done'],
   'ctx-offers': ['ctx-sheet'],
   'ctx-card': ['ctx-sheet'],
+  'v1-hub': ['v1-profile', 'v1-notify', 'v1-features'],
 };
 // A phone that starts on a sheet starts with the page the sheet belongs
 // to underneath it, so closing the sheet lands somewhere real.
-const parents: Record<string, string> = { 'shop-how': 'shop-offers', 'del-choice': 'hub', 'ctx-sheet': 'ctx-card' };
+const parents: Record<string, string> = { 'shop-how': 'shop-offers', 'del-choice': 'hub', 'ctx-sheet': 'ctx-card', 'v1-profile': 'v1-hub', 'v1-notify': 'v1-hub', 'v1-features': 'v1-hub' };
 const reach = (start: string) => {
   const seen = new Set<string>(parents[start] ? [parents[start]] : []);
   const walk = (id: string) => (links[id] ?? []).forEach((n) => { if (!seen.has(n) && n !== start) { seen.add(n); walk(n); } });
@@ -90,6 +104,7 @@ const names: Record<string, string> = {
   'shop-how': 'How it works', req: 'Get a copy of your data', 'req-done': 'Request submitted',
   'del-choice': 'Delete your data', 'del-clean': 'Clean up your data', 'del-done': 'Request submitted',
   'ctx-offers': 'Exclusive offers', 'ctx-card': 'Deals & Offers', 'ctx-sheet': 'Shopping and Privacy',
+  'v1-hub': 'Data and Privacy, first version', 'v1-profile': 'Profile Privacy', 'v1-notify': 'Service Notifications', 'v1-features': 'Feature Preferences',
 };
 ---
 <figure class="ps-set" data-ps>

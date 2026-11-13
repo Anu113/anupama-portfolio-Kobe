@@ -238,6 +238,9 @@ effect:
   bookcase: ten picked at random from her photos, on one shelf (`books`
   in `data/books.ts`). Spines follow a reference she sent: a short rule,
   bold sans title, author in mono. About page only, one shelf.
+  Parked since 2026-10-17 (the About rebuild, below): the component and
+  `data/books.ts` stay, the page doesn't mount it; her books now show in
+  the About page's Books tab and its Books tile.
 
 - **`BeyondWork`, approved on request** (after andreas.vision's
   community ring; version D of the mocks in `experiments/beyond-work`).
@@ -266,21 +269,25 @@ effect:
   whole of /playground: ~120 cards on a ball, facing you, turning
   slowly about the vertical, with "A place for *endless*
   experimentation" in the middle (the far half drawn under it, the near
-  half over it, and cards part round the words). Drag spins it like a
+  half over it; near the words cards shrink back and slip behind them,
+  "Recede" from five mocks in `experiments/playground-views/breathing.html`,
+  so the line has air round it). Drag spins it like a
   globe in any direction and a throw keeps going, easing back to the
   drift; over a card the drift slows and the card lifts with a shadow;
   the ball leans a little toward the pointer. Tiles are solid (no
   see-through on overlap) and the motion slow and one-directional, on
   request, after a round of busier 3D shapes was turned down. His
-  Cloud / Grid pill switches views, with her painting as the pixel
-  tile; Grid pours the ball into one pile per category (Animation,
-  Interfaces, Art, Photos): the ball holds still and cards leave from
+  Cloud / Grid pill switches views, its icon four of her pieces in a
+  loose heap that settle into 2 × 2 on Grid ("Photos", from seven mocks
+  in `switch-icons.html`); Grid pours the ball into one pile per category (Animation,
+  Art, Photos; no web or app screens, on request — the product work
+  lives on /work): the ball holds still and cards leave from
   the bottom up, one after another, each dropping into its pile, the
   labels there from the start, and back to Cloud plays it in reverse.
   A pile opens into a strip you can drag. The ball is drawn on two
   canvases (as his is in WebGL): 120 rounded DOM layers in CSS 3D ran
   at ~30fps. The DOM cards stay for focus, screen readers and the
-  grid. The 41 pieces repeat to fill the ball; repeats are aria-hidden
+  grid. The 24 pieces repeat to fill the ball; repeats are aria-hidden
   and sink into their pile. His rounded cards and pill are kept, an
   exception to the square `--radius` rule, like BeyondWork's. Pieces
   and the ball's numbers in `data/playground.ts`, thumbnails from
@@ -548,6 +555,21 @@ walked back. Concretely, in the current implementation:
   citations are mono too. "What was broken"-style points are a numbered
   13px list. The pull quote is roman serif on a 1px ink rule — no italic
   and no accent, on request. Body stays Manrope 600.
+- **Case study contents and reading strip**, after felixrieseberg.com's
+  posts (on request): the left rail (`CaseRail.astro`) is a "Contents"
+  label over one mono line per section, "Start" first, grey with the
+  current one in ink. A strip under the nav (`CaseStrip.astro`) carries
+  "◂ Work", the title once the real one scrolls away, "Part n/N ▾" (a
+  contents menu, the only contents under 1080px where the rail hides),
+  and a 2px accent progress line along its edge. It rides with the nav
+  as it hides and returns. Values under CASE STRIP in `tokens.css`.
+- **Every case study opens the same way** (on request, after
+  gauravi.design): company and tags → title → snippet → cover → headline
+  numbers → "Case snapshot" (Role and the case's meta) → sections. The
+  numbers (`CaseNumbers.astro`) are the first metrics block of the case's
+  Impact section, minus `[X]` placeholders and dates, shown only with two
+  or more left; they count up from 0 when in view (CASE NUMBERS in
+  `tokens.css`), static under reduced motion.
 - **Case tags are lime** (CASE TAGS in `tokens.css`: `#d4ff3a` fill,
   `#2b3600` ink, 11:1), picked on request from a round of neutral, neon
   and red/brown mocks. The company in mono, then its tags as 10px mono
@@ -607,6 +629,45 @@ walked back. Concretely, in the current implementation:
   no `@anupama.design` mailbox — don't reintroduce one. Links to it say
   "Email" rather than printing the address (the /contact page that
   printed it in full was removed on request, 2026-11-11).
+- **The About page** (`pages/about.astro`, `data/about.ts`, ABOUT in
+  `tokens.css`), chosen on request (2026-11-11) from the mocks in
+  `experiments/about-grid/` ("Half and half" + "Fan out"): her portrait
+  on the left (her photo as given, the porch painting as a stamp, no
+  post-it; camera looks and a cutout were tried and turned down), held
+  in place while "About *me*", her bio in her words and the tabs scroll
+  beside it. The tabs (Experience, Case studies, Books, a list that
+  scrolls itself and loops) and Moss's field keep andreas.vision/about's
+  structure (2026-10-17). Under them, six tiles, three across: Talks
+  and people, Making, Travel, Food, Books, and the record player.
+  Travel and Food are her photos (in `public/images/beyond/`), captioned
+  in the reference's casual voice on request ("<3", ";)" as text, no
+  emoji). Under 1024px it's one column: portrait, words, tiles, and the
+  tabs with Moss's field last, on request. No "Outside the work" list
+  (removed on request; her bio says it). Each is a stack of up to five photos that spreads on
+  hover or focus (stopping at the tile's edge; resting spread on touch),
+  and every photo is a button that opens large in a `<dialog>`
+  lightbox. No hover label, on request. No talk title in captions, on
+  request. The 28px photo and tile corners and rounded rows are a
+  requested exception to the square `--radius` rule, this page only.
+  Moss's field is `AskMoss.astro`, shared with Small talk: the field's
+  second approved place, still one tree and one voice.
+  A fourth tile, approved on request (2026-11-11, "S5 · Speaker" from
+  `experiments/about-grid/slots.html`, after his CD player): a
+  slot-loading record player with a speaker (`RecordPlayer.astro`,
+  RECORD PLAYER in `tokens.css`). On a press the record rises and spins,
+  the grille pulses and a lilac pixel display scrolls the song with a
+  clock and level bars; no orange, on request. While it plays it steps
+  through the first five tracks of her Spotify playlist, "My Playlist
+  #2026" (`song` in `data/about.ts`), every `--dur-rp-track`: the display
+  scrolls the song and the record's label cross-fades to that song's
+  cover (saved into `public/images/about/covers/`, so no request goes to
+  Spotify). A round Spotify key opens the playlist in a new tab. Until
+  she adds a clip she has the rights to (`song.audio`), the play key
+  plays a tune made in the browser. No Spotify embed (third-party
+  cookies) unless she asks. Sound only
+  after a press, one at a time, stops when the tab is hidden; nothing
+  moves under reduced motion. Its reason: one personal detail she can
+  share in a press, the way the paintings share hers.
 - The home page is now: hero → "Selected *work*" head + project cards →
   "Beyond *work*" ring → one-line playground pointer → Small talk →
   footer (which carries contact).

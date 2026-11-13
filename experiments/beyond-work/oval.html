@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en" data-variant="a">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beyond work — oval mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  /* Mocks for keeping the ring an oval (wide, flat) while the near cards
+     stay clear of the line and pills. PR 24 got clearance by making the
+     band 135svh tall, and since the ring scales with the band, that made
+     it rounder. Each variant here is the live component's maths with a
+     few numbers changed; the readout under the bar is measured from the
+     page over a full turn of the ring.
+       y = (offset + amp · cos t) · H/2 · spreadY      x = sin t · W/2 · spreadX
+     His: offset 0.3, amp 0.7, spreadX 0.9, spreadY 0.66, card 216px.
+     Values copied from src/styles/tokens.css and BeyondWork.astro. */
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Manrope', system-ui, sans-serif; --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --screen: #f7f7f7; --fg: #262626; --accent: #b4482a;
+    --talk-soft: color-mix(in srgb, var(--fg) 62%, var(--bg));
+    --step-heading: clamp(2rem, 1.721rem + 1.143vw, 2.75rem); --step-talk: 1.0625rem; --step-label: 0.75rem;
+    --tracking-serif: -0.03em; --tracking-label: 0.04em;
+    --col-gap: clamp(1.25rem, 0.786rem + 1.905vw, 2.5rem);
+    --gutter: max(var(--col-gap), calc((100vw - 90rem) / 2));
+    --space-band: clamp(4rem, 8vw, 7.5rem);
+    --ring-inset: 24px; --ring-pill-h: 44px; --ring-pill-pad: 24px;
+    --dur-ring-swap: 600ms; --ease-ring-swap: cubic-bezier(0.77, 0, 0.175, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font-family: var(--font-sans); font-weight: 600; font-size: 14px; letter-spacing: 0.01em; overflow-x: clip; }
+
+  .mockbar { position: fixed; z-index: 2000; left: 50%; bottom: 16px; translate: -50% 0; display: flex; gap: 4px; padding: 4px;
+    border-radius: 999px; background: #111; color: #eee; font: 400 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase;
+    box-shadow: 0 6px 24px rgb(0 0 0 / .25); max-width: calc(100vw - 32px); overflow-x: auto; }
+  .mockbar button { all: unset; cursor: pointer; padding: 9px 12px; border-radius: 999px; white-space: nowrap; }
+  .mockbar button[aria-pressed='true'] { background: #fff; color: #111; }
+  .mockbar button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .readout { position: fixed; z-index: 2000; left: 50%; bottom: 66px; translate: -50% 0; max-width: calc(100vw - 32px); text-align: center;
+    padding: 8px 14px; border-radius: 10px; background: rgb(17 17 17 / .86); color: #eee; font: 400 11px/1.5 var(--font-mono); letter-spacing: .06em; }
+  .readout b { color: #fff; font-weight: 400; }
+
+  .stub { height: 40vh; display: grid; place-items: end center; padding-bottom: 24px; color: #999; font: 400 11px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+  .beyond { position: relative; height: var(--h); margin-bottom: var(--space-band); overflow: hidden; }
+  .stage { position: absolute; inset: 0 calc(var(--gutter) + var(--ring-inset)); cursor: grab; touch-action: pan-y pinch-zoom; user-select: none; outline: none; }
+  .stage[data-dragging] { cursor: grabbing; }
+  .centre { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    pointer-events: none; transform: translateY(calc(var(--lift, 0) * -1 * var(--h))); }
+  .centre > * { position: relative; z-index: 32; }
+  h2 { margin: 0; font: 300 var(--step-heading)/1.05 var(--font-serif); letter-spacing: var(--tracking-serif); }
+  h2 em { font-style: italic; }
+  .dek { width: min(calc(100vw - 2 * var(--gutter)), 30rem); margin: 1rem 0 0; color: var(--talk-soft); font-size: var(--step-talk); line-height: 1.42; letter-spacing: 0; text-wrap: balance; }
+  .pills { display: inline-flex; gap: 8px; margin-top: 1.5rem; color: inherit; text-decoration: none; pointer-events: auto; z-index: 1000; }
+  .pill { display: inline-flex; align-items: center; height: var(--ring-pill-h); padding: 0 var(--ring-pill-pad); border-radius: 999px; background: var(--fg); color: var(--bg);
+    font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; white-space: nowrap; }
+  .pill.round { position: relative; overflow: hidden; width: var(--ring-pill-h); padding: 0; justify-content: center; }
+  .pill.round svg { position: absolute; transform: rotate(-45deg); transition: transform var(--dur-ring-swap) var(--ease-ring-swap); }
+  .pill.round svg + svg { transform: translate(-150%, 150%) rotate(-45deg); }
+  .pills:hover .pill.round svg:first-child { transform: translate(150%, -150%) rotate(-45deg); }
+  .pills:hover .pill.round svg + svg { transform: rotate(-45deg); }
+  .card { position: absolute; top: 50%; left: 50%; width: var(--card); border-radius: calc(var(--card) * 0.185); will-change: transform; }
+  .face { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; background: var(--screen); }
+  .face img { width: 100%; height: 100%; display: block; object-fit: cover; pointer-events: none; }
+  .face .soft { position: absolute; inset: 0; opacity: 0; }
+  .playline { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; text-align: center; padding-bottom: 40vh; }
+  .playline h2 { max-width: 20ch; }
+  .playline a { color: var(--accent); font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="stub">… last project card</div>
+
+<section class="beyond" aria-labelledby="h">
+  <div class="stage" tabindex="0" role="group" aria-label="Photos from outside work. Drag or use the arrow keys to turn the ring.">
+    <div class="centre">
+      <h2 id="h">Beyond <em>work</em></h2>
+      <p class="dek">I enjoy being around people who care about their craft, sharing what I’ve learned, and making things with my hands. I’m always up for exploring a new idea, a new trail, or a different way of seeing things :)</p>
+      <a class="pills" href="#"><span class="pill">More about me</span><span class="pill round" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 14 14"><path d="M1.6 7h10M7 2l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="20" height="20" viewBox="0 0 14 14"><path d="M1.6 7h10M7 2l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span></a>
+    </div>
+  </div>
+</section>
+
+<section class="playline"><h2>Smaller experiments live in the <em>playground.</em></h2><a href="#">Explore playground</a></section>
+
+<p class="readout" id="readout"></p>
+<nav class="mockbar" aria-label="Variants">
+  <button data-v="now">Now · PR 24</button>
+  <button data-v="a">A · Lowered oval</button>
+  <button data-v="b">B · Wide &amp; flat</button>
+  <button data-v="c">C · Smaller cards</button>
+  <button data-v="d">D · Text raised</button>
+  <button data-v="e">E · Arcs apart</button>
+</nav>
+
+<script>
+  // Each variant: band height (CSS), the ring's numbers, card width, and
+  // how far the words move up (a fraction of the band's height).
+  const V = {
+    now: { label: 'PR 24: one-screen ring made 135svh tall. Clear, but rounder.',
+           h: 'clamp(52rem, 135svh, 76rem)', sx: .9, sy: .66, off: .3, amp: .7, card: 216, lift: 0 },
+    a:   { label: 'His ring, flattened and lowered, cards no taller than 2:3: the near arc drops below the words, the far arc rises less.',
+           h: 'clamp(46rem, 118svh, 66rem)', sx: .9, sy: .66, off: .44, amp: .56, card: 216, lift: 0 },
+    b:   { label: 'Wider and flatter still, cards no taller than 2:3: the ring runs to the content edge and squashes vertically.',
+           h: 'clamp(46rem, 118svh, 66rem)', sx: 1.0, sy: .66, off: .5, amp: .46, card: 216, lift: 0 },
+    c:   { label: 'His exact oval and one-screen band, with cards a sixth smaller (180px) and no taller than 2:3.',
+           h: 'clamp(40rem, 100svh, 56rem)', sx: .9, sy: .66, off: .3, amp: .7, card: 180, lift: 0 },
+    d:   { label: 'His exact oval, band 110svh, cards no taller than 2:3, and the words sit 7% higher, among the far cards.',
+           h: 'clamp(44rem, 110svh, 62rem)', sx: .9, sy: .66, off: .3, amp: .7, card: 216, lift: .07 },
+    e:   { label: 'Arcs pushed apart: the far arc rises above "Beyond work", the near arc drops below the pills, the ring a touch wider to stay oval.',
+           h: 'clamp(44rem, 110svh, 62rem)', sx: 1.0, sy: .66, off: .17, amp: .82, card: 216, lift: 0 },
+  };
+  const B = '/public/images/beyond/';
+  const PHOTOS = [
+    ['talk-poster', 1.78], ['art-porch', 1], ['blue-sculpture', .75], ['baking-cookie', .9], ['art-earrings', 1.33],
+    ['event-selfie', 1.37], ['art-hermione', .73], ['office-garden', 1.33], ['talk-smile', 1], ['art-reading', .85],
+    ['sticky-wall', .56], ['art-green-eyes', 1.33], ['baking-icing', .59], ['meetup-group', 1.96], ['art-sage', .63],
+    ['blue-sculpture-friend', .75], ['office-garden-2', 1.14],
+  ];
+  const DRIFT = .16, EASE = 1.6, BLUR = 3, FADE = .45, FRONT_Z = 33;
+  const root = document.documentElement, band = document.querySelector('.beyond'), stage = document.querySelector('.stage');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cards = PHOTOS.map(([n, a]) => {
+    const el = document.createElement('div'); el.className = 'card'; el.dataset.aspect = a;
+    el.innerHTML = `<span class="face"><img src="${B}${n}.webp" alt=""><img class="soft" src="${B}${n}-blur.webp" alt=""></span>`;
+    stage.append(el); return el;
+  });
+  const softs = cards.map((c) => c.querySelector('.soft'));
+  let cfg = V.a, turn = 0, speed = reduce ? 0 : DRIFT, dir = 1, raf = 0, last = 0, drag = null, dragging = false;
+  let W = 0, H = 0;
+  const clamp = (v) => Math.min(1, Math.max(0, v));
+  const place = (i, n, tn) => { const t = i / n * Math.PI * 2 + tn, d = (Math.cos(t) + 1) / 2;
+    return { t, d, x: Math.sin(t) * W / 2 * cfg.sx, y: (cfg.off + cfg.amp * Math.cos(t)) * H / 2 * cfg.sy, s: .55 + .45 * d }; };
+
+  function paint() {
+    const ps = cards.map((_, i) => place(i, cards.length, turn));
+    ps.map((_, i) => i).sort((a, b) => ps[a].d - ps[b].d).forEach((i, rank) => {
+      const p = ps[i], el = cards[i], far = clamp((.6 - p.d) / .6);
+      el.style.transform = `translate(-50%, -50%) translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0) scale(${p.s.toFixed(3)})`;
+      el.style.opacity = (1 - far * (1 - FADE)).toFixed(2);
+      softs[i].style.opacity = clamp((far - .1) / .9).toFixed(2);
+      el.style.zIndex = (p.d >= .5 ? FRONT_Z : 1) + rank;
+    });
+  }
+  function tick(now) {
+    raf = 0; const dt = Math.min(.05, (now - (last || now)) / 1000); last = now;
+    if (!drag) { speed += ((reduce ? 0 : DRIFT * dir) - speed) * (1 - Math.exp(-dt * EASE)); turn += speed * dt; }
+    paint(); raf = requestAnimationFrame(tick);
+  }
+  stage.addEventListener('pointerdown', (e) => { if (e.target.closest('a')) return; drag = { id: e.pointerId, x: e.clientX, t: e.timeStamp, travel: 0 }; dragging = false; speed = 0; });
+  stage.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x, dt = Math.max(1, e.timeStamp - drag.t) / 1000; drag.travel += Math.abs(dx); drag.x = e.clientX; drag.t = e.timeStamp;
+    if (!dragging && drag.travel > 6) { dragging = true; stage.dataset.dragging = ''; stage.setPointerCapture(e.pointerId); }
+    if (!dragging) return; const d = dx / (W / 2 * cfg.sx); turn += d; speed = speed * .6 + d / dt * .4;
+  });
+  const up = (e) => { if (!drag || e.pointerId !== drag.id) return; if (e.timeStamp - drag.t > 80) speed = 0; if (Math.abs(speed) > .05) dir = Math.sign(speed); drag = null; delete stage.dataset.dragging; };
+  stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+  stage.addEventListener('keydown', (e) => { if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; e.preventDefault(); dir = e.key === 'ArrowLeft' ? -1 : 1; speed += dir * 1.4; });
+
+  // Measured over a full turn: how wide the ring is against its height
+  // (his ≈ 2.8 at 1440×900), the closest a near card gets to the words,
+  // and whether the lowest card stays inside the band.
+  function measure() {
+    const sr = stage.getBoundingClientRect(), cx = sr.left + W / 2, cy = sr.top + H / 2;
+    const rs = [stage.querySelector('h2'), stage.querySelector('.dek'), stage.querySelector('.pills')].map((e) => e.getBoundingClientRect());
+    const box = { l: Math.min(...rs.map((r) => r.left)), r: Math.max(...rs.map((r) => r.right)), t: Math.min(...rs.map((r) => r.top)), b: Math.max(...rs.map((r) => r.bottom)) };
+    const sizes = cards.map((c) => [c.offsetWidth, c.offsetHeight]);
+    let gap = 1e9, low = -1e9;
+    for (let k = 0; k < 720; k++) cards.forEach((_, i) => {
+      const p = place(i, cards.length, k / 720 * Math.PI * 2), w = sizes[i][0] * p.s / 2, h = sizes[i][1] * p.s / 2;
+      low = Math.max(low, p.y + h);
+      if (p.d < .5) return;
+      const x = cx + p.x, y = cy + p.y, dx = Math.max(box.l - (x + w), (x - w) - box.r, 0), dy = Math.max(box.t - (y + h), (y - h) - box.b, 0);
+      gap = Math.min(gap, Math.hypot(dx, dy));
+    });
+    // the most of the headline any far card covers, over a full turn
+    const hr = stage.querySelector('h2').getBoundingClientRect(); let cover = 0;
+    for (let k = 0; k < 360; k++) { let c = 0; cards.forEach((_, i) => {
+      const p = place(i, cards.length, k / 360 * Math.PI * 2); if (p.d >= .5) return;
+      const w = sizes[i][0] * p.s / 2, h = sizes[i][1] * p.s / 2, x = cx + p.x, y = cy + p.y;
+      const ox = Math.max(0, Math.min(x + w, hr.right) - Math.max(x - w, hr.left)), oy = Math.max(0, Math.min(y + h, hr.bottom) - Math.max(y - h, hr.top));
+      c += ox * oy; }); cover = Math.max(cover, c / (hr.width * hr.height)); }
+    const ratio = (W / 2 * cfg.sx) / (cfg.amp * cfg.sy * H / 2);
+    document.getElementById('readout').innerHTML =
+      `${cfg.label}<br>oval <b>${ratio.toFixed(1)} : 1</b> (his 2.8) · closest near card to the words <b>${Math.round(gap)}px</b> · far cards over the headline, worst <b>${Math.round(cover * 100)}%</b> · band <b>${Math.round(H)}px</b> · lowest card ${low <= H / 2 ? 'inside' : '<b>cut</b>'}`;
+  }
+  function set(v) {
+    cfg = V[v]; root.dataset.variant = v;
+    // A–D: no card taller than 2:3, as on his site (the photo is cropped to fit)
+    cards.forEach((c) => c.style.aspectRatio = v === 'now' ? c.dataset.aspect : Math.max(+c.dataset.aspect, 2 / 3));
+    band.style.setProperty('--h', cfg.h); band.style.setProperty('--card', cfg.card + 'px'); band.style.setProperty('--lift', cfg.lift);
+    document.querySelectorAll('[data-v]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === v));
+    history.replaceState(null, '', '?v=' + v);
+    W = stage.offsetWidth; H = stage.offsetHeight; paint(); measure();
+  }
+  document.querySelector('.mockbar').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) set(b.dataset.v); });
+  new ResizeObserver(() => { W = stage.offsetWidth; H = stage.offsetHeight; paint(); measure(); }).observe(stage);
+  set(new URLSearchParams(location.search).get('v') || 'e');
+  raf = requestAnimationFrame(tick);
+  addEventListener('load', () => { measure(); band.scrollIntoView({ block: 'start' }); });
+</script>
+</body>
+</html>

@@ -9,8 +9,13 @@
           slows and the card lifts toward you with a shadow; the ball leans
           a little toward the pointer. "A place for endless
           experimentation" sits in the middle: the far half of the ball is
-          drawn under it, the near half over it, and cards part around the
-          words so they stay readable. Click a card to open the piece.
+          drawn under it, the near half over it. Near the words cards shrink
+          back and slip behind them ("Recede", picked from five mocks in
+          experiments/playground-views/breathing.html), so the line has air
+          round it and the ball still reads full. Click a card to open the piece.
+   Switch "Cloud [icon] Grid", after his; the icon is four of her pieces in
+          a loose heap that settle into 2 × 2 on Grid ("Photos", from seven
+          mocks in experiments/playground-views/switch-icons.html).
    Grid   the switch pours the ball into one pile per category: the ball
           holds still and cards leave from the bottom up, one after
           another, each dropping into its pile, the labels there from the
@@ -21,7 +26,7 @@
    Why it's built like this: the ball is drawn on two canvases (behind and
    in front of the title), as his is in WebGL — 120 rounded DOM layers in
    CSS 3D ran at ~30fps. The DOM cards stay for keyboard focus, screen
-   readers and the grid, and are invisible in the ball. The 41 pieces
+   readers and the grid, and are invisible in the ball. The 24 pieces
    repeat to fill it; repeats are aria-hidden and sink out of sight into
    their pile.
    Its reason: the playground's work is seen whole at a glance, and the
@@ -46,7 +51,8 @@ const pieces = playCategories.flatMap(c => c.pieces.map(p => ({
   video: p.video ? `/images/${p.video}` : undefined,
 })));
 const cats = playCategories.map(c => ({ id: c.id, name: c.name, n: c.pieces.length }));
-const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelTile) } };
+const config = { pieces, cats, ball };
+const switchPhotos = ball.switchPhotos.map(p => ({ ...p, src: playThumb(p.file) }));
 ---
 <section class="playball" data-mode="cloud" aria-labelledby="playball-title" data-config={JSON.stringify(config)}>
   <h1 id="playball-title" class="playball__h">Playground: sketches, interfaces, art and photos by Anupama Mishra</h1>
@@ -68,9 +74,11 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
   <nav class="playball__switch" data-mode="cloud" aria-label="Layout">
     <button type="button" class="playball__word" data-to="cloud" aria-pressed="true">Cloud</button>
     <button type="button" class="playball__tile" data-to="toggle" aria-label="Sort the work into a grid">
-      <span class="playball__whole"><img alt="" /></span>
-      <span class="playball__q playball__q0"><img alt="" /></span><span class="playball__q playball__q1"><img alt="" /></span>
-      <span class="playball__q playball__q2"><img alt="" /></span><span class="playball__q playball__q3"><img alt="" /></span>
+      {switchPhotos.map(p => (
+        <span class="playball__ph" style={`--hx:${p.heap[0]}px;--hy:${p.heap[1]}px;--hr:${p.heap[2]}deg;--gx:${p.grid[0]}px;--gy:${p.grid[1]}px`}>
+          <img src={p.src} alt="" decoding="async" />
+        </span>
+      ))}
     </button>
     <button type="button" class="playball__word" data-to="grid" aria-pressed="false">Grid</button>
   </nav>
@@ -174,18 +182,18 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
   .playball__switch button:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
   .playball__switch .playball__word { min-width: 44px; padding: var(--play-switch-word-pad); font-size: var(--step-play-switch); color: var(--fg-dim); transition: color var(--dur-play-press) var(--ease-fade); }
   .playball__switch .playball__word:hover, .playball__switch .playball__word[aria-pressed='true'] { color: var(--fg); }
-  .playball__tile { position: relative; width: var(--play-switch-tile); height: var(--play-switch-tile); overflow: hidden; transition: transform var(--dur-play-press) var(--ease-fade); }
+  .playball__tile { position: relative; width: var(--play-switch-tile); height: var(--play-switch-tile); transition: transform var(--dur-play-press) var(--ease-fade); }
   .playball__tile:hover { transform: scale(1.04); }
   .playball__tile:active { transform: scale(0.94); }
-  .playball__whole, .playball__q { position: absolute; overflow: hidden; }
-  .playball__whole { inset: 0; transition: opacity var(--dur-play-press) var(--ease-fade) var(--dur-play-tile-hold); }
-  .playball__q { width: 50%; height: 50%; transition: transform var(--dur-play-tile) var(--ease-play-spring); }
-  .playball__q0 { top: 0; left: 0; } .playball__q1 { top: 0; left: 50%; } .playball__q2 { top: 50%; left: 0; } .playball__q3 { top: 50%; left: 50%; }
-  .playball__switch img { position: absolute; width: var(--play-switch-tile); height: var(--play-switch-tile); display: block; image-rendering: pixelated; pointer-events: none; }
-  .playball__q1 img, .playball__q3 img { left: -100%; }
-  .playball__q2 img, .playball__q3 img { top: -100%; }
-  .playball__switch[data-mode='grid'] .playball__whole { opacity: 0; transition: opacity var(--dur-play-press) var(--ease-fade); }
-  .playball__switch[data-mode='grid'] .playball__q { transform: scale(0.8); }
+  /* four of her pieces in a loose heap; on Grid they settle into 2 × 2 */
+  .playball__ph {
+    position: absolute; left: 50%; top: 50%; width: var(--play-switch-photo); height: var(--play-switch-photo);
+    border-radius: var(--radius-play-switch-photo); overflow: hidden; box-shadow: 0 0 0 var(--play-switch-photo-ring) var(--bg);
+    transform: translate(-50%, -50%) translate(var(--hx), var(--hy)) rotate(var(--hr)) scale(1.05);
+    transition: transform var(--dur-play-tile) var(--ease-play-spring);
+  }
+  .playball__switch[data-mode='grid'] .playball__ph { transform: translate(-50%, -50%) translate(var(--gx), var(--gy)) rotate(0deg) scale(1); }
+  .playball__ph img { width: 100%; height: 100%; display: block; object-fit: cover; pointer-events: none; }
   @media (max-width: 809.98px) { .playball__switch { bottom: var(--play-switch-bottom-sm); gap: var(--play-switch-gap-sm); } }
 
   .playball__viewer { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: var(--play-scrim); }
@@ -196,7 +204,7 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
   .playball__viewer .playball__close { position: absolute; top: var(--play-strip-top); right: var(--gutter); }
 
   @media (prefers-reduced-motion: reduce) {
-    .playball__card.is-moving, .playball__face img, .playball__face video, .playball__whole, .playball__q,
+    .playball__card.is-moving, .playball__face img, .playball__face video, .playball__ph,
     .playball__tile, .playball__word, .playball__title, .playball__label, .playball__striphead { transition: none; }
   }
 </style>
@@ -204,7 +212,7 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
 <script>
   type Piece = { src: string; thumb: string; aspect: number; caption: string; cat: string; video?: string; sprite?: HTMLCanvasElement };
   type Cat = { id: string; name: string; n: number; label?: HTMLButtonElement; labelAt?: { x: number; y: number } };
-  type Pose = { x: number; y: number; k: number; z: number; w: number };
+  type Pose = { x: number; y: number; k: number; z: number; w: number; back?: boolean };
   type Card = { p: Piece; echo: boolean; el: HTMLButtonElement; home: number[]; hov: number; q?: Pose };
 
   for (const root of document.querySelectorAll<HTMLElement>('.playball')) init(root);
@@ -257,12 +265,6 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
       stage.appendChild(l); c.label = l;
     }
 
-    // ---- the switch's pixel tile: her painting at 12×12
-    { const img = new Image(); img.src = B.pixelTile;
-      img.onload = () => { const cv = document.createElement('canvas'); cv.width = cv.height = 12; const x = cv.getContext('2d')!;
-        const s = Math.min(img.width, img.height); x.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 12, 12);
-        const url = cv.toDataURL(); sw.querySelectorAll('img').forEach(i => (i.src = url)); }; }
-
     // ---- sprites: each piece pre-cut once with its rounded corners, so a frame is just drawImage
     const cardW = () => parseFloat(getComputedStyle(cards[0].el).width) || 160;
     const corner = () => parseFloat(getComputedStyle(cards[0].el).borderTopLeftRadius) || 20;
@@ -284,7 +286,7 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
     function size() {
       W = root.clientWidth; H = root.clientHeight;
       for (const c of [back, front]) { c.width = W * dpr; c.height = H * dpr; }
-      const r = titleEl.getBoundingClientRect(); lens = { ax: r.width / 2 + 18, ay: r.height / 2 + 12 };
+      const r = titleEl.getBoundingClientRect(); lens = { ax: r.width / 2 + B.titleRoom.pad[0], ay: r.height / 2 + B.titleRoom.pad[1] };
     }
     size();
     document.fonts?.ready.then(size);
@@ -310,16 +312,25 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
       const cm = Math.cos(lean.y), sm = Math.sin(lean.y); [y, z] = [y * cm - z * sm, y * sm + z * cm];
       // his size on wide screens; on phones it keeps most of the width rather than shrinking with it
       const R = Math.min(B.radius, Math.max(B.radius * Math.min(1, W / 1100, H / 880), Math.min(W * 0.44, H * 0.3))), k = B.perspective / (B.perspective - z * R);
-      const w = cardW() * B.scale * k, h = w / c.p.aspect;
+      let w = cardW() * B.scale * k, back = false;
       let dx = x * R * k, dy = y * R * k;
-      // part around the title: anything whose edge would cover it slides out to an
-      // ellipse round the words (continuous, so cards glide rather than jump)
-      const ex = lens.ax + w / 2, ey = lens.ay + h / 2, d = Math.hypot(dx / ex, dy / ey), EDGE = 1.3;
-      if (d < EDGE) { const nd = 1 + (d / EDGE) * (EDGE - 1); if (d > 1e-3) { dx *= nd / d; dy *= nd / d; } else { dx = ex; dy = 0; } }
-      return { x: W / 2 + dx, y: H / 2 + dy, k, z, w };
+      // Room for the title ("Recede", picked from five mocks): near the words a card
+      // shrinks back and slips behind them, rather than only sliding away, so the
+      // ball stays full and the middle reads as depth. The card counts as a circle
+      // of its half-diagonal, so its corners clear the words too. Continuous, so
+      // cards glide rather than jump.
+      const { edge, recede, through } = B.titleRoom, half = Math.hypot(w, w / c.p.aspect) / 2;
+      const ex = lens.ax + half, ey = lens.ay + half, d = Math.hypot(dx / ex, dy / ey);
+      if (d < edge) {
+        const t = d / edge, sm = t * t * (3 - 2 * t);
+        w *= recede + (1 - recede) * sm; back = sm < 0.9;
+        const nd = through + t * (edge - through);
+        if (d > 1e-3) { dx *= nd / d; dy *= nd / d; } else { dx = ex * through; dy = 0; }
+      }
+      return { x: W / 2 + dx, y: H / 2 + dy, k, z, w, back };
     }
     function domTo(c: Card, q: Pose) {   // the same pose as a flat DOM transform, for a focused card
-      c.el.style.transform = `translate(-50%, -50%) translate(${q.x - W / 2}px, ${q.y - H / 2}px) scale(${B.scale * q.k})`;
+      c.el.style.transform = `translate(-50%, -50%) translate(${q.x - W / 2}px, ${q.y - H / 2}px) scale(${q.w / cardW()})`;
       c.el.style.zIndex = String(Math.round(500 + q.z * 400));
     }
 
@@ -349,9 +360,9 @@ const config = { pieces, cats, ball: { ...ball, pixelTile: playThumb(ball.pixelT
         c.hov += ((c === hit ? 1 : 0) - c.hov) * (reduce ? 1 : 0.2);   // the hovered card lifts toward you, to the front
         c.q = q;
         if (c.hov > 0.01) { lifted.push({ c, q }); continue; }
-        drawCard(q.z < 0 ? g2 : g3, c, q.x, q.y, q.w);   // far half under the title, near half over it
+        drawCard(q.z < 0 || q.back ? g2 : g3, c, q.x, q.y, q.w);   // far half and receded cards under the title, near half over it
       }
-      lifted.sort((a, b) => a.c.hov - b.c.hov).forEach(({ c, q }) => drawCard(g3, c, q.x, q.y, q.w * (1 + B.hoverLift * c.hov), 0, c.hov));
+      lifted.sort((a, b) => a.c.hov - b.c.hov).forEach(({ c, q }) => drawCard(q.back ? g2 : g3, c, q.x, q.y, q.w * (1 + B.hoverLift * c.hov), 0, c.hov));
       hoverCard = hit;
       if (focusCard?.q) domTo(focusCard, focusCard.q);
     }

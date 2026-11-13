@@ -1,4 +1,5 @@
-// /playground (PlayBall.astro): every piece, in four categories. A copy of
+// /playground (PlayBall.astro): every piece, in three categories. No web or
+// app screens here, on request (2026-11-10): the product work lives on /work. A copy of
 // andreas.vision/play, measured off his page on 2026-10-19 (see the
 // mocks in experiments/playground-views/exact.html): a slow ball of
 // cards you can spin, and a Grid that pours them into one pile per
@@ -27,32 +28,9 @@ export const playCategories: PlayCategory[] = [
     id: 'animation',
     name: 'Animation',
     pieces: [
-      { file: 'chase-pay/prototype-poster.jpg', aspect: 0.56, caption: 'Chase Pay, prototype', video: 'chase-pay/prototype.mp4' },
       { file: 'footer/smiley-loop.webp', aspect: 1, caption: 'Crayon smiley, 11-frame loop' },
       { file: 'moss/moss-idle.webp', aspect: 0.84, caption: 'Moss looking around' },
       { file: 'hero-idle.webp', aspect: 0.71, caption: 'Hero portrait scrub' },
-      { file: 'paypal-debit/digital-card.webp', aspect: 1.71, caption: 'Debit card sign-up, coded prototype' },
-    ],
-  },
-  {
-    id: 'interfaces',
-    name: 'Interfaces',
-    pieces: [
-      { file: 'paypal-debit/hub.webp', aspect: 1.29, caption: 'PayPal Debit, hub' },
-      { file: 'paypal-debit/rewards.webp', aspect: 1.71, caption: 'PayPal Debit, rewards' },
-      { file: 'paypal-debit/offers.webp', aspect: 1.71, caption: 'PayPal Debit, offers' },
-      { file: 'paypal-privacy/hero.webp', aspect: 2.09, caption: 'PayPal Privacy' },
-      { file: 'paypal-privacy/contextual.webp', aspect: 1.98, caption: 'Contextual privacy' },
-      { file: 'paypal-privacy/data-delete.webp', aspect: 1.37, caption: 'Data deletion' },
-      { file: 'okta/my-apps.webp', aspect: 1.86, caption: 'Okta, My Apps' },
-      { file: 'okta/integrations.webp', aspect: 1.94, caption: 'Okta, integrations' },
-      { file: 'chase-pay/hero.png', aspect: 2.23, caption: 'Chase Pay' },
-      { file: 'chase-pay/settings.png', aspect: 1.8, caption: 'Chase Pay, settings' },
-      { file: 'archive/mint-app.jpg', aspect: 1.65, caption: 'Mint credit score' },
-      { file: 'archive/mera-data.jpg', aspect: 1.65, caption: 'Mera Data' },
-      { file: 'archive/dream-gains.jpg', aspect: 1.65, caption: 'DreamGains' },
-      { file: 'archive/lenders-app.jpg', aspect: 1.65, caption: 'Lenders app' },
-      { file: 'archive/wal-e-design-system.jpg', aspect: 1.65, caption: 'WAL-E design system' },
     ],
   },
   {
@@ -97,7 +75,7 @@ export const playThumb = (file: string) =>
     ? `/images/${file}`
     : `/images/playground/${file.replace(/\//g, '__').replace(/\.\w+$/, '.webp')}`;
 
-// The ball, his numbers: ~120 cards (his has 137), so the 41 pieces repeat
+// The ball, his numbers: ~120 cards (his has 137), so the 24 pieces repeat
 // to fill it; repeats are hidden from screen readers and gone in the grid.
 export const ball = {
   cards: 120,
@@ -110,5 +88,19 @@ export const ball = {
   settle: 0.55,     // how fast a throw eases back to the drift (per second)
   lean: [0.3, 0.22],  // how far it leans toward the pointer (rad, x / y)
   hoverLift: 0.22,  // a hovered card grows this much, with a shadow
-  pixelTile: 'play-porch.jpg',   // her painting, at 12×12, on the Cloud / Grid switch
+  // Room for the title in the middle ("Recede"): cards inside `edge` × a clear
+  // oval round the words (`pad` px beyond them) shrink to as little as `recede`
+  // of their size and pass behind the words; `through` is how far into the
+  // oval the smallest ones may sit.
+  titleRoom: { pad: [40, 30], edge: 1.5, recede: 0.45, through: 0.75 },
+  // The Cloud / Grid switch's icon ("Photos", picked from seven mocks in
+  // experiments/playground-views/switch-icons.html): four of her pieces in a
+  // loose heap that settle into 2 × 2 on Grid. `heap` is x, y (px from the
+  // icon's centre) and a turn in degrees; `grid` is x, y.
+  switchPhotos: [
+    { file: 'play-porch.jpg', heap: [-6, -5, -14], grid: [-9.5, -9.5] },
+    { file: 'beyond/talk-smile.webp', heap: [6, -6, 9], grid: [9.5, -9.5] },
+    { file: 'beyond/baking-cookie.webp', heap: [-5, 6, 6], grid: [-9.5, 9.5] },
+    { file: 'moss/moss-idle.webp', heap: [6, 5, -8], grid: [9.5, 9.5] },
+  ],
 };

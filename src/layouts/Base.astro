@@ -29,6 +29,10 @@ const {
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <!-- Every page names anupama.design (astro.config `site`) as its home,
+         so search engines credit the domain, not a *.vercel.app preview. -->
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <meta property="og:url" content={new URL(Astro.url.pathname, Astro.site)} />
     <!-- Light/dark is resolved before first paint so a returning visitor
          never sees the wrong palette flash: Light or Dark if they picked
          one with the nav's theme toggle, otherwise Light — the default,

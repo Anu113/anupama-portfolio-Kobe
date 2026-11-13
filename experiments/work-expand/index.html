@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mock: work card opens in place</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<!--
+  Mock, after jacobmedure.com: a home work card opens in place into its
+  case study, as one motion, instead of loading a new page.
+
+  What moves:
+  - the card's stage (hue + phone) grows into the case cover, from its
+    exact place on the page to the cover's place;
+  - the rest of the home page steps back and fades;
+  - the card's words fade out, the case's title and opener fade up above
+    the cover; the case body follows once the cover has landed.
+  - The URL changes (?open=slug here; /work/slug on the site) so back,
+    refresh and sharing work. Back, Escape or "Work" shrinks it home to
+    the same card, focus returns to it.
+  Reduced motion: a plain crossfade, no growing.
+  Values copied from tokens.css; in the build they would be tokens.
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --accent: #b4482a;
+    --hue-okta: #c9dcf2; --hue-paypal: #e0d6ef; --hue-walmart: #f4dc9c;
+    --tag-bg: #d4ff3a; --tag-fg: #2b3600;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --dur-open: 760ms;      /* the card growing into the cover */
+    --dur-close: 620ms;     /* going home is a little quicker */
+    --dur-fade: 320ms;
+    --gutter: max(24px, calc((100vw - 1280px) / 2));
+    --card-pad: clamp(1.75rem, 3vw, 2.75rem);
+    --card-h: 560px;
+    --case-w: 880px;
+    --phone-w: 300px; --phone-h: 620px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font-family: var(--font-sans); font-weight: 600; font-size: 14px; line-height: 1.6; overflow-x: clip; }
+  body.is-locked { overflow: hidden; }
+
+  /* ---------- mock chrome ---------- */
+  .note {
+    position: fixed; right: 16px; bottom: 16px; z-index: 50;
+    font: 400 11px/1.5 var(--font-mono); color: var(--fg-dim);
+    background: var(--bg); border: 1px solid var(--line); padding: 10px 12px; max-width: 280px;
+  }
+  .note b { color: var(--fg); font-weight: 400; }
+  .nav { display: flex; justify-content: space-between; padding: 22px var(--gutter); font-size: 14px; }
+  .nav span:last-child { font-size: 12px; color: var(--fg-dim); display: flex; gap: 24px; }
+
+  /* ---------- the home page ---------- */
+  .home { transition: opacity var(--dur-fade) ease, transform var(--dur-open) var(--ease-out); transform-origin: 50% 30vh; }
+  .home.is-back { opacity: 0; transform: scale(0.985); pointer-events: none; }
+  .hero-stub { padding: 120px var(--gutter) 140px; }
+  .hero-stub p { font: 300 50px/1.1 var(--font-serif); margin: 0; max-width: 16ch; }
+  .head { padding: 0 var(--gutter) 28px; font: 300 44px/1.1 var(--font-serif); margin: 0; }
+  .head em { font-style: italic; }
+  .cards { padding: 0 var(--gutter) 160px; display: grid; gap: 0; }
+
+  .pc {
+    position: sticky; top: 24px;
+    display: grid; grid-template-columns: 1.05fr 0.95fr; gap: var(--card-pad);
+    height: var(--card-h); padding: var(--card-pad);
+    background: var(--bg); border-top: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .pc + .pc { margin-top: 48px; }
+  .pc__body { display: flex; flex-direction: column; transition: opacity var(--dur-fade) ease; }
+  .pc__num { font-size: 12px; color: var(--fg-dim); margin: 0 0 auto; }
+  .pc__meta { display: flex; gap: 8px; align-items: center; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--fg-dim); margin-bottom: 14px; }
+  .pc__title { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pc__title a { color: var(--fg); text-decoration: none; }
+  .pc__title a::after { content: ''; position: absolute; inset: 0; z-index: 2; }
+  .pc { position: sticky; }
+  .pc:has(a:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .pc a:focus-visible { outline: none; }
+  .pc__tagline { margin: 0 0 22px; font-size: 12px; color: var(--fg-dim); max-width: 36ch; }
+  .pc__cta { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pc__arrow { display: inline-block; transition: transform 240ms var(--ease-out); }
+  .pc:hover .pc__arrow { transform: translate(2px, -2px); }
+
+  /* The stage: the one thing that travels. */
+  .stage {
+    position: relative; overflow: hidden; background: var(--hue);
+    display: grid; place-items: center;
+  }
+  [data-hue='okta'] { --hue: var(--hue-okta); }
+  [data-hue='paypal'] { --hue: var(--hue-paypal); }
+  [data-hue='walmart'] { --hue: var(--hue-walmart); }
+  .pc .stage > * { transition: transform 500ms var(--ease-out); }
+  .pc:hover .stage > * { transform: translateY(-6px); }
+  .pc.is-source .stage { visibility: hidden; }
+  .pc.is-source .pc__body { opacity: 0; }
+
+  .phone {
+    width: var(--phone-w); height: var(--phone-h);
+    padding: 10px; background: #0e0e0f; border-radius: 44px;
+    box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.35);
+    transform: scale(var(--ps, 0.72));
+  }
+  .pc .phone { --ps: 0.72; }
+  .phone__screen { width: 100%; height: 100%; border-radius: 34px; overflow: hidden; background: #fff; position: relative; }
+  .phone__screen img, .phone__screen video { width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; inset: 0; }
+  .phone__screen img { opacity: 0; transition: opacity 500ms ease; }
+  .phone__screen img.is-on { opacity: 1; }
+  .desktop { width: 86%; box-shadow: 0 20px 50px -24px rgb(0 0 0 / 0.35); background: #fff; }
+  .desktop img { display: block; width: 100%; }
+
+  /* ---------- the flyer: a stand-in that grows from card to cover ---------- */
+  .flyer { position: fixed; z-index: 30; margin: 0; pointer-events: none; will-change: top, left, width, height; }
+  .flyer .phone { transition: none; }
+
+  /* ---------- the open case ---------- */
+  .case {
+    position: fixed; inset: 0; z-index: 20; overflow-y: auto; overscroll-behavior: contain;
+    background: transparent; visibility: hidden;
+  }
+  .case.is-open { visibility: visible; }
+  .case__bar {
+    position: sticky; top: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center;
+    padding: 18px var(--gutter); background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(6px);
+    font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em;
+    opacity: 0; transition: opacity var(--dur-fade) ease;
+  }
+  .case.is-shown .case__bar { opacity: 1; }
+  .case__back {
+    font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--fg);
+    background: none; border: 0; padding: 6px 0; cursor: pointer;
+  }
+  .case__back:hover { color: var(--accent); }
+  .case__back:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  .case__bar span { color: var(--fg-dim); }
+
+  .case__inner { width: min(100% - 48px, var(--case-w)); margin: 0 auto; padding: 48px 0 160px; }
+  .case__top > * { opacity: 0; transform: translateY(14px); transition: opacity 500ms var(--ease-out), transform 700ms var(--ease-out); }
+  .case.is-shown .case__top > * { opacity: 1; transform: none; }
+  .case.is-shown .case__top > :nth-child(2) { transition-delay: 60ms; }
+  .case.is-shown .case__top > :nth-child(3) { transition-delay: 120ms; }
+  .case__tags { display: flex; gap: 8px; align-items: center; margin: 0 0 18px; font: 400 11px/1 var(--font-mono); text-transform: uppercase; color: var(--fg-dim); }
+  .case__tags li { list-style: none; background: var(--tag-bg); color: var(--tag-fg); border-radius: 4px; padding: 5px 7px; font-size: 10px; }
+  .case__tags ul { display: contents; }
+  .case__title { font: 300 40px/1.1 var(--font-serif); margin: 0 0 14px; max-width: 22ch; outline: none; }
+  .case__snippet { margin: 0 0 36px; max-width: 60ch; color: var(--fg-dim); }
+
+  /* The cover's slot: the flyer lands exactly on it, then it takes over. */
+  .cover { height: min(64vh, 620px); }
+  .cover .phone { --ps: 0.86; }
+  .case:not(.is-landed) .cover { visibility: hidden; }
+
+  .case__rest > * { opacity: 0; transform: translateY(24px); transition: opacity 600ms var(--ease-out), transform 800ms var(--ease-out); }
+  .case.is-landed .case__rest > * { opacity: 1; transform: none; }
+  .case.is-landed .case__rest > :nth-child(2) { transition-delay: 80ms; }
+  .case.is-landed .case__rest > :nth-child(3) { transition-delay: 160ms; }
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 40px 0; border-bottom: 1px solid var(--line); }
+  .nums b { display: block; font: 300 44px/1 var(--font-serif); }
+  .nums span { font: 400 11px/1.5 var(--font-mono); color: var(--fg-dim); }
+  .snap { display: grid; grid-template-columns: 140px 1fr; gap: 10px 24px; padding: 32px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .snap dt { font: 400 11px/1.6 var(--font-mono); text-transform: uppercase; color: var(--fg-dim); }
+  .snap dd { margin: 0; }
+  .sec { padding: 48px 0 0; }
+  .sec__label { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg-dim); border-top: 1px solid var(--line); padding-top: 14px; margin: 0 0 20px; }
+  .sec h2 { font: 600 22px/1.3 var(--font-sans); margin: 0 0 14px; max-width: 34ch; }
+  .sec p { max-width: 62ch; margin: 0 0 24px; }
+  .sec img { width: 100%; display: block; background: var(--hue); }
+  .next { margin-top: 72px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font: 400 11px/1 var(--font-mono); text-transform: uppercase; color: var(--fg-dim); }
+
+  @media (max-width: 860px) {
+    .pc { grid-template-columns: 1fr; grid-template-rows: 1fr auto; height: auto; }
+    .pc .stage { order: -1; height: 380px; }
+    .pc .phone { --ps: 0.55; }
+    .cover .phone { --ps: 0.62; }
+    .nums { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .home, .case__top > *, .case__rest > *, .case__bar { transition-duration: 1ms !important; transition-delay: 0ms !important; transform: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="home" id="home">
+  <div class="nav"><span>Anupama Mishra</span><span><span>Work</span><span>About</span><span>Playground</span></span></div>
+  <div class="hero-stub"><p>(hero, as on the site)</p></div>
+  <h2 class="head">Selected <em>work</em></h2>
+  <div class="cards" id="cards"></div>
+</div>
+
+<div class="case" id="case" role="region" aria-label="Case study">
+  <div class="case__bar">
+    <button class="case__back" id="back" type="button">◂ Work</button>
+    <span id="bar-title"></span>
+  </div>
+  <div class="case__inner">
+    <div class="case__top">
+      <div class="case__tags" id="c-tags"></div>
+      <h1 class="case__title" id="c-title" tabindex="-1"></h1>
+      <p class="case__snippet" id="c-snippet"></p>
+    </div>
+    <div class="cover stage" id="c-cover"></div>
+    <div class="case__rest" id="c-rest"></div>
+  </div>
+</div>
+
+<p class="note"><b>Mock · work card opens in place.</b> Click a card. Back, Escape or “◂ Work” shrinks it home. Scroll the open case, then close, to see it return from anywhere.</p>
+
+<script>
+const IMG = '/public/images/';
+const cases = [
+  { slug: 'okta-iam', company: 'Okta', hue: 'okta', tags: ['Identity', 'Product Strategy', 'Design Systems'],
+    title: 'Rebuilding IAM for enterprise admins',
+    tagline: 'A ground-up rebuild of the admin console, shipped under live tenants.',
+    snippet: 'Admins ran identity for thousands of employees through a console built for a smaller company. I owned the design of the core admin surfaces through a rebuild that shipped underneath live tenants.',
+    media: { type: 'desktop', src: IMG + 'okta/my-apps.webp' },
+    nums: [['0', 'Migration windows asked of customers'], ['6', 'Designers across IAM and developer tools'], ['4', 'Highest-volume flows rebuilt']],
+    meta: [['Role', 'Staff Product Designer · IAM + Developer Tools'], ['Platforms', 'Admin console, web']],
+    img: IMG + 'okta/integrations.webp' },
+  { slug: 'paypal-privacy', company: 'PayPal', hue: 'paypal', tags: ['Fintech', 'Research'],
+    title: 'Privacy settings people can read',
+    tagline: 'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.',
+    snippet: '75% of settings traffic stopped on the first page. I owned the design of PayPal’s privacy settings so that every setting is one tap away and says what it does. Launched in early 2023, now used by more than 80 million people.',
+    media: { type: 'screens', src: [1, 2, 3, 4].map((n) => IMG + `paypal-privacy/phone-${n}.webp`) },
+    nums: [['60%', 'Fewer support calls about privacy settings'], ['76%', 'Faster data access time'], ['4.7/5', 'Average rating, from 150 users']],
+    meta: [['Role', 'Owned the design · Research through delivery'], ['Timeline', 'March 2021 – January 2023']],
+    img: IMG + 'paypal-privacy/evolution.webp' },
+  { slug: 'walmart-chase-pay', company: 'Walmart', hue: 'walmart', tags: ['Fintech', 'Growth'],
+    title: 'Chase Pay inside Walmart Pay',
+    tagline: 'Brought Chase Pay into Walmart Pay, validated with real customers in-store.',
+    snippet: 'Walmart Pay needed Chase Pay without losing the people already using it. I designed the handoff from Walmart Pay to Chase and back, and tested it with real customers in store.',
+    media: { type: 'video', src: IMG + 'chase-pay/prototype.mp4' },
+    nums: [['1', 'Handoff, Walmart to Chase and back'], ['In-store', 'Tested with real customers'], ['[X]', 'Waiting on her number']],
+    meta: [['Role', 'Product Designer'], ['Platforms', 'Walmart app, iOS and Android']],
+    img: IMG + 'chase-pay/hero.png' },
+  { slug: 'paypal-debit-card', company: 'PayPal', hue: 'paypal', tags: ['Fintech', 'Growth', '0→1'],
+    title: 'A debit card people finish signing up for',
+    tagline: 'Card enrollment and cash back rebuilt inside the PayPal app.',
+    snippet: '68% of applicants gave up on the old sign-up. I rebuilt card enrollment and cash back inside the PayPal app.',
+    media: { type: 'screens', src: ['enroll', 'hub', 'rewards', 'digital-card'].map((n) => IMG + `paypal-debit/${n}.webp`) },
+    nums: [['68%', 'Applicants who gave up before'], ['[X]%', 'Completion after'], ['[X]', 'Waiting on her number']],
+    meta: [['Role', 'Product Designer, end to end'], ['Platforms', 'PayPal app']],
+    img: IMG + 'paypal-debit/flow-enroll.webp' },
+];
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cssMs = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+const DUR_OPEN = cssMs('--dur-open'), DUR_CLOSE = cssMs('--dur-close');
+const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const EASE_IO = 'cubic-bezier(0.65, 0, 0.35, 1)';
+
+function mediaHTML(m) {
+  if (m.type === 'desktop') return `<div class="desktop"><img src="${m.src}" alt=""></div>`;
+  if (m.type === 'video') return `<div class="phone"><div class="phone__screen"><video src="${m.src}" muted loop playsinline autoplay></video></div></div>`;
+  return `<div class="phone"><div class="phone__screen">${m.src.map((s, i) => `<img src="${s}" alt="" class="${i ? '' : 'is-on'}">`).join('')}</div></div>`;
+}
+
+/* ---- build the cards ---- */
+const cardsEl = document.getElementById('cards');
+cases.forEach((c, i) => {
+  const el = document.createElement('article');
+  el.className = 'pc';
+  el.dataset.slug = c.slug;
+  el.innerHTML = `
+    <div class="pc__body">
+      <p class="pc__num">${String(i + 1).padStart(2, '0')}</p>
+      <p class="pc__meta">${c.company} · ${c.tags.slice(0, 2).join(' · ')}</p>
+      <h3 class="pc__title"><a href="?open=${c.slug}">${c.title}</a></h3>
+      <p class="pc__tagline">${c.tagline}</p>
+      <span class="pc__cta" aria-hidden="true">View case study <span class="pc__arrow">→</span></span>
+    </div>
+    <div class="stage" data-hue="${c.hue}">${mediaHTML(c.media)}</div>`;
+  el.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); open(c.slug, true); });
+  cardsEl.appendChild(el);
+});
+
+/* the screens cycle, as on the site */
+setInterval(() => {
+  document.querySelectorAll('.phone__screen').forEach((s) => {
+    const imgs = s.querySelectorAll('img'); if (imgs.length < 2) return;
+    const i = [...imgs].findIndex((x) => x.classList.contains('is-on'));
+    imgs[i].classList.remove('is-on'); imgs[(i + 1) % imgs.length].classList.add('is-on');
+  });
+}, 2200);
+
+/* ---- open / close ---- */
+const home = document.getElementById('home');
+const caseEl = document.getElementById('case');
+const cover = document.getElementById('c-cover');
+let current = null, busy = false;
+
+function fill(c) {
+  document.getElementById('c-tags').innerHTML = `${c.company}<ul>${c.tags.map((t) => `<li>${t}</li>`).join('')}</ul>`;
+  document.getElementById('c-title').textContent = c.title;
+  document.getElementById('bar-title').textContent = c.title;
+  document.getElementById('c-snippet').textContent = c.snippet;
+  cover.dataset.hue = c.hue;
+  cover.innerHTML = mediaHTML(c.media);
+  const next = cases[(cases.indexOf(c) + 1) % cases.length];
+  document.getElementById('c-rest').innerHTML = `
+    <div class="nums">${c.nums.map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('')}</div>
+    <dl class="snap">${c.meta.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+    <section class="sec"><p class="sec__label">01&nbsp;&nbsp;The situation</p>
+      <h2>${c.snippet.split('. ')[0]}.</h2>
+      <p>The rest of the case study continues here as it does today: sections, screens, the before and after.</p>
+      <img src="${c.img}" alt="" data-hue="${c.hue}" style="background:var(--hue)">
+    </section>
+    <div class="next"><span>Next</span><span>${next.title} →</span></div>`;
+}
+
+/* A stand-in copy of the stage that travels between two rects. Animating
+   its box (not a scale) keeps the phone at its own size, undistorted. */
+function fly(fromEl, toEl, fromScale, toScale, dur, ease) {
+  const a = fromEl.getBoundingClientRect(), b = toEl.getBoundingClientRect();
+  const f = document.createElement('div');
+  f.className = 'stage flyer';
+  f.dataset.hue = toEl.dataset.hue || fromEl.dataset.hue;
+  f.innerHTML = fromEl.innerHTML;
+  // keep the video in step
+  const v0 = fromEl.querySelector('video'), v1 = f.querySelector('video');
+  if (v0 && v1) { v1.currentTime = v0.currentTime; v1.play(); }
+  document.body.appendChild(f);
+  const box = (r) => ({ top: r.top + 'px', left: r.left + 'px', width: r.width + 'px', height: r.height + 'px' });
+  const anim = f.animate([box(a), box(b)], { duration: dur, easing: ease, fill: 'forwards' });
+  const ph = f.querySelector('.phone, .desktop');
+  if (ph) ph.animate([{ transform: `scale(${fromScale})` }, { transform: `scale(${toScale})` }], { duration: dur, easing: ease, fill: 'forwards' });
+  return anim.finished.then(() => f);
+}
+const phoneScale = (el) => parseFloat(getComputedStyle(el.querySelector('.phone') || el).getPropertyValue('--ps')) || 1;
+
+async function open(slug, push) {
+  if (busy || current) return;
+  const c = cases.find((x) => x.slug === slug); if (!c) return;
+  busy = true; current = c;
+  const card = cardsEl.querySelector(`[data-slug="${slug}"]`);
+  const fromStage = card.querySelector('.stage');
+  if (push) history.pushState({ open: slug }, '', `?open=${slug}`);
+
+  fill(c);
+  caseEl.scrollTop = 0;
+  caseEl.classList.add('is-open');
+  document.body.classList.add('is-locked');
+
+  if (reduce) {
+    home.classList.add('is-back'); card.classList.add('is-source');
+    caseEl.classList.add('is-shown', 'is-landed');
+  } else {
+    const sFrom = c.media.type === 'desktop' ? 1 : phoneScale(fromStage);
+    const sTo = c.media.type === 'desktop' ? 1 : phoneScale(cover);
+    const flight = fly(fromStage, cover, sFrom, sTo, DUR_OPEN, EASE);
+    card.classList.add('is-source');
+    home.classList.add('is-back');
+    requestAnimationFrame(() => caseEl.classList.add('is-shown'));
+    const f = await flight;
+    caseEl.classList.add('is-landed');
+    syncVideo(f, cover);
+    f.remove();
+  }
+  document.getElementById('c-title').focus({ preventScroll: true });
+  busy = false;
+}
+
+async function close(fromPop) {
+  if (busy || !current) return;
+  busy = true;
+  const card = cardsEl.querySelector(`[data-slug="${current.slug}"]`);
+  const toStage = card.querySelector('.stage');
+  if (!fromPop) history.pushState({}, '', location.pathname);
+
+  if (reduce) {
+    caseEl.classList.remove('is-shown', 'is-landed', 'is-open');
+    home.classList.remove('is-back'); card.classList.remove('is-source');
+  } else {
+    // the card might be under a stacked sibling; bring it into view first, silently
+    const sFrom = current.media.type === 'desktop' ? 1 : phoneScale(cover);
+    const sTo = current.media.type === 'desktop' ? 1 : phoneScale(toStage);
+    home.classList.remove('is-back');
+    caseEl.classList.remove('is-shown');
+    const flight = fly(cover, toStage, sFrom, sTo, DUR_CLOSE, EASE_IO);
+    caseEl.classList.remove('is-landed');
+    caseEl.style.transition = 'opacity 260ms ease'; caseEl.style.opacity = '0';
+    const f = await flight;
+    caseEl.classList.remove('is-open'); caseEl.style.opacity = ''; caseEl.style.transition = '';
+    card.classList.remove('is-source');
+    syncVideo(f, toStage);
+    f.remove();
+  }
+  document.body.classList.remove('is-locked');
+  card.querySelector('a').focus({ preventScroll: true });
+  current = null; busy = false;
+}
+function syncVideo(from, to) {
+  const a = from.querySelector('video'), b = to.querySelector('video');
+  if (a && b) { b.currentTime = a.currentTime; b.play(); }
+}
+
+document.getElementById('back').addEventListener('click', () => close(false));
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && current) close(false); });
+addEventListener('popstate', () => {
+  const slug = new URLSearchParams(location.search).get('open');
+  if (slug && !current) open(slug, false); else if (!slug && current) close(true);
+});
+// a shared link opens straight on the case
+const first = new URLSearchParams(location.search).get('open');
+if (first) {
+  const card = cardsEl.querySelector(`[data-slug="${first}"]`);
+  if (card) { card.scrollIntoView({ block: 'center' }); setTimeout(() => open(first, false), 300); }
+}
+</script>
+</body>
+</html>

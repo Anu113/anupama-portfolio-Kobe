@@ -36,6 +36,7 @@ import OffersPrototype from './OffersPrototype.astro';
 import AdsConsentPrototype from './AdsConsentPrototype.astro';
 import PrivacyScreens from './PrivacyScreens.astro';
 import PrivacyCompare from './PrivacyCompare.astro';
+import ContextualPrivacy from './ContextualPrivacy.astro';
 
 interface Props { blocks: CaseBlock[] }
 const { blocks } = Astro.props;
@@ -124,6 +125,9 @@ const claimNum = blocks.map((b) =>
     )}
     {block.kind === 'screens' && (
       <PrivacyScreens set={block.set} caption={block.caption} />
+    )}
+    {block.kind === 'diagram' && block.name === 'contextual-privacy' && (
+      <ContextualPrivacy caption={block.caption} />
     )}
     {block.kind === 'compare' && (
       <PrivacyCompare set={block.set} notes={block.notes} claim={block.claim} />

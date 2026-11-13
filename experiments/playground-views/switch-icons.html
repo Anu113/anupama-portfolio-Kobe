@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cloud / Grid switch icons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  /* Mocks of the /playground Cloud / Grid switch icon, in the site's own
+     system (tokens.css): paper ground, ink, one terracotta accent,
+     Crimson Pro 300 heads, Manrope 600, Azeret Mono labels.
+     Layout: one card per option, each showing the switch in both states. */
+  :root {
+    --bg: #fcfcfc; --bg-2: #f2f1ef; --fg: #262626; --fg-dim: #707070;
+    --line: rgb(0 0 0 / 0.1); --accent: #b4482a;
+    --ring: color-mix(in srgb, var(--fg) 6%, transparent);
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --tile: 42px;
+    --ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+    --ease: cubic-bezier(0.77, 0, 0.175, 1);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #1b1a19; --bg-2: #252422; --fg: #ecebe8; --fg-dim: #a09d98; --line: rgb(255 255 255 / 0.12); --accent: #e0714f; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #1b1a19; --bg-2: #252422; --fg: #ecebe8; --fg-dim: #a09d98; --line: rgb(255 255 255 / 0.12); --accent: #e0714f; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-sans); font-weight: 600; font-size: 14px; }
+  main { max-width: 1120px; margin: 0 auto; padding: 56px 24px 80px; display: grid; gap: 32px; }
+  h1 { margin: 0; font-family: var(--font-serif); font-weight: 300; font-size: clamp(2rem, 1.7rem + 1.2vw, 2.75rem); letter-spacing: -0.03em; line-height: 1.05; text-wrap: balance; }
+  h1 em { font-style: italic; }
+  .dek { margin: 8px 0 0; color: var(--fg-dim); max-width: 60ch; line-height: 1.5; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .opt { border: 1px solid var(--line); padding: 20px; display: grid; gap: 16px; align-content: start; }
+  .opt header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .opt h2 { margin: 0; font-size: 14px; }
+  .tag { font-family: var(--font-mono); font-weight: 400; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-dim); }
+  .stage { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding: 24px 12px; background: var(--bg-2); }
+  .state { display: grid; justify-items: center; gap: 8px; }
+  .note { margin: 0; color: var(--fg-dim); line-height: 1.5; font-size: 13px; }
+
+  /* the switch frame, as on the site */
+  .sw { display: flex; align-items: center; gap: 18px; padding: 6px 16px; border-radius: 999px; background: var(--bg); box-shadow: 0 0 0 1px var(--ring), 0 8px 24px -16px rgb(0 0 0 / 0.3); }
+  .sw button { margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+  .sw button:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; border-radius: 4px; }
+  .word { min-width: 44px; padding: 10px 2px !important; font-size: 16px; color: var(--fg-dim) !important; transition: color 100ms; }
+  .word[aria-pressed="true"], .word:hover { color: var(--fg) !important; }
+  .icon { position: relative; width: var(--tile); height: var(--tile); flex: none; transition: transform 100ms; }
+  .icon:hover { transform: scale(1.04); }
+  .icon:active { transform: scale(0.94); }
+
+  /* morphing pieces: each has its cloud and grid place as custom properties */
+  .bit { position: absolute; left: 50%; top: 50%; transition: transform 420ms var(--ease-spring), border-radius 420ms var(--ease); 
+         transform: translate(-50%, -50%) translate(var(--cx), var(--cy)) rotate(var(--cr, 0deg)) scale(var(--cs, 1)); }
+  [data-mode="grid"] .bit { transform: translate(-50%, -50%) translate(var(--gx), var(--gy)) rotate(0deg) scale(1); }
+
+  /* 1 Now: her painting as a pixel tile, splitting into four */
+  .px .whole, .px .q { position: absolute; overflow: hidden; }
+  .px .whole { inset: 0; transition: opacity 80ms ease-out 220ms; }
+  .px .q { width: 50%; height: 50%; transition: transform 320ms var(--ease-spring); }
+  .px .q0 { top: 0; left: 0; } .px .q1 { top: 0; left: 50%; } .px .q2 { top: 50%; left: 0; } .px .q3 { top: 50%; left: 50%; }
+  .px img { position: absolute; width: var(--tile); height: var(--tile); image-rendering: pixelated; }
+  .px .q1 img, .px .q3 img { left: -100%; } .px .q2 img, .px .q3 img { top: -100%; }
+  [data-mode="grid"] .px .whole { opacity: 0; transition: opacity 60ms; }
+  [data-mode="grid"] .px .q { transform: scale(0.8); }
+
+  /* 2 Dots */
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fg); }
+  .dot.hot { background: var(--accent); }
+
+  /* 3 Cards (line) */
+  .crd { width: 17px; height: 13px; border-radius: 3px; background: var(--bg); box-shadow: inset 0 0 0 1.5px var(--fg); }
+  [data-mode="grid"] .crd { width: 17px; height: 17px; }
+
+  /* 4 Photos */
+  .ph { width: 18px; height: 18px; border-radius: 4px; overflow: hidden; box-shadow: 0 0 0 1.5px var(--bg); }
+  .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* 5 Glyph pair */
+  .glyph svg { position: absolute; inset: 7px; width: 28px; height: 28px; transition: opacity 200ms, transform 420ms var(--ease-spring); }
+  .glyph .g-grid { opacity: 0; transform: rotate(-90deg) scale(0.6); }
+  [data-mode="grid"] .glyph .g-cloud { opacity: 0; transform: rotate(90deg) scale(0.6); }
+  [data-mode="grid"] .glyph .g-grid { opacity: 1; transform: none; }
+
+  /* 6 Segmented words, 7 Segmented icons: a sliding ink thumb */
+  .seg { position: relative; display: flex; padding: 4px; gap: 0; border-radius: 999px; background: var(--bg); box-shadow: 0 0 0 1px var(--ring), 0 8px 24px -16px rgb(0 0 0 / 0.3); }
+  .seg .thumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: var(--tw); border-radius: 999px; background: var(--fg); transition: transform 420ms var(--ease); }
+  .seg[data-mode="grid"] .thumb { transform: translateX(var(--tw)); }
+  .seg button { position: relative; z-index: 1; border: 0; background: none; font: inherit; cursor: pointer; color: var(--fg-dim); border-radius: 999px; transition: color 300ms; display: grid; place-items: center; width: var(--tw); height: 40px; }
+  .seg button[aria-pressed="true"] { color: var(--bg); }
+  .seg button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .seg.words { --tw: 76px; font-size: 16px; }
+  .seg.icons { --tw: 52px; }
+  .seg svg { width: 20px; height: 20px; }
+  .seg .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+  @media (prefers-reduced-motion: reduce) { .bit, .px .whole, .px .q, .glyph svg, .seg .thumb, .seg button { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <h1>The <em>Cloud / Grid</em> switch</h1>
+    <p class="dek">Seven options for the icon between Cloud and Grid on /playground. Each is shown in both states; press either one to watch it change.</p>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+const IMG = {"porch": "data:image/webp;base64,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", "talk": "data:image/webp;base64,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", "hub": "data:image/webp;base64,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", "moss": "data:image/webp;base64,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", "green": "data:image/webp;base64,UklGRuQEAABXRUJQVlA4INgEAABQGgCdASpgAGAAPm0ylEckIyIhJHzMYIANiWMAzQTC0m67imgN/RpPT26pWLy49N40ar4Rn76bs10+zpGsCexu6KOlt0uohQ5xIwowApWsk5ijOXcvoVbFMh6HbXpZJSlB+5693dlsAeYXKuqHpguS1zbHIi3rQ1l0bgxbHahhY9Xnl1bnkbMVhUcFGhdgvi2m5QCAjoV2j4eG6WDJCPPMt8KOWR6SScsP7hd0vDZJiKBw5Vgzfwhkn/VnSmwJ9mko7Qf/Z71Al6gWGWJvJ7QrYtmQTr1QXZ86Q4AA/uBfr/x3CQRuaAi33DrCAZREGiaxRwottRDdsXSqKs0ZRbxKUg40WhVXqHCZETmTg5k/uKU18oEBiOfaZ7zoMnkn0i6BFBDF5BgSvfGwWBllnzsR44r6ieNfIKp1rirzoqjlHTRfBzrzi46BkjTnivAQYv/usMhlp3pBn1oWmatDkqBVGkaMw3Fl0zcocRJ1Oasda+8PGArGFVmedmWHdOx1DTutxjgZEXjCwfNK/ZfU+EEI8pOvZbH3VOGcRahEZYdBJNntzoOxu61XYHpD/ufo9NpCYgyTp1pzJcD+owTgDrgYPpFqmqtuG0GgEQjKbO+qRsvS8gCZsq6AJdmBczVOcZpvYX0BVnyPuXNwDU8sTe56Iy1s+57dGhUtrLPC2N1azUDdWXYu+zt4w8qFQjRMu1o6LpRjVm/cM9IHPP7PWtCCFi+nxo3isg6oIbwat6j6t+b3mc5IXMkN2EAQKakuPsFcMz4xZNMwcLl/4kbBWUriOehIIymxpO3Em5ar93WI1SysH91khYmqvaO4SlJwf9lb1gA2m2dl7/yPziNA7BwE9N0yRyHcL6WkvvQ2mz08jpNlHAksQDOlkHFkWC+wWy4QMWIEghnXe+aB74bmMYg14UtRRZ3PXwyhetUMCzhEOeXNqkvLSEquGB4HTQDVYETlclOXwHLUjZowx3Y+5R3iw8ah9Qhweqegw5GL6Wt+FtX3uiUuV0E+R0lns3RwE1nR7Qdb9q6b9nMz9PxzNNtGPTHtPPb0MN47EeolBdGZv5at7b6k8E4ewJzyDQoh+RasTm0nHoHP+XNT19/IQdHenrHU8E2KpxQq2YZ4bVoU99a8jN1uhz+e1K+c+gGgM2sUQMwluLK25DKdVOsspTNty+Q+XVQ8uWP6xIpQxA5J5M+aA57/QnqYy3KZ0wy1UqzM9K1Wo3YLFWfGs8HpeCAZD+3y1R50UJxQOZWZXCoM3uMmKPioGfCXldZX+gXLOV3Xy3DO5wZ/9eZyZ7hcwF2y9Q2YQwzqDvSFdq7MiTc/lH+z7aZ0a4T+XPPUIpq+2eQa+hAnhA2kHHMMXOEcHUeMkpYHTMd/kY/ToRHDxdsNauKsROc9NJ7xdu/KtY8IPU30bVtGZAdnV/FrkQtSa94ReYnknDME1Ig7peS0Igzay9McBF8X+t4n4M83abq1R7Q2vLOpenDRZL2NpPeFfYh6dezq30+82zqg+5H3GrXsvkhIGy/LG2j++nLrkF5cQe26FTDZdry6PpV57L/KubBfxtYmr36TJg9lHDYHJC6UnHtxLBHbQSh2NkjDt7e/sCwrOV+r0UgnvInNOLytAzDWX8tbaUc9y4OW2Ji0IBGEP+jA1CgdRwAA", "cookie": "data:image/webp;base64,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"};
+const SPHERE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></svg>';
+const GRID4 = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>';
+
+const bit = (cls, cx, cy, gx, gy, cr = 0, cs = 1, inner = '') =>
+  `<span class="bit ${cls}" style="--cx:${cx}px;--cy:${cy}px;--gx:${gx}px;--gy:${gy}px;--cr:${cr}deg;--cs:${cs}">${inner}</span>`;
+
+// 2 Dots: a ball of nine dots (one in the accent) → 3 × 3
+const ring = [...Array(8)].map((_, i) => { const a = i / 8 * Math.PI * 2 - Math.PI / 2, r = i % 2 ? 11 : 14; return [Math.cos(a) * r, Math.sin(a) * r]; });
+const dots = [[0, 0], ...ring];
+const g3 = [...Array(9)].map((_, i) => [((i % 3) - 1) * 13, (Math.floor(i / 3) - 1) * 13]);
+const dotsHTML = dots.map(([x, y], i) => bit('dot' + (i === 0 ? ' hot' : ''), x.toFixed(1), y.toFixed(1), g3[[4, 1, 2, 5, 8, 7, 6, 3, 0][i]][0], g3[[4, 1, 2, 5, 8, 7, 6, 3, 0][i]][1])).join('');
+
+// 3 Cards, 4 Photos: four pieces in a loose heap → 2 × 2
+const heap = [[-6, -5, -14], [6, -6, 9], [-5, 6, 6], [6, 5, -8]];
+const g2 = [[-9.5, -9.5], [9.5, -9.5], [-9.5, 9.5], [9.5, 9.5]];
+const cardsHTML = heap.map(([x, y, r], i) => bit('crd', x, y, g2[i][0], g2[i][1], r)).join('');
+const photos = [IMG.porch, IMG.talk, IMG.hub, IMG.moss];
+const photosHTML = heap.map(([x, y, r], i) => bit('ph', x, y, g2[i][0], g2[i][1], r, 1.05, `<img src="${photos[i]}" alt="">`)).join('');
+
+const OPTS = [
+  { id: 'now', name: 'Now: pixel tile', tag: 'live', note: 'Her painting at 12 × 12 pixels, splitting into four on Grid. Says "pictures", but reads as a thumbnail more than a control.',
+    icon: `<span class="px" style="position:absolute;inset:0"><span class="whole"><img alt="" data-pixel></span><span class="q q0"><img alt="" data-pixel></span><span class="q q1"><img alt="" data-pixel></span><span class="q q2"><img alt="" data-pixel></span><span class="q q3"><img alt="" data-pixel></span></span>` },
+  { id: 'dots', name: 'Dots', tag: 'morph', note: 'Nine dots in a small ball fall into a 3 × 3 grid. The icon does what the page does, at icon size; one dot in the accent.', icon: dotsHTML },
+  { id: 'cards', name: 'Cards', tag: 'morph', note: 'Four outlined cards in a loose heap straighten into 2 × 2. Plain line work, so it re-inks cleanly in dark mode.', icon: cardsHTML },
+  { id: 'photos', name: 'Photos', tag: 'morph', note: 'Four of her pieces, tilted in a heap, settle into 2 × 2. Closest to the cards on the page; busier at 42px.', icon: photosHTML },
+  { id: 'glyph', name: 'Sphere ↔ grid', tag: 'swap', note: 'A line sphere turns into a four-square grid. The most conventional: reads as an icon instantly, says less about the work.',
+    icon: `<span class="glyph" style="position:absolute;inset:0"><span class="g-cloud">${SPHERE}</span><span class="g-grid">${GRID4}</span></span>` },
+  { id: 'words', name: 'Words only', tag: 'segmented', note: 'No icon: "Cloud" and "Grid" in a segmented control with a sliding ink thumb. Quietest and the clearest state.', seg: 'words' },
+  { id: 'icons', name: 'Icons only', tag: 'segmented', note: 'Sphere and grid icons in a segmented control, names on hover and for screen readers. Compact, but relies on the icons.', seg: 'icons' },
+];
+
+function pill(o, mode) {
+  if (o.seg === 'words') return `<div class="seg words" data-mode="${mode}" role="group" aria-label="Layout"><span class="thumb"></span><button type="button" data-to="cloud" aria-pressed="${mode === 'cloud'}">Cloud</button><button type="button" data-to="grid" aria-pressed="${mode === 'grid'}">Grid</button></div>`;
+  if (o.seg === 'icons') return `<div class="seg icons" data-mode="${mode}" role="group" aria-label="Layout"><span class="thumb"></span><button type="button" data-to="cloud" title="Cloud" aria-pressed="${mode === 'cloud'}">${SPHERE}<span class="vh">Cloud</span></button><button type="button" data-to="grid" title="Grid" aria-pressed="${mode === 'grid'}">${GRID4}<span class="vh">Grid</span></button></div>`;
+  return `<div class="sw" data-mode="${mode}" role="group" aria-label="Layout"><button type="button" class="word" data-to="cloud" aria-pressed="${mode === 'cloud'}">Cloud</button><button type="button" class="icon" data-to="toggle" aria-label="Switch layout">${o.icon}</button><button type="button" class="word" data-to="grid" aria-pressed="${mode === 'grid'}">Grid</button></div>`;
+}
+const grid = document.getElementById('grid');
+grid.innerHTML = OPTS.map((o, i) => `<section class="opt"><header><h2>${i + 1} · ${o.name}</h2><span class="tag">${o.tag}</span></header><div class="stage"><div class="state">${pill(o, 'cloud')}<span class="tag">Cloud</span></div><div class="state">${pill(o, 'grid')}<span class="tag">Grid</span></div></div><p class="note">${o.note}</p></section>`).join('');
+
+grid.addEventListener('click', e => {
+  const b = e.target.closest('button[data-to]'); if (!b) return;
+  const p = b.closest('[data-mode]'), cur = p.dataset.mode;
+  const to = b.dataset.to === 'toggle' ? (cur === 'cloud' ? 'grid' : 'cloud') : b.dataset.to;
+  p.dataset.mode = to;
+  p.querySelectorAll('[data-to="cloud"]').forEach(x => x.setAttribute('aria-pressed', to === 'cloud'));
+  p.querySelectorAll('[data-to="grid"]').forEach(x => x.setAttribute('aria-pressed', to === 'grid'));
+  const lab = p.closest('.state')?.querySelector('.tag'); if (lab) lab.textContent = to === 'cloud' ? 'Cloud' : 'Grid';
+});
+
+// the pixel tile, her painting at 12 × 12
+const im = new Image(); im.src = IMG.porch;
+im.onload = () => { const c = document.createElement('canvas'); c.width = c.height = 12; c.getContext('2d').drawImage(im, 0, 0, 12, 12); const u = c.toDataURL(); document.querySelectorAll('[data-pixel]').forEach(i => i.src = u); };
+</script>
+</body>
+</html>

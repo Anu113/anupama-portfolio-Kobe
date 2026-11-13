@@ -45,12 +45,15 @@ export type CaseBlock =
   | { kind: 'prototype'; name: 'paypal-enroll' | 'paypal-offers' | 'paypal-ads-consent'; caption?: string }
   /** A row of phone screens redrawn in code (PrivacyScreens.astro), each in
       a device box. `set` picks the row. Only for the Privacy case so far. */
-  | { kind: 'screens'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'contextual'; caption?: string; claim?: string }
+  | { kind: 'screens'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'contextual' | 'first' | 'evolution'; caption?: string; claim?: string }
   /** Before and after on one phone (PrivacyCompare.astro): the old screen
       left of a line you drag, the new one right of it, and numbered notes
       that turn from what was wrong to the fix as the line crosses them.
       `set` picks the pair of screens. Only for the Privacy case so far. */
-  | { kind: 'compare'; set: 'hub' | 'shopping' | 'request' | 'delete'; claim?: string; notes: CompareNote[] };
+  /** A diagram drawn as UI, not a picture. `name` picks the component in
+      CaseBlocks.astro. Only for her own diagrams. */
+  | { kind: 'diagram'; name: 'contextual-privacy'; caption?: string }
+  | { kind: 'compare'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'subnav'; claim?: string; notes: CompareNote[] };
 
 /** One note on a before/after phone. Boxes are [x, y, width, height] in %
     of the screen, measured off the drawn screens. `at` is where the pin
@@ -90,7 +93,10 @@ export interface CaseStudy {
   theme: 'ink' | 'sand' | 'bone' | 'clay' | 'sage' | 'lilac' | 'coral';
   eyebrow: string;
   title: string;
-  hero: { src: string; alt: string };
+  /** `mockup` swaps the picture for a composed, annotated mockup drawn in
+      code (PrivacyCover.astro): sharp and whole. `src` stays for anywhere
+      a picture is still needed. */
+  hero: { src: string; alt: string; mockup?: 'privacy' };
   /** The hero meta row — everything EXCEPT role, which is lifted out and set
       beside the banner lede (see below). Scope and partners still live here
       on purpose: a recruiter skimming for 60 seconds should not have to
@@ -150,7 +156,7 @@ export const cases: CaseStudy[] = [
     title: 'Rebuilding IAM for enterprise admins',
     hero: { src: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" },
     description:
-      'Okta IAM and developer tools: rebuilding the enterprise admin console underneath live tenants — entitlements, role management, OIN publishing and developer onboarding, and the six-designer team working to it.',
+      'Okta IAM and developer tools: rebuilding the enterprise admin console underneath live tenants — entitlements, role management, OIN publishing and developer onboarding, and the one model four squads designed to.',
     meta: [
       { label: 'Team', value: '6 designers across 4 squads' },
       { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
@@ -211,7 +217,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'Six designers, four squads, and a console that had to keep working the whole time.',
+        heading: 'I owned the design strategy for the admin console across four squads, while it kept working the whole time.',
         blocks: [
           {
             kind: 'rows',
@@ -219,17 +225,17 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What I owned',
                 detail:
-                  'The design strategy for the admin surface end to end — entitlements, role management, the OIN publishing flow ISVs use to ship an integration, and developer onboarding — plus the sequencing of what got rebuilt in what order, hiring and levelling for the design team, and the case to the executive staff for the funding. I designed the entitlements and role-management flows myself; they were the model everything else had to agree with.',
+                  'The design strategy for the admin surface end to end — entitlements, role management, the OIN publishing flow ISVs use to ship an integration, and developer onboarding — plus the sequencing of what got rebuilt in what order and the case to the executive staff for the funding. I designed the entitlements and role-management flows myself; they were the model everything else had to agree with.',
               },
               {
-                term: 'What I delegated',
+                term: 'What I influenced',
                 detail:
-                  'Each of the four squads had a designer owning their surface outright — flows, specs, and the working relationship with their PM and engineering lead. I reviewed at the seams, not inside them.',
+                  'Each of the four squads had a designer owning their surface outright — flows, specs, and the working relationship with their PM and engineering lead. My part was the seams, where one surface had to agree with the next.',
               },
               {
-                term: 'The team',
+                term: 'Who I worked with',
                 detail:
-                  'Six designers: four embedded in squads, one on the design system, one on research. Two I hired into the team; one I levelled from mid to senior over the course of the project.',
+                  'Six designers: four embedded in squads, one on the design system, one on research. Each squad\'s PM and engineering lead, and the IAM product leadership group.',
               },
               {
                 term: 'Who I reported to',
@@ -291,7 +297,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The part I would not compromise on was that squad designers made their own calls. My review was at the seams — where one squad\'s surface met another\'s — because that was where the divergence had happened, and it was the only place where a lead\'s view was genuinely better than the owner\'s.',
+              'The part I would not compromise on was that squad designers made their own calls. My review was at the seams — where one squad\'s surface met another\'s — because that was where the divergence had happened, and it was the only place where a view across all four was genuinely better than the owner\'s.',
             ],
           },
         ],
@@ -342,7 +348,7 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: 'What changed, for the business and for the team.',
+        heading: 'What changed, for the business and for the craft.',
         blocks: [
           {
             kind: 'metrics',
@@ -355,9 +361,8 @@ export const cases: CaseStudy[] = [
           },
           {
             kind: 'metrics',
-            label: 'Team and craft',
+            label: 'Craft',
             items: [
-              { value: '2', label: 'Designers hired; one levelled mid → senior' },
               { value: '[X]', label: 'Components consolidated into the shared system' },
               { value: '0', label: 'Migration windows asked of customers' },
             ],
@@ -380,8 +385,8 @@ export const cases: CaseStudy[] = [
             kind: 'points',
             items: [
               {
-                title: 'I under-resourced the seam',
-                body: 'One designer held the design system across two vocabularies for two quarters. That was a structural cost of the in-place rebuild, and I should have staffed it as such from the start instead of treating it as a system role that happened to get busy. It was the closest anyone on the team came to burning out, and that was my sequencing, not their capacity.',
+                title: 'I underestimated the seam',
+                body: 'One designer held the design system across two vocabularies for two quarters. That was a structural cost of the in-place rebuild, and I should have planned for it from the start, and argued for a second designer on the system, instead of treating it as a system role that happened to get busy. It was the closest anyone on the team came to burning out, and that was my sequencing, not their capacity.',
               },
               {
                 title: 'I built the executive case too late',
@@ -423,18 +428,21 @@ export const cases: CaseStudy[] = [
     title: 'Privacy settings people can read',
     hero: {
       src: '/images/paypal-privacy/hero.webp',
-      alt: 'Four redesigned screens: the Data and privacy page, Deals & ads, Personalized deals and offers, and How it works',
+      alt: 'The redesigned Data and privacy page in a phone, with three pieces of the redesign beside it: a switch for personalized offers, a Personal info data type with a tick, and Clean up your data, marked New',
+      mockup: 'privacy',
     },
     /* Opener in the combined pattern (rachelatwork.com × carlthomasiv.com):
-       a hard number, then "I led X so that Y", then where it landed. */
+       a hard number, then "I owned X so that Y", then where it landed.
+       Staff product designer's voice throughout, on request: decisions
+       and influence across teams, not running a team. */
     description:
-      '75% of settings traffic stopped on the first page. I led the redesign of PayPal\'s privacy settings so that every setting is one tap away and says what it does. Launched in early 2023, now used by more than 80 million people.',
+      '75% of settings traffic stopped on the first page. I owned the design of PayPal\'s privacy settings so that every setting is one tap away and says what it does. Launched in early 2023, now used by more than 80 million people.',
     meta: [
-      { label: 'Team', value: '4 designers, content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers' },
+      { label: 'Team', value: '4 other designers, content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers' },
       { label: 'Platforms', value: 'PayPal app, mobile first, and web' },
       { label: 'Timeline', value: 'March 2021 – January 2023' },
     ],
-    role: 'Lead product designer · Research through delivery',
+    role: 'Owned the design · Research through delivery',
     sections: [
       {
         id: 'situation',
@@ -466,7 +474,7 @@ export const cases: CaseStudy[] = [
           /* The project's own goal (her deck), restated as the bet. */
           {
             kind: 'bet',
-            text: 'How might we make managing your data easy, build trust, and meet GDPR and CCPA, all on the same screens?',
+            text: 'How might we give people privacy settings they can read and change in one tap, and meet GDPR and CCPA on the same screens?',
           },
         ],
       },
@@ -474,7 +482,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'I led the design from the first card sort to delivery, as one of four designers.',
+        heading: 'I owned the design from the first card sort to delivery, across every team with a setting on these screens.',
         blocks: [
           {
             kind: 'rows',
@@ -482,7 +490,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What I owned',
                 detail:
-                  'Research, concept, design, user testing and delivery for key modules: [name the modules that were yours end to end].',
+                  'The design direction, end to end: the information architecture from the card sorts, the five questions every setting answers, and the call to drop the first version\'s extra layer (below). I designed the Data and privacy page myself and set the direction for every flow in this case.',
               },
               {
                 term: 'Research',
@@ -490,9 +498,9 @@ export const cases: CaseStudy[] = [
                   'I ran four closed card sorts and the unmoderated prototype tests, and design tests every two weeks with product managers and engineers asking the questions. I built prototypes for the researchers and helped take notes and synthesise.',
               },
               {
-                term: 'The design team',
+                term: 'How the designers worked',
                 detail:
-                  'One of four designers. I set up how we worked: one file system, a log of changes, a sprint planning site. I mentored two other designers on mobile patterns.',
+                  'I set up one file system, a log of changes and a sprint planning site, so five designers could work on one set of screens. I mentored two of them on mobile patterns.',
               },
               {
                 term: 'Who I worked with',
@@ -521,12 +529,9 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'figure',
-            src: '/images/paypal-privacy/layers.webp',
-            alt: 'The first layered version: the Data and Privacy page with four tiles, and the sheets for Profile Privacy, Service Notifications and Feature Preferences',
-            caption: 'The first version. Four tiles, and a sheet of settings behind each one.',
-            ratio: '1800 / 946',
-            wide: true,
+            kind: 'screens',
+            set: 'first',
+            caption: 'The first version: four tiles, and a sheet of settings behind each. Tap a tile to open it.',
           },
           {
             kind: 'prose',
@@ -558,13 +563,9 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'figure',
-            src: '/images/paypal-privacy/evolution.webp',
-            alt: 'Three versions side by side: the old list of privacy settings, the first layered version with four tiles, and the revised single page with settings grouped under headings',
-            caption:
-              'Before, the first version, and the revised page. The blue card at the top of the revised page is the yearly privacy reminder, a later proposal.',
-            ratio: '1800 / 1696',
-            wide: true,
+            kind: 'screens',
+            set: 'evolution',
+            caption: 'Before, the first version, and the revised page. The blue card at the top of the revised page is the yearly privacy reminder, a later proposal.',
           },
         ],
       },
@@ -586,18 +587,15 @@ export const cases: CaseStudy[] = [
                 body: 'Four closed card sorts tested the current structure against three alternatives: 20 tasks, and people picked the tab each belonged in. Three options survived, and each became a high-fidelity prototype.',
               },
               {
-                title: 'Privacy where the question comes up',
+                title: 'Contextual privacy',
                 body: 'Most privacy questions start somewhere else: a first visit, a shopping integration, the middle of a payment. Each of those moments got a short explanation in place, with a link to the setting.',
               },
             ],
           },
           {
-            kind: 'figure',
-            src: '/images/paypal-privacy/context-map.webp',
-            alt: 'Map: four moments where privacy comes up (learning about a product, a first visit, a privacy concern during a task, a third-party context), each leading to an explanation and a contextual setting',
+            kind: 'diagram',
+            name: 'contextual-privacy',
             caption: 'Where privacy questions come up, and what the product does at each one.',
-            ratio: '1800 / 657',
-            wide: true,
           },
           {
             kind: 'metrics',
@@ -624,9 +622,9 @@ export const cases: CaseStudy[] = [
             set: 'hub',
             claim: 'One page with three headings replaced a list of legal controls.',
             notes: [
-              { at: 26, before: [6, 13, 88, 6], after: [3, 6, 94, 5], was: 'Five rows under one heading, in no order.', now: 'Three headings group every setting.' },
-              { at: 52, before: [6, 52, 88, 12], after: [3, 37, 94, 9.5], was: 'Interest-based marketing, a row of its own.', now: 'Deals & ads, under Permissions and shared data.' },
-              { at: 78, before: [6, 87, 88, 9], after: [3, 49, 94, 38], was: 'Download, correct and delete share one row.', now: 'Your data rights: three rows. "Correct" became "Update".' },
+              { at: 26, before: [6, 14, 88, 5], after: [3, 6, 94, 5], was: 'Five rows under one heading, in no order.', now: 'Three headings group every setting.' },
+              { at: 52, before: [6, 54, 88, 10], after: [3, 37, 94, 9.5], was: 'Interest-based marketing, a row of its own.', now: 'Deals & ads, under Permissions and shared data.' },
+              { at: 78, before: [6, 82, 88, 8], after: [3, 49, 94, 38], was: 'Download, correct and delete share one row.', now: 'Your data rights: three rows. "Correct" became "Update".' },
             ],
           },
           {
@@ -690,14 +688,14 @@ export const cases: CaseStudy[] = [
               'Offers carry a "Personalize your experience" link, and a Shopping and Privacy card explains why you see these deals: "We never sell it, and won\'t share it without your permission."',
           },
           {
-            kind: 'figure',
-            src: '/images/paypal-privacy/subnav.webp',
-            alt: 'Web account settings before and after: a blue sub-navigation under a blue global nav, then a white sub-navigation with larger type and a current-page marker',
-            claim: 'A white sub-navigation replaced blue on blue: up to 85% better on some tasks.',
-            caption:
-              'Web settings. In baseline testing many people never saw the old one. The new one has larger type and a clear current-page marker. Measured in unmoderated tests.',
-            ratio: '1800 / 498',
-            wide: true,
+            kind: 'compare',
+            set: 'subnav',
+            claim: 'A white sub-navigation replaced blue on blue: up to 85% better on some tasks, in unmoderated tests.',
+            notes: [
+              { at: 86, before: [0, 23.3, 100, 14.2], after: [0, 23.3, 100, 20], was: 'Blue on blue: in baseline testing, many people never saw it.', now: 'White, set apart from the global navigation.' },
+              { at: 47.5, before: [8, 24, 44, 12], after: [6, 24, 66, 18], was: 'Small type: Account, Security, Payments, Notifications.', now: 'Larger type: Personal info, Financial settings, Privacy and security, Communications.' },
+              { at: 13, before: [9, 33, 8, 5], after: [4, 39, 13, 5], was: 'A small notch marks the current page.', now: 'A clear marker under the current page.' },
+            ],
           },
         ],
       },
@@ -775,18 +773,22 @@ export const cases: CaseStudy[] = [
         id: 'reflection',
         nav: "What I'd do differently",
         label: "What I'd do differently",
-        heading: 'What a setting can promise is decided by the backend and the law. I\'d learn both sooner.',
+        // Drafted from what this case records (the label findings in rapid
+        // research, two of three prototypes under the 70% bar), on her
+        // request. An earlier point, "bring engineering and the privacy
+        // officers in earlier", was wrong: both were involved from the start.
+        heading: 'The groups held up early. The words took longer. I\'d test them together, and rougher.',
         blocks: [
           {
             kind: 'points',
             items: [
               {
-                title: 'Bring engineering and the privacy officers in earlier',
-                body: 'What a setting can promise depends on what the backend does and what regulation requires. Both are cheaper to learn before the design is set.',
+                title: 'Test the words with the groups',
+                body: 'The card sorts settled where every setting goes. Rapid research then found the words failing: people couldn\'t tell deals from ads, and read "Correct your data" as something else. I\'d test labels with the content strategist from the first round, not after the structure.',
               },
               {
-                title: '[What I\'d do differently]',
-                body: '[One honest point about the process or the release.]',
+                title: 'Go rougher before high fidelity',
+                body: 'Three options became high-fidelity prototypes before the unmoderated test, and two missed the 70% bar. Clickable wireframes would have found that sooner, for less.',
               },
             ],
           },
@@ -1547,12 +1549,12 @@ export const cases: CaseStudy[] = [
                   'The framework’s information model — what a manifest is, how a submission moves through states, what "valid" means before a human ever looks at it — plus the shared component set every category’s submission flow is built from, and the case for funding it as a platform investment rather than a queue-management fix.',
               },
               {
-                term: 'What I delegated',
+                term: 'What I influenced',
                 detail:
-                  'Each integration category (SSO, provisioning, workflow, and the newest, event hooks) had its own category-specific fields and validation rules, owned by that category’s design and engineering pair. I reviewed only where a category’s needs would have forced a change to the shared model.',
+                  'Each integration category (SSO, provisioning, workflow, and the newest, event hooks) had its own category-specific fields and validation rules, owned by that category’s design and engineering pair. I came in only where a category’s needs would have forced a change to the shared model.',
               },
               {
-                term: 'The team',
+                term: 'Who I worked with',
                 detail:
                   '[X] designers — one on the framework and shared components, one embedded with partner engineering on the manifest schema, one on the developer portal’s documentation and onboarding — plus [X] engineers and one PM.',
               },
@@ -1874,7 +1876,7 @@ export const cases: CaseStudy[] = [
       { label: 'Partners', value: '[Product, engineering, compliance / legal, research]' },
       { label: 'Timeline', value: 'Flows dated Apr–Jun 2022 · shipped [date]' },
     ],
-    role: 'UX team lead · Strategy, design direction and the core flows',
+    role: 'Owned the design direction · Strategy and the core flows',
     sections: [
       {
         id: 'craft',
@@ -1976,7 +1978,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'I led the design team and set the direction for enrollment and rewards.',
+        heading: 'I set the design direction for enrollment and rewards, and the product strategy behind it.',
         blocks: [
           {
             kind: 'rows',
@@ -2139,7 +2141,7 @@ export const cases: CaseStudy[] = [
       { label: 'Platforms', value: 'iOS, Android and mobile web' },
       { label: 'Timeline', value: 'September 2021 – May 2022 · launched in the US, UK and Canada (beta), then globally' },
     ],
-    role: 'Lead product designer · Research through delivery',
+    role: 'Owned the design · Research through delivery',
     sections: [
       {
         id: 'situation',
@@ -2186,7 +2188,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'Lead product designer, from the first research to delivery.',
+        heading: 'I owned the verification flow, from the first research to delivery.',
         blocks: [
           {
             kind: 'rows',
@@ -2204,7 +2206,7 @@ export const cases: CaseStudy[] = [
                 detail: 'A content strategist, a lead UX researcher, three product managers, two data and privacy officers and more than 15 engineers, plus Risk, Legal, Accessibility, Fraud Ops and the ML team.',
               },
               {
-                term: 'The design team',
+                term: 'Raising the bar',
                 detail: 'I mentored the associate and intern designers working on the project.',
               },
               {
@@ -2445,7 +2447,7 @@ export const cases: CaseStudy[] = [
       { label: 'Platforms', value: '[PayPal app and web]' },
       { label: 'Timeline', value: '2023 · rapid research April 2023' },
     ],
-    role: '[Lead product designer] · Ads consent and privacy settings',
+    role: '[Owned the design] · Ads consent and privacy settings',
     sections: [
       {
         id: 'situation',
@@ -2483,7 +2485,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: '[Lead product designer], from research to the consent flow.',
+        heading: '[I owned the design], from research to the consent flow.',
         blocks: [
           {
             kind: 'rows',

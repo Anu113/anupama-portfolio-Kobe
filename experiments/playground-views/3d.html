@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en" data-variant="a">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Playground 3D — mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+  /* Round 3 of the /playground mocks: the shapes in real 3D, after
+     andreas.vision/play, whose Cloud is a ball of tiles in 3D space
+     (studied 2026-10-18): tiles keep facing you, the far side shrinks
+     (solid tiles, no see-through on overlap, on request), a drag spins it with inertia.
+
+     Each shape is a set of points in 3D, turned by yaw and pitch and
+     projected with perspective (scale = D / (D − z)). Some shapes keep
+     every tile facing you (Cloud, Helix, the torus family); the rest lay tiles on the
+     surface and turn them with it (Globe, Bloom, Sunflower, Wave). Motion is one slow turn (0.06 rad/s), on request.
+       pointer   leans the shape toward it
+       drag      spins it, any direction, with inertia
+       ← → ↑ ↓   spin from the keyboard
+       click     opens the piece
+     To fill the shapes the 41 pieces are repeated (marked echo, hidden
+     from screen readers, gone in the grid) until there is more work.
+     Serve from the repo root. Grid layouts are round 1's (index.html). */
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --bg-2: #f2f2f1; --fg: #262626; --fg-dim: #707070;
+    --line: rgb(0 0 0 / 0.1); --accent: #b4482a;
+    --scrim: rgb(252 252 252 / 0.9);
+    --step-heading: clamp(2rem, 1.721rem + 1.143vw, 2.75rem);
+    --step-body: 0.875rem; --step-label: 0.75rem; --step-fine: 0.6875rem;
+    --tracking-serif: -0.03em; --tracking-mono: 0.08em;
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+    --dur-reveal: 560ms; --dur-hover: 200ms; --dur-morph: 900ms;
+    --gutter: clamp(16px, 4vw, 48px);
+    --tile-radius: 10px; /* BeyondWork's rounded cards, kept for the same objects */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font-family: var(--font-sans); font-weight: 600; font-size: var(--step-body); overflow-x: clip; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* mock chrome, not part of the design */
+  .mockbar { position: fixed; top: 12px; left: 50%; translate: -50% 0; z-index: 50; display: flex; gap: 4px;
+    padding: 4px; background: var(--fg); border-radius: 999px; font-family: var(--font-mono); font-size: var(--step-fine); }
+  .mockbar button { border: 0; background: none; color: #bdbdbd; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+  .mockbar button[aria-pressed='true'] { background: var(--bg); color: var(--fg); }
+  .mockbar { flex-wrap: wrap; justify-content: center; align-items: center; width: max-content; max-width: calc(100vw - 24px); border-radius: 22px; }
+  .mockbar__k { color: #8a8885; padding: 0 4px 0 10px; text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+  .mockbar__k + button { margin-left: 0; }
+  .note { position: fixed; left: var(--gutter); bottom: 22px; max-width: 30ch; z-index: 40;
+    font-family: var(--font-mono); font-size: var(--step-fine); color: var(--fg-dim); line-height: 1.5; letter-spacing: 0.02em; background: var(--bg); padding: 8px 10px; box-shadow: 0 0 0 1px var(--line); }
+  .note b { color: var(--fg); font-weight: 400; display: block; margin-bottom: 2px; }
+  @media (max-width: 760px) { .note { display: none; } }
+
+  /* page */
+  .head { position: absolute; top: 72px; left: var(--gutter); right: var(--gutter); display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--font-mono); font-size: var(--step-fine); letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--fg-dim); z-index: 5; }
+  .head span:first-child { color: var(--fg); }
+
+  .stage { position: relative; height: 100svh; min-height: 600px; overflow: hidden; touch-action: pan-y; }
+  .stage.is-tall { height: auto; overflow: visible; }
+  .stage.is-ring { cursor: grab; }
+  .stage.is-dragging { cursor: grabbing; }
+
+  .title { position: absolute; left: 50%; top: 50%; translate: -50% -50%; margin: 0; text-align: center; z-index: 500;
+    font-family: var(--font-serif); font-weight: 300; font-size: var(--step-heading); letter-spacing: var(--tracking-serif);
+    line-height: 1.05; pointer-events: none; transition: opacity var(--dur-reveal) var(--ease-out); width: max-content; }
+  .title em { font-style: italic; }
+  .title small { display: block; margin-top: 10px; font-family: var(--font-mono); font-size: var(--step-fine); letter-spacing: var(--tracking-mono);
+    text-transform: uppercase; color: var(--fg-dim); }
+  .stage:not(.is-ring) .title, .stage.is-notitle .title { opacity: 0; }
+
+  /* tiles: one absolutely placed box each, moved only by transform */
+  .tile { position: absolute; left: 0; top: 0; padding: 0; border: 0; background: var(--bg-2); cursor: pointer;
+    border-radius: var(--tile-radius); overflow: hidden; transform-origin: 50% 50%; will-change: transform;
+    box-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 6px 18px -8px rgb(0 0 0 / .18); }
+  .tile img, .tile video { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+  .tile.is-morph { transition: transform var(--dur-morph) var(--ease-out), opacity var(--dur-reveal) var(--ease-out),
+    clip-path var(--dur-morph) var(--ease-out), border-radius var(--dur-morph) var(--ease-out); }
+  .tile.is-hidden { opacity: 0; pointer-events: none; }
+  .stage.is-ring .tile { cursor: inherit; }
+  .tag { position: absolute; left: 6px; top: 6px; padding: 2px 5px; border-radius: 4px; background: rgb(0 0 0 / .62); color: #fff;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; pointer-events: none; }
+  .stage.is-ring .tag, .stage.is-dots .tag { display: none; }
+
+  /* caption revealed on hover in grid views (the sitewide hover system: withheld info, one curve) */
+  .cap { position: absolute; inset: auto 0 0 0; padding: 18px 8px 6px; color: #fff; text-align: left; font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: .04em; background: linear-gradient(transparent, rgb(0 0 0 / .55)); opacity: 0;
+    transform: translateY(4px); transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out); pointer-events: none; }
+  .stage.is-cols .tile:hover .cap, .stage.is-rows .tile:hover .cap, .stage.is-open .tile:hover .cap,
+  .stage.is-cols .tile:focus-visible .cap, .stage.is-rows .tile:focus-visible .cap { opacity: 1; transform: none; }
+
+  /* labels for grid views */
+  .labels { position: absolute; inset: 0; pointer-events: none; z-index: 600; }
+  .lab { position: absolute; left: 0; top: 0; pointer-events: auto; opacity: 0; transition: opacity var(--dur-reveal) var(--ease-out) 200ms;
+    border: 0; background: none; padding: 0; text-align: center; cursor: default; }
+  .stage.is-piles .lab--pile, .stage.is-cols .lab--col, .stage.is-rows .lab--row { opacity: 1; }
+  .lab--pile { cursor: pointer; width: 180px; }
+  .lab__name { display: block; font-size: var(--step-body); color: var(--fg); }
+  .lab__count { display: block; margin-top: 3px; font-family: var(--font-mono); font-size: var(--step-fine); color: var(--fg-dim); letter-spacing: .04em; }
+  .lab--col, .lab--row { text-align: left; display: flex; gap: 10px; align-items: baseline; font-family: var(--font-mono);
+    font-size: var(--step-fine); letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--fg-dim); }
+  .lab--col .lab__name, .lab--row .lab__name { font-family: var(--font-mono); font-size: var(--step-fine); color: var(--fg); }
+  .lab--col .lab__count, .lab--row .lab__count { margin: 0; }
+  .lab--col { border-top: 1px solid var(--fg); padding-top: 10px; }
+  .lab--row { flex-direction: column; gap: 4px; }
+  .lab--row .lab__name { font-family: var(--font-serif); font-size: 22px; letter-spacing: var(--tracking-serif); text-transform: none; font-weight: 300; }
+  .lab:not(.lab--pile) { pointer-events: none; }
+
+  /* open pile (A) */
+  .openhead { position: absolute; left: var(--gutter); right: var(--gutter); top: 120px; display: flex; justify-content: space-between;
+    align-items: flex-start; z-index: 700; opacity: 0; pointer-events: none; transition: opacity var(--dur-reveal) var(--ease-out); }
+  .stage.is-open .openhead { opacity: 1; pointer-events: auto; }
+  .openhead h2 { margin: 0; font-family: var(--font-serif); font-weight: 300; font-size: var(--step-heading); letter-spacing: var(--tracking-serif); line-height: 1; }
+  .openhead p { margin: 6px 0 0; font-family: var(--font-mono); font-size: var(--step-fine); color: var(--fg-dim); }
+  .close { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--fg); color: var(--bg); cursor: pointer; font-size: 16px; }
+  .stage.is-piles .tile:hover { z-index: 999 !important; }
+
+  /* the view switch, bottom centre, after the reference's Cloud ⇄ Grid pill */
+  .switch { position: fixed; bottom: 22px; left: 50%; translate: -50% 0; z-index: 800; display: flex; align-items: center; gap: 2px;
+    padding: 4px; border-radius: 999px; background: var(--bg); box-shadow: 0 0 0 1px var(--line), 0 8px 24px -12px rgb(0 0 0 / .25); }
+  .switch button { display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 8px 14px; border-radius: 999px;
+    color: var(--fg-dim); cursor: pointer; font-size: var(--step-label); transition: color var(--dur-hover) var(--ease-out), background var(--dur-hover) var(--ease-out); }
+  .switch button:hover { color: var(--fg); }
+  .switch button[aria-pressed='true'] { background: var(--fg); color: var(--bg); }
+  .switch svg { width: 14px; height: 14px; }
+
+  /* dots (C) */
+  .stage.is-dots .tile { box-shadow: none; background: transparent; }
+  .stage.is-dots .tile img, .stage.is-dots .tile video { filter: saturate(1.2) contrast(1.08); }
+
+  /* viewer */
+  .viewer { position: fixed; inset: 0; z-index: 900; display: grid; place-items: center; background: var(--scrim); opacity: 0;
+    pointer-events: none; transition: opacity var(--dur-reveal) var(--ease-out); }
+  .viewer.is-on { opacity: 1; pointer-events: auto; }
+  .viewer figure { margin: 0; max-width: min(1000px, 90vw); }
+  .viewer img, .viewer video { display: block; max-width: 100%; max-height: 74vh; border-radius: var(--tile-radius); margin-inline: auto; }
+  .viewer figcaption { margin-top: 12px; text-align: center; font-family: var(--font-mono); font-size: var(--step-fine); color: var(--fg-dim); }
+  .viewer .close { position: absolute; top: 20px; right: var(--gutter); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tile.is-morph { transition-duration: 1ms; }
+  }
+</style>
+</head>
+<body>
+  <nav class="mockbar" aria-label="Mock options">
+    <span class="mockbar__k">Shape</span>
+    <button data-shape="cloud">Cloud</button>
+    <button data-shape="globe">Globe</button>
+    <button data-shape="bloom">Bloom</button>
+    <button data-shape="sunflower">Sunflower</button>
+    <button data-shape="helix">Helix</button>
+    <button data-shape="torus">Torus</button>
+    <button data-shape="halo">Torus · Halo</button>
+    <button data-shape="band">Torus · Band</button>
+    <button data-shape="donut">Torus · Donut</button>
+    <button data-shape="wave">Wave</button>
+    <span class="mockbar__k">Grid</span>
+    <button data-v="a">Piles</button>
+    <button data-v="b">Columns</button>
+    <button data-v="c">Rows</button>
+  </nav>
+
+  <main>
+    <section class="stage is-ring" id="stage" aria-label="Playground" tabindex="-1">
+      <div class="head"><span>Playground</span><span id="headcount"></span></div>
+      <h1 class="title">A place for <em>endless</em><br />experimentation<small id="hint">Drag to turn</small></h1>
+      <div class="labels" id="labels"></div>
+      <div class="openhead" id="openhead">
+        <div><h2 id="openname"></h2><p id="opencount"></p></div>
+        <button class="close" id="openclose" aria-label="Back to all piles">✕</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="switch" role="group" aria-label="View">
+    <button id="sw-ring" aria-pressed="true">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="8" cy="8" rx="6.5" ry="3.6"/><circle cx="8" cy="4.4" r="1.4" fill="currentColor" stroke="none"/></svg>
+      <span id="sw-ring-l">Cloud</span>
+    </button>
+    <button id="sw-grid" aria-pressed="false">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/></svg>
+      <span>Grid</span>
+    </button>
+  </div>
+
+  <p class="note" id="note"></p>
+
+  <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Piece">
+    <button class="close" id="vclose" aria-label="Close">✕</button>
+    <figure id="vfig"></figure>
+  </div>
+
+<script>
+const I = '/public/images/';
+const CATS = [
+  { id: 'anim', name: 'Animation' },
+  { id: 'ui', name: 'Interfaces' },
+  { id: 'art', name: 'Art' },
+  { id: 'photo', name: 'Photos' },
+];
+// [file, aspect, caption, extra]
+const RAW = {
+  anim: [
+    ['chase-pay/prototype-poster.jpg', 0.56, 'Chase Pay, prototype', { video: 'chase-pay/prototype.mp4' }],
+    ['footer/smiley-loop.webp', 1, 'Crayon smiley, 11-frame loop'],
+    ['moss/moss-idle.webp', 0.84, 'Moss looking around', { stand: 1 }],
+    ['hero-idle.webp', 0.71, 'Hero portrait scrub', { stand: 1 }],
+    ['paypal-debit/digital-card.webp', 1.71, 'Debit card sign-up, coded prototype', { stand: 1 }],
+  ],
+  ui: [
+    ['paypal-debit/hub.webp', 1.29, 'PayPal Debit, hub'],
+    ['paypal-debit/rewards.webp', 1.71, 'PayPal Debit, rewards'],
+    ['paypal-debit/offers.webp', 1.71, 'PayPal Debit, offers'],
+    ['paypal-privacy/hero.webp', 2.09, 'PayPal Privacy'],
+    ['paypal-privacy/contextual.webp', 1.98, 'Contextual privacy'],
+    ['paypal-privacy/data-delete.webp', 1.37, 'Data deletion'],
+    ['okta/my-apps.webp', 1.86, 'Okta, My Apps'],
+    ['okta/integrations.webp', 1.94, 'Okta, integrations'],
+    ['chase-pay/hero.png', 2.23, 'Chase Pay'],
+    ['chase-pay/settings.png', 1.8, 'Chase Pay, settings'],
+    ['archive/mint-app.jpg', 1.65, 'Mint credit score'],
+    ['archive/mera-data.jpg', 1.65, 'Mera Data'],
+    ['archive/dream-gains.jpg', 1.65, 'DreamGains'],
+    ['archive/lenders-app.jpg', 1.65, 'Lenders app'],
+    ['archive/wal-e-design-system.jpg', 1.65, 'WAL-E design system'],
+  ],
+  art: [
+    ['play-porch.jpg', 1.0, 'Reading on the porch, digital'],
+    ['play-earrings.jpg', 1.33, 'Earrings, digital'],
+    ['play-hermione.jpg', 0.73, 'Hermione, ink and watercolour'],
+    ['play-green-eyes.jpg', 1.33, 'Green eyes, digital'],
+    ['play-reading.jpg', 0.85, 'Tea and a book, digital'],
+    ['play-care.jpg', 0.96, 'Care, watercolour'],
+    ['play-sage.jpg', 0.63, 'Sage, digital'],
+    ['play-bob.jpg', 1.25, 'Bob, digital'],
+    ['play-mermaid.jpg', 0.8, 'Mermaid, watercolour'],
+    ['play-crown.jpg', 0.75, 'Crown, acrylic'],
+  ],
+  photo: [
+    ['beyond/talk-smile.webp', 1.0, 'On stage, The Saga of Accessibility'],
+    ['beyond/talk-poster.webp', 1.78, 'Talk poster, Design Sundays'],
+    ['beyond/baking-cookie.webp', 0.9, 'Baking class'],
+    ['beyond/blue-sculpture.webp', 0.75, 'Design conference'],
+    ['beyond/event-selfie.webp', 1.37, 'Designers, one selfie'],
+    ['beyond/sticky-wall.webp', 0.56, 'Sticky-note wall'],
+    ['beyond/office-garden.webp', 1.33, 'Office garden'],
+    ['beyond/meetup-group.webp', 1.96, 'Design meetup'],
+    ['beyond/baking-icing.webp', 0.59, 'Piping chocolate'],
+    ['beyond/blue-sculpture-friend.webp', 0.75, 'With a friend'],
+    ['beyond/office-garden-2.webp', 1.14, 'Office garden, again'],
+  ],
+};
+
+const ITEMS = [];
+// tiles draw 400px thumbnails (thumbs/, made from public/images); the viewer opens the full file
+const thumb = f => f.includes('loop') ? I + f : 'thumbs/' + f.replace(/\//g, '__').replace(/\.\w+$/, '.webp');
+for (const c of CATS) RAW[c.id].forEach(([f, a, cap, x = {}], k) => ITEMS.push({ src: I + f, thumb: thumb(f), aspect: a, cap, cat: c.id, k, ...x, video: x.video && I + x.video }));
+// Interleave for the ring so categories mix around it
+const ringOrder = [];
+{ const by = CATS.map(c => ITEMS.filter(i => i.cat === c.id)); let r = 0;
+  while (ringOrder.length < ITEMS.length) { by.forEach(l => l[r] && ringOrder.push(l[r])); r++; } }
+ringOrder.forEach((it, i) => it.ri = i);
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const stage = document.getElementById('stage');
+const labels = document.getElementById('labels');
+const BASE = 200; // a tile's own width; layouts scale it
+document.getElementById('headcount').textContent = `${ITEMS.length} pieces`;
+
+// ---- build tiles
+for (const it of ITEMS) {
+  const ar = Math.min(2.1, Math.max(0.56, it.aspect));
+  it.w = BASE; it.h = Math.round(BASE / ar);
+  const b = document.createElement('button');
+  b.className = 'tile';
+  b.style.width = it.w + 'px'; b.style.height = it.h + 'px';
+  b.setAttribute('aria-label', it.cap);
+  b.innerHTML = it.video
+    ? `<video src="${it.video}" poster="${it.thumb}" muted loop playsinline preload="none"></video>`
+    : `<img src="${it.thumb}" alt="" decoding="async">`;
+  b.innerHTML += (it.stand ? '<span class="tag">STAND-IN</span>' : it.video || it.src.includes('loop') ? '<span class="tag">LOOP</span>' : '') + `<span class="cap">${it.cap}</span>`;
+  b.addEventListener('click', () => onTile(it));
+  it.el = b;
+  stage.appendChild(b);
+}
+// ---- labels
+for (const c of CATS) {
+  const n = ITEMS.filter(i => i.cat === c.id).length;
+  c.n = n;
+  for (const kind of ['pile', 'col', 'row']) {
+    const l = document.createElement(kind === 'pile' ? 'button' : 'div');
+    l.className = `lab lab--${kind}`;
+    l.innerHTML = `<span class="lab__name">${c.name}</span><span class="lab__count">${n} ${kind === 'pile' ? 'pieces' : ''}</span>`;
+    if (kind === 'pile') l.addEventListener('click', () => openPile(c.id));
+    c[kind] = l; labels.appendChild(l);
+  }
+}
+
+// ---- echoes: repeats that only fill the 3D shapes
+const ECHOES = [];
+const ECHO_N = 96 - ITEMS.length;
+for (let e = 0; e < ECHO_N; e++) {
+  const src = ringOrder[e % ringOrder.length];
+  const b = src.el.cloneNode(true);
+  b.querySelectorAll('.tag, .cap').forEach(x => x.remove());
+  b.setAttribute('aria-hidden', 'true'); b.tabIndex = -1; b.classList.add('is-echo');
+  b.querySelector('video')?.removeAttribute('src');
+  b.addEventListener('click', () => onTile(src));
+  const it = { ...src, el: b, echo: true, ri: ITEMS.length + e };
+  stage.appendChild(b); ECHOES.push(it);
+}
+const ALL = () => ITEMS.concat(ECHOES);
+
+// ---- state
+let variant = 'a', shape = 'cloud', view = 'shape', open = null;
+let turn = 0, speed = reduce ? 0 : 0.16, target = speed, morphing = false;
+const RING = { drift: reduce ? 0 : 0.16, easeRate: 1.6, spreadX: 0.9, spreadY: 0.66, fade: 0.45 };
+let hover = null;
+
+function setT(it, x, y, s, r = 0, z = 1, o = 1) {
+  it.x = x; it.y = y; it.s = s;
+  it.el.style.transform = `translate(${x - it.w / 2}px, ${y - it.h / 2}px) rotate(${r}deg) scale(${s})`;
+  it.el.style.zIndex = z; it.el.style.opacity = o;
+}
+const W = () => stage.clientWidth, H = () => (stage.classList.contains('is-tall') ? innerHeight : stage.clientHeight);
+
+// ---- 3D engine
+const TAU = Math.PI * 2, GOLD = Math.PI * (3 - Math.sqrt(5));
+const cam = { yaw: 0, pitch: 0, vy: 0, vp: 0, leanX: 0, leanY: 0 };
+const D = 3.4; // camera distance in shape units
+let clock = 0, pointer = null;
+// Per shape: how to place point i of n, the resting pitch, tile size, and
+// whether tiles face you ('bill') or lie on the surface (a normal).
+const SH = {
+  cloud: { pitch: 0, size: 0.19, pts: (i, n) => {           // a ball, two shells, after the reference
+    const k = (i + 0.5) / n, y = 1 - 2 * k, r = Math.sqrt(1 - y * y), a = i * GOLD, sh = i % 3 ? 1 : 0.62;
+    return { p: [Math.cos(a) * r * sh, y * sh * 0.92, Math.sin(a) * r * sh], bill: true }; } },
+  globe: { pitch: -0.25, size: 0.2, pts: (i, n) => {       // tiles laid on a sphere, turning with it
+    const k = (i + 0.5) / n, y = 1 - 2 * k, r = Math.sqrt(1 - y * y), a = i * GOLD, p = [Math.cos(a) * r, y, Math.sin(a) * r];
+    return { p, n: p }; } },
+  bloom: { pitch: 1.0, size: 0.21, pts: (i, n) => {       // six petals cupping up from a flat heart
+    if (i < 7) { const a = i / 7 * TAU, r = i ? 0.16 : 0; return { p: [Math.cos(a) * r, -0.45, Math.sin(a) * r], n: [0, 1, 0] }; }
+    const q = i - 7, petals = 5, pet = q % petals, k = Math.floor(q / petals), per = Math.ceil((n - 7) / petals);
+    const u = (k + 1) / per, side = ((k % 3) - 1) * 0.5, phi = pet / petals * TAU + side * 0.62 * Math.sin(Math.PI * Math.min(u, 0.8));
+    const d = 0.22 + 0.86 * u, h = -0.45 + 0.8 * u * u;
+    const slope = 1.7 * u;
+    return { p: [Math.cos(phi) * d, h, Math.sin(phi) * d], n: [-Math.cos(phi) * slope, 1, -Math.sin(phi) * slope] }; } },
+  sunflower: { pitch: 0.35, size: 0.17, grow: true, pts: (i, n) => {   // seed head on a dome, facing you
+    const k = (i + 0.5) / n, r = Math.sqrt(k) * 1.05, a = i * GOLD, x = Math.cos(a) * r, y = Math.sin(a) * r;
+    return { p: [x, y, 0.45 * (1 - k)], n: [x * 0.7, y * 0.7, 1], k }; } },
+  helix: { pitch: 0.12, size: 0.15, pts: (i, n) => {        // two strands standing up, around the title
+    const strand = i % 2, k = Math.floor(i / 2) / Math.ceil(n / 2), a = k * TAU * 1.6 + strand * Math.PI;
+    return { p: [Math.cos(a) * 1.25, (k - 0.5) * 1.7, Math.sin(a) * 1.25], bill: true }; } },
+  // ---- torus family, calm: tiles face you, one slow turn, one direction
+  torus: { pitch: 0.5, size: 0.17, bill: true, pts: (i, n) => {         // a ring with body, tilted toward you
+    const u = (i / n) * TAU, v = i * GOLD * 3, c = 0.95 + 0.28 * Math.cos(v);
+    return { p: [Math.cos(u) * c, 0.28 * Math.sin(v), Math.sin(u) * c], bill: true }; } },
+  halo: { pitch: 0.42, size: 0.2, count: 41, pts: (i, n) => {           // one line of tiles, every piece once
+    const a = (i / 41) * TAU;
+    return { p: [Math.cos(a) * 1.15, 0, Math.sin(a) * 1.15], bill: true }; } },
+  band: { pitch: 0.38, size: 0.18, count: 72, pts: (i, n) => {          // a short drum: two rows, offset like bricks
+    const row = i % 2, a = (Math.floor(i / 2) / 36 + row * 0.5 / 36) * TAU;
+    return { p: [Math.cos(a) * 1.1, (row - 0.5) * 0.36, Math.sin(a) * 1.1], bill: true }; } },
+  donut: { pitch: 0.55, size: 0.16, pts: (i, n) => {                    // a thick, soft donut
+    const u = (i / n) * TAU, v = i * GOLD * 2.2, c = 0.72 + 0.46 * Math.cos(v);
+    return { p: [Math.cos(u) * c, 0.46 * Math.sin(v), Math.sin(u) * c], bill: true }; } },
+  wave: { pitch: 0.7, size: 0.2, spin: 0.06, pts: (i, n) => {      // a sheet with a swell running across it
+    const cols = 12, rows = Math.ceil(n / cols), c = i % cols, r = Math.floor(i / cols);
+    return { p: [(c / (cols - 1) - 0.5) * 2.6, 0, (r / (rows - 1) - 0.5) * 1.9], wave: true }; } },
+};
+function place() {
+  const all = ALL(), n = all.length;
+  for (const it of all) it.g = SH[shape].pts(it.ri, n);
+}
+const rot = (v, yaw, pitch) => {
+  let [x, y, z] = v;
+  const cy = Math.cos(yaw), sy = Math.sin(yaw);
+  [x, z] = [x * cy - z * sy, x * sy + z * cy];
+  const cp = Math.cos(pitch), sp = Math.sin(pitch);
+  [y, z] = [y * cp - z * sp, y * sp + z * cp];
+  return [x, y, z];
+};
+function pose3(it) {
+  const S = SH[shape], w = W(), h = H();
+  if (S.live) it.g = S.pts(it.ri, ECHOES.length + ITEMS.length, reduce ? 0 : clock);
+  if (S.count && it.ri >= S.count) return { x: w / 2, y: h / 2, s: 0.01, ry: 0, rx: 0, z: 0, o: 0 };
+  const g = it.g;
+  const R = Math.min(w * 0.34, h * 0.32) * (shape === 'wave' ? 1.05 : 1);
+  let p = g.p, nrm = g.n;
+  if (g.wave) {   // the swell, plus a dip that follows the pointer across the sheet
+    const [x, , z] = p, t = reduce ? 0 : clock * 0.4;
+    let y = 0.16 * Math.sin(x * 2.4 + t * 1.4) + 0.1 * Math.cos(z * 3 - t * 1.1);
+    const dy = 0.16 * 2.4 * Math.cos(x * 2.4 + t * 1.4), dz = -0.1 * 3 * Math.sin(z * 3 - t * 1.1);
+    p = [x, y, z]; nrm = [-dy, 1, -dz];
+  }
+  const yaw = cam.yaw + cam.leanX, pitch = S.pitch + cam.pitch + cam.leanY;
+  const [x, y, z] = rot(p, yaw, pitch);
+  const persp = D / (D - z), depth = Math.max(0, Math.min(1, (z + 1.2) / 2.4));
+  const sx = w / 2 + x * R * persp, sy = h / 2 + 16 - y * R * persp;
+  let s = (S.size * R / BASE) * persp * (S.grow ? 0.6 + 0.6 * g.k : 1);
+  let ry = 0, rx = 0;
+  if (nrm) {
+    let m = rot(nrm, yaw, pitch); const L = Math.hypot(...m); m = m.map(v => v / L);
+    if (m[2] < 0) m = m.map(v => -v);        // keep the picture side toward you, foreshortened
+    ry = Math.atan2(m[0], m[2]) * 180 / Math.PI; rx = Math.asin(Math.max(-1, Math.min(1, m[1]))) * 180 / Math.PI;
+  }
+  let lift = 0;
+  if (pointer && !dragging) { const d = Math.hypot(pointer.x - sx, pointer.y - sy); lift = Math.max(0, 1 - d / (R * 0.32)) ** 2 * depth; }
+  s *= 1 + 0.18 * lift;
+  return { x: sx, y: sy, s, ry, rx, z: 500 + Math.round(z * 400) + Math.round(lift * 600), o: 1 };   // solid: overlaps hide what's behind, no see-through
+}
+function set3(it, p) {
+  it.x = p.x; it.y = p.y; it.s = p.s;
+  it.el.style.transform = `translate(${p.x - it.w / 2}px, ${p.y - it.h / 2}px) perspective(${Math.max(120, 1100 * p.s)}px) rotateY(${p.ry}deg) rotateX(${p.rx}deg) scale(${p.s})`;
+  it.el.style.zIndex = p.z; it.el.style.opacity = p.o;
+  it.el.classList.toggle('is-hidden', p.o === 0);
+}
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; clock += dt;
+  if (view === 'shape' && !morphing) {
+    const S = SH[shape], drift = reduce ? 0 : (S.spin ?? 0.06);   // slow, one direction
+    // inertia: velocity eases back to the slow drift
+    if (!dragging) { cam.vy += (drift - cam.vy) * Math.min(1, 1.6 * dt); cam.vp += (0 - cam.vp) * Math.min(1, 2.2 * dt); cam.pitch += (0 - cam.pitch) * Math.min(1, 0.8 * dt); }
+    cam.yaw += cam.vy * dt; cam.pitch = Math.max(-0.9, Math.min(0.9, cam.pitch + cam.vp * dt));
+    // lean toward the pointer
+    const tx = pointer && !dragging ? (pointer.x / W() - 0.5) * 0.12 : 0, ty = pointer && !dragging ? (pointer.y / H() - 0.5) * 0.08 : 0;
+    cam.leanX += (tx - cam.leanX) * Math.min(1, 1.2 * dt); cam.leanY += (ty - cam.leanY) * Math.min(1, 1.2 * dt);
+    for (const it of ALL()) set3(it, pose3(it));
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---- grid layouts
+const gut = () => parseFloat(getComputedStyle(document.querySelector('.head')).left) || 32;
+function piles() {
+  const w = W(), h = H(), gap = Math.min(220, w / 4.6), cx = w / 2, cy = h * 0.46;
+  // every piece fits one box, so a tall phone doesn't outgrow its pile
+  const bw = gap * 0.74, bh = bw * 0.78;
+  CATS.forEach((c, ci) => {
+    const px = cx + (ci - 1.5) * gap;
+    const list = ITEMS.filter(i => i.cat === c.id);
+    list.forEach((it, k) => {
+      const seed = Math.sin((it.ri + 1) * 12.9898) * 43758.5453; const r = (seed - Math.floor(seed)) - 0.5;
+      const top = k < 4, s = Math.min(bw / it.w, bh / it.h);
+      setT(it, px + (top ? r * 14 : 0), cy + (top ? -k * 3 : 0), s * (top ? 1 : 0.96), top ? r * 10 : 0, 100 - k, top ? 1 : 0);
+    });
+    c.pile.style.transform = `translate(${px - 90}px, ${cy + bh / 2 + 22}px)`;
+  });
+}
+function pileOpen(cid) {
+  const w = W(), h = H(), list = ITEMS.filter(i => i.cat === cid);
+  const gap = 16, max = w - 2 * gut(), room = h - 210 - 90;
+  // shrink the row height until the wrapped rows fit the screen
+  let rowH = Math.min(280, h * 0.4), rows;
+  for (;;) {
+    rows = [[]]; let rx = 0;
+    for (const it of list) { const p = { it, s: rowH / it.h }, ww = it.w * p.s; if (rx + ww > max && rows.at(-1).length) { rows.push([]); rx = 0; } rows.at(-1).push(p); rx += ww + gap; }
+    if (rows.length * (rowH + gap) - gap <= room || rowH < 60) break;
+    rowH *= 0.94;
+  }
+  const sc = 1;
+  rows.forEach((row, ri) => {
+    const tw = row.reduce((a, p) => a + p.it.w * p.s * sc + gap, -gap); let cx = (w - tw) / 2;
+    row.forEach(p => { const ww = p.it.w * p.s * sc; setT(p.it, cx + ww / 2, 210 + ri * (rowH * sc + gap) + rowH * sc / 2, p.s * sc, 0, 10, 1); cx += ww + gap; });
+  });
+  for (const it of ITEMS) if (it.cat !== cid) { it.el.style.opacity = 0; it.el.classList.add('is-hidden'); }
+}
+function cols() {
+  const w = W(), g = gut();
+  const n = w < 700 ? 2 : 4, gap = 16, cw = (w - 2 * g - (n - 1) * gap) / n;
+  const yTop = 140; let maxY = 0;
+  const ys = Array(n).fill(yTop);
+  CATS.forEach((c, ci) => {
+    const col = n === 4 ? ci : ci % 2; let y = ys[col];
+    if (n === 2 && ci >= 2) y += 40;
+    const x0 = g + col * (cw + gap);
+    c.col.style.transform = `translate(${x0}px, ${y}px)`; c.col.style.width = cw + 'px';
+    y += 44;
+    ITEMS.filter(i => i.cat === c.id).forEach(it => {
+      const s = cw / it.w; setT(it, x0 + cw / 2, y + it.h * s / 2, s, 0, 10, 1); y += it.h * s + gap;
+    });
+    ys[col] = y; maxY = Math.max(maxY, y);
+  });
+  stage.style.height = maxY + 120 + 'px';
+}
+function rows() {
+  const w = W(), g = gut();
+  const labW = w < 700 ? 0 : 150, rowH = w < 700 ? 110 : 150, gap = 10;
+  let y = 140;
+  CATS.forEach(c => {
+    c.row.style.transform = `translate(${g}px, ${y}px)`;
+    if (labW === 0) y += 48;
+    let x = g + labW, line = 0;
+    ITEMS.filter(i => i.cat === c.id).forEach(it => {
+      const s = rowH / it.h, ww = it.w * s;
+      if (x + ww > w - g) { x = g + labW; line++; }
+      setT(it, x + ww / 2, y + line * (rowH + gap) + rowH / 2, s, 0, 10, 1); x += ww + gap;
+    });
+    y += (line + 1) * (rowH + gap) + 36;
+  });
+  stage.style.height = y + 100 + 'px';
+}
+
+// ---- switching
+function morph(fn) {
+  morphing = true;
+  for (const it of ALL()) { it.el.classList.add('is-morph'); it.el.classList.remove('is-hidden'); }
+  fn();
+  clearTimeout(morph.t);
+  morph.t = setTimeout(() => { for (const it of ALL()) it.el.classList.remove('is-morph'); morphing = false; }, reduce ? 10 : 950);
+}
+function setView(v) {
+  const grid = v === 'grid';
+  open = null;
+  stage.classList.remove('is-open');
+  view = grid ? 'grid' : 'shape';
+  document.getElementById('sw-ring').setAttribute('aria-pressed', !grid);
+  document.getElementById('sw-grid').setAttribute('aria-pressed', grid);
+  stage.className = 'stage ' + (grid ? { a: 'is-piles', b: 'is-cols is-tall', c: 'is-rows is-tall' }[variant] : 'is-ring' + (['helix', 'torus', 'halo', 'band'].includes(shape) ? '' : ' is-notitle'));
+  stage.style.height = '';
+  ITEMS.forEach(it => { const v = it.el.querySelector('video'); if (v) grid ? v.play().catch(() => {}) : v.pause(); });
+  if (grid) {
+    for (const it of ITEMS) it.el.style.clipPath = 'inset(0px 0px round 10px)';
+    morph(() => { ({ a: piles, b: cols, c: rows })[variant](); for (const e of ECHOES) { setT(e, W() / 2, H() / 2, 0.05, 0, 0, 0); e.el.classList.add('is-hidden'); } });
+    scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  } else {
+    // fly back to where the ring is now, then let it drift on
+    place(); morph(() => { for (const it of ALL()) set3(it, pose3(it)); });
+  }
+}
+function openPile(cid) {
+  open = cid; stage.classList.add('is-open'); stage.classList.remove('is-piles');
+  const c = CATS.find(c => c.id === cid);
+  document.getElementById('openname').textContent = c.name;
+  document.getElementById('opencount').textContent = `${c.n} pieces`;
+  morph(() => pileOpen(cid));
+  document.getElementById('openclose').focus({ preventScroll: true });
+}
+document.getElementById('openclose').addEventListener('click', () => {
+  stage.classList.remove('is-open'); stage.classList.add('is-piles'); const id = open; open = null; morph(piles);
+  CATS.find(c => c.id === id).pile.focus({ preventScroll: true });
+});
+
+// ---- tile clicks
+function onTile(it) {
+  if (moved) return;
+  if (view === 'grid' && variant === 'a' && !open) return openPile(it.cat);
+  const fig = document.getElementById('vfig');
+  fig.innerHTML = (it.video ? `<video src="${it.video}" poster="${it.src}" autoplay muted loop playsinline controls></video>` : `<img src="${it.src}" alt="${it.cap}">`) + `<figcaption>${CATS.find(c => c.id === it.cat).name} · ${it.cap}</figcaption>`;
+  viewer.classList.add('is-on'); viewer.lastFocus = it.el; document.getElementById('vclose').focus();
+}
+const viewer = document.getElementById('viewer');
+const closeViewer = () => { viewer.classList.remove('is-on'); document.getElementById('vfig').innerHTML = ''; viewer.lastFocus?.focus({ preventScroll: true }); };
+document.getElementById('vclose').addEventListener('click', closeViewer);
+viewer.addEventListener('click', e => e.target === viewer && closeViewer());
+addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (viewer.classList.contains('is-on')) closeViewer(); else if (open) document.getElementById('openclose').click(); }
+  if (view === 'shape' && !viewer.classList.contains('is-on')) { const k = { ArrowLeft: [-1.4, 0], ArrowRight: [1.4, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (k) { e.preventDefault(); cam.vy += k[0]; cam.vp += k[1]; } }
+});
+
+// ---- drag to spin, both axes, with inertia
+let dragging = false, moved = false, px0 = 0, py0 = 0, lastX = 0, lastY = 0, lastT = 0;
+stage.addEventListener('pointerdown', e => {
+  if (view === 'grid') return; dragging = true; moved = false; px0 = lastX = e.clientX; py0 = lastY = e.clientY; lastT = performance.now();
+});
+addEventListener('pointermove', e => {
+  const r = stage.getBoundingClientRect(); pointer = view === 'shape' ? { x: e.clientX - r.left, y: e.clientY - r.top } : null;
+  if (!dragging) return;
+  if (!moved && Math.hypot(e.clientX - px0, e.clientY - py0) > 6) { moved = true; stage.classList.add('is-dragging'); }
+  if (moved) {
+    const now = performance.now(), dts = Math.max(0.008, (now - lastT) / 1000);
+    const ax = (e.clientX - lastX) / W() * 3.2, ay = (e.clientY - lastY) / H() * 2.4;
+    cam.yaw += ax; cam.pitch = Math.max(-0.9, Math.min(0.9, cam.pitch + ay));
+    cam.vy = Math.max(-2, Math.min(2, ax / dts)); cam.vp = Math.max(-1, Math.min(1, ay / dts)); lastX = e.clientX; lastY = e.clientY; lastT = now;
+  }
+});
+addEventListener('pointerup', () => { dragging = false; stage.classList.remove('is-dragging'); setTimeout(() => moved = false, 0); });
+stage.addEventListener('pointerleave', () => pointer = null);
+
+document.getElementById('sw-ring').addEventListener('click', () => setView('ring'));
+document.getElementById('sw-grid').addEventListener('click', () => setView('grid'));
+addEventListener('resize', () => { if (view === 'grid') ({ a: open ? () => pileOpen(open) : piles, b: cols, c: rows })[variant](); });
+
+// ---- variants
+const SHAPES = {
+  cloud: ['Cloud', 'A ball of tiles in space, after the reference. They keep facing you; the far side shrinks and sits behind.', 'Drag to spin'],
+  globe: ['Globe', 'Tiles laid on a sphere and turning with it, so the edges go side-on.', 'Drag to spin'],
+  bloom: ['Bloom', 'Five petals cupping up from a flat heart, seen from above at an angle.', 'Drag to spin'],
+  sunflower: ['Sunflower', 'A seed head on a dome facing you: small pieces at the heart, larger at the rim.', 'Drag to spin'],
+  helix: ['Helix', 'Two strands standing up around the title, front tiles passing in front of it.', 'Drag to spin'],
+  torus: ['Torus', 'A ring with body, tilted toward you, tiles facing you, one slow turn. The title sits in the hole.', 'Drag to spin'],
+  halo: ['Halo', 'One line of tiles, every piece once, on a slow tilted ring around the title.', 'Drag to spin'],
+  band: ['Band', 'A short drum: two rows of tiles, offset like bricks, turning slowly around the title.', 'Drag to spin'],
+  donut: ['Donut', 'A thick, soft donut, the hole nearly closed, turning slowly.', 'Drag to spin'],
+  wave: ['Wave', 'A sheet of tiles seen from above, a slow swell running across it.', 'Drag to spin'],
+};
+const GRIDS = { a: 'Piles: click a pile to lay it out.', b: 'Columns: every category visible at once.', c: 'Rows: one labelled row per category.' };
+function sync() {
+  document.querySelectorAll('.mockbar [data-shape]').forEach(b => b.setAttribute('aria-pressed', b.dataset.shape === shape));
+  document.querySelectorAll('.mockbar [data-v]').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === variant));
+  const [name, text, hint] = SHAPES[shape];
+  document.getElementById('sw-ring-l').textContent = name;
+  document.getElementById('hint').textContent = hint;
+  document.getElementById('note').innerHTML = `<b>${name} ↔ Grid</b>${text}<br><br>Grid · ${GRIDS[variant]}`;
+  history.replaceState(null, '', `#${shape}-${variant}`);
+}
+function setShape(v) { shape = v; cam.pitch = 0; cam.vp = 0; sync(); setView('shape'); }
+function setVariant(v) { variant = v; document.documentElement.dataset.variant = v; sync(); setView(view === 'grid' ? 'grid' : 'shape'); }
+document.querySelectorAll('.mockbar [data-shape]').forEach(b => b.addEventListener('click', () => setShape(b.dataset.shape)));
+document.querySelectorAll('.mockbar [data-v]').forEach(b => b.addEventListener('click', () => setVariant(b.dataset.v)));
+{ const [sh, gv] = location.hash.slice(1).split('-'); if (SHAPES[sh]) shape = sh; if (GRIDS[gv]) variant = gv; sync(); setView('shape'); }
+</script>
+</body>
+</html>
