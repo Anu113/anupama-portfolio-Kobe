@@ -158,7 +158,7 @@ const num = String(index).padStart(2, '0');
   /* The title's link covers the whole card — see the header comment. */
   .pc__link::after { content: ''; position: absolute; inset: 0; z-index: 2; }
   .pc__link:focus-visible { outline: none; }
-  .pc:has(.pc__link:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .pc:has(.pc__link:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
   .pc__tagline {
     font-size: var(--step-copy);
     line-height: var(--leading-copy);

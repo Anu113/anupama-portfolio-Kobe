@@ -246,7 +246,8 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
      size). Words at rest are what make it findable — the UX test where a
      visitor nearly missed the old wordless bubble; the only motion at
      rest is the breathing ellipsis. Hover/focus lifts it, darkens the edge and opens the offer,
-     "Want the short version?", in the accent under the first line.
+     "Want the short version?", in ink under the first line (no accent
+     text, on request).
      Ground, ink and edge are the page's role colours, so it re-inks in
      dark mode; the accent dot by his name is the only fixed colour. */
   .pixel-launcher__card {
@@ -279,8 +280,8 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
   @keyframes pixel-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 
   /* the offer: withheld at rest, opened on hover/focus — 0fr → 1fr on
-     both axes so the card grows right and down. --accent-text on --bg
-     (5.5:1 light, AA in dark too). Touch has no hover, so there it's
+     both axes so the card grows right and down. Ink on --bg (--accent-text
+     now resolves to ink). Touch has no hover, so there it's
      always shown. */
   .pixel-launcher__text {
     display: grid; grid-template-columns: 0fr; grid-template-rows: 0fr; opacity: 0;
@@ -377,7 +378,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
     background: var(--pixel-raised); border: 1px solid var(--pixel-rule-strong); border-radius: var(--radius-pixel-card);
     transition: border-color var(--dur-pixel) var(--ease-pixel), background var(--dur-pixel) var(--ease-pixel);
   }
-  .pixel-card:hover { border-color: var(--pixel-accent); background: var(--pixel-high); }
+  .pixel-card:hover { border-color: var(--pixel-dim); background: var(--pixel-high); }
   .pixel-card__label { font-size: var(--step-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--pixel-dim); margin-bottom: 0.35rem; }
   .pixel-card__title { color: var(--pixel-fg); font-size: var(--pixel-step-body); font-weight: 500; line-height: 1.35; }
   .pixel-card__sub { color: var(--pixel-dim); font-size: var(--pixel-step-small); margin-top: 0.15rem; }
@@ -400,7 +401,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
   .pixel-chip--exit:hover { background: var(--pixel-fg); opacity: 0.86; }
   .pixel-chips.is-done .pixel-chip { opacity: 0.35; pointer-events: none; }
 
-  .pixel-icon-btn:focus-visible, .pixel-chip:focus-visible, .pixel-card:focus-visible { outline: 2px solid var(--pixel-accent); outline-offset: 2px; }
+  .pixel-icon-btn:focus-visible, .pixel-chip:focus-visible, .pixel-card:focus-visible { outline: 2px solid var(--pixel-fg); outline-offset: 2px; }
 
   @media (max-width: 640px) {
     .pixel-panel { left: 0; right: 0; bottom: 0; width: 100%; height: 88dvh; border-radius: var(--radius-pixel-panel) var(--radius-pixel-panel) 0 0; transform: translateY(24px); }

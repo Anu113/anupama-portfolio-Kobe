@@ -144,12 +144,12 @@ effect:
   screen-blended layer inside `<main>` (so the page's curve clips it off
   the footer), moved by transform, its strength rides `--hero-night`,
   it's off under reduced motion and on touch, and it shares
-  `CursorTrail`'s `/playground` opt-out. On request, text near it casts
-  a short shadow away from the pointer, as if lit by it (`--lamp-cast-*`);
-  the trail line itself casts none. In the hero (chosen from round 2 of
-  the shadow mocks, on request) the row sits above the lamp's layer
-  (`--z-lamp`), so the lamp lights the ground behind her instead of
-  fogging her, and the headline's shadows fall on its light. She is lit
+  `CursorTrail`'s `/playground` opt-out. Text near it used to cast a
+  short shadow away from the pointer; that is off, on request
+  (2026-11-13: `--lamp-cast-alpha: 0`, code kept) — don't turn it back
+  on. In the hero (chosen from round 2 of the shadow mocks, on request)
+  the row sits above the lamp's layer (`--z-lamp`), so the lamp lights
+  the ground behind her instead of fogging her. She is lit
   in `HeroIllustration`'s canvas from the lamp's `cursor-lamp` event:
   colour × light (never a screen blend), a rim on the edge facing it,
   her far side dimmed, a faint glint on the laptop lid, and behind her
@@ -177,7 +177,7 @@ effect:
     the card are one button. At rest the only motion is the ellipsis after
     "Psst" slowly fading in and out, all three dots together (chosen on
     request over a bouncing typing wave; static under reduced motion); on hover/focus the card
-    lifts and "Want the short version?" opens under "Psst…" in the accent,
+    lifts and "Want the short version?" opens under "Psst…" in ink,
     growing right (away from her face, never over him). Where the open card
     wouldn't fit to his right (two-column screens narrower than ~1280px) it
     sits under him on the table instead; above him was tried and covered her
@@ -487,11 +487,28 @@ walked back. Concretely, in the current implementation:
   sign-off 32px (`--step-signoff`). The reference's 70px page titles were
   not taken; ours stay at 44px. Emphasis is the serif turning italic mid-line, nothing
   else. One palette: `#fcfcfc` ground, `#262626` ink, one terracotta accent
-  (`#b4482a`, her own — the reference's purple was swapped out), square corners except pill buttons and the 4px case tags (and the two approved curves: Moss's
+  (`#b4482a`, her own — the reference's purple was swapped out) for marks
+  only, never text, links or buttons (see Links, below), square corners except pill buttons and the 4px case tags (and the two approved curves: Moss's
   panel and the page's end over the black footer). Deliberate departures
   from the reference are commented in `tokens.css` (the reference's
   `#a8a8a8` grey fails AA and was darkened to `#707070`). Don't add a
   fourth family, a second weight, or a second palette.
+- **Links, and no clay on text** (on request, 2026-11-13, after
+  felixrieseberg.com's reading view): no text, link or button anywhere
+  is in the accent, in either mode. Links are ink on a 1px ink underline
+  at 45%, offset 3px; on hover the line goes solid and 2px, and the text
+  never changes colour (LINKS in `tokens.css`, `a` in `global.css`).
+  Links without an underline (nav, footer row, icons) go grey → ink.
+  One exception, kept on request: the primary button (Resume) still
+  fills with the accent on hover, now as liquid (a turning rounded
+  square rises into the pill, so the clay's surface rolls across the
+  label; `--liquid-*` under MOTION in `tokens.css`).
+  Focus rings are ink (`--focus`). `--accent-text` now resolves to ink,
+  so anything reading it follows. The accent stays only for marks: the
+  cursor trail, the hero shader, Moss's dot and his panel's caret, the
+  preloader, the reading strip's progress line, the before/after pins
+  (kept on request). Don't put the accent back on text, links or other
+  buttons.
 - **Dark mode** came back on request, as the same palette re-inked rather
   than a second one: `:root[data-mode='dark']` in `tokens.css` redefines
   only the palette tokens (ground `#1b1a19`, ink `#ecebe8`, grey
@@ -601,11 +618,11 @@ walked back. Concretely, in the current implementation:
   contact line. Don't extend the dark ground or the curve anywhere else.
 - **The footer's content** (option C of three mocks): row 1 — "Let's start with a
   *conversation*." in ink, where "conversation" is the link (Gmail
-  compose, new tab; underlined in ink, the accent on hover, no motion),
+  compose, new tab; the site's link style, below),
   over one line in grey at `--step-small` (13px), exactly as wide as the
   headline: "Open to `site.seeking` roles. Projects, questions and
-  feedback are welcome too." — the role on a marker-pen wash of the
-  accent (`--accent-wash`), and the line ends on her crayon smiley
+  feedback are welcome too." — the role on a neutral marker-pen wash
+  of the ink (`--accent-wash`), and the line ends on her crayon smiley
   (`public/images/footer/smiley-loop.webp`, an 11-frame 10fps loop in
   bradleyziffer.com's rhythm — three frames of her drawing as given, two
   of it with a wider smile — built from her one
@@ -618,14 +635,14 @@ walked back. Concretely, in the current implementation:
   base line, after carlthomasiv.com's footer: a full-width hairline, then
   three equal parts (after ozgur.design): "© year name · Built with Claude
   Code & Astro" in 11px mono (`--step-fine`; "Built with…" in the fainter
-  `--night-ink-faint`, the only faint text in the row — the rest is ink) on the left, Work / About me / Playground / Old
+  `--night-ink-faint`, the only faint text there — the rest is ink) on the left, Work / About me / Playground / Old
   portfolio ↗ (her Wix site, `site.oldPortfolio`, new tab; its free
   wixsite.com address, since anupama.design is this site) centred
   in the same mono, and LinkedIn + email line icons (Lucide, 20px) on the
-  right, the email icon opening Gmail. "Astro" is accurate — don't swap
+  right; links and icons grey at rest, ink on hover, as the top nav's, the email icon opening Gmail. "Astro" is accurate — don't swap
   in another framework name. No illustration, no coffee copy, no Copy button, no
   Contact link, no city or clock (the hero's location line has them).
-  No footer text rests in the accent; links turn to it on hover. Every
+  Nothing in the footer is ever in the accent. Every
   row is inset from the gutter by `--card-pad` (the project cards'
   padding), so the footer's text lines up with the text inside the
   cards — a deliberate, token-tied exception to the one-content-edge

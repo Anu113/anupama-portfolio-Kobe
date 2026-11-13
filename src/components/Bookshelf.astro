@@ -208,7 +208,7 @@ const spineText = (t: string) => t.replace(/’/g, "'");
     transform: translateX(-50%);
   }
   .book__btn:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--focus);
     outline-offset: 3px;
   }
   @media (hover: hover) and (pointer: fine) {
@@ -406,7 +406,7 @@ const spineText = (t: string) => t.replace(/’/g, "'");
     text-align: center;
   }
   .shelf__caption a { color: inherit; }
-  .shelf__caption a:hover { color: var(--accent); }
+  .shelf__caption a:hover { color: var(--fg); }
 
   @media (prefers-reduced-motion: reduce) {
     .book__btn { transition: none; }

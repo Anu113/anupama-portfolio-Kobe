@@ -91,7 +91,7 @@ const sign = '<svg class="talk__sign" viewBox="0 0 14 14" aria-hidden="true"><pa
     font: inherit; font-size: var(--step-talk); line-height: 1.4; letter-spacing: 0;
     text-align: left; text-wrap: pretty; cursor: pointer;
   }
-  .talk__row:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+  .talk__row:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
   .talk__q { flex: 1; }
   .talk__row :global(.talk__sign) {
     flex: none; width: 1.25rem; height: 1.25rem; color: var(--talk-sign);
@@ -108,8 +108,8 @@ const sign = '<svg class="talk__sign" viewBox="0 0 14 14" aria-hidden="true"><pa
   }
   .talk__answer :global(p) { margin: 0; }
   .talk__answer :global(p + p) { margin-top: 0.75rem; }
-  .talk__answer :global(a) { color: var(--fg); text-decoration: underline 1px; text-underline-offset: 3px; }
-  .talk__answer :global(a:hover) { color: var(--accent); }
+  .talk__answer :global(a) { color: var(--fg); text-decoration: underline var(--link-thick) var(--link-line); text-underline-offset: var(--link-offset); }
+  .talk__answer :global(a:hover) { text-decoration-color: var(--link-line-hover); text-decoration-thickness: var(--link-thick-hover); }
 
   .talk__ask { margin-top: var(--talk-gap); }
 

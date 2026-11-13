@@ -158,7 +158,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
   .rp__spot svg { width: 46%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
   .rp__spot:hover { color: var(--rp-key-ink-on); }
   .rp__spot:active { translate: 0 .45cqw; box-shadow: var(--rp-key-down); }
-  .rp__spot:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .rp__spot:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
   .rp__key {
     position: absolute; left: calc(49% + 11cqw); right: 6%; bottom: 12%; height: 9cqw; padding: 0; border: 0; border-radius: 1.6cqw;
     display: grid; place-items: center; cursor: pointer; color: var(--rp-key-ink);
@@ -167,7 +167,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
   }
   .rp__key svg { height: 40%; fill: currentColor; }
   .rp__key[aria-pressed='true'] { translate: 0 .45cqw; box-shadow: var(--rp-key-down); color: var(--rp-key-ink-on); }
-  .rp__key:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .rp__key:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
   /* Spotify's player: in the page (it has to be, to play) but out of
      sight and out of reach; the record player is its face. */
