@@ -10,6 +10,7 @@ import PixelBreak from '../components/PixelBreak.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import BeyondWork from '../components/BeyondWork.astro';
 import SmallTalk from '../components/SmallTalk.astro';
+import Now from '../components/Now.astro';
 
 import { site } from '../data/site';
 import { work, homeCards, labelsFor } from '../data/work';
@@ -124,9 +125,12 @@ const cards = homeCards.map((c) => {
     </div>
   </Section>
 
-  <!-- Small talk: the short questions, then Moss for the rest. Last band
-       before the footer, which carries contact. -->
+  <!-- Small talk: the short questions, then Moss for the rest. -->
   <SmallTalk />
+
+  <!-- Right now: what she's thinking about, dated. Last band before the
+       footer, which carries contact. -->
+  <Now />
 </Base>
 
 <style>

@@ -1002,6 +1002,11 @@
   --talk-chip-hover: color-mix(in srgb, var(--fg) 9%, var(--bg));
   --talk-chip-ink: color-mix(in srgb, var(--fg) 68%, var(--bg));
   --radius-talk: 12px;
+  /* NOW (Now.astro), after carlthomasiv.com's: 40px under the hairline,
+     16px under the label, the line held to a readable measure */
+  --now-pad: 2.5rem;
+  --now-label-gap: 1rem;
+  --now-max: 46rem;
   --step-talk: 1.0625rem;          /* 17px */
   --step-talk-chip: 0.9375rem;     /* 15px */
   --talk-gap: 0.5rem;              /* between cards */

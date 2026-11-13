@@ -30,4 +30,9 @@ export const site = {
   countryCode: 'IN',
   coords: { lat: 12.9716, lon: 77.5946 },
   timezone: 'Asia/Kolkata',
+
+  // "Now" on the home page (Now.astro), in her words.
+  now: {
+    text: "Right now I'm thinking about trust: specifically, how much of it AI tools have actually earned versus assumed. Watching how background agents and parallel workflows are reshaping what engineering work even needs to be real-time anymore.",
+  },
 };

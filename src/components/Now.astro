@@ -1,0 +1,31 @@
+---
+/* Now.astro — "Now", the home page's last band, after Small talk and
+   before the footer. After carlthomasiv.com's "Now" (on request): a
+   hairline, a small mono label, one paragraph in her words on what
+   she's thinking about at the moment (`site.now` in data/site.ts).
+   No heading of its own: it's a coda, not a section to scan for.
+
+   UX reason: a hiring manager gets how she thinks today, in a line,
+   right before the contact line.
+
+   Static: no motion, nothing to operate. Values under NOW (in the
+   SMALL TALK block) in tokens.css. */
+import { site } from '../data/site';
+---
+<section class="u-section u-shell now" aria-labelledby="now-h">
+  <div class="now__inner">
+    <h2 class="u-label-mono now__label" id="now-h">Now</h2>
+    <p class="now__text">{site.now.text}</p>
+  </div>
+</section>
+
+<style>
+  /* Small talk above already ends on --space-band */
+  .now { padding-block: 0 var(--space-band); }
+  .now__inner { border-top: 1px solid var(--rule); padding-top: var(--now-pad); }
+  .now__label { margin: 0 0 var(--now-label-gap); }
+  .now__text {
+    margin: 0; max-width: var(--now-max); color: var(--talk-soft);
+    font-size: var(--step-body); line-height: 1.7; letter-spacing: 0; text-wrap: pretty;
+  }
+</style>

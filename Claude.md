@@ -677,7 +677,11 @@ walked back. Concretely, in the current implementation:
   share in a press, the way the paintings share hers.
 - The home page is now: hero → "Selected *work*" head + project cards →
   "Beyond *work*" ring → one-line playground pointer → Small talk →
-  footer (which carries contact).
+  Now → footer (which carries contact).
+- **Now** (`Now.astro`, `site.now` in `data/site.ts`; on request, after
+  carlthomasiv.com's): a hairline, a mono "NOW" label and one grey
+  paragraph in her words on what she's thinking about. No heading, no
+  motion. Change the words in `site.ts`.
 - **Small talk** (`SmallTalk.astro`, `data/talk.ts`; on request, after
   andreas.vision's section of the same name, matched rule for rule off
   his stylesheet): "Small *talk*" and a one-line dek on the left, five
