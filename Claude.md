@@ -263,10 +263,12 @@ effect:
   shows who she is outside the work without a paragraph about it, then
   hands over to About. Home page only, one ring.
 
-- **`PlayBall`, approved on request** (a copy of andreas.vision/play,
+- **`PlayBall`, approved on request, now parked** (2026-11-13: /playground
+  is the gallery wall, `PlayDepth`, below; the component and
+  `data/playground.ts` stay, no page mounts it). A copy of andreas.vision/play,
   measured off his page on 2026-10-19; chosen from rounds of mocks in
   `experiments/playground-views/`, the final one `exact.html`). The
-  whole of /playground: ~120 cards on a ball, facing you, turning
+  whole of /playground as it was: ~120 cards on a ball, facing you, turning
   slowly about the vertical, with "A place for *endless*
   experimentation" in the middle (the far half drawn under it, the near
   half over it, and cards part round the words). Drag spins it like a
@@ -294,7 +296,8 @@ effect:
   stream (`InfiniteStream.astro`, `data/play.ts`) is parked, not
   deleted. Several Animation pieces are stills until clips are
   recorded.
-  `/playground/stream` (hidden, not linked) is a second playground,
+  /playground is now the gallery wall (on request, 2026-11-13; first
+  built at a hidden `/playground/stream`, since removed),
   `PlayDepth.astro`, approved on request (2026-11-11, mocks in
   `experiments/playground-stream/`, `wall.html`; it replaced a
   three-layer depth field that read as cluttered): her paintings,
@@ -313,7 +316,7 @@ effect:
   own pace.
 
 Outside those nine moments — hero shader, first-paint loader, the reused
-hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak, BeyondWork, PlayBall — the old rule still applies at full strength:
+hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak, BeyondWork, the playground wall — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,
