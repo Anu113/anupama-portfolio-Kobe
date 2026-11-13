@@ -538,7 +538,11 @@ walked back. Concretely, in the current implementation:
   ink); on the right, Work · About · Play (12px, grey, current page in
   ink), a hairline, the sound button and the Light/Dark theme toggle.
   Links fold into Menu below 900px. "Play" is the label only; the page
-  stays at /playground. There is no Contact link: the /contact page was
+  stays at /playground. On hover the name steps ink → grey (no
+  underline) and the links grey → ink; on all four the letters part
+  a little, one after another (option D of
+  `experiments/nav-name-tracking/`, NAV NAME in `tokens.css`, on
+  request, 2026-11-13). There is no Contact link: the /contact page was
   removed on request (2026-11-11), and the footer carries contact on
   every page. The old bottom dock (`Dock.astro`) is gone.
 - **Page sound** came back on request (2026-11-11) as a speaker button

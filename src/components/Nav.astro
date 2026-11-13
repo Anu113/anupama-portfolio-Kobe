@@ -1,9 +1,14 @@
 ---
 /* Site chrome: one bar across the top.
      Name   "Anupama Mishra", top-left, alone. It's the home link, and
-            the one thing in the bar set larger and in ink.
+            the one thing in the bar set larger and in ink. On hover or
+            focus it steps to grey and its letters part a little, one
+            after another (no underline, on request; NAV NAME in
+            tokens.css). The letters are aria-hidden spans; the link's
+            aria-label carries the name.
      Right  Everything else, tucked in one group against the right edge:
-            Work · About · Play (12px, the label role), a hairline, then
+            Work · About · Play (12px, the label role; on hover their
+            letters part one after another, as the name's do), a hairline, then
             the sound button and the theme button. "Play" is the
             label only; the page stays at /playground. There's no
             Contact link (the page was removed on request, 2026-11-11):
@@ -57,15 +62,26 @@ const links = [
   { label: 'Play', href: '/playground' },
 ];
 const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
+// The name and links, one span per letter, so their letters can part one
+// after another on hover. Spaces stay plain text; i counts letters only,
+// so the gap between words parts by one step, like any other.
+const letters = (text: string) => {
+  let i = 0;
+  return [...text].map((ch) => ({ ch, i: ch === ' ' ? -1 : i++ }));
+};
 ---
 <header class="nav" data-theme="ink" id="site-nav">
-  <a class="nav__mark" href="/" aria-label="Anupama Mishra — home">{site.name}</a>
+  <a class="nav__mark" href="/" aria-label="Anupama Mishra — home"><span aria-hidden="true">{letters(site.name).map(({ ch, i }) =>
+    ch === ' ' ? ' ' : <span class="nav__letter" style={`--i:${i}`}>{ch}</span>
+  )}</span></a>
 
   <div class="nav__right">
     <nav aria-label="Primary">
       <ul class="nav__links" id="nav-links">
         {links.map((l) => (
-          <li><a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a></li>
+          <li><a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined} aria-label={l.label} style={`--n:${[...l.label].length}`}><span aria-hidden="true">{letters(l.label).map(({ ch, i }) =>
+            <span class="nav__letter" style={`--i:${i}`}>{ch}</span>
+          )}</span></a></li>
         ))}
       </ul>
     </nav>
@@ -122,6 +138,33 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     text-transform: uppercase;
     text-decoration: none; color: inherit;
     white-space: nowrap;
+    transition: color var(--dur-micro) ease;
+  }
+  /* A link, so it answers the pointer like one: the same quick colour
+     step as Work · About · Play, run the other way (it rests in ink, so
+     it steps down to grey). No underline, on request. */
+  .nav__mark:hover,
+  .nav__mark:focus-visible { color: var(--fg-dim); }
+  /* ...and its letters part a little, one after another, left to right
+     (option D of experiments/nav-name-tracking, on request). Closing runs
+     the same way. Each letter slides right by its place in the word times
+     --nav-name-open, which looks like the tracking opening but is a
+     transform: the word's box keeps its width, so nothing beside it moves.
+     (Letter-spacing widened the box, and the right-aligned links shoved
+     their neighbours left.) The word grows into the gap after it. */
+  .nav__letter {
+    display: inline-block;
+    transition: transform var(--dur-hover) var(--ease-out);
+    transition-delay: calc(var(--i) * var(--nav-name-stagger));
+  }
+  .nav__mark:hover .nav__letter,
+  .nav__mark:focus-visible .nav__letter,
+  .nav__links a:hover .nav__letter,
+  .nav__links a:focus-visible .nav__letter {
+    transform: translateX(calc(var(--i) * var(--nav-name-open)));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav__mark, .nav__letter { transition: none; }
   }
 
   .nav__right {
@@ -163,11 +206,18 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     background: currentColor;
     transform: scaleX(0);
     transform-origin: right;
-    transition: transform var(--dur-hover) var(--ease-out);
+    transition: transform var(--dur-hover) var(--ease-out),
+                right var(--dur-hover) var(--ease-out);
   }
   .nav__links a:hover::after,
   .nav__links a:focus-visible::after,
   .nav__links a[aria-current='page']::after { transform: scaleX(1); transform-origin: left; }
+  /* The letters part to the right on hover (above), so the line reaches
+     with them to the last one: --n letters, the last moved n − 1 steps. */
+  .nav__links a:hover::after,
+  .nav__links a:focus-visible::after {
+    right: calc((var(--n) - 1) * var(--nav-name-open) * -1);
+  }
 
   .nav__sep { width: 1px; height: var(--nav-sep-h); background: var(--rule); }
 
