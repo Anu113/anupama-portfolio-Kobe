@@ -6,8 +6,9 @@
    tokens.css; the song in data/about.ts (`song`).
 
    At rest the record sits low in its slot and the display is dark. Press
-   play and the record rises and spins, the speaker grille pulses gently
-   with the beat, the play key stays down, and the pixel display wakes:
+   play and the record rises and spins, the dome in the small round
+   speaker bumps with the beat (speaker and neon green display chosen
+   on request, 2026-11-14, from experiments/record-player-cute/), the play key stays down, and the pixel display wakes:
    "On repeat" with level bars, the song playing scrolling across, its
    time and its place ("1/2"). It plays her playlist's real tracks, one
    after another, through Spotify's embedded player (on request,
@@ -104,18 +105,25 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
     position: absolute; left: 12%; right: 12%; top: -.7cqw; height: 1.8cqw; border-radius: 1cqw;
     background: var(--rp-slot); box-shadow: var(--rp-slot-shadow);
   }
+  /* the speaker: one small round one, a dot grille in a ring with a
+     little dome in the middle that bumps on the beat */
   .rp__grille {
-    position: absolute; left: 6%; top: 16%; bottom: 12%; width: 38%; border-radius: 1.6cqw;
-    background-color: var(--rp-grille-ground);
-    background-image: radial-gradient(circle, var(--rp-grille-dot) .5cqw, transparent .58cqw);
-    background-size: 2.2cqw 2.2cqw;
+    position: absolute; left: 7%; top: 50%; translate: 0 -50%; width: 25cqw; aspect-ratio: 1; border-radius: 50%;
+    background:
+      radial-gradient(circle, var(--rp-grille-dot) .42cqw, transparent .5cqw) 50% 50% / 1.8cqw 1.8cqw,
+      var(--rp-grille-ground);
+    box-shadow: var(--rp-spk-shadow);
   }
-  .rp.is-on .rp__grille { animation: rp-thump var(--dur-rp-beat) ease-in-out infinite alternate; }
-  @keyframes rp-thump { to { transform: scale(1.015); } }
+  .rp__grille::after {
+    content: ''; position: absolute; inset: 37%; border-radius: 50%;
+    background: var(--rp-dome); box-shadow: var(--rp-dome-shadow);
+  }
+  .rp.is-on .rp__grille::after { animation: rp-thump var(--dur-rp-beat) ease-in-out infinite alternate; }
+  @keyframes rp-thump { to { scale: 1.12; } }
 
   /* the pixel display, after his: a dot grid, text masked to the same grid */
   .rp__lcd {
-    position: absolute; left: 49%; right: 6%; top: 16%; height: 44%; padding: .9cqw;
+    position: absolute; left: 41%; right: 6%; top: 16%; height: 44%; padding: .9cqw;
     border-radius: 2cqw; background: var(--rp-bezel); box-shadow: var(--rp-bezel-shadow);
   }
   .rp__glass {
@@ -150,7 +158,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
 
   /* the long key */
   .rp__spot {
-    position: absolute; left: 49%; bottom: 12%; width: 9cqw; height: 9cqw; border-radius: 50%;
+    position: absolute; left: 41%; bottom: 12%; width: 9cqw; height: 9cqw; border-radius: 50%;
     display: grid; place-items: center; color: var(--rp-key-ink);
     background: var(--rp-key); box-shadow: var(--rp-key-up);
     transition: translate 120ms ease-out, box-shadow 120ms ease-out, color 120ms ease-out;
@@ -160,7 +168,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
   .rp__spot:active { translate: 0 .45cqw; box-shadow: var(--rp-key-down); }
   .rp__spot:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
   .rp__key {
-    position: absolute; left: calc(49% + 11cqw); right: 6%; bottom: 12%; height: 9cqw; padding: 0; border: 0; border-radius: 1.6cqw;
+    position: absolute; left: calc(41% + 11cqw); right: 6%; bottom: 12%; height: 9cqw; padding: 0; border: 0; border-radius: 1.6cqw;
     display: grid; place-items: center; cursor: pointer; color: var(--rp-key-ink);
     background: var(--rp-key); box-shadow: var(--rp-key-up);
     transition: translate 120ms ease-out, box-shadow 120ms ease-out, color 120ms ease-out;
@@ -178,7 +186,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
 
   @media (prefers-reduced-motion: reduce) {
     .rp__rec-wrap { translate: -50% 0; transition: none; }
-    .rp__rec, .rp__rec::after, .rp__ticker, .rp__vu i, .rp.is-on .rp__grille { animation: none; }
+    .rp__rec, .rp__rec::after, .rp__ticker, .rp__vu i, .rp.is-on .rp__grille::after { animation: none; }
     .rp__line, .rp__label img { transition: none; }
     .rp__ticker > span + span { display: none; }
   }

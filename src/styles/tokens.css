@@ -1165,13 +1165,15 @@
    mocks in experiments/about-grid/slots.html, after andreas.vision's
    CD player. Like project hues and the bookshelf's spines, these
    colours belong to the object, so they stay the same in dark mode.
-   No orange, on request: the display's lilac is its only colour.
-   Display ink on its glass: 11 : 1.
+   No orange, on request: the display's neon green is its only colour
+   (was lilac; neon green and the round "Button" speaker chosen on
+   request, 2026-11-14, from experiments/record-player-cute/).
+   Display ink on its glass: 14 : 1.
    ============================================================ */
 :root {
   --dur-rp-rise: 900ms;            /* the record rising out of its slot */
   --dur-rp-turn: 1.8s;             /* one turn of the record */
-  --dur-rp-beat: 320ms;            /* the grille's pulse */
+  --dur-rp-beat: 320ms;            /* the speaker dome's bump */
   --dur-rp-ticker: 8s;             /* one song across the display */
   --dur-rp-cover: 400ms;           /* the label cross-fading to the next cover */
   --rp-off: 0.14;                  /* the display's unlit text */
@@ -1188,8 +1190,11 @@
   --rp-grille-dot: #6a665f;
   --rp-bezel: #d8d4cc;
   --rp-bezel-shadow: inset 0 0.35cqw 0.6cqw rgb(0 0 0 / 0.16), inset 0 -0.15cqw 0.2cqw rgb(255 255 255 / 0.7);
-  --rp-glass: #140f1e;
-  --rp-ink: #cdb8ff;
+  --rp-spk-shadow: inset 0 0.35cqw 0.6cqw rgb(0 0 0 / 0.18), 0 0 0 0.7cqw #f1efe9, 0 0 0 0.85cqw #d2cec5;   /* the speaker's ring */
+  --rp-dome: radial-gradient(circle at 35% 30%, #fff, #cfcac1 70%);
+  --rp-dome-shadow: 0 0.2cqw 0.4cqw rgb(0 0 0 / 0.2);
+  --rp-glass: #06140a;
+  --rp-ink: #4dff6a;
   --rp-key: linear-gradient(#fbfaf7, #e9e6df);
   --rp-key-ink: #6e6a62;           /* 4.6 : 1 on the key */
   --rp-key-ink-on: #262626;
