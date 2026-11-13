@@ -25,6 +25,8 @@ export interface DepthPiece {
   /** Paintings only: the medium. The caption adds it as "· watercolour on paper". */
   medium?: string;
   cut?: boolean;
+  /** The one piece hung largest on the wall, to catch the eye (on request, 2026-11-13). */
+  feature?: boolean;
 }
 
 export const depthPieces: DepthPiece[] = [
@@ -38,7 +40,7 @@ export const depthPieces: DepthPiece[] = [
   { file: 'play-mermaid.jpg', aspect: 0.8, title: 'Salt and petals', medium: 'watercolour on paper' },
   { file: 'play-crown.jpg', aspect: 0.75, title: 'Heavy is the head', medium: 'acrylic on canvas' },
   // From the old Wix site's gallery (added 2026-11-13).
-  { file: 'play-three.jpg', aspect: 1.0, title: 'In order of height', medium: 'painted on a digital canvas' },
+  { file: 'play-three.jpg', aspect: 1.0, title: 'In order of height', medium: 'painted on a digital canvas', feature: true },
   { file: 'play-blue-sari.jpg', aspect: 0.75, title: 'Blue, and in no hurry', medium: 'ink and watercolour on paper' },
   { file: 'play-cup.jpg', aspect: 1.0, title: 'Both hands on the cup', medium: 'ink and watercolour on paper' },
   { file: 'play-cup-desk.jpg', aspect: 1.33, title: 'Still drying', medium: 'ink and watercolour on paper' },
@@ -57,8 +59,12 @@ export const depthPieces: DepthPiece[] = [
 // The gallery wall (on request, 2026-11-11, from
 // experiments/playground-stream/wall.html): pieces hang in columns with even
 // gutters, nothing overlapping. Columns repeat sideways for endless panning.
-//   col / colSm   column width (px; `Sm` under 810px wide). A piece is 74–100%
-//                 of it, set left, centre or right, so its caption stays in it.
+//   col / colSm   column width (px; `Sm` under 810px wide). A piece is a share
+//                 of it (`size`), set left, centre or right, so its caption stays in it.
+//   size          [min, max] share of the column: the feature piece fills it,
+//                 paintings hang larger than photos (on request, 2026-11-13)
+//   feature       the wall opens centred on one wider column whose first piece
+//                 is the feature painting, at this × col (capped to the screen)
 //   gutter        between columns
 //   vgap          between pieces in a column: room for a three-line caption (8 + 3 × 13px) and air
 //   speeds        per column, how far it moves for each px the wall moves: the
@@ -71,7 +77,9 @@ export const depthPieces: DepthPiece[] = [
 //   stagger       columns start up to this far below the heading's line
 export const wall = {
   seed: 11,         // the layout is the same on every visit
-  col: 290, colSm: 190,
+  col: 330, colSm: 210,
+  feature: 1.4, featureSm: 1.3,   // the opening column's width, × col: the feature painting fills it
+  size: { feature: [1, 1], painting: [0.78, 0.9], other: [0.6, 0.74] } as Record<string, [number, number]>,
   gutter: 76, gutterSm: 40,
   vgap: 64, vgapSm: 56,
   speeds: [0.94, 1.08, 0.88, 1.12, 0.98, 1.04, 0.9, 1.1],
