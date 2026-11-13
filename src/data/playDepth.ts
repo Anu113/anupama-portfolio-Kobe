@@ -1,4 +1,4 @@
-// /playground/stream (PlayDepth.astro): her pieces hung as a gallery wall.
+// /playground (PlayDepth.astro): her pieces hung as a gallery wall.
 // Chosen on request (2026-11-11) from the mocks in
 // experiments/playground-stream/ (wall.html is the one built).
 //

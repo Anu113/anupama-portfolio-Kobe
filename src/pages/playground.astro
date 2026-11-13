@@ -1,18 +1,21 @@
 ---
-/* /playground — one screen: PlayBall, a copy of andreas.vision/play (on
-   request, 2026-10-19). The earlier endless stream (InfiniteStream.astro,
-   data/play.ts) is parked, not deleted; /playground/canvas still uses its
+/* /playground — her work hung as a gallery wall (PlayDepth.astro), on
+   request (2026-11-13; built 2026-11-11 from
+   experiments/playground-stream/wall.html, first at /playground/stream).
+   The page opens on the heading, the work rises from below it, and after
+   ~4 screens of work the page goes on to the footer. PlayBall (the ball of
+   cards, data/playground.ts) and the earlier stream (InfiniteStream.astro,
+   data/play.ts) are parked, not deleted; /playground/canvas still uses its
    own PanCanvas. */
 import Base from '../layouts/Base.astro';
-import PlayBall from '../components/PlayBall.astro';
+import PlayDepth from '../components/PlayDepth.astro';
 ---
-<!-- No cursor trail or lamp here: the ball wears the grab/grabbing hand,
-     and a line trailing off a hand you're dragging with reads as two
-     cursors. See the note on Base's `trail` prop. -->
+<!-- No cursor trail or lamp: the wall wears the grab/grabbing hand, and a
+     line trailing off a hand you're dragging with reads as two cursors. -->
 <Base
   title="Playground — Anupama Mishra"
-  description="Sketches, interfaces, art and photos by Anupama Mishra, on one ball you can spin or sort."
+  description="Paintings and photos by Anupama Mishra, hung as a wall you can scroll and pan."
   trail={false}
 >
-  <PlayBall />
+  <PlayDepth />
 </Base>
