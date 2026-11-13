@@ -177,6 +177,11 @@
   --dur-hover: 320ms;
   --dur-micro: 150ms;
   --dur-micro-move: 180ms;
+  /* NAV NAME: on hover the nav's name and its Work · About · Play links
+     part their letters by this much (on top of their own tracking), each
+     letter starting this long after the one before. */
+  --nav-name-open: 0.06em;
+  --nav-name-stagger: 12ms;
   /* The primary button's liquid fill (global.css, on request): clay rises
      into the pill as a slowly turning rounded square, so its surface
      rolls like liquid, then settles flat. Longer than --dur-hover so the

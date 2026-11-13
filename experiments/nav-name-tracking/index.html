@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock — nav name: tracking opens on hover</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Values copied from src/styles/tokens.css so the mock reads like the site. */
+  :root {
+    --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: #e6e6e6;
+    --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --step-nav: 0.875rem; --step-label: 0.75rem;
+    --tracking-nav: 0.086em; --tracking-label: 0.06em;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur-hover: 320ms; --dur-micro: 150ms;
+  }
+  .dark {
+    --paper: #1b1a19; --ink: #ecebe8; --ink-dim: #a09d98; --line: #33312f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 48px 40px 80px;
+    background: #f1f1ef; color: #262626;
+    font-family: var(--font-sans); font-weight: 600; font-size: 14px;
+  }
+  h1 { font-family: var(--font-serif); font-weight: 300; font-size: 44px; line-height: 1.1; margin: 0 0 8px; }
+  h1 em { font-style: italic; }
+  .dek { color: #707070; font-size: 14px; max-width: 64ch; margin: 0 0 40px; line-height: 1.6; }
+  .opt { margin-bottom: 40px; }
+  .opt__head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 12px; }
+  .opt__id { font-family: var(--font-mono); font-weight: 400; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #707070; }
+  .opt__title { font-size: 14px; }
+  .opt__note { font-size: 12px; color: #707070; margin: 0 0 12px; max-width: 72ch; line-height: 1.6; }
+  .opt__note code { font-family: var(--font-mono); font-weight: 400; font-size: 11px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 900px) { .pair { grid-template-columns: 1fr; } }
+
+  /* A slice of the real nav bar. */
+  .bar {
+    background: var(--paper); color: var(--ink);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 64px;
+    border: 1px solid var(--line);
+  }
+  .mark {
+    font-family: var(--font-sans); font-weight: 600;
+    font-size: var(--step-nav); line-height: 1;
+    letter-spacing: var(--tracking-nav);
+    text-transform: uppercase; text-decoration: none; color: inherit;
+    white-space: nowrap;
+    transition:
+      color var(--dur-micro) ease,
+      letter-spacing var(--dur, var(--dur-hover)) var(--ease-out);
+  }
+  .mark:hover, .mark:focus-visible, .mark.is-on {
+    color: var(--ink-dim);
+    letter-spacing: calc(var(--tracking-nav) + var(--open));
+  }
+  .mark:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .right { display: flex; align-items: center; gap: 24px; }
+  .right a {
+    font-size: var(--step-label); letter-spacing: var(--tracking-label);
+    text-transform: uppercase; text-decoration: none; color: var(--ink-dim);
+  }
+  .right a[aria-current] { color: var(--ink); }
+
+  /* Option D: each letter opens on its own, left to right. */
+  .mark--stagger { letter-spacing: 0; transition: color var(--dur-micro) ease; }
+  .mark--stagger:hover, .mark--stagger:focus-visible, .mark--stagger.is-on { letter-spacing: 0; }
+  .mark--stagger span {
+    display: inline-block;
+    margin-right: var(--tracking-nav);
+    transition: margin-right var(--dur-hover) var(--ease-out);
+    transition-delay: calc(var(--i) * 12ms);
+  }
+  .mark--stagger span.sp { width: 0.28em; }
+  .mark--stagger:hover span, .mark--stagger:focus-visible span, .mark--stagger.is-on span {
+    margin-right: calc(var(--tracking-nav) + var(--open));
+  }
+
+  .tools { display: flex; gap: 16px; align-items: center; margin: 0 0 32px; font-size: 12px; color: #707070; }
+  .tools button {
+    font: inherit; color: #262626; background: #fcfcfc;
+    border: 1px solid #d6d6d6; border-radius: 999px; padding: 6px 14px; cursor: pointer;
+  }
+  .tools button[aria-pressed="true"] { background: #262626; color: #fcfcfc; border-color: #262626; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mark, .mark--stagger span { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <h1>Nav name, <em>tracking</em> opens on hover</h1>
+  <p class="dek">Point at "Anupama Mishra" in each bar. Every option keeps the ink → grey step you approved and no underline; only the spacing between letters changes. Spacing opens on the site's one easing curve over 320ms and closes the same way. The name sits alone on the left, so its extra width pushes nothing.</p>
+
+  <div class="tools">
+    <button type="button" id="hold" aria-pressed="false">Compare: hold all open</button>
+    <span id="hold-note">Point at a name to see it open. Tab works too.</span>
+  </div>
+
+  <section class="opt">
+    <div class="opt__head"><span class="opt__id">A</span><span class="opt__title">A hint: +0.03em</span></div>
+    <p class="opt__note">About half a pixel more per letter. Felt more than seen; the name gets 6px wider.</p>
+    <div class="pair">
+      <div class="bar" style="--open:0.03em"><a class="mark" href="#">Anupama Mishra</a><nav class="right"><a href="#" aria-current="page">Work</a><a href="#">About</a><a href="#">Play</a></nav></div>
+      <div class="bar dark" style="--open:0.03em"><a class="mark" href="#">Anupama Mishra</a><nav class="right"><a href="#" aria-current="page">Work</a><a href="#">About</a><a href="#">Play</a></nav></div>
+    </div>
+  </section>
+
+  <section class="opt">
+    <div class="opt__head"><span class="opt__id">B</span><span class="opt__title">A bit: +0.06em (recommended)</span></div>
+    <p class="opt__note">About 1px more per letter: clearly a response to the pointer, still the same name. Its width grows by about 12px.</p>
+    <div class="pair">
+      <div class="bar" style="--open:0.06em"><a class="mark" href="#">Anupama Mishra</a><nav class="right"><a href="#" aria-current="page">Work</a><a href="#">About</a><a href="#">Play</a></nav></div>
+      <div class="bar dark" style="--open:0.06em"><a class="mark" href="#">Anupama Mishra</a><nav class="right"><a href="#" aria-current="page">Work</a><a href="#">About</a><a href="#">Play</a></nav></div>
+    </div>
+  </section>
+
+  <section class="opt">
+    <div class="opt__head"><span class="opt__id">C</span><span class="opt__title">Wide: +0.12em</span></div>
+    <p class="opt__note">About 2px more per letter. Very visible; starts to read as an effect rather than feedback.</p>
+    <div class="pair">
+      <div class="bar" style="--open:0.12em"><a class="mark" href="#">Anupama Mishra</a><nav class="right"><a href="#" aria-current="page">Work</a><a href="#">About</a><a href="#">Play</a></nav></div>
+      <div class="bar dark" style="--open:0.12em"><a class="mark" href="#">Anupama Mishra</a><nav class="right"><a href="#" aria-current="page">Work</a><a href="#">About</a><a href="#">Play</a></nav></div>
+    </div>
+  </section>
+
+  <section class="opt">
+    <div class="opt__head"><span class="opt__id">D</span><span class="opt__title">B's amount, letters open one after another</span></div>
+    <p class="opt__note">The same +0.06em, but each letter starts 12ms after the one before, so the opening runs left to right. Each letter becomes its own element; the screen reader still reads the name once, from <code>aria-label</code>.</p>
+    <div class="pair">
+      <div class="bar" style="--open:0.06em"><a class="mark mark--stagger" href="#" aria-label="Anupama Mishra"></a><nav class="right"><a href="#" aria-current="page">Work</a><a href="#">About</a><a href="#">Play</a></nav></div>
+      <div class="bar dark" style="--open:0.06em"><a class="mark mark--stagger" href="#" aria-label="Anupama Mishra"></a><nav class="right"><a href="#" aria-current="page">Work</a><a href="#">About</a><a href="#">Play</a></nav></div>
+    </div>
+  </section>
+
+<script>
+  // Split the stagger option into letters.
+  document.querySelectorAll('.mark--stagger').forEach((a) => {
+    [...'Anupama Mishra'].forEach((ch, i) => {
+      const s = document.createElement('span');
+      s.setAttribute('aria-hidden', 'true');
+      s.style.setProperty('--i', i);
+      if (ch === ' ') { s.className = 'sp'; s.innerHTML = '&nbsp;'; } else s.textContent = ch;
+      a.appendChild(s);
+    });
+  });
+  document.querySelectorAll('a[href="#"]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  const hold = document.getElementById('hold');
+  hold.addEventListener('click', () => {
+    const on = hold.getAttribute('aria-pressed') !== 'true';
+    hold.setAttribute('aria-pressed', on);
+    hold.textContent = on ? 'Release: back to hover' : 'Compare: hold all open';
+    document.getElementById('hold-note').textContent = on
+      ? 'Held open, so hovering does nothing. Release to try the hover.'
+      : 'Point at a name to see it open. Tab works too.';
+    document.querySelectorAll('.mark').forEach((m) => m.classList.toggle('is-on', on));
+  });
+</script>
+</body>
+</html>
