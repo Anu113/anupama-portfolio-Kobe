@@ -30,23 +30,24 @@ export interface Row {
 // Titles (her last at each) and years from her LinkedIn (checked
 // 2026-11-13). Lines after felixrieseberg.com's Work list: what the work
 // was, in one or two plain sentences, then the company's site. Facts from
-// her LinkedIn and cases.ts only. Logos from each company's own site or
-// Wikimedia Commons, set on 128px squares in public/images/logos/.
-const logo = '/images/logos/';
+// her LinkedIn and cases.ts only. Letter tiles, on request (2026-11-13):
+// company logos were tried and read as five loud colours; the logo files
+// stay in public/images/logos/, unused, with alternatives in
+// experiments/experience-rows/.
 export const experience: Row[] = [
-  { tile: { src: logo + 'okta.webp' }, name: 'Okta', tag: 'Staff Product Designer', year: '2024–now',
+  { tile: { letter: 'O' }, name: 'Okta', tag: 'Staff Product Designer', year: '2024–now',
     line: 'Identity and access management for the admins who decide who gets in: entitlements, access reviews and policy, plus the integration flows developers build on. I lead a team of six.',
     site: { label: 'okta.com', href: 'https://www.okta.com' } },
-  { tile: { src: logo + 'paypal.webp' }, name: 'PayPal', tag: 'Lead UX Designer', year: '2021–2024',
+  { tile: { letter: 'P' }, name: 'PayPal', tag: 'Lead UX Designer', year: '2021–2024',
     line: 'Three years on privacy and trust across PayPal, Venmo and Honey: the privacy center, ads consent, ID verification and the Debit Card. I joined as a product designer and left leading UX for Global Data & Privacy.',
-    site: { label: 'paypal.com', href: 'https://www.paypal.com' } },
-  { tile: { src: logo + 'walmart.webp' }, name: 'Walmart Labs', tag: 'User Experience Designer', year: '2019–2021',
+    site: { label: 'Data & Privacy', href: 'https://www.paypal.com/us/security/protect-your-account' } },
+  { tile: { letter: 'W' }, name: 'Walmart Labs', tag: 'User Experience Designer', year: '2019–2021',
     line: 'Two years on tools for merchants, suppliers and Walmart’s own people, plus Walmart Pay with Chase Pay and Scan & Go. I led interaction design on the design system.',
-    site: { label: 'walmart.com', href: 'https://www.walmart.com' } },
-  { tile: { src: logo + 'deloitte.webp' }, name: 'Deloitte Digital', tag: 'User Experience Designer', year: '2017–2019',
+    site: { label: 'Scan & Go', href: 'https://www.walmart.com/cp/scan-go/9679980' } },
+  { tile: { letter: 'D' }, name: 'Deloitte Digital', tag: 'User Experience Designer', year: '2017–2019',
     line: 'Client work from Bengaluru in finance, healthcare and the public sector, among it Mint’s credit score, personal loans for RatanIndia and quick loans for Dialog in Sri Lanka.',
     site: { label: 'deloittedigital.com', href: 'https://www.deloittedigital.com' } },
-  { tile: { src: logo + 'zomato.webp' }, name: 'Zomato', tag: 'User Interface Designer', year: '2015–2016',
+  { tile: { letter: 'Z' }, name: 'Zomato', tag: 'User Interface Designer', year: '2015–2016',
     line: 'A year on product, web, branding and marketing design across Zomato’s consumer products.',
     site: { label: 'zomato.com', href: 'https://www.zomato.com' } },
 ];
