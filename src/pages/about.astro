@@ -296,10 +296,15 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--about-grid-gap);
     margin: var(--about-top-gap) 0 0; padding: 0; list-style: none;
   }
+  /* Square tiles, sized from their width only (container-type:
+     inline-size, cqw units). A size container plus aspect-ratio broke
+     in Firefox (tiles collapsed to their padding) and squeezed the
+     stacks elsewhere; and cq units in a tile's own padding resolve
+     against the page, not the tile, so the padding is a percentage. */
   .ptile {
-    position: relative; isolation: isolate; aspect-ratio: 1; container-type: size;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4cqh;
-    padding: 6cqh 6cqw; border-radius: var(--radius-about-card);
+    position: relative; isolation: isolate; aspect-ratio: 1; container-type: inline-size;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 6%; border-radius: var(--radius-about-card);
   }
   .ptile::before {
     content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
@@ -309,12 +314,14 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
   .ptile:hover, .ptile:focus-within { z-index: 2; }
   @media (hover: hover) and (pointer: fine) { .ptile:hover::before { scale: 1.03; } }
   .caption {
-    margin: 0; max-width: 34ch; color: var(--fg-dim);
+    margin: 4cqw 0 0; width: min(100%, 34ch); color: var(--fg-dim);
     font-size: var(--step-copy); line-height: 1.35; text-align: center; text-wrap: balance;
   }
 
   /* a stack of up to five; each photo moves by its own --x/--y/--r/--s */
-  .deck { position: relative; height: 62cqh; aspect-ratio: 3 / 4; max-width: 46cqw; }
+  /* both sides set explicitly (the photos inside are all absolutely
+     placed, so the stack has no content size to fall back on) */
+  .deck { position: relative; flex: none; width: 30cqw; height: 50cqw; }
   .shot {
     --x: 0%; --y: 0%; --r: 0deg; --s: 1; --lift: 0%;
     position: absolute; inset: 0; padding: 0; border: 0; overflow: hidden; cursor: zoom-in;
