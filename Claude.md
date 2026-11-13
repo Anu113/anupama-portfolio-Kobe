@@ -693,7 +693,8 @@ walked back. Concretely, in the current implementation:
   the dome in its small round speaker bumps and a neon green pixel
   display scrolls the song with a clock and level bars (speaker and
   colour chosen on request, 2026-11-14, from
-  `experiments/record-player-cute/`); no orange, on request. It plays her Spotify
+  `experiments/record-player-cute/`), standing on the page with no
+  card behind it; no orange, on request. It plays her Spotify
   playlist's real tracks, "My Playlist #2026" (`song` in
   `data/about.ts`), one after another, through Spotify's embedded
   player kept out of sight in the tile (on request, 2026-11-11: she
