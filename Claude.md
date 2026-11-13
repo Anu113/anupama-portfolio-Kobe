@@ -263,10 +263,12 @@ effect:
   shows who she is outside the work without a paragraph about it, then
   hands over to About. Home page only, one ring.
 
-- **`PlayBall`, approved on request** (a copy of andreas.vision/play,
+- **`PlayBall`, approved on request, now parked** (2026-11-13: /playground
+  is the gallery wall, `PlayDepth`, below; the component and
+  `data/playground.ts` stay, no page mounts it). A copy of andreas.vision/play,
   measured off his page on 2026-10-19; chosen from rounds of mocks in
   `experiments/playground-views/`, the final one `exact.html`). The
-  whole of /playground: ~120 cards on a ball, facing you, turning
+  whole of /playground as it was: ~120 cards on a ball, facing you, turning
   slowly about the vertical, with "A place for *endless*
   experimentation" in the middle (the far half drawn under it, the near
   half over it; near the words cards shrink back and slip behind them,
@@ -298,7 +300,8 @@ effect:
   stream (`InfiniteStream.astro`, `data/play.ts`) is parked, not
   deleted. Several Animation pieces are stills until clips are
   recorded.
-  `/playground/stream` (hidden, not linked) is a second playground,
+  /playground is now the gallery wall (on request, 2026-11-13; first
+  built at a hidden `/playground/stream`, since removed),
   `PlayDepth.astro`, approved on request (2026-11-11, mocks in
   `experiments/playground-stream/`, `wall.html`; it replaced a
   three-layer depth field that read as cluttered): her paintings,
@@ -317,7 +320,7 @@ effect:
   own pace.
 
 Outside those nine moments — hero shader, first-paint loader, the reused
-hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak, BeyondWork, PlayBall — the old rule still applies at full strength:
+hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak, BeyondWork, the playground wall — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,
@@ -656,15 +659,17 @@ walked back. Concretely, in the current implementation:
   slot-loading record player with a speaker (`RecordPlayer.astro`,
   RECORD PLAYER in `tokens.css`). On a press the record rises and spins,
   the grille pulses and a lilac pixel display scrolls the song with a
-  clock and level bars; no orange, on request. While it plays it steps
-  through the first five tracks of her Spotify playlist, "My Playlist
-  #2026" (`song` in `data/about.ts`), every `--dur-rp-track`: the display
-  scrolls the song and the record's label cross-fades to that song's
-  cover (saved into `public/images/about/covers/`, so no request goes to
-  Spotify). A round Spotify key opens the playlist in a new tab. Until
-  she adds a clip she has the rights to (`song.audio`), the play key
-  plays a tune made in the browser. No Spotify embed (third-party
-  cookies) unless she asks. Sound only
+  clock and level bars; no orange, on request. It plays her Spotify
+  playlist's real tracks, "My Playlist #2026" (`song` in
+  `data/about.ts`), one after another, through Spotify's embedded
+  player kept out of sight in the tile (on request, 2026-11-11: she
+  asked for her songs over the old made-up tune). The display, count
+  and the record's label (her covers, saved into
+  `public/images/about/covers/`) follow the track playing. Spotify's
+  script and player load only on the first press, so nobody contacts
+  Spotify or gets its cookies without pressing play; signed-in
+  listeners hear whole tracks, others 30-second previews. A round
+  Spotify key opens the playlist in a new tab. Sound only
   after a press, one at a time, stops when the tab is hidden; nothing
   moves under reduced motion. Its reason: one personal detail she can
   share in a press, the way the paintings share hers.

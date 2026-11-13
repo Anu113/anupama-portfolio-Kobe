@@ -8,18 +8,24 @@
    At rest the record sits low in its slot and the display is dark. Press
    play and the record rises and spins, the speaker grille pulses gently
    with the beat, the play key stays down, and the pixel display wakes:
-   "On repeat" with level bars, a song from her Spotify playlist
-   scrolling across, its time and its place ("1/5"). Every
-   --dur-rp-track the player steps to the next song: the display
-   changes and the record's label cross-fades to that song's cover.
-   Stopping keeps the song it was on. A round Spotify key beside the
-   play key opens the playlist in a new tab. Press again (or Escape
-   while it's focused) to stop; it also stops when the tab is hidden.
-   Only ever one sound, only after a press.
+   "On repeat" with level bars, the song playing scrolling across, its
+   time and its place ("1/2"). It plays her playlist's real tracks, one
+   after another, through Spotify's embedded player (on request,
+   2026-11-11); the display, the count and the record's label (that
+   song's cover, cross-fading) follow the track actually playing.
+   Stopping pauses it where it was; play again picks up there. A round
+   Spotify key beside the play key opens the playlist in a new tab.
+   Press again (or Escape while it's focused) to stop; it also stops
+   when the tab is hidden. Only ever one sound, only after a press.
 
-   Sound: `song.audio` if set (a file in /public). Until then a short
-   tune is made in the browser (Web Audio) as a stand-in: nothing is
-   fetched, no third-party player, no cookies.
+   Sound: Spotify's iFrame API (open.spotify.com/embed/iframe-api). Its
+   script and player load only on the first press, so a visitor who
+   never presses play never contacts Spotify; once loaded, Spotify sets
+   its cookies. Signed-in Spotify listeners hear whole tracks, everyone
+   else Spotify's 30-second previews. The player sits inside the tile,
+   out of sight: the record player is its face. If Spotify can't be
+   reached in a few seconds, the press is undone and the status line
+   says so. Tracks in data/about.ts (`song`).
 
    A11y: one real button with aria-pressed and the playlist in its name; the
    display is decorative (aria-hidden) and a polite status line says
@@ -31,7 +37,7 @@ const name = song.title;
 const first = song.tracks[0];
 const line = (t: typeof first) => `${t.title} · ${t.artist}`;
 ---
-<div class="rp" data-rp data-audio={song.audio} data-tracks={JSON.stringify(song.tracks.map(line))}>
+<div class="rp" data-rp data-tracks={JSON.stringify(song.tracks.map(line))} data-uris={JSON.stringify(song.tracks.map((t) => t.uri))}>
   <div class="rp__rec-wrap" aria-hidden="true">
     <div class="rp__rec"><div class="rp__label">
       {song.tracks.map((t, i) => <img class={i === 0 ? 'is-on' : undefined} src={t.cover} alt="" loading="lazy" decoding="async" data-rp-cover />)}
@@ -56,6 +62,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
     </button>
   </div>
+  <div class="rp__embed" data-rp-embed aria-hidden="true"></div>
   <span class="u-sr-only" role="status" data-rp-status></span>
 </div>
 
@@ -162,6 +169,13 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
   .rp__key[aria-pressed='true'] { translate: 0 .45cqw; box-shadow: var(--rp-key-down); color: var(--rp-key-ink-on); }
   .rp__key:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
+  /* Spotify's player: in the page (it has to be, to play) but out of
+     sight and out of reach; the record player is its face. */
+  .rp__embed {
+    position: absolute; left: 0; bottom: 0; width: 1px; height: 1px;
+    overflow: hidden; opacity: 0; pointer-events: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .rp__rec-wrap { translate: -50% 0; transition: none; }
     .rp__rec, .rp__rec::after, .rp__ticker, .rp__vu i, .rp.is-on .rp__grille { animation: none; }
@@ -171,76 +185,98 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
 </style>
 
 <script>
+  // Spotify's iFrame API, as much of it as we use.
+  interface SpotifyController {
+    loadUri(uri: string): void; play(): void; resume(): void; pause(): void;
+    addListener(ev: 'ready', cb: () => void): void;
+    addListener(ev: 'playback_update', cb: (e: { data: { isPaused: boolean; isBuffering: boolean; duration: number; position: number } }) => void): void;
+  }
+  interface SpotifyApi {
+    createController(el: HTMLElement, opts: { uri: string; width: number | string; height: number | string }, cb: (c: SpotifyController) => void): void;
+  }
+  declare global { interface Window { onSpotifyIframeApiReady?: (api: SpotifyApi) => void } }
+
   const root = document.querySelector<HTMLElement>('[data-rp]');
   if (root) {
     const key = root.querySelector<HTMLButtonElement>('[data-rp-key]')!;
     const time = root.querySelector<HTMLElement>('[data-rp-time]')!;
     const status = root.querySelector<HTMLElement>('[data-rp-status]')!;
+    const host = root.querySelector<HTMLElement>('[data-rp-embed]')!;
     const name = key.getAttribute('aria-label')!.replace(/^Play /, '');
-    const src = root.dataset.audio;
-    let audio: HTMLAudioElement | null = null;
-    let ctx: AudioContext | null = null, beat = 0, clock = 0, t0 = 0;
-
-    // The stand-in: a soft pentatonic loop, until her song is set.
-    const notes = [0, 3, 5, 7, 10, 12, 10, 7, 5, 3, 7, 5];
-    function tone(t: number, semi: number) {
-      const o = ctx!.createOscillator(), g = ctx!.createGain(), f = ctx!.createBiquadFilter();
-      o.type = 'triangle'; o.frequency.value = 220 * Math.pow(2, semi / 12);
-      f.type = 'lowpass'; f.frequency.value = 1400;
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.08, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
-      o.connect(f).connect(g).connect(ctx!.destination); o.start(t); o.stop(t + 1);
-    }
-    function sound(on: boolean) {
-      if (src) {
-        audio ??= Object.assign(new Audio(src), { loop: true });
-        on ? audio.play().catch(() => {}) : audio.pause();
-        return;
-      }
-      clearInterval(beat);
-      if (!on) return;
-      ctx ??= new AudioContext(); ctx.resume();
-      let i = 0, next = ctx.currentTime + 0.6;   // starts as the record finishes rising
-      beat = window.setInterval(() => {
-        while (next < ctx!.currentTime + 0.3) {
-          tone(next, notes[i % notes.length]);
-          if (i % 4 === 0) tone(next, notes[i % notes.length] - 12);
-          i++; next += 0.32;
-        }
-      }, 80);
-    }
-    // ---- stepping through the songs ----
     const tracks = JSON.parse(root.dataset.tracks!) as string[];
+    const uris = JSON.parse(root.dataset.uris!) as string[];
     const covers = [...root.querySelectorAll<HTMLImageElement>('[data-rp-cover]')];
     const ticker = root.querySelector<HTMLElement>('[data-rp-ticker]')!;
     const count = root.querySelector<HTMLElement>('[data-rp-count]')!;
-    const css = getComputedStyle(document.documentElement);
-    const stepMs = (parseFloat(css.getPropertyValue('--dur-rp-track')) || 8) * 1000;
-    let at = 0, step = 0;
+    const fmt = (ms: number) => {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    };
+
+    // ---- which song: display, count and the record's label ----
+    let at = 0;
     function show(i: number) {
       at = i;
       covers.forEach((c, n) => c.classList.toggle('is-on', n === i));
       ticker.querySelectorAll('span').forEach((s) => { s.textContent = tracks[i]; });
       ticker.style.animation = 'none'; void ticker.offsetWidth; ticker.style.animation = '';   // from the start
       count.textContent = `${i + 1}/${tracks.length}`;
-      t0 = performance.now();
+      time.textContent = '00:00';
     }
 
-    const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-    function set(on: boolean) {
+    // ---- Spotify: loaded on the first press only ----
+    let api: Promise<SpotifyApi> | null = null;
+    const loadApi = () => (api ??= new Promise<SpotifyApi>((ok, fail) => {
+      window.onSpotifyIframeApiReady = ok;
+      const tag = document.createElement('script');
+      tag.src = 'https://open.spotify.com/embed/iframe-api/v1';
+      tag.async = true;
+      tag.onerror = () => fail(new Error('Spotify unreachable'));
+      document.head.append(tag);
+    }));
+    let player: Promise<SpotifyController> | null = null;
+    let started = false;      // the current track has been heard playing
+    let advancing = false;
+    const getPlayer = () => (player ??= loadApi().then((A) => new Promise<SpotifyController>((ok) => {
+      const el = document.createElement('div');
+      host.append(el);
+      A.createController(el, { uri: uris[at], width: '100%', height: 80 }, (c) => {
+        c.addListener('ready', () => ok(c));
+        c.addListener('playback_update', ({ data }) => {
+          if (!on) return;
+          time.textContent = fmt(data.position);
+          if (!data.isPaused && data.position > 0) started = true;
+          // The track has ended (whole track or 30s preview): the next one.
+          const ended = started && data.duration > 0 && (data.position >= data.duration - 400 || (data.isPaused && data.position === 0));
+          if (ended && !advancing) {
+            advancing = true; started = false;
+            show((at + 1) % uris.length);
+            c.loadUri(uris[at]);
+            c.play();
+            setTimeout(() => { advancing = false; }, 1500);
+          }
+        });
+      });
+    })));
+
+    let on = false;
+    function set(next: boolean) {
+      on = next;
       root!.classList.toggle('is-on', on);
       key.setAttribute('aria-pressed', String(on));
       key.setAttribute('aria-label', `${on ? 'Stop' : 'Play'} ${name}`);
-      status.textContent = on ? `Playing ${name}` : '';
-      sound(on);
-      clearInterval(clock); clearInterval(step);
+      status.textContent = on ? `Playing ${tracks[at]}` : '';
       if (on) {
-        t0 = performance.now();
-        clock = window.setInterval(() => { time.textContent = fmt((performance.now() - t0) / 1000); }, 250);
-        step = window.setInterval(() => show((at + 1) % tracks.length), stepMs);
-      } else time.textContent = '00:00';
+        const first = !player;
+        const giveUp = window.setTimeout(() => {
+          if (on && !started) { set(false); status.textContent = 'Spotify could not be reached.'; }
+        }, 8000);
+        getPlayer().then((c) => { if (!on) return; first ? c.play() : c.resume(); })
+          .catch(() => { clearTimeout(giveUp); if (on) { set(false); status.textContent = 'Spotify could not be reached.'; } });
+      } else player?.then((c) => c.pause());
     }
-    key.addEventListener('click', () => set(!root.classList.contains('is-on')));
-    key.addEventListener('keydown', (e) => { if (e.key === 'Escape' && root.classList.contains('is-on')) set(false); });
-    document.addEventListener('visibilitychange', () => { if (document.hidden && root.classList.contains('is-on')) set(false); });
+    key.addEventListener('click', () => set(!on));
+    key.addEventListener('keydown', (e) => { if (e.key === 'Escape' && on) set(false); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden && on) set(false); });
   }
 </script>

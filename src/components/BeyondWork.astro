@@ -9,9 +9,9 @@
    What the visitor sees: "Beyond work" (44px serif, "work" in italic),
    one grey line and an ink pill pair, "More about me" + an arrow, in
    the middle of the band. Around them, her photos and paintings sit on
-   a tilted ring that drifts slowly. The near half of the ring passes in
-   front of the words, the far half behind them, smaller, fainter and
-   softened. Dragging turns the ring and lets it coast; it then drifts
+   a tilted ring that drifts slowly. The near half of the ring passes
+   below and in front of the words, the far half above and behind
+   them, smaller, fainter and softened. Dragging turns the ring and lets it coast; it then drifts
    on in the direction it was thrown. Arrow keys turn it from the
    keyboard (the band is one focus stop). Hovering the pill slides its
    arrow out and a new one in.
@@ -71,6 +71,7 @@ const { title, dek, action, photos } = beyond;
   .beyond {
     position: relative;
     height: var(--ring-h);
+    margin-bottom: var(--ring-tail);
     overflow: hidden;
     background: var(--bg);
     color: var(--fg);
@@ -100,12 +101,15 @@ const { title, dek, action, photos } = beyond;
   .beyond__centre > * { position: relative; z-index: 32; }
   /* Capped to the window's content width, not the stage's: on phones the
      stage runs past the screen's edges. */
+  /* The same body type as Small talk's dek (17px, soft grey, no
+     tracking), which is also the reference's. */
   .beyond__dek {
-    width: min(calc(100vw - 2 * var(--gutter)), 24rem);
+    width: min(calc(100vw - 2 * var(--gutter)), 30rem);
     margin: 1rem 0 0;
-    color: var(--fg-dim);
-    font-size: var(--step-body);
-    line-height: var(--leading-body);
+    color: var(--talk-soft);
+    font-size: var(--step-talk);
+    line-height: 1.42;
+    letter-spacing: 0;
     text-wrap: balance;
   }
 
@@ -200,7 +204,7 @@ const { title, dek, action, photos } = beyond;
 </style>
 
 <script>
-  type Ring = { drift: number; easeRate: number; spreadX: number; spreadY: number; blur: number; fade: number; dragStart: number; keyKick: number };
+  type Ring = { drift: number; easeRate: number; spreadX: number; spreadY: number; offset: number; amp: number; blur: number; fade: number; dragStart: number; keyKick: number };
 
   function mount(stage: HTMLElement) {
     const cfg: Ring = JSON.parse(stage.dataset.ring!);
@@ -221,7 +225,7 @@ const { title, dek, action, photos } = beyond;
       const ax = (W / 2) * cfg.spreadX, ay = (H / 2) * cfg.spreadY;
       const ps = cards.map((_, i) => {
         const t = (i / n) * Math.PI * 2 + turn, depth = (Math.cos(t) + 1) / 2;
-        return { x: Math.sin(t), y: 0.3 + 0.7 * Math.cos(t), depth, scale: 0.55 + 0.45 * depth };
+        return { x: Math.sin(t), y: cfg.offset + cfg.amp * Math.cos(t), depth, scale: 0.55 + 0.45 * depth };
       });
       const order = ps.map((_, i) => i).sort((a, b) => ps[a].depth - ps[b].depth);
       order.forEach((i, rank) => {
