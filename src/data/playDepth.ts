@@ -3,7 +3,8 @@
 // experiments/playground-stream/ (wall.html is the one built).
 //
 // Paintings, photos and the hero portrait only: no app screens, and not the
-// Bob painting, Moss or the smiley (on request). `file` is under
+// Bob painting, Moss or the smiley (on request). Photos are of her alone:
+// none with colleagues (removed on request, 2026-11-13). `file` is under
 // public/images/; `aspect` is width / height. `cut` marks a cut-out with no
 // box of its own (the portrait), which fades by opacity rather than a veil.
 // Each piece's caption is one small line under it, shown on hover (in the
@@ -49,13 +50,7 @@ export const depthPieces: DepthPiece[] = [
   { file: 'beyond/talk-poster.webp', aspect: 1.78, title: 'The Saga of Accessibility, live' },
   { file: 'beyond/baking-cookie.webp', aspect: 0.9, title: 'Baking class, cookie in hand' },
   { file: 'beyond/blue-sculpture.webp', aspect: 0.75, title: 'A blue wall at a design conference' },
-  { file: 'beyond/event-selfie.webp', aspect: 1.37, title: 'Designers, one selfie' },
-  { file: 'beyond/sticky-wall.webp', aspect: 0.56, title: 'A wall of sticky notes' },
-  { file: 'beyond/office-garden.webp', aspect: 1.33, title: 'Out in the office garden' },
-  { file: 'beyond/meetup-group.webp', aspect: 1.96, title: 'A design meetup, all of us' },
   { file: 'beyond/baking-icing.webp', aspect: 0.59, title: 'Piping chocolate' },
-  { file: 'beyond/blue-sculpture-friend.webp', aspect: 0.75, title: 'Between talks at a design conference' },
-  { file: 'beyond/office-garden-2.webp', aspect: 1.14, title: 'Ten minutes away from the screen' },
   { file: 'hero-idle.webp', aspect: 0.71, title: 'Me, at my laptop', cut: true },
 ];
 
