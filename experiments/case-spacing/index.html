@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case study — spacing structures and tag colours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-14. Two questions about /work/[slug]:
+  1. Spacing: four structures for the top of a case study, against the
+     page as it is now (measured at 1440px on the PayPal Debit Card case).
+  2. The lime tags: quieter colours, starting from her smiley's yellow
+     (#f8b800, read off public/images/footer/smiley.webp).
+  The tag picker at the top recolours every mock on the page.
+  Serve from the repo root (case-v2-mockup in launch.json):
+  /experiments/case-spacing/index.html
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --hue: #e0d6ef;            /* PayPal lilac */
+    --smiley: #f8b800;
+  }
+  .light { --bg: #fcfcfc; --fg: #262626; --dim: #707070; --rule: rgb(0 0 0 / .1); --card: color-mix(in srgb, #262626 3%, #fcfcfc); }
+  .dark  { --bg: #1b1a19; --fg: #ecebe8; --dim: #a09d98; --rule: rgb(255 255 255 / .12); --card: color-mix(in srgb, #ecebe8 4%, #1b1a19); --hue: #3a3445; }
+
+  /* ---- Tag colour options (picked by the toolbar) ----------------- */
+  [data-tag='lime']   { --tag-bg: #d4ff3a; --tag-fg: #2b3600; }
+  [data-tag='smiley'] { --tag-bg: #f8b800; --tag-fg: #3d2c00; }
+  [data-tag='cream']  { --tag-bg: #fbe7a6; --tag-fg: #5c4300; }
+  [data-tag='wash']   { --tag-bg: transparent; --tag-fg: var(--fg); --tag-wash: color-mix(in srgb, var(--smiley) 42%, transparent); }
+  [data-tag='dot']    { --tag-bg: transparent; --tag-fg: var(--dim); --tag-dot: var(--smiley); }
+  [data-tag='paper']  { --tag-bg: color-mix(in srgb, var(--fg) 6%, var(--bg)); --tag-fg: var(--dim); }
+  [data-tag='sage']   { --tag-bg: #e9ecd6; --tag-fg: #3f4a17; }
+  [data-tag='line']   { --tag-bg: transparent; --tag-fg: var(--dim); --tag-line: color-mix(in srgb, var(--fg) 22%, transparent); }
+  .dark[data-tag='cream'], .dark [data-tag='cream'] { --tag-bg: #3a3115; --tag-fg: #f3cf6a; }
+  .dark[data-tag='smiley'], .dark [data-tag='smiley'] { --tag-bg: #f8b800; --tag-fg: #3d2c00; }
+  .dark[data-tag='sage'], .dark [data-tag='sage'] { --tag-bg: #2c2f1f; --tag-fg: #cdd6a3; }
+  .dark[data-tag='wash'], .dark [data-tag='wash'] { --tag-wash: color-mix(in srgb, var(--smiley) 30%, transparent); }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f0efec; color: #262626; font: 600 14px/1.6 var(--font-sans); }
+  .doc { max-width: 1280px; margin: 0 auto; padding: 56px 32px 160px; }
+  .doc > h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 10px; letter-spacing: -0.01em; }
+  .doc > h1 em, h2 em { font-style: italic; }
+  .dek { color: #707070; margin: 0 0 28px; max-width: 70ch; }
+
+  .bar { position: sticky; top: 0; z-index: 5; background: #f0efec; padding: 14px 0; border-bottom: 1px solid rgb(0 0 0 / .1); margin-bottom: 40px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .bar__label { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: #707070; margin-right: 6px; }
+  .bar button { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: #262626; background: transparent; border: 1px solid rgb(0 0 0 / .2); border-radius: 999px; padding: 7px 11px; cursor: pointer; }
+  .bar button[aria-pressed='true'] { background: #262626; color: #fcfcfc; border-color: #262626; }
+  .bar button:focus-visible { outline: 2px solid #262626; outline-offset: 2px; }
+
+  h2 { font: 300 32px/1.15 var(--font-serif); margin: 72px 0 6px; letter-spacing: -0.01em; }
+  .part { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: #707070; margin: 72px 0 0; }
+
+  .opt { margin-top: 36px; }
+  .opt__head { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+  .opt__n { font: 400 11px/1 var(--font-mono); letter-spacing: .06em; color: #707070; }
+  .opt__name { font: 300 26px/1.1 var(--font-serif); margin: 0; }
+  .rec { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; border: 1px solid #262626; border-radius: 4px; padding: 3px 6px; }
+  .opt__why { color: #707070; margin: 6px 0 14px; max-width: 80ch; }
+  .opt__why b { color: #262626; }
+
+  /* ================================================================
+     The page mock — a 1440px page at 0.8 scale, so the first screen
+     and a bit reads at a glance. Rail + content, as on the site.
+     ================================================================ */
+  .frame { width: 100%; overflow: hidden; border: 1px solid rgb(0 0 0 / .12); background: var(--bg); }
+  .page { width: 1440px; transform: scale(.8); transform-origin: 0 0; background: var(--bg); color: var(--fg); position: relative; }
+  .frame { height: var(--fh, 1180px); }
+
+  .nav { height: 69px; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--edge); font-size: 14px; }
+  .nav span:last-child { font-size: 12px; color: var(--dim); letter-spacing: .02em; }
+  .strip { height: 41px; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--edge); border-bottom: 1px solid var(--rule); font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); position: relative; }
+  .strip::after { content: ''; position: absolute; left: 0; bottom: -1px; height: 2px; width: 6%; background: #b4482a; }
+
+  .mono { font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin: 0; }
+  .body { display: grid; grid-template-columns: 187px minmax(0, 1fr); column-gap: 40px; padding: var(--top) var(--edge) 0; }
+  .rail { position: relative; }
+  .rail ol { list-style: none; margin: 18px 0 0; padding: 0; font: 400 12px/1 var(--font-mono); color: var(--dim); display: grid; gap: 13px; }
+  .rail li:first-child { color: var(--fg); }
+
+  .eyebrow { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; }
+  .company { font: 400 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); margin: 0; }
+  .tags { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font: 400 10px/16px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--tag-fg); background: var(--tag-bg); border-radius: 4px; padding: 2px 7px; box-shadow: inset 0 0 0 1px var(--tag-line, transparent); display: inline-flex; align-items: center; gap: 6px; }
+  [data-tag='wash'] .tag, .tag--wash { padding: 2px 3px; background: linear-gradient(transparent 22%, var(--tag-wash) 22%, var(--tag-wash) 88%, transparent 88%); border-radius: 0; }
+  [data-tag='dot'] .tag { padding: 2px 0; margin-right: 8px; }
+  [data-tag='dot'] .tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--tag-dot); }
+
+  h3.title { font: 300 40px/1.1 var(--font-serif); letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+  .lede { color: var(--dim); margin: 0; font-size: 14px; line-height: 1.6; text-wrap: pretty; }
+  .cover { background: var(--hue); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .cover img { display: block; }
+  .cards { display: grid; gap: 12px; }
+  .card { background: var(--card); border-radius: 28px; padding: 22px 24px 24px; }
+  .num { font: 300 44px/1 var(--font-serif); letter-spacing: -0.01em; }
+  .num__l { color: var(--dim); margin: 12px 0 0; font-size: 13px; line-height: 1.5; }
+  .cell__l { margin-bottom: 8px; }
+  .cell__v { font-size: 13px; line-height: 1.55; margin: 0; }
+  .sec { border-top: 1px solid var(--rule); padding-top: 14px; }
+  .sec__l { display: flex; gap: 14px; }
+  .sec__l b { color: var(--fg); font-weight: 400; }
+  .sec__h { font: 300 22px/1.25 var(--font-serif); margin: 26px 0 0; }
+  .sec__p { color: var(--fg); max-width: 62ch; margin: 18px 0 0; font-size: 14px; }
+
+  /* Annotations (spacing callouts) */
+  .ann { position: absolute; left: var(--x); top: var(--y); height: var(--h); width: 0; border-left: 1px dashed #d6336c; z-index: 3; }
+  .ann span { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font: 400 12px/1 var(--font-mono); color: #fff; background: #d6336c; padding: 3px 6px; border-radius: 3px; white-space: nowrap; }
+  .vline { position: absolute; top: 0; bottom: 0; left: var(--x); border-left: 1px dashed #d6336c; z-index: 3; }
+  .vline span { position: absolute; top: 130px; left: 4px; font: 400 12px/1 var(--font-mono); color: #fff; background: #d6336c; padding: 3px 6px; border-radius: 3px; white-space: nowrap; }
+  .ann--ok, .vline--ok { border-color: #2b8a3e; }
+  .ann--ok span, .vline--ok span { background: #2b8a3e; }
+
+  /* ---------- 00 · Now (as measured) ---------- */
+  .s0 { --edge: 40px; --top: 50px; }
+  .s0 .body { padding-left: 64px; padding-right: 64px; }
+  .s0 .title { margin-top: 36px; }
+  .s0 .lede { margin-top: 40px; }
+  .s0 .cover { margin-top: 48px; aspect-ratio: 16/7; padding: 40px; }
+  .s0 .cover img { height: 100%; }
+  .s0 .numbers { margin-top: 96px; }
+  .s0 .numbers .cards { grid-template-columns: repeat(3, 1fr); margin-top: 16px; }
+  .s0 .note { margin-top: 20px; }
+  .s0 .snap { margin-top: 96px; }
+  .s0 .snap .cards { grid-template-columns: repeat(4, 1fr); margin-top: 16px; }
+  .s0 .sec { margin-top: 96px; }
+
+  /* ---------- A · Tightened, same order ---------- */
+  .sA { --edge: 64px; --top: 48px; }
+  .sA .title { margin-top: 20px; }
+  .sA .lede { margin-top: 16px; max-width: 62ch; }
+  .sA .cover { margin-top: 40px; aspect-ratio: 16/8; padding: 24px 24px 0; align-items: flex-end; }
+  .sA .cover img { width: 78%; height: auto; margin-bottom: -26%; }
+  .sA .glance { margin-top: 40px; }
+  .sA .glance .row1 { grid-template-columns: repeat(3, 1fr); margin-top: 14px; }
+  .sA .glance .row2 { grid-template-columns: repeat(4, 1fr); margin-top: 12px; }
+  .sA .note { margin-top: 12px; }
+  .sA .sec { margin-top: 96px; }
+
+  /* ---------- B · Split head ---------- */
+  .sB { --edge: 64px; --top: 48px; }
+  .sB .head { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 64px; align-items: start; margin-top: 20px; }
+  .sB .lede { margin-top: 16px; max-width: 58ch; }
+  .sB .facts { margin: 0; }
+  .sB .facts div { border-top: 1px solid var(--rule); padding: 10px 0 12px; display: grid; grid-template-columns: 84px 1fr; gap: 12px; }
+  .sB .facts div:last-child { border-bottom: 1px solid var(--rule); }
+  .sB .facts dd { margin: 0; font-size: 13px; line-height: 1.5; }
+  .sB .cover { margin-top: 48px; aspect-ratio: 16/8; padding: 24px 24px 0; align-items: flex-end; }
+  .sB .cover img { width: 78%; height: auto; margin-bottom: -26%; }
+  .sB .numbers .cards { grid-template-columns: repeat(3, 1fr); }
+  .sB .numbers { margin-top: 12px; }
+  .sB .note { margin-top: 12px; }
+  .sB .sec { margin-top: 96px; }
+
+  /* ---------- C · Outcome first ---------- */
+  .sC { --edge: 64px; --top: 48px; }
+  .sC .title { margin-top: 20px; }
+  .sC .lede { margin-top: 16px; max-width: 62ch; }
+  .sC .numbers { margin-top: 32px; }
+  .sC .numbers .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; border-top: 1px solid var(--rule); padding-top: 18px; }
+  .sC .numbers .num { font-size: 40px; }
+  .sC .note { margin-top: 14px; }
+  .sC .cover { margin-top: 40px; aspect-ratio: 16/8; padding: 24px 24px 0; align-items: flex-end; }
+  .sC .cover img { width: 78%; height: auto; margin-bottom: -26%; }
+  .sC .snap .cards { grid-template-columns: repeat(4, 1fr); }
+  .sC .snap { margin-top: 12px; }
+  .sC .sec { margin-top: 96px; }
+
+  /* ---------- D · Reading column ---------- */
+  .sD { --edge: 64px; --top: 48px; }
+  .sD .col { max-width: 720px; }
+  .sD .title { margin-top: 20px; }
+  .sD .lede { margin-top: 16px; }
+  .sD .cover { margin-top: 40px; aspect-ratio: 16/8; padding: 24px 24px 0; align-items: flex-end; }
+  .sD .cover img { width: 78%; height: auto; margin-bottom: -26%; }
+  .sD .glance { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sD .glance .cards { grid-template-columns: 1fr 1fr 1fr; }
+  .sD .glance .snapgrid { grid-template-columns: 1fr 1fr; }
+  .sD .glance .num { font-size: 36px; }
+  .sD .sec { margin-top: 96px; }
+
+  /* ================================================================
+     Tag swatches
+     ================================================================ */
+  .sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin-top: 22px; }
+  .sw__card { border: 1px solid rgb(0 0 0 / .12); background: #fcfcfc; cursor: pointer; text-align: left; padding: 0; font: inherit; color: inherit; }
+  .sw__card[aria-pressed='true'] { outline: 2px solid #262626; outline-offset: 2px; }
+  .sw__half { padding: 18px 18px 16px; background: var(--bg); color: var(--fg); }
+  .sw__half + .sw__half { border-top: 1px solid rgb(0 0 0 / .12); }
+  .sw__meta { padding: 12px 18px 16px; border-top: 1px solid rgb(0 0 0 / .12); }
+  .sw__name { font: 300 20px/1.2 var(--font-serif); margin: 0; }
+  .sw__note { color: #707070; font-size: 12px; line-height: 1.5; margin: 4px 0 0; }
+  .sw__note b { color: #262626; }
+  .sw__title { font: 300 22px/1.1 var(--font-serif); margin: 12px 0 0; }
+</style>
+</head>
+<body>
+<main class="doc">
+  <h1>Case study <em>spacing</em>, and quieter tags</h1>
+  <p class="dek">Measured at 1440px on the PayPal Debit Card case. The page has three left edges (strip 40px, rail 64px, content 291px), the snippet runs 150 characters wide, the square cover sits in a 16:7 lilac letterbox so 60% of it is empty hue, and every block below the cover floats 96px from the next, so numbers, the "Business" note and the snapshot read as three loose parts instead of one. Pick a tag colour below and it applies to every mock.</p>
+
+  <div class="bar" role="group" aria-label="Tag colour">
+    <span class="bar__label">Tags</span>
+    <button data-pick="lime">Lime (now)</button>
+    <button data-pick="smiley">Smiley yellow</button>
+    <button data-pick="cream" aria-pressed="true">Smiley cream</button>
+    <button data-pick="wash">Crayon wash</button>
+    <button data-pick="dot">Yellow dot</button>
+    <button data-pick="paper">Paper</button>
+    <button data-pick="sage">Sage</button>
+    <button data-pick="line">Hairline</button>
+  </div>
+
+  <p class="part">Part 1 · Structure</p>
+
+  <!-- 00 NOW ------------------------------------------------------- -->
+  <section class="opt">
+    <div class="opt__head"><span class="opt__n">00</span><h2 class="opt__name" style="margin:0">Now, measured</h2></div>
+    <p class="opt__why">Pink marks are the problems. Gaps go 36 → 40 → 48 → 96 → 96 → 96: tight at the top, then loose exactly where the evidence starts.</p>
+    <div class="frame" style="--fh: 1200px"><div class="page light s0" data-scope>
+      <div class="vline" style="--x:40px"><span>strip 40</span></div>
+      <div class="vline" style="--x:64px"><span style="top:160px">rail 64</span></div>
+      <div class="vline" style="--x:291px"><span style="top:190px">content 291</span></div>
+      <div class="nav"><span>Anupama Mishra</span><span>Work · About · Play</span></div>
+      <div class="strip"><span>◂ Work</span><span>Part 1/8 ▾</span></div>
+      <div class="body">
+        <nav class="rail"><p class="mono">Contents</p><ol><li>Start</li><li>The work</li><li>The situation</li><li>My scope</li><li>The hard call</li><li>Working with constraints</li><li>Impact</li><li>What I'd do differently</li></ol></nav>
+        <div>
+          <div class="eyebrow"><p class="company">PayPal</p><ul class="tags"><li class="tag">Fintech</li><li class="tag">Growth</li><li class="tag">Product strategy</li></ul></div>
+          <h3 class="title">A debit card people finish signing up for</h3>
+          <p class="lede">PayPal Debit Card: rebuilding card enrollment inside the PayPal app around identity checks and fee disclosure, and adding cash back offers, so more people finish signing up and start using the card the same day.</p>
+          <div class="cover"><img src="/public/images/paypal-debit/hero.webp" alt=""></div>
+          <div class="numbers"><p class="mono">Impact</p><div class="cards">
+            <div class="card"><div class="num">20%</div><p class="num__l">Faster card applications</p></div>
+            <div class="card"><div class="num">18%</div><p class="num__l">More cards activated the same day</p></div>
+            <div class="card"><div class="num">25%</div><p class="num__l">Fewer support calls about shipping</p></div>
+          </div><p class="mono note">Business</p></div>
+          <div class="snap"><p class="mono">Case snapshot</p><div class="cards">
+            <div class="card"><p class="mono cell__l">Role</p><p class="cell__v">Owned the design direction · Strategy and the core flows</p></div>
+            <div class="card"><p class="mono cell__l">Surface</p><p class="cell__v">PayPal mobile app: enrollment, card home, rewards, notifications</p></div>
+            <div class="card"><p class="mono cell__l">Partners</p><p class="cell__v">Product, engineering, compliance and legal, The Bancorp Bank, research</p></div>
+            <div class="card"><p class="mono cell__l">Timeline</p><p class="cell__v">Flows dated Apr–Jun 2022</p></div>
+          </div></div>
+          <div class="sec"><p class="mono sec__l"><b>01</b>The work</p><p class="sec__h">Prototypes first, then the screens</p></div>
+        </div>
+      </div>
+      <div class="ann" data-from=".eyebrow" data-to=".title" style="--x:300px"><span>36</span></div>
+      <div class="ann" data-from=".title" data-to=".lede" style="--x:300px"><span>40</span></div>
+      <div class="ann" data-on=".lede" style="--x:1380px"><span style="left:auto;right:6px">150 characters a line</span></div>
+      <div class="ann" data-from=".cover" data-to=".numbers" style="--x:300px"><span>96</span></div><div class="ann" data-from=".lede" data-to=".cover" style="--x:300px"><span>48</span></div>
+      <div class="ann" data-from=".numbers" data-to=".snap" style="--x:300px"><span>96 · "Business" left floating above</span></div><div class="ann" data-from=".snap" data-to=".sec" style="--x:300px"><span>96</span></div>
+      <div class="ann" data-on=".cover" style="--x:500px"><span>~60% of the cover is empty lilac</span></div>
+    </div></div>
+  </section>
+
+  <!-- A TIGHTENED --------------------------------------------------- -->
+  <section class="opt">
+    <div class="opt__head"><span class="opt__n">A</span><h2 class="opt__name" style="margin:0">Tightened, same order</h2><span class="rec">Recommended</span></div>
+    <p class="opt__why"><b>Smallest change.</b> One left edge for strip, rail and nav. Three gaps only: 16 inside a group, 40 between groups, 96 before a section. Snippet capped at 62ch. The cover fills its band and bleeds off the bottom, so the hue is a ground, not a mat. Numbers and snapshot become one "At a glance" block, the note sits right under its numbers.</p>
+    <div class="frame" style="--fh: 1200px"><div class="page light sA" data-scope>
+      <div class="vline vline--ok" style="--x:64px"><span>one edge 64</span></div>
+      <div class="nav"><span>Anupama Mishra</span><span>Work · About · Play</span></div>
+      <div class="strip"><span>◂ Work</span><span>Part 1/8 ▾</span></div>
+      <div class="body">
+        <nav class="rail"><p class="mono">Contents</p><ol><li>Start</li><li>The work</li><li>The situation</li><li>My scope</li><li>The hard call</li><li>Working with constraints</li><li>Impact</li><li>What I'd do differently</li></ol></nav>
+        <div>
+          <div class="eyebrow"><p class="company">PayPal</p><ul class="tags"><li class="tag">Fintech</li><li class="tag">Growth</li><li class="tag">Product strategy</li></ul></div>
+          <h3 class="title">A debit card people finish signing up for</h3>
+          <p class="lede">PayPal Debit Card: rebuilding card enrollment inside the PayPal app around identity checks and fee disclosure, and adding cash back offers, so more people finish signing up and start using the card the same day.</p>
+          <div class="cover"><img src="/public/images/paypal-debit/hero.webp" alt=""></div>
+          <div class="glance"><p class="mono">At a glance</p>
+            <div class="cards row1">
+              <div class="card"><div class="num">20%</div><p class="num__l">Faster card applications</p></div>
+              <div class="card"><div class="num">18%</div><p class="num__l">More cards activated the same day</p></div>
+              <div class="card"><div class="num">25%</div><p class="num__l">Fewer support calls about shipping</p></div>
+            </div>
+            <div class="cards row2">
+              <div class="card"><p class="mono cell__l">Role</p><p class="cell__v">Owned the design direction · Strategy and the core flows</p></div>
+              <div class="card"><p class="mono cell__l">Surface</p><p class="cell__v">PayPal mobile app: enrollment, card home, rewards, notifications</p></div>
+              <div class="card"><p class="mono cell__l">Partners</p><p class="cell__v">Product, engineering, compliance and legal, The Bancorp Bank, research</p></div>
+              <div class="card"><p class="mono cell__l">Timeline</p><p class="cell__v">Flows dated Apr–Jun 2022</p></div>
+            </div>
+            <p class="mono note">Numbers: business impact after launch</p>
+          </div>
+          <div class="sec"><p class="mono sec__l"><b>01</b>The work</p><p class="sec__h">Prototypes first, then the screens</p></div>
+        </div>
+      </div>
+      <div class="ann ann--ok" data-from=".title" data-to=".lede" style="--x:300px"><span>16</span></div>
+      <div class="ann ann--ok" data-from=".lede" data-to=".cover" style="--x:300px"><span>40</span></div><div class="ann ann--ok" data-from=".cover" data-to=".glance" style="--x:300px"><span>40</span></div>
+      <div class="ann ann--ok" data-from=".glance" data-to=".sec" style="--x:300px"><span>96 → first section</span></div>
+    </div></div>
+  </section>
+
+  <!-- B SPLIT HEAD -------------------------------------------------- -->
+  <section class="opt">
+    <div class="opt__head"><span class="opt__n">B</span><h2 class="opt__name" style="margin:0">Split head</h2></div>
+    <p class="opt__why"><b>Scope in the first screen.</b> Role, surface, partners and timeline move up beside the title as a hairline list, using the space the 150-character snippet wasted. The numbers sit straight under the cover, 12px away, so the picture and its outcome read as one. Loses the snapshot cards.</p>
+    <div class="frame" style="--fh: 960px"><div class="page light sB" data-scope>
+      <div class="nav"><span>Anupama Mishra</span><span>Work · About · Play</span></div>
+      <div class="strip"><span>◂ Work</span><span>Part 1/8 ▾</span></div>
+      <div class="body">
+        <nav class="rail"><p class="mono">Contents</p><ol><li>Start</li><li>The work</li><li>The situation</li><li>My scope</li><li>The hard call</li><li>Working with constraints</li><li>Impact</li><li>What I'd do differently</li></ol></nav>
+        <div>
+          <div class="eyebrow"><p class="company">PayPal</p><ul class="tags"><li class="tag">Fintech</li><li class="tag">Growth</li><li class="tag">Product strategy</li></ul></div>
+          <div class="head">
+            <div>
+              <h3 class="title">A debit card people finish signing up for</h3>
+              <p class="lede">PayPal Debit Card: rebuilding card enrollment inside the PayPal app around identity checks and fee disclosure, and adding cash back offers, so more people finish signing up and start using the card the same day.</p>
+            </div>
+            <dl class="facts">
+              <div><dt class="mono">Role</dt><dd>Owned the design direction · Strategy and the core flows</dd></div>
+              <div><dt class="mono">Surface</dt><dd>PayPal app: enrollment, card home, rewards, notifications</dd></div>
+              <div><dt class="mono">Partners</dt><dd>Product, engineering, compliance, legal, The Bancorp Bank</dd></div>
+              <div><dt class="mono">Timeline</dt><dd>Apr–Jun 2022</dd></div>
+            </dl>
+          </div>
+          <div class="cover"><img src="/public/images/paypal-debit/hero.webp" alt=""></div>
+          <div class="numbers"><div class="cards">
+            <div class="card"><div class="num">20%</div><p class="num__l">Faster card applications</p></div>
+            <div class="card"><div class="num">18%</div><p class="num__l">More cards activated the same day</p></div>
+            <div class="card"><div class="num">25%</div><p class="num__l">Fewer support calls about shipping</p></div>
+          </div><p class="mono note">Business impact after launch</p></div>
+          <div class="sec"><p class="mono sec__l"><b>01</b>The work</p><p class="sec__h">Prototypes first, then the screens</p></div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- C OUTCOME FIRST ----------------------------------------------- -->
+  <section class="opt">
+    <div class="opt__head"><span class="opt__n">C</span><h2 class="opt__name" style="margin:0">Outcome first</h2></div>
+    <p class="opt__why"><b>For the 60-second skim.</b> The three numbers come straight after the snippet, plain on one hairline (no cards), so title, claim and proof sit above the fold together. Cover next, snapshot cards tucked 12px under it. Quietest top of the four.</p>
+    <div class="frame" style="--fh: 1000px"><div class="page light sC" data-scope>
+      <div class="nav"><span>Anupama Mishra</span><span>Work · About · Play</span></div>
+      <div class="strip"><span>◂ Work</span><span>Part 1/8 ▾</span></div>
+      <div class="body">
+        <nav class="rail"><p class="mono">Contents</p><ol><li>Start</li><li>The work</li><li>The situation</li><li>My scope</li><li>The hard call</li><li>Working with constraints</li><li>Impact</li><li>What I'd do differently</li></ol></nav>
+        <div>
+          <div class="eyebrow"><p class="company">PayPal</p><ul class="tags"><li class="tag">Fintech</li><li class="tag">Growth</li><li class="tag">Product strategy</li></ul></div>
+          <h3 class="title">A debit card people finish signing up for</h3>
+          <p class="lede">PayPal Debit Card: rebuilding card enrollment inside the PayPal app around identity checks and fee disclosure, and adding cash back offers, so more people finish signing up and start using the card the same day.</p>
+          <div class="numbers"><div class="stats">
+            <div><div class="num">20%</div><p class="num__l">Faster card applications</p></div>
+            <div><div class="num">18%</div><p class="num__l">More cards activated the same day</p></div>
+            <div><div class="num">25%</div><p class="num__l">Fewer support calls about shipping</p></div>
+          </div><p class="mono note">Business impact after launch</p></div>
+          <div class="cover"><img src="/public/images/paypal-debit/hero.webp" alt=""></div>
+          <div class="snap"><div class="cards">
+            <div class="card"><p class="mono cell__l">Role</p><p class="cell__v">Owned the design direction · Strategy and the core flows</p></div>
+            <div class="card"><p class="mono cell__l">Surface</p><p class="cell__v">PayPal mobile app: enrollment, card home, rewards, notifications</p></div>
+            <div class="card"><p class="mono cell__l">Partners</p><p class="cell__v">Product, engineering, compliance and legal, The Bancorp Bank, research</p></div>
+            <div class="card"><p class="mono cell__l">Timeline</p><p class="cell__v">Flows dated Apr–Jun 2022</p></div>
+          </div></div>
+          <div class="sec"><p class="mono sec__l"><b>01</b>The work</p><p class="sec__h">Prototypes first, then the screens</p></div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- D READING COLUMN ---------------------------------------------- -->
+  <section class="opt">
+    <div class="opt__head"><span class="opt__n">D</span><h2 class="opt__name" style="margin:0">Reading column</h2></div>
+    <p class="opt__why"><b>Text narrow, pictures wide.</b> Every line of text sits in a 720px column; the cover and screens use the full width. Numbers and snapshot share one row of cards. Calmest to read, but the right side of the head is empty on wide screens, and every section's text would need the same 720px cap.</p>
+    <div class="frame" style="--fh: 1020px"><div class="page light sD" data-scope>
+      <div class="nav"><span>Anupama Mishra</span><span>Work · About · Play</span></div>
+      <div class="strip"><span>◂ Work</span><span>Part 1/8 ▾</span></div>
+      <div class="body">
+        <nav class="rail"><p class="mono">Contents</p><ol><li>Start</li><li>The work</li><li>The situation</li><li>My scope</li><li>The hard call</li><li>Working with constraints</li><li>Impact</li><li>What I'd do differently</li></ol></nav>
+        <div>
+          <div class="col">
+            <div class="eyebrow"><p class="company">PayPal</p><ul class="tags"><li class="tag">Fintech</li><li class="tag">Growth</li><li class="tag">Product strategy</li></ul></div>
+            <h3 class="title">A debit card people finish signing up for</h3>
+            <p class="lede">PayPal Debit Card: rebuilding card enrollment inside the PayPal app around identity checks and fee disclosure, and adding cash back offers, so more people finish signing up and start using the card the same day.</p>
+          </div>
+          <div class="cover"><img src="/public/images/paypal-debit/hero.webp" alt=""></div>
+          <div class="glance">
+            <div class="cards">
+              <div class="card"><div class="num">20%</div><p class="num__l">Faster applications</p></div>
+              <div class="card"><div class="num">18%</div><p class="num__l">More activated same day</p></div>
+              <div class="card"><div class="num">25%</div><p class="num__l">Fewer shipping calls</p></div>
+            </div>
+            <div class="cards snapgrid">
+              <div class="card"><p class="mono cell__l">Role</p><p class="cell__v">Design direction, strategy, core flows</p></div>
+              <div class="card"><p class="mono cell__l">Surface</p><p class="cell__v">PayPal app enrollment and card home</p></div>
+              <div class="card"><p class="mono cell__l">Partners</p><p class="cell__v">Product, eng, compliance, The Bancorp Bank</p></div>
+              <div class="card"><p class="mono cell__l">Timeline</p><p class="cell__v">Apr–Jun 2022</p></div>
+            </div>
+          </div>
+          <div class="col"><div class="sec"><p class="mono sec__l"><b>01</b>The work</p><p class="sec__h">Prototypes first, then the screens</p></div></div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- PART 2 TAGS --------------------------------------------------- -->
+  <p class="part">Part 2 · Tag colour</p>
+  <h2>Quieter <em>tags</em></h2>
+  <p class="dek">Each in light and dark, on the real eyebrow. Click one to apply it to every mock above. All clear 4.5:1. One thing to know about yellow: the Walmart cases' cover hue is butter (#f4dc9c), so a yellow tag sits next to a yellow cover there.</p>
+  <div class="sw" id="sw"></div>
+</main>
+
+<script>
+  const OPTS = [
+    ['lime', 'Lime (now)', 'For comparison. 11:1. The loudest thing on the page.'],
+    ['smiley', 'Smiley yellow', 'Her crayon smiley\'s #f8b800, dark ink 7.6:1. <b>Still loud</b>, but warm and hers.'],
+    ['cream', 'Smiley cream', 'The smiley thinned to #fbe7a6, brown ink #5c4300, 7.6:1. <b>Recommended:</b> warm, ties to the footer, sits back.'],
+    ['wash', 'Crayon wash', 'The smiley as a highlighter stroke behind ink text, like the footer\'s marker wash. No chip.'],
+    ['dot', 'Yellow dot', 'Grey mono labels, a small smiley dot before each. Colour as a mark only, as the accent is.'],
+    ['paper', 'Paper', '6% ink fill, grey text. Fully neutral, the same family as the soft cards.'],
+    ['sage', 'Sage', 'The lime\'s own idea, desaturated: #e9ecd6, olive ink 7.9:1.'],
+    ['line', 'Hairline', 'Grey text in a 1px outline. Quietest chip.'],
+  ];
+  const sw = document.getElementById('sw');
+  const eyebrow = () => '<div class="eyebrow"><p class="company">PayPal</p><ul class="tags"><li class="tag">Fintech</li><li class="tag">Growth</li><li class="tag">Product strategy</li></ul></div><p class="sw__title">A debit card people finish signing up for</p>';
+  for (const [k, name, note] of OPTS) {
+    const b = document.createElement('button');
+    b.className = 'sw__card';
+    b.dataset.pick = k;
+    b.innerHTML = `<div class="sw__half light" data-tag="${k}">${eyebrow()}</div><div class="sw__half dark" data-tag="${k}">${eyebrow()}</div><div class="sw__meta"><p class="sw__name">${name}</p><p class="sw__note">${note}</p></div>`;
+    sw.append(b);
+  }
+  const pick = (k) => {
+    document.querySelectorAll('[data-scope]').forEach((el) => el.dataset.tag = k);
+    document.querySelectorAll('[data-pick]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pick === k)));
+  };
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-pick]'); if (b) pick(b.dataset.pick); });
+  pick('cream');
+  // Annotations measure themselves: a gap between two blocks, or a block's own height.
+  const place = () => document.querySelectorAll('[data-scope]').forEach((page) => {
+    const top = page.getBoundingClientRect().top, k = 0.8;
+    const y = (el, edge) => (el.getBoundingClientRect()[edge] - top) / k;
+    page.querySelectorAll('.ann').forEach((a) => {
+      let y0, y1;
+      if (a.dataset.on) { const e = page.querySelector(a.dataset.on); y0 = y(e, 'top'); y1 = y(e, 'bottom'); }
+      else { y0 = y(page.querySelector(a.dataset.from), 'bottom'); y1 = y(page.querySelector(a.dataset.to), 'top'); }
+      a.style.setProperty('--y', y0 + 'px'); a.style.setProperty('--h', (y1 - y0) + 'px');
+    });
+  });
+  addEventListener('load', place); document.fonts.ready.then(place);
+</script>
+</body>
+</html>

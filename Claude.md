@@ -588,23 +588,30 @@ walked back. Concretely, in the current implementation:
   and a 2px accent progress line along its edge. It rides with the nav
   as it hides and returns. Values under CASE STRIP in `tokens.css`.
 - **Every case study opens the same way** (on request, after
-  gauravi.design): company and tags → title → snippet → cover → headline
-  numbers → "Case snapshot" (Role and the case's meta) → sections. The
-  numbers (`CaseNumbers.astro`) are the first metrics block of the case's
-  Impact section, minus `[X]` placeholders and dates, shown only with two
-  or more left; they count up from 0 when in view (CASE NUMBERS in
-  `tokens.css`), static under reduced motion. The headline numbers, the Impact
-  section's numbers and the case snapshot's cells sit on the About page's
-  soft cards (3% ink fill, no border, 28px corners; CASE CARDS in
-  `tokens.css`) instead of hairlines, on request (2026-11-14) — a
-  requested exception to the square `--radius` rule, those three blocks
-  only. Section openers and the numbered lists keep their hairlines.
-- **Case tags are lime** (CASE TAGS in `tokens.css`: `#d4ff3a` fill,
-  `#2b3600` ink, 11:1), picked on request from a round of neutral, neon
-  and red/brown mocks. The company in mono, then its tags as 10px mono
-  chips with 4px corners — the same labels as its card (`labelsFor()`).
-  A requested exception to rule 2: one hue, only on these tags; don't
-  spread it to other chips, text or chrome.
+  gauravi.design; split head chosen 2026-11-14, option B of
+  `experiments/case-spacing/`): a split head — company and tags, title
+  and snippet (capped at `--measure`) on the left; Role and the case's
+  meta as a 2 × 2 list of hairline facts on the right, sized so both
+  sides end about level and the cover comes up under them — then cover,
+  then the headline numbers a card gap under it. The rail, the strip's
+  "◂ Work" and the nav share one left edge. The numbers
+  (`CaseNumbers.astro`, `attached`) are the first metrics block of the
+  case's Impact section, minus `[X]` placeholders and dates, shown only
+  with two or more left; they count up from 0 when in view (CASE NUMBERS
+  in `tokens.css`), static under reduced motion. The headline numbers and
+  the Impact section's numbers sit on the About page's soft cards (3% ink
+  fill, no border, 28px corners; CASE CARDS in `tokens.css`), on request
+  (2026-11-14) — a requested exception to the square `--radius` rule,
+  those blocks only. The old "Case snapshot" cards became the head's
+  facts. Head spacing under CASE HEAD in `tokens.css`. Section openers
+  and the numbered lists keep their hairlines.
+- **Case tags are a crayon wash** (CASE TAGS in `tokens.css`, on
+  request, 2026-11-14, from `experiments/case-spacing/`, over the lime
+  and a cream chip): no chip, ink text on a highlighter stroke of her
+  footer smiley's yellow (`#f8b800`, 42% light, 30% dark). The company
+  in mono, then its tags in 10px mono — the same labels as its card
+  (`labelsFor()`). A requested exception to rule 2: one hue, only on
+  these tags; don't spread it to other chips, text or chrome.
 - **The locked case page** (`LockedGate.astro`, the Okta case): mono
   line, "The interesting parts are *confidential*.", one paragraph, then
   Role, Scope and Outcome as three of the About page's soft cards (3%

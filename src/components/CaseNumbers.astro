@@ -1,7 +1,7 @@
 ---
 /* CaseNumbers.astro — a case study's headline numbers, right under its
-   cover, before the case snapshot. Every case study opens the same way:
-   title → snippet → cover → numbers → case snapshot → sections.
+   cover. Every case study opens the same way: company and tags, title,
+   snippet and the case facts beside them → cover → numbers → sections.
 
    The numbers are not authored twice: [slug].astro passes the first
    metrics block of the case's own Impact section. Placeholders ("[X]")
@@ -27,11 +27,15 @@
 interface Props {
   items: { value: string; label: string }[];
   note?: string;
+  /* Attached to the cover above it (the case page's split head): a card
+     gap under the cover, no bottom margin (the page sets the gap to the
+     sections), and the "Impact" label kept only for screen readers. */
+  attached?: boolean;
 }
-const { items, note } = Astro.props;
+const { items, note, attached = false } = Astro.props;
 ---
-<div class="numbers" data-numbers>
-  <p class="u-label-mono numbers__label">Impact</p>
+<div class:list={['numbers', attached && 'numbers--attached']} data-numbers>
+  <p class:list={['u-label-mono numbers__label', attached && 'u-sr-only']}>Impact</p>
   <dl class="numbers__stats" style={`--cols: ${Math.min(items.length, 4)};`}>
     {items.map((it) => (
       <div class="numbers__stat">
@@ -50,6 +54,7 @@ const { items, note } = Astro.props;
 
 <style>
   .numbers { margin-block: var(--space-case); }
+  .numbers--attached { margin-block: var(--case-card-gap) 0; }
   .numbers__label { margin: 0 0 1rem; }
   .numbers__stats {
     margin: 0;
@@ -79,6 +84,7 @@ const { items, note } = Astro.props;
     text-wrap: pretty;
   }
   .numbers__note { margin: 1.25rem 0 0; }
+  .numbers--attached .numbers__note { margin-top: 0.75rem; }
 
   /* The final value holds the space; the count is laid over it. */
   .roll { position: relative; display: inline-block; white-space: nowrap; }
