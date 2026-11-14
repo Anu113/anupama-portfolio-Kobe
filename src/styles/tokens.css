@@ -1166,8 +1166,7 @@
   --case-card-gap: var(--locked-card-gap);
 }
 
-/* ============================================================
-   ABOUT (pages/about.astro, AskMoss.astro's small size). The tabs,
+/* =====================================================   ABOUT (pages/about.astro, AskMoss.astro's small size). The tabs,
    Moss's field and the rounded rows are after andreas.vision/about
    (measured 2026-10-17). The layout (2026-11-11, from the mocks in
    experiments/about-grid/): her portrait held on the left while her
