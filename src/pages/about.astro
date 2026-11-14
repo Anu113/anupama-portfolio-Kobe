@@ -24,8 +24,8 @@
 
    TILES. Six, three across (two under 1024px, one on phones): Talks
    and people, Making, Travel, Food, Books, and a record player
-   (RecordPlayer.astro, its own header says how it plays), which
-   stands on the page with no card behind it (on request, 2026-11-14). The first
+   (RecordPlayer.astro, its own header says how it plays), on the same
+   soft card as the others with its caption under it. The first
    five: Each a stack of up to
    five photos; on hover or keyboard focus the stack spreads to show
    every photo, stopping at the tile's edge, and the photo under the
@@ -325,7 +325,6 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
     transition: scale var(--dur-talk-grow) var(--ease-talk-grow);
   }
   .ptile:hover, .ptile:focus-within { z-index: 2; }
-  .ptile--player::before { display: none; }   /* the player stands on the page, no card */
   @media (hover: hover) and (pointer: fine) { .ptile:hover::before { scale: 1.03; } }
   .caption {
     margin: 4cqw 0 0; width: min(100%, 34ch); color: var(--about-copy);

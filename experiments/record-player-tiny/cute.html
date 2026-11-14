@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cute player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Azeret+Mono&family=VT323&display=swap" rel="stylesheet">
+<style>
+  /* Mock only (2026-11-14): option 1 of index.html ("Same, smaller")
+     with handles and small cute touches. Like the player today, its
+     colours belong to the object, never to the page. */
+  :root {
+    --shell: #f3f1ec; --shell-2: #e4e0d8; --shell-edge: #d3cec5;
+    --vinyl: #151515; --glass: #06140a; --neon: #4dff6a;
+    --blush: #f6dfe0; --blush-2: #ecc9cb; --blush-edge: #ddb3b6; --rose: #d98c94;
+    --butter: #f7e7b8;
+    --ease: cubic-bezier(0.2, 0.715, 0.205, 0.99);
+  }
+  body { --bg: #fcfcfc; --fg: #262626; --dim: #707070; }
+  body[data-mode="dark"] { --bg: #1b1a19; --fg: #ecebe8; --dim: #a09d98; }
+  body { --card: color-mix(in srgb, var(--fg) 3%, var(--bg)); margin: 0; background: var(--bg); color: var(--fg); font: 600 14px/1.5 Manrope, system-ui, sans-serif; transition: background 300ms; }
+  * { box-sizing: border-box; }
+  img { display: block; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 48px 40px 120px; }
+  header { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; }
+  header h1 { font: 300 italic 30px/1.15 'Crimson Pro', serif; margin: 0 0 8px; }
+  header p { margin: 0; color: var(--dim); font-size: 13px; max-width: 64ch; }
+  .modes button { font: 400 11px/1 'Azeret Mono', monospace; text-transform: uppercase; letter-spacing: .05em; border: 0; padding: 8px 12px; border-radius: 14px; background: transparent; color: var(--dim); cursor: pointer; }
+  .modes button[aria-pressed="true"] { background: color-mix(in srgb, var(--fg) 6%, var(--bg)); color: var(--fg); }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 48px; }
+  .opt h2 { font: 400 11px/1.4 'Azeret Mono', monospace; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 4px; }
+  .opt > p { margin: 0 0 14px; color: var(--dim); font-size: 12px; min-height: 3.2em; }
+  .tile { position: relative; aspect-ratio: 1; border-radius: 28px; background: var(--card); container-type: inline-size;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5cqw; }
+  .cap { margin: 0; color: color-mix(in srgb, var(--fg) 51%, var(--bg)); font-size: 12px; text-align: center; }
+  .cap b { font-weight: inherit; color: var(--fg); }
+
+  /* ---------- the player (option 1) ---------- */
+  .p1 { position: relative; width: 56cqw; padding-top: 14cqw; }
+  .rec { z-index: 1; position: absolute; left: 50%; top: 0; width: 34cqw; aspect-ratio: 1; translate: -50% 26%; transition: translate 900ms var(--ease);
+    border-radius: 50%; background: repeating-radial-gradient(circle, #1a1a1a 0 1px, var(--vinyl) 1px 3px); box-shadow: 0 2px 6px rgb(0 0 0 / .3); }
+  .rec::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(transparent 20deg, rgb(255 255 255 / .14) 40deg, transparent 60deg, transparent 200deg, rgb(255 255 255 / .1) 220deg, transparent 240deg); }
+  .rec .lbl { position: absolute; inset: 32%; border-radius: 50%; overflow: hidden; }
+  .rec .lbl img { width: 100%; height: 100%; object-fit: cover; }
+  .rec .lbl::after { content: ''; position: absolute; inset: 44%; border-radius: 50%; background: #d9d4cc; }
+  .playing .rec { translate: -50% -8%; }
+  .playing .rec .lbl { animation: turn 1.8s linear infinite; }
+  @keyframes turn { to { rotate: 360deg; } }
+
+  .box { --s1: var(--shell); --s2: var(--shell-2); --edge: var(--shell-edge);
+    position: relative; z-index: 2; display: grid; grid-template-columns: 15cqw 1fr; gap: 3cqw; align-items: center; padding: 4cqw; border-radius: 6cqw;
+    background: linear-gradient(170deg, var(--s1), var(--s2)); box-shadow: inset 0 1px 0 #fff, 0 1.4cqw 0 var(--edge), 0 4cqw 6cqw -2cqw rgb(0 0 0 / .3); }
+  .box::before { content: ''; position: absolute; top: -0.6cqw; left: 12%; right: 12%; height: 1.4cqw; border-radius: 1cqw; background: #111; }
+  .sticker { grid-column: 1 / -1; justify-self: start; display: block; padding: 1.1cqw 2cqw; border-radius: 1.4cqw; background: #fff; box-shadow: 0 0.2cqw 0.4cqw rgb(0 0 0 / .08);
+    font: 400 2.3cqw/1 'Azeret Mono', monospace; letter-spacing: .06em; text-transform: uppercase; color: #6e6a62; white-space: nowrap; }
+  .spk { aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #6a665f 0.5px, transparent 1px) 0 0 / 4px 4px, #ebe8e2; box-shadow: inset 0 1px 3px rgb(0 0 0 / .18); }
+  .right { display: grid; gap: 2.4cqw; min-width: 0; }
+  .lcd { height: 9cqw; border-radius: 2cqw; background: var(--glass); display: flex; align-items: center; padding: 0 2.4cqw; overflow: hidden; }
+  .tick { overflow: hidden; white-space: nowrap; font: 400 3.6cqw/1 VT323, monospace; color: var(--neon); }
+  .tick > span { display: inline-flex; gap: 6cqw; opacity: .2; }
+  .playing .tick > span { opacity: 1; animation: tick 6s linear infinite; }
+  @keyframes tick { to { translate: calc(-50% - 3cqw) 0; } }
+  .play { all: unset; cursor: pointer; display: grid; place-items: center; height: 7cqw; border-radius: 4cqw; background: linear-gradient(#fbfaf7, #e9e6df); color: #6e6a62; box-shadow: 0 0.8cqw 0 #cfcbc2; }
+  .play:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .play svg { width: 3cqw; height: 3cqw; fill: currentColor; }
+  .play .pause { display: none; } .playing .play .pause { display: block; } .playing .play .tri { display: none; }
+  .playing .play { box-shadow: 0 0.2cqw 0 #cfcbc2; translate: 0 0.6cqw; }
+
+  /* handles sit behind the box, so the record rises in front of them */
+  .handle { position: absolute; z-index: 1; pointer-events: none; }
+
+  /* A · arc handle in the shell's colour */
+  .a .handle { left: 50%; translate: -50% 0; top: 3cqw; width: 44cqw; height: 16cqw; border: 2.2cqw solid var(--shell-edge); border-bottom: 0; border-radius: 12cqw 12cqw 0 0; }
+  .a .rec { z-index: 1; }
+
+  /* B · soft strap with two rivets */
+  .b .handle { left: 50%; translate: -50% 0; top: 1cqw; width: 50cqw; height: 18cqw; border: 2.6cqw solid #c9b8a6; border-bottom: 0; border-radius: 14cqw 14cqw 0 0; }
+  .b .box::after { content: ''; position: absolute; top: 1.6cqw; left: 5cqw; right: 5cqw; height: 2cqw; background: radial-gradient(circle, #b3a08b 0 0.9cqw, transparent 1cqw) left / 2cqw 2cqw no-repeat, radial-gradient(circle, #b3a08b 0 0.9cqw, transparent 1cqw) right / 2cqw 2cqw no-repeat; }
+
+  /* C · blush shell, cream handle */
+  .c .box { --s1: var(--blush); --s2: var(--blush-2); --edge: var(--blush-edge); }
+  .c .handle { left: 50%; translate: -50% 0; top: 3cqw; width: 44cqw; height: 16cqw; border: 2.2cqw solid var(--blush-edge); border-bottom: 0; border-radius: 12cqw 12cqw 0 0; }
+  .c .spk { background: radial-gradient(circle, #a7777c 0.5px, transparent 1px) 0 0 / 4px 4px, #f9ecec; }
+  .c .play { background: linear-gradient(#fff7f7, #f4e2e3); color: #8c5a60; box-shadow: 0 0.8cqw 0 var(--blush-edge); }
+
+  /* D · hearts: a heart in the speaker, a heart on the key, a bow on the handle */
+  .d .handle { left: 50%; translate: -50% 0; top: 3cqw; width: 44cqw; height: 16cqw; border: 2.2cqw solid var(--shell-edge); border-bottom: 0; border-radius: 12cqw 12cqw 0 0; }
+  .d .bow { position: absolute; z-index: 3; top: 6cqw; left: 7cqw; width: 11cqw; rotate: -18deg; }
+  .d .spk { position: relative; display: grid; place-items: center; }
+  .d .spk svg { width: 45%; fill: var(--rose); opacity: .9; }
+  .playing.d .spk svg, .tile.playing .d .spk svg { animation: beat 640ms ease-in-out infinite; }
+  @keyframes beat { 0%, 100% { scale: 1; } 15% { scale: 1.18; } 30% { scale: 1; } 45% { scale: 1.1; } }
+
+  /* E · little feet and a handle */
+  .e .handle { left: 50%; translate: -50% 0; top: 3cqw; width: 44cqw; height: 16cqw; border: 2.2cqw solid var(--shell-edge); border-bottom: 0; border-radius: 12cqw 12cqw 0 0; }
+  .e .feet { position: absolute; left: 10%; right: 10%; bottom: -3.4cqw; height: 3cqw; z-index: 1; background: radial-gradient(ellipse at top, #c9c4ba 0 60%, transparent 62%) left / 7cqw 100% no-repeat, radial-gradient(ellipse at top, #c9c4ba 0 60%, transparent 62%) right / 7cqw 100% no-repeat; }
+  .e .box { border-radius: 8cqw; }
+  .e .sticker { border-radius: 99px; }
+  /* the label stacks with the display and the key, one column, one width;
+     the speaker sits beside all three */
+  .e .box { row-gap: 2.4cqw; }
+  .e .sticker { grid-column: 2; grid-row: 1; justify-self: stretch; text-align: center; padding-block: 1.6cqw;
+    background: color-mix(in srgb, var(--shell-edge) 35%, var(--shell)); box-shadow: inset 0 0.2cqw 0.4cqw rgb(0 0 0 / .06); color: #9a958c; }   /* muted: pressed into the shell, not a white sticker on it */
+  .e .spk { grid-column: 1; grid-row: 1 / 3; }
+  .e .right { grid-column: 2; grid-row: 2; }
+  .e .lcd { border-radius: 4.5cqw; }
+
+  /* F · strap with a little charm */
+  .f .handle { left: 50%; translate: -50% 0; top: 3cqw; width: 44cqw; height: 16cqw; border: 2.2cqw solid var(--shell-edge); border-bottom: 0; border-radius: 12cqw 12cqw 0 0; }
+  .f .charm { position: absolute; z-index: 3; top: 9cqw; right: 3.4cqw; transform-origin: top center; animation: none; }
+  .f .charm i { display: block; width: 0.4cqw; height: 4cqw; margin: 0 auto; background: #bdb8ae; }
+  .f .charm svg { display: block; width: 6.5cqw; fill: var(--butter); stroke: #d8c27e; stroke-width: 1; }
+  .tile.playing .f .charm { animation: sway 1.6s ease-in-out infinite alternate; }
+  @keyframes sway { from { rotate: -10deg; } to { rotate: 10deg; } }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .wrap { padding-inline: 16px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body data-mode="light">
+<div class="wrap">
+  <header>
+    <div><h1>Cute player</h1><p>Option 1, “Same, smaller”, with handles and small cute touches. Press play to see each one move; no sound in the mock.</p></div>
+    <div class="modes" role="group" aria-label="Mode"><button data-m="light" aria-pressed="true">Light</button><button data-m="dark" aria-pressed="false">Dark</button></div>
+  </header>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const C = '../../public/images/about/covers/';
+const playSvg = '<svg class="tri" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg><svg class="pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+const heart = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.1C.9 8.6 3 5 6.6 5c2 0 3.6 1.1 5.4 3 1.8-1.9 3.4-3 5.4-3C21 5 23.1 8.6 21.6 11.9 19.5 16.4 12 21 12 21z"/></svg>';
+const heartBtn = '<svg class="tri" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.1C.9 8.6 3 5 6.6 5c2 0 3.6 1.1 5.4 3 1.8-1.9 3.4-3 5.4-3C21 5 23.1 8.6 21.6 11.9 19.5 16.4 12 21 12 21z"/></svg><svg class="pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+const bow = '<svg class="bow" viewBox="0 0 40 24" aria-hidden="true"><path d="M20 12 C14 2, 2 2, 3 12 C2 22, 14 22, 20 12 Z M20 12 C26 2, 38 2, 37 12 C38 22, 26 22, 20 12 Z" fill="#f2c4c9" stroke="#d98c94" stroke-width="1.2"/><circle cx="20" cy="12" r="3.2" fill="#d98c94"/></svg>';
+const star = '<span class="charm" aria-hidden="true"><i></i><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg></span>';
+const tick = '<div class="tick"><span><span>CANDY · LIFAFA</span><span>CANDY · LIFAFA</span></span></div>';
+const player = (k, { spk = '', key = playSvg, extra = '' } = {}) => `
+  <div class="p1 ${k}"><span class="handle"></span>${extra}
+    <div class="rec"><div class="lbl"><img src="${C}candy.jpg" alt=""></div></div>
+    <div class="box"><span class="sticker">My Playlist #2026</span><span class="spk">${spk}</span>
+      <div class="right"><div class="lcd">${tick}</div><button class="play" type="button" aria-pressed="false" aria-label="Play My Playlist #2026">${key}</button></div>
+      ${k === 'e' ? '<span class="feet"></span>' : ''}</div></div>`;
+const opts = [
+  ['A · Arc handle', 'A round handle in the shell’s own colour. The record rises in front of it.', player('a')],
+  ['B · Leather strap', 'A thicker strap in warm tan, held on by two little rivets. A bit vintage.', player('b')],
+  ['C · Blush', 'The same player in a soft blush pink, with a matching handle. The most “cute” of the colours.', player('c')],
+  ['D · Hearts and a bow', 'A bow on the handle, a heart in the speaker that beats with the music, a heart on the play key.', player('d', { spk: heart, key: heartBtn, extra: bow })],
+  ['E · Little feet', 'A handle, two tiny feet, and everything rounder: pill label, pill display.', player('e')],
+  ['F · A charm', 'A handle with a small star charm hanging from it, which sways while it plays.', player('f', { extra: star })],
+];
+document.getElementById('grid').innerHTML = opts.map(([t, d, html]) =>
+  `<div class="opt"><h2>${t}</h2><p>${d}</p><div class="tile">${html}<p class="cap">On repeat: <b>Candy</b> · Lifafa</p></div></div>`).join('');
+document.querySelectorAll('.play').forEach(b => b.onclick = () => {
+  const tile = b.closest('.tile'), on = !tile.classList.contains('playing');
+  tile.classList.toggle('playing', on); b.setAttribute('aria-pressed', on);
+});
+document.querySelectorAll('.modes button').forEach(b => b.onclick = () => {
+  document.body.dataset.mode = b.dataset.m;
+  document.querySelectorAll('.modes button').forEach(o => o.setAttribute('aria-pressed', o === b));
+});
+</script>
+</body>
+</html>
