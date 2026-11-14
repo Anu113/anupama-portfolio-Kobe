@@ -187,6 +187,13 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
       <button class="lb__btn lb__next" type="button" aria-label="Next photo" data-lb-step="1">›</button>
     </dialog>
   </div>
+  {/* MOCK ONLY (branch about-reel-heights-mock): a switcher for the list's height. Not for main. */}
+  <div class="hmock" role="group" aria-label="List height (mockup)">
+    <span>List height</span>
+    {[156, 220, 280, 340, 400, 460].map((h) => (
+      <button type="button" data-h={h} aria-pressed={h === 156 ? 'true' : 'false'}>{h === 156 ? 'Now · 156' : h}</button>
+    ))}
+  </div>
 </Base>
 
 <style>
@@ -411,9 +418,21 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
     .ptile::before, .shot, .ptile:is(:hover, :focus-within) .shot { transition: none; }
     .lb[open] { animation: none; }
   }
+  /* MOCK ONLY */
+  .hmock { position: fixed; z-index: 100; left: 50%; bottom: 20px; translate: -50% 0; display: flex; align-items: center; gap: 4px;
+    padding: 6px; border-radius: 99px; background: #262626; color: #fcfcfc; font-size: 12px; box-shadow: 0 8px 30px rgb(0 0 0 / .25); }
+  .hmock span { padding: 0 8px 0 10px; opacity: .7; }
+  .hmock button { padding: 6px 12px; border: 0; border-radius: 99px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+  .hmock button[aria-pressed='true'] { background: #fcfcfc; color: #262626; }
 </style>
 
 <script>
+  // MOCK ONLY: the list-height switcher
+  document.querySelectorAll<HTMLButtonElement>('.hmock button').forEach((b) => b.addEventListener('click', () => {
+    document.documentElement.style.setProperty('--about-reel-h', `${b.dataset.h}px`);
+    document.querySelectorAll('.hmock button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+
   const still = matchMedia('(prefers-reduced-motion: reduce)');
 
   // ---- copy email ----
