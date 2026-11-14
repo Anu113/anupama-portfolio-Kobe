@@ -807,6 +807,12 @@ exist because many components read them, but both equal `--gutter` now.
 Don't reintroduce a per-component max-width or a separate left edge;
 that's what put the hero, the name and the cards on three different lines.
 
+Fourth: the production build minifies CSS and rewrites times to seconds
+(`1000ms` → `1s`, `650ms` → `.65s`), so a script that `parseFloat`s a
+time token gets seconds and runs 1000x too fast — fine in dev, static on
+the live site. Read time tokens in scripts with `cssMs()` from
+`src/scripts/css-time.ts`, never a bare `parseFloat`.
+
 ## Commands
 
 ```bash
