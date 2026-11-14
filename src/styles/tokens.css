@@ -137,6 +137,16 @@
   --space-band: clamp(4rem, 8vw, 7.5rem);
   --space-label: clamp(1rem, 2vw, 1.5rem);
   --space-case: clamp(3.5rem, 7vw, 6rem);
+  /* CASE HEAD (work/[slug].astro), option B of experiments/case-spacing:
+     the split head. Two gaps inside it (snippet under title; title under
+     the eyebrow), one to the cover. The facts column is wide enough for
+     two facts across, so it ends about level with the snippet. */
+  --case-head-gap: 1rem;
+  --case-head-gap-lg: 1.25rem;
+  --case-head-to-cover: clamp(2rem, 4vw, 3rem);
+  --case-head-split: clamp(2.5rem, 4vw, 4rem);
+  --case-facts-w: clamp(24rem, 34vw, 32rem);
+  --case-facts-gap: 1.25rem;
   /* Hero → "Selected work", and that heading → its cards. The first is
      about 1.5x the second so the heading reads as the cards' title, not
      a caption on the hero. With the hero's own bottom padding the gap
@@ -167,8 +177,9 @@
      Square everywhere; the one round thing is the pill button. */
   --radius: 0px;
   --radius-pill: 999px;
-  /* Case-study tags (CASE TAGS, below): the reference's 4px. A small,
-     deliberate exception to square, like the pill. */
+  /* 4px: a small, deliberate exception to square, like the pill. Was
+     the case tags'; they're a crayon wash now (CASE TAGS, below) and
+     ChaseDiagram's boxes are its one user. */
   --radius-tag: 4px;
 
   /* --- MOTION ------------------------------------------- */
@@ -521,16 +532,22 @@
 
 /* ============================================================
    CASE TAGS — the domain/discipline tags at the top of a case study
-   ([slug].astro), chosen on request from a round of mocks: electric
-   lime with a dark olive ink of the same hue. A requested exception to
+   ([slug].astro). "Crayon wash" (on request, 2026-11-14, from
+   experiments/case-spacing): no chip, just the yellow of her crayon
+   smiley in the footer (#f8b800) as a highlighter stroke behind ink
+   text, like the footer's marker wash. It replaced an electric lime
+   that was the loudest thing on the page. A requested exception to
    rule 2 (colour belongs to the work): one hue, only on these tags,
-   never on text elsewhere, chrome or bands. Same values in both modes —
-   the fill carries its own ink, so it reads on either ground.
-   Contrast: --tag-fg on --tag-bg 11.1:1.
+   never on other text, chrome or bands. Thinner in dark mode so it
+   doesn't glow. Contrast: ink on the wash 11.6:1 light, 7.2:1 dark.
    ============================================================ */
 :root {
-  --tag-bg: #d4ff3a;
-  --tag-fg: #2b3600;
+  --tag-smiley: #f8b800;
+  --tag-fg: var(--fg);
+  --tag-wash: color-mix(in srgb, var(--tag-smiley) 42%, transparent);
+}
+:root[data-mode='dark'] {
+  --tag-wash: color-mix(in srgb, var(--tag-smiley) 30%, transparent);
 }
 
 /* ============================================================
@@ -1150,12 +1167,12 @@
 }
 
 /* ============================================================
-   CASE CARDS (CaseNumbers.astro, the metrics block in CaseBlocks.astro,
-   the case snapshot in work/[slug].astro): the headline numbers, the
-   Impact numbers and the snapshot's Role / Team / Timeline sit on the
-   About page's soft cards instead of hairlines (on request, 2026-11-14),
-   the same cards as the locked gate's. The 28px corners are an exception
-   to the square --radius rule, these three blocks only.
+   CASE CARDS (CaseNumbers.astro, the metrics block in CaseBlocks.astro):
+   the headline numbers and the Impact numbers sit on the About page's
+   soft cards instead of hairlines (on request, 2026-11-14), the same
+   cards as the locked gate's. The 28px corners are an exception to the
+   square --radius rule, these blocks only. (The case snapshot's cards
+   became the head's hairline facts, CASE HEAD above.)
    Contrast: as LOCKED GATE — --fg-dim on the card 4.5 : 1 light,
    5.9 : 1 dark.
    ============================================================ */

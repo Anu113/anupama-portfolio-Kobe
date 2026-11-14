@@ -15,10 +15,13 @@
    image, which is also how the reference sets it — one row of Role /
    Timeline / Team / Partners under the image, not two.
 
-   Every case opens the same way (on request, after gauravi.design):
-   company and tags → title → snippet (the description) → cover → the
-   headline numbers, rolling (CaseNumbers) → the case snapshot (Role and
-   the case's meta) → the sections.
+   Every case opens the same way (on request, after gauravi.design, then
+   option B of experiments/case-spacing, 2026-11-14): a split head with
+   company and tags, title and snippet on the left and the case facts
+   (Role and the case's meta, 2 × 2 on hairlines) on the right → cover →
+   the headline numbers, rolling (CaseNumbers), a card gap under the
+   cover → the sections. The rail, the strip and the nav share one left
+   edge (--gutter).
 
    Content and order come from data/cases.ts, and the order is the point.
    CLAUDE.md rule 3: situation → my scope → the hard call → how the team
@@ -36,7 +39,7 @@
    section heads drop to --step-title; every label, caption and the
    section numbers are small mono caps (.u-label-mono), each section
    opening on a hairline with "01  THE SITUATION". The page opens on the
-   company and its tags (lime chips, CASE TAGS in tokens.css), read from
+   company and its tags (a crayon-yellow wash, CASE TAGS in tokens.css), read from
    the case's /work entry via labelsFor() so the tags match its card. */
 import Base from '../../layouts/Base.astro';
 import Section from '../../components/Section.astro';
@@ -131,33 +134,45 @@ const headline = impactMetrics?.kind === 'metrics'
       <CaseRail sections={railSections} />
 
       <div class="body__col">
+        {/* The split head (option B of experiments/case-spacing, on
+            request, 2026-11-14): company, tags, title and snippet on the
+            left; Role and the case's own meta as a 2 × 2 list of facts on
+            the right, so her scope is in the first screen. The facts are
+            two across rather than one long column so the two sides end at
+            about the same height and the cover comes up under them. This
+            replaced the "Case snapshot" cards that used to sit under the
+            numbers. ONE Reveal on purpose: Reveal emits a wrapper div, and
+            a wrapper per child would become the grid items. */}
         <Reveal still>
-          <div class="hero__eyebrow">
-            <p class="u-label-mono hero__company">{study.company}</p>
-            {tags.length > 0 && (
-              <ul class="tags" aria-label="Tags">
-                {tags.map((t) => <li class="tag">{t}</li>)}
-              </ul>
-            )}
-          </div>
-        </Reveal>
-        {/* Title and the lede paragraph share column 1 so they read as one
-            column; the optional CTA sits beside the lede, on its row. Role
-            and the rest live in the meta row under the cover image, on
-            every case (Privacy included, on request).
-
-            ONE Reveal wraps title+lede+cta on purpose: Reveal emits a
-            wrapper div, so a Reveal per element would make those wrappers
-            the grid items instead of the h1/p/a, and the columns would
-            collapse. */}
-        <Reveal still delay={100}>
-          <div class:list={['lede', !study.live && 'lede--nocta']}>
-            <h1 class="hero__title">{study.title}</h1>
-            <p class="lede__text">{study.description}</p>
-            {study.live && (
-              <a class="lede__cta btn btn--secondary" href={study.live.href}
-                 target="_blank" rel="noopener noreferrer">{study.live.label}</a>
-            )}
+          <div class="head">
+            <div class="head__main">
+              <div class="hero__eyebrow">
+                <p class="u-label-mono hero__company">{study.company}</p>
+                {tags.length > 0 && (
+                  <ul class="tags" aria-label="Tags">
+                    {tags.map((t) => <li class="tag">{t}</li>)}
+                  </ul>
+                )}
+              </div>
+              <h1 class="hero__title">{study.title}</h1>
+              <p class="lede__text">{study.description}</p>
+              {study.live && (
+                <a class="lede__cta btn btn--secondary" href={study.live.href}
+                   target="_blank" rel="noopener noreferrer">{study.live.label}</a>
+              )}
+            </div>
+            <dl class="facts" aria-label="Case snapshot">
+              <div class="facts__cell">
+                <dt class="u-label-mono facts__label">Role</dt>
+                <dd class="facts__value">{study.role}</dd>
+              </div>
+              {study.meta.map((m) => (
+                <div class="facts__cell">
+                  <dt class="u-label-mono facts__label">{m.label}</dt>
+                  <dd class="facts__value">{m.value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </Reveal>
         <Reveal still delay={240}>
@@ -167,33 +182,15 @@ const headline = impactMetrics?.kind === 'metrics'
               : <img src={study.hero.src} alt={study.hero.alt} decoding="async" />}
           </div>
         </Reveal>
-        {/* The headline numbers, rolling — see CaseNumbers.astro. */}
+        {/* The headline numbers, rolling — see CaseNumbers.astro. Attached
+            to the cover (a card gap under it), so the picture and its
+            outcome read as one. */}
         {headline.length >= 2 && (
           <Reveal still delay={260}>
-            <CaseNumbers items={headline} note={impactMetrics?.kind === 'metrics' ? impactMetrics.label : undefined} />
+            <CaseNumbers attached items={headline} note={impactMetrics?.kind === 'metrics' ? impactMetrics.label : undefined} />
           </Reveal>
         )}
-
-        {/* The case snapshot: Role first, then whatever this case's own meta
-            fields are (Team/Scope, Partners, Timeline). After the numbers,
-            before the sections, on every case. */}
-        <Reveal still delay={280}>
-          <div class="snapshot">
-            <p class="u-label-mono snapshot__label">Case snapshot</p>
-            <dl class="meta">
-              <div class="meta__cell">
-                <dt class="u-label-mono meta__label">Role</dt>
-                <dd class="meta__value">{study.role}</dd>
-              </div>
-              {study.meta.map((m) => (
-                <div class="meta__cell">
-                  <dt class="u-label-mono meta__label">{m.label}</dt>
-                  <dd class="meta__value">{m.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </Reveal>
+        <div class="head-end" aria-hidden="true"></div>
 
         {openSections.map((s, i) => (
           <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
@@ -327,6 +324,9 @@ const headline = impactMetrics?.kind === 'metrics'
     flex-wrap: wrap;
     gap: 0.375rem;
   }
+  /* A crayon-wash stroke behind each tag (CASE TAGS in tokens.css):
+     the band covers the middle of the line, not the full box, so it
+     reads as a marker pass rather than a chip. */
   .tag {
     font-family: var(--font-mono);
     font-weight: var(--weight-mono);
@@ -335,9 +335,8 @@ const headline = impactMetrics?.kind === 'metrics'
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--tag-fg);
-    background: var(--tag-bg);
-    border-radius: var(--radius-tag);
-    padding: 0.125rem 0.4375rem;
+    background: linear-gradient(transparent 22%, var(--tag-wash) 22%, var(--tag-wash) 88%, transparent 88%);
+    padding: 0.125rem 0.1875rem;
   }
   .hero__title {
     font-family: var(--font-serif);
@@ -345,94 +344,67 @@ const headline = impactMetrics?.kind === 'metrics'
     line-height: 1.1;
     letter-spacing: var(--tracking-serif);
     font-weight: var(--weight-serif);
-    margin: 0;
-    /* No max-width: column 1 of the lede grid bounds it, which is what
-       makes the title and the description beneath it one column. */
+    margin: var(--case-head-gap-lg) 0 0;
     text-wrap: balance;
   }
-  /* --- Lede grid: [title / description] | CTA --------------------------
-     Column 1 carries the title and the description stacked, so they read
-     as one column. Role used to be a second column here; it now lives in
-     the meta row below instead (see the header comment), so this is back
-     to the description's own row with just an optional CTA beside it. */
-  .lede {
+  /* --- The split head: [eyebrow / title / snippet] | facts -------------
+     Both sides start on the eyebrow's line. The facts are a 2 × 2 grid so
+     the right side is about as tall as the left, and the cover starts
+     under both with no hole beside the snippet. */
+  .head {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: var(--col-gap);
-    row-gap: clamp(1.75rem, 3vw, 2.5rem);
+    grid-template-columns: minmax(0, 1fr) var(--case-facts-w);
+    column-gap: var(--case-head-split);
     align-items: start;
-    margin-top: clamp(1.5rem, 3vw, 2.25rem);
   }
-  /* No CTA: the second track would still be laid out at zero width but its
-     column-gap would leave a dead gutter after the description. Drop the
-     track so the description runs the lede's full width. */
-  .lede--nocta { grid-template-columns: 1fr; }
-
-  .hero__title  { grid-column: 1; grid-row: 1; }
-  .lede__text   { grid-column: 1; grid-row: 2; }
-  .lede__cta    { grid-column: 2; grid-row: 2; }
-
+  .head__main { min-width: 0; }
   .lede__text {
-    margin: 0;
+    margin: var(--case-head-gap) 0 0;
+    max-width: var(--measure);
     color: var(--fg-dim);
     text-wrap: pretty;
   }
-  /* Visual style now comes from the shared .btn/.btn--secondary system
-     (global.css) — this rule only keeps the grid placement. */
-  .lede__cta { justify-self: end; align-self: start; white-space: nowrap; }
-
+  .lede__cta { margin-top: var(--case-head-gap-lg); }
+  .facts {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--case-facts-gap);
+  }
+  .facts__cell {
+    min-width: 0;
+    border-top: 1px solid var(--rule);
+    padding: 0.625rem 0 1rem;
+  }
+  .facts__label { margin: 0 0 0.375rem; }
+  .facts__value {
+    margin: 0;
+    font-size: var(--step-small);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
   /* The cover sits on the company's project hue (tokens.css, PROJECT
      HUES) — the same colour as its card on the home page and /work, so
      the page you land on visibly matches the card you clicked. The image
-     is contained inside a margin of that colour rather than cropped to
-     cover it, the same "wall, not a picture" treatment as ProjectCard. */
+     is contained inside a margin of that colour rather than cropped. */
   .hero__frame {
     background: var(--hue);
-    /* Panoramic on purpose — 16/7 keeps the title, lede and image inside
-       the first screen on a laptop now that the lede sits above it. */
+    /* Panoramic on purpose — keeps the head and the cover inside the
+       first screen on a laptop. */
     aspect-ratio: 16 / 7;
     overflow: hidden;
     padding: clamp(1.25rem, 3vw, 2.5rem);
-    margin-top: clamp(2rem, 4vw, 3rem);
+    margin-top: var(--case-head-to-cover);
   }
   .hero__frame img { width: 100%; height: 100%; object-fit: contain; display: block; }
-
-  /* The meta row: Role first, then this case's own fields. No divider —
-     the image above and the whitespace here already separate it from what
-     comes next; a rule on top of that read as one line too many. */
-  /* The case snapshot opens on its name in mono, then its cards — so it reads as the first part of the case, not a caption on
-     the cover. Its margins carry the gaps on both sides itself rather than
-     leaning on a sibling rule: Reveal wraps each block in its own div (see
-     Reveal.astro), so a `.x + .cs` selector would never match. */
-  .snapshot { margin: 2.5rem 0 var(--space-case); }
-  .snapshot__label { margin: 0 0 1rem; }
-  /* Role and the case's meta on soft cards, the About page's, as the
-     numbers above (CASE CARDS in tokens.css). */
-  .meta {
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--case-card-gap);
-  }
-  .meta__cell {
-    min-width: 0;
-    background: var(--case-card);
-    border-radius: var(--radius-case-card);
-    padding: var(--case-card-pad);
-  }
-  .meta__label { margin: 0 0 0.5rem; }
-  .meta__value {
-    margin: 0;
-    font-weight: var(--weight-sans);
-    font-size: var(--step-small);
-    line-height: 1.55;
-    text-wrap: pretty;
-  }
-
+  /* The one gap between the head (cover + numbers) and the first section.
+     Its own element because Reveal wraps every block in a div, so a
+     sibling selector onto .cs would never match. */
+  .head-end { height: var(--space-case); }
   /* --- Body: rail + content ------------------------------------------ */
+  /* No max-width: the page's own --gutter is the edge, so the rail, the
+     strip's "◂ Work" and the nav's name share one left line. */
   .body {
-    max-width: 82rem;
-    margin-inline: auto;
     display: grid;
     grid-template-columns: var(--rail-width) minmax(0, 1fr);
     column-gap: var(--col-gap);
@@ -566,19 +538,17 @@ const headline = impactMetrics?.kind === 'metrics'
     /* The rail hides here; the strip's Part menu carries the contents. */
     .body { grid-template-columns: minmax(0, 1fr); }
   }
+  @media (max-width: 1080px) {
+    /* One column: the facts drop under the snippet. */
+    .head { grid-template-columns: minmax(0, 1fr); }
+    .facts { margin-top: var(--case-head-gap-lg); }
+  }
   @media (max-width: 820px) {
-    .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     /* A 16/7 letterbox is too thin to read on a phone. */
     .hero__frame { aspect-ratio: 16 / 10; }
-    /* A CTA beside the description gets cramped at this width — stack it
-       instead, back on the left edge rather than stranded right. */
-    .lede,
-    .lede--nocta { grid-template-columns: 1fr; row-gap: 1.75rem; }
-    .hero__title, .lede__text, .lede__cta {
-      grid-column: 1;
-      grid-row: auto;
-    }
-    .lede__cta { justify-self: start; }
+  }
+  @media (max-width: 520px) {
+    .facts { grid-template-columns: minmax(0, 1fr); }
   }
 </style>
 
