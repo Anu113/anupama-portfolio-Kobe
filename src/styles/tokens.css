@@ -159,12 +159,26 @@
   --rail-width: clamp(9rem, 13vw, 12rem);
   --rail-top-gap: 1.5rem;   /* rail's sticky top, under nav + strip */
 
+  /* --- CASE RAIL ----------------------------------------
+     The reading line in the case rail (CaseRail.astro), after
+     andreas.vision/work/schneider: one bar per section, as long
+     as the section, filling with ink as you read it. The track
+     is ink at low strength so it follows dark mode. */
+  --rail-h: min(56vh, 30rem);
+  --rail-bar-w: 3px;
+  --rail-bar-gap: 4px;
+  --rail-bar-label-gap: 0.75rem;
+  --rail-track: color-mix(in srgb, var(--fg) 14%, transparent);
+
   /* --- CASE STRIP ---------------------------------------
      The reading strip under the nav on a case study
      (CaseStrip.astro), after felixrieseberg.com: back link,
      title, "Part n/N", and a progress line along its edge. */
   --strip-h: 2.5rem;
   --progress-h: 2px;
+  /* Ink, not the accent (on request, 2026-11-14): it matches the rail's
+     ink reading line, so the strip and the rail tell one story. */
+  --progress-fill: var(--fg);
 
   /* --- CASE NUMBERS -------------------------------------
      The headline numbers on a case study (CaseNumbers.astro)

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case rail — the reading line</title>
+<!--
+  Mock: the case-study rail with andreas.vision/work/schneider's reading line.
+  Measured off his page (2026-11-14):
+    - one 3px bar per section, 2px corners, grey track, ink fill that grows
+      top-down (scaleY) as you read through that section
+    - each bar's height is proportional to its section's length
+      (flex-grow = section height in px), 4px gaps between bars
+    - the whole list is height: min(56vh, 480px)
+    - while you scroll, the labels fade out (0.15s, nudge -4px) leaving only
+      the line; 400ms after you stop they fade back (0.3s ease-out).
+      Hovering the rail keeps them. No label hiding under reduced motion.
+  A = his, as is: fixed, vertically centred on the left edge.
+  B = in our rail's place: sticky under "Contents", same line, labels stay.
+  C = B, plus his label fade while scrolling.
+  Values are our tokens, inlined for the mock.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Azeret+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap');
+  :root {
+    --bg: #fcfcfc; --fg: #262626; --fg-dim: #707070;
+    --track: rgb(38 38 38 / 0.14);
+    --line: rgb(0 0 0 / 0.1);
+    --mono: 'Azeret Mono', ui-monospace, monospace;
+    --sans: 'Manrope', system-ui, sans-serif;
+    --serif: 'Crimson Pro', Georgia, serif;
+    --gutter: 40px; --nav-h: 64px; --strip-h: 40px;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --bar-w: 3px; --bar-gap: 4px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 600 14px/1.6 var(--sans); }
+
+  /* chrome stand-ins */
+  .nav { position: fixed; inset: 0 0 auto; height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gutter); background: var(--bg); z-index: 5; font-size: 14px; }
+  .nav span { font-size: 12px; color: var(--fg-dim); }
+  .strip { position: fixed; top: var(--nav-h); inset-inline: 0; height: var(--strip-h); display: flex; align-items: center; gap: 16px; padding: 0 var(--gutter); background: var(--bg); border-bottom: 1px solid var(--line); z-index: 5; font: 400 11px var(--mono); color: var(--fg-dim); }
+  .switch { margin-left: auto; display: flex; gap: 4px; }
+  .switch button { font: 400 11px var(--mono); border: 1px solid var(--line); background: none; color: var(--fg-dim); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+  .switch button[aria-pressed='true'] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+  .page { display: grid; grid-template-columns: 220px minmax(0, 640px); gap: 64px; padding: calc(var(--nav-h) + var(--strip-h) + 48px) var(--gutter) 50vh; }
+  .head h1 { font: 300 40px/1.1 var(--serif); margin: 0 0 16px; }
+  .head h1 em { font-style: italic; }
+  .head p { color: var(--fg-dim); max-width: 52ch; }
+  .cover { height: 360px; background: #c9dcf2; margin: 32px 0 64px; }
+
+  section { padding-top: 24px; border-top: 1px solid var(--line); margin-bottom: 64px; scroll-margin-top: calc(var(--nav-h) + var(--strip-h) + 24px); }
+  .kicker { font: 400 11px var(--mono); text-transform: uppercase; color: var(--fg-dim); margin: 0 0 12px; letter-spacing: .04em; }
+  section h2 { font: 300 22px/1.3 var(--serif); margin: 0 0 12px; }
+  .fig { background: rgb(38 38 38 / 0.04); margin: 24px 0; }
+  .txt { height: 10px; background: rgb(38 38 38 / 0.08); margin: 10px 0; width: 100%; }
+  .txt:nth-child(3n) { width: 82%; }
+
+  /* ---------- THE RAIL ---------- */
+  .rail__head { font: 400 11px var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--fg-dim); margin: 0 0 12px; }
+  .rail ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--bar-gap); height: min(56vh, 480px); }
+  .rail li { display: flex; flex-basis: 0; min-height: 12px; }
+  .rail a { display: flex; gap: 12px; flex: 1; min-height: 12px; color: var(--fg-dim); text-decoration: none; font: 400 12px/1.3 var(--mono); }
+  .rail a:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .bar { position: relative; flex: 0 0 var(--bar-w); overflow: hidden; border-radius: 2px; background: var(--track); }
+  .bar::after { content: ''; position: absolute; inset: 0; background: var(--fg); transform-origin: center top; transform: scaleY(var(--fill, 0)); }
+  .label { text-wrap: balance; transition: opacity .3s ease-out, transform .3s ease-out, color .1s ease-out; }
+  .rail a:hover .label, .rail a[aria-current] .label { color: var(--fg); }
+
+  /* label fade while scrolling (A and C) */
+  .rail[data-fade][data-scrolling]:not(:hover, :focus-within) .label { opacity: 0; transform: translateX(-4px); transition-duration: .15s; }
+  @media (prefers-reduced-motion: reduce) {
+    .label { transition: none; }
+    .rail[data-fade][data-scrolling]:not(:hover, :focus-within) .label { opacity: 1; transform: none; }
+  }
+
+  /* A: his placement — fixed, centred on the left edge */
+  body[data-v='A'] .rail { position: fixed; left: var(--gutter); top: 50%; transform: translateY(-50%); width: 200px; z-index: 4; }
+  body[data-v='A'] .rail__head { display: none; }
+  .page > article { grid-column: 2; }
+  /* B / C: our placement — sticky under Contents */
+  body:not([data-v='A']) .rail { position: sticky; top: calc(var(--nav-h) + var(--strip-h) + 24px); align-self: start; }
+</style>
+</head>
+<body data-v="B">
+  <div class="nav">Anupama Mishra <span>Work · About · Play</span></div>
+  <div class="strip">◂ Work <span>PayPal Privacy</span>
+    <div class="switch" role="group" aria-label="Variant">
+      <button data-set="A" aria-pressed="false">A · his, as is</button>
+      <button data-set="B" aria-pressed="true">B · our rail, labels stay</button>
+      <button data-set="C" aria-pressed="false">C · our rail, labels fade</button>
+    </div>
+  </div>
+
+  <div class="page">
+    <nav class="rail" aria-label="Contents">
+      <p class="rail__head" aria-hidden="true">Contents</p>
+      <ol id="rail-list"></ol>
+    </nav>
+
+    <article id="top">
+      <header class="head">
+        <h1>Making privacy settings <em>legible</em></h1>
+        <p>Stand-in content. Section lengths below vary on purpose so the bars come out different heights, as they would on a real case.</p>
+      </header>
+      <div class="cover"></div>
+      <div id="sections"></div>
+    </article>
+  </div>
+
+<script>
+  // Section lengths (figure height px, text lines) — uneven, like a real case.
+  const SECTIONS = [
+    ['situation', 'The situation', 200, 6],
+    ['scope', 'My scope', 0, 5],
+    ['hard-call', 'The hard call', 320, 8],
+    ['how', 'How the work got made', 260, 10],
+    ['craft', 'The craft', 900, 6],
+    ['impact', 'Impact', 180, 4],
+    ['differently', "What I'd do differently", 0, 3],
+  ];
+  const host = document.getElementById('sections');
+  const list = document.getElementById('rail-list');
+  SECTIONS.forEach(([id, nav, fig, lines], i) => {
+    const s = document.createElement('section');
+    s.id = id;
+    s.innerHTML = `<p class="kicker">0${i + 1}&nbsp;&nbsp;${nav}</p><h2>${nav}</h2>` +
+      Array.from({ length: lines }, () => '<div class="txt"></div>').join('') +
+      (fig ? `<div class="fig" style="height:${fig}px"></div>` : '');
+    host.append(s);
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="#${id}"><span class="bar"></span><span class="label">${nav}</span></a>`;
+    list.append(li);
+  });
+
+  const rail = document.querySelector('.rail');
+  const secs = [...host.children];
+  const items = [...list.children];
+  const links = items.map((li) => li.firstElementChild);
+
+  // Bars proportional to each section's length.
+  const size = () => secs.forEach((s, i) => (items[i].style.flexGrow = s.offsetHeight));
+
+  // Fill = how far the reading line (25% down the viewport, same band as
+  // our CaseRail spy) has travelled through each section.
+  const paint = () => {
+    const line = innerHeight * 0.25;
+    let current = -1;
+    secs.forEach((s, i) => {
+      const r = s.getBoundingClientRect();
+      const f = Math.min(1, Math.max(0, (line - r.top) / r.height));
+      links[i].style.setProperty('--fill', f.toFixed(4));
+      if (r.top <= line && r.bottom > line) current = i;
+    });
+    links.forEach((l, i) => (i === current ? l.setAttribute('aria-current', 'location') : l.removeAttribute('aria-current')));
+  };
+
+  // Labels step aside while scrolling; back 400ms after it stops.
+  let idle;
+  addEventListener('scroll', () => {
+    rail.setAttribute('data-scrolling', '');
+    clearTimeout(idle);
+    idle = setTimeout(() => rail.removeAttribute('data-scrolling'), 400);
+    requestAnimationFrame(paint);
+  }, { passive: true });
+  addEventListener('resize', () => { size(); paint(); });
+
+  // Variant switch.
+  const setV = (v) => {
+    document.body.dataset.v = v;
+    v === 'B' ? rail.removeAttribute('data-fade') : rail.setAttribute('data-fade', '');
+    document.querySelectorAll('[data-set]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.set === v));
+    paint();
+  };
+  document.querySelectorAll('[data-set]').forEach((b) => b.addEventListener('click', () => setV(b.dataset.set)));
+  const q = new URLSearchParams(location.search).get('v');
+  size(); setV(q || 'B');
+</script>
+</body>
+</html>
