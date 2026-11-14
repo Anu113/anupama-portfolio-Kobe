@@ -91,18 +91,15 @@ const { items, note } = Astro.props;
 </style>
 
 <script>
-  const num = (prop: string, fallback: number) => {
-    const n = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(prop));
-    return Number.isFinite(n) ? n : fallback;
-  };
+  import { cssMs } from '../scripts/css-time';
   // Prefix, the first number (commas and decimals kept), the rest.
   const PARTS = /^([^\d]*)(\d[\d,]*(?:\.\d+)?)([\s\S]*)$/;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
 
   document.querySelectorAll<HTMLElement>('[data-numbers]').forEach((row) => {
     const rolls = [...row.querySelectorAll<HTMLElement>('[data-roll]')];
-    const dur = num('--dur-count', 1000);
-    const stagger = num('--count-stagger', 180);
+    const dur = cssMs('--dur-count', 1000);
+    const stagger = cssMs('--count-stagger', 180);
     const runs = new Map<HTMLElement, number>();
 
     const roll = (el: HTMLElement, i: number) => {

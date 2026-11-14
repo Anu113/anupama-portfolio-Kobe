@@ -118,13 +118,14 @@ const sign = '<svg class="talk__sign" viewBox="0 0 14 14" aria-hidden="true"><pa
   }
 </style>
 <script>
+  import { cssMs } from '../scripts/css-time';
   const band = document.querySelector<HTMLElement>('[data-talk]');
   const root = document.documentElement;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   const css = getComputedStyle(root);
   const ease = css.getPropertyValue('--ease-talk-card').trim() || 'ease-out';
-  const dur = parseFloat(css.getPropertyValue('--dur-talk-card')) || 520;
-  const fade = parseFloat(css.getPropertyValue('--dur-talk-card-fade')) || 260;
+  const dur = cssMs('--dur-talk-card', 520);
+  const fade = cssMs('--dur-talk-card-fade', 260);
   const rise = css.getPropertyValue('--talk-card-rise').trim() || '6px';
 
   // Animate the panel's height from what it was to what it is now, and
