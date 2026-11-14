@@ -4,9 +4,10 @@
    data/about.ts, values under ABOUT in tokens.css. Our fonts and role
    colours.
 
-   HEAD. Her portrait on the left (4:5, her porch painting as a stamp),
-   held in place while her words and the tabs scroll beside it; it lets
-   go before the tiles. Right: "About me", then "Updated on …"
+   HEAD. Her portrait on the left (her porch painting as a stamp),
+   stretched to the height of the column beside it, so the photo and the
+   words start and end on the same line (4:5 once the page is one
+   column). Right: "About me", then "Updated on …"
    (`updated` in data/about.ts) in mono, her bio in her words, how to
    reach her, three icon buttons (LinkedIn, copy email, email); then,
    after andreas.vision/about, his tabs in his order (Testimonials /
@@ -200,10 +201,11 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
     display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     column-gap: var(--about-head-gap); align-items: start;
   }
+  /* two columns: the portrait stretches to the words and tabs beside it,
+     so both columns start and end on the same line (on request, 2026-11-14) */
   .photo {
-    position: sticky; top: var(--about-sticky-top);
-    aspect-ratio: var(--about-photo-ratio); border-radius: var(--radius-about-card);
-    background: var(--about-card);
+    position: relative; align-self: stretch;
+    border-radius: var(--radius-about-card); background: var(--about-card);
   }
   .photo > img {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%;
@@ -396,7 +398,7 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
      and Moss's field last, on request */
   @media (max-width: 63.99rem) {
     .head, .side { display: contents; }
-    .photo { order: 1; position: relative; top: auto; width: 100%; max-width: var(--about-photo-max); }
+    .photo { order: 1; width: 100%; max-width: var(--about-photo-max); aspect-ratio: var(--about-photo-ratio); }
     .intro { order: 2; }
     .tiles { order: 3; margin-top: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .picks { order: 4; }
