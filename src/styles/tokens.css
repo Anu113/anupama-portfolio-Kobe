@@ -869,6 +869,58 @@
 }
 
 /* ============================================================
+   CHASE PAY SCREENS (ChaseScreens.astro, ChaseDiagram.astro) — the
+   Walmart Pay × Chase Pay screens redrawn in code from her deck and the
+   study prototype, because the slide exports read soft. Everything here
+   is Walmart's and Chase's UI, so like the PayPal screens these colours
+   belong to the work, never to page chrome; the screens and the two
+   diagrams stay light in dark mode, like a screenshot would.
+   Pairs checked for AA: white on --cp-navy and --cp-blue, --cp-ink-dim
+   on white and --cp-sub, --cp-chase-ink on --cp-chase-tint.
+   ============================================================ */
+:root {
+  --cp-screen-w: 288px;        /* drawn at this width, scaled to the phone */
+  --cp-screen-h: 621px;        /* 300px phone at --device-ratio, less the bezel */
+  --cp-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* the apps' system type */
+  --cp-w-reg: 400;
+  --cp-w-bold: 600;
+  --cp-navy: #0b1f3f;          /* Walmart Pay's header bar */
+  --cp-blue: #0b63e5;          /* Link Chase Pay, links in the Chase pages (5.3:1 with white) */
+  --cp-chase: #117aca;         /* the Chase octagon */
+  --cp-pink: #d1166f;          /* the selected radio and the points switch */
+  --cp-surface: #ffffff;
+  --cp-ink: #1b1b1b;
+  --cp-ink-dim: #5d6166;       /* 6.2:1 on white */
+  --cp-line: #e4e5e7;
+  --cp-sub: #f4f5f6;
+  --cp-switch-off: #c9cbcf;
+  --cp-scrim: rgb(0 0 0 / 0.45);
+  --cp-camera: #18191b;
+  --cp-qr-paper: #f2f2ee;
+  --cp-card-a: #0d4f9e;        /* Chase card art, top-left to bottom-right */
+  --cp-card-b: #3a8fe2;
+  --cp-visa: #1a1f71;
+  --cp-visa-gold: #f7b600;
+  --cp-text-2xs: 8px;
+  --cp-text-xs: 9.5px;
+  --cp-text-sm: 11px;
+  --cp-text-md: 12.5px;
+  --cp-text-lg: 15px;
+  --cp-text-title: 17px;
+  /* the two diagrams */
+  --cp-chase-tint: #dcebfb;    /* a new Chase screen in the flow */
+  --cp-chase-ink: #0a3a75;     /* 9.2:1 on the tint */
+  --cp-external: #eef0f2;      /* the stretch outside Walmart */
+  --cp-diagram-canvas: #fbfbfa;
+  --cp-diagram-frame: #e6e6e3;
+  --cp-bar-hers: #262626;      /* her own weeks on the study timeline */
+  --cp-bar-team: #b9bcc1;
+  --radius-cp-node: 8px;
+  --radius-cp-dialog: 6px;
+  --dur-cp-switch: 200ms;
+}
+
+/* ============================================================
    PIXEL'S OWN TYPE — held as it was before the allierho.com pass, so the
    chat looks exactly as it did ("don't touch the chat yet"). AskBubble
    reads the shared names below; these pin them to the old values inside
@@ -1098,7 +1150,23 @@
 }
 
 /* ============================================================
-   ABOUT (pages/about.astro, AskMoss.astro's small size). The tabs,
+   CASE CARDS (CaseNumbers.astro, the metrics block in CaseBlocks.astro,
+   the case snapshot in work/[slug].astro): the headline numbers, the
+   Impact numbers and the snapshot's Role / Team / Timeline sit on the
+   About page's soft cards instead of hairlines (on request, 2026-11-14),
+   the same cards as the locked gate's. The 28px corners are an exception
+   to the square --radius rule, these three blocks only.
+   Contrast: as LOCKED GATE — --fg-dim on the card 4.5 : 1 light,
+   5.9 : 1 dark.
+   ============================================================ */
+:root {
+  --case-card: var(--locked-card);
+  --radius-case-card: var(--radius-locked-card);
+  --case-card-pad: var(--locked-card-pad);
+  --case-card-gap: var(--locked-card-gap);
+}
+
+/* =====================================================   ABOUT (pages/about.astro, AskMoss.astro's small size). The tabs,
    Moss's field and the rounded rows are after andreas.vision/about
    (measured 2026-10-17). The layout (2026-11-11, from the mocks in
    experiments/about-grid/): her portrait held on the left while her

@@ -1,0 +1,141 @@
+---
+/* ChaseScreens.astro — the Chase Pay case's phones, each in a DeviceBox
+   (the `chase` block in data/cases.ts; `set` picks the row).
+
+   Why it exists: the case used to show her deck slides as images, and
+   the phones on them were exported small and read soft. Redrawn in code
+   (ChaseScreen.astro) they're sharp at any size, and each row reads left
+   to right as before → after. `recording` is the study prototype's
+   screen recording — the one on the home page's Chase Pay card — so the
+   case shows the flow working before it explains it.
+
+   The `points` row is live: the switch in settings is a real button, and
+   the scanner beside it follows it, because the point of the design is
+   that the points state is repeated where you pay.
+
+   The recording plays only while on screen, muted and looping; under
+   reduced motion it doesn't play on its own and gets the browser's
+   controls. Static phones are one role="img" each, with a label. Every row is a
+   pair, before and after, side by side; rows scroll sideways where they
+   don't fit (arrow keys once focused). */
+import DeviceBox from './DeviceBox.astro';
+import ChaseScreen from './ChaseScreen.astro';
+
+export type ChaseSet = 'recording' | 'entry' | 'benefits' | 'settings' | 'points' | 'redirect';
+interface Props { set: ChaseSet; caption?: string }
+const { set, caption } = Astro.props;
+
+interface Phone { id: string; label: string; alt: string; live?: boolean }
+const sets: Record<Exclude<ChaseSet, 'recording'>, Phone[]> = {
+  entry: [
+    { id: 'type-before', label: 'Before', alt: 'Before: Choose a payment type, with Chase Pay as the third row: pay securely and use Ultimate Rewards points at checkout with eligible Chase Visa cards.' },
+    { id: 'type-after', label: 'After', alt: 'After: the same Chase Pay row, now ending "Just sign in once with Chase."' },
+  ],
+  benefits: [
+    { id: 'value-before', label: 'Before', alt: 'Before: Benefits of linking Chase Pay, three bullets: link all your personal Chase Visa cards at once, your linked cards stay updated, redeem Ultimate Rewards points.' },
+    { id: 'value-after', label: 'After', alt: 'After: three lines with icons: a secure way to use your cards as your sensitive data never leaves Chase; your linked cards are always up to date; redeem Ultimate Rewards points for a statement credit.' },
+  ],
+  settings: [
+    { id: 'settings-before', label: 'Before', alt: 'Before: Walmart Pay Settings, with the Visa card and both Chase cards in one Credit and Debit Cards list, and Unlink Chase Pay as a row below.' },
+    { id: 'settings-after', label: 'After', alt: 'After: the Visa card under Credit and debit cards, and the Chase cards in their own Chase Pay group with an Unlink link and the line: we use a secure token to authorize payment, your sensitive data never leaves Chase.' },
+  ],
+  points: [
+    { id: 'settings-after', label: 'In settings', alt: 'Walmart Pay Settings with the Ultimate Rewards points switch.', live: true },
+    { id: 'scanner', label: 'At the register', alt: 'The QR scanner at the register, with a Paying with this card sheet showing the Chase Freedom card and whether points are on.', live: true },
+  ],
+  redirect: [
+    { id: 'alert-before', label: 'Before', alt: 'Before: an alert over the Chase Pay page: You\'re now leaving Walmart. You will be redirected to Chase mobile app or website. Cancel, OK.' },
+    { id: 'alert-after', label: 'After', alt: 'After: You\'re briefly leaving Walmart. We\'ll direct you to the Chase app or website to sign in, and return you here shortly. Cancel, OK.' },
+  ],
+};
+const phones = set === 'recording' ? [] : sets[set];
+---
+<figure class:list={['cps', `cps--${set}`]} data-cps>
+  {set === 'recording' ? (
+    <DeviceBox label="Study prototype">
+      <video
+        muted loop playsinline preload="metadata" data-cps-video
+        poster="/images/chase-pay/prototype-poster.jpg"
+        aria-label="Screen recording of the Chase Pay prototype: setting up Walmart Pay, choosing Add Chase Pay, the alert before leaving for Chase, signing in at Chase and coming back, and the Chase cards landing in Walmart Pay settings"
+      >
+        <source src="/images/chase-pay/prototype.webm" type="video/webm" />
+        <source src="/images/chase-pay/prototype.mp4" type="video/mp4" />
+      </video>
+    </DeviceBox>
+  ) : (
+    <div class="cps__row" style={`--n: ${phones.length};`} role="group" aria-label={`${phones.length} screens: ${phones.map((p) => p.label).join(', ')}`}>
+      {phones.map((p) => (
+        <DeviceBox label={p.label}>
+          <div
+            class="cps__fit"
+            role={p.live ? 'group' : 'img'}
+            aria-label={p.live ? p.label : p.alt}
+          >
+            <ChaseScreen id={p.id} live={p.live} />
+          </div>
+        </DeviceBox>
+      ))}
+    </div>
+  )}
+  {caption && <figcaption class="cps__cap u-label-mono">{caption}</figcaption>}
+</figure>
+
+<style>
+  .cps { margin: 0; display: grid; gap: 1rem; container-type: inline-size; }
+  .cps__row {
+    display: grid; gap: 1rem;
+    grid-auto-flow: column; grid-auto-columns: min(19rem, 86%);
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+  }
+  .cps__row > :global(*) { scroll-snap-align: start; }
+  @container (min-width: 40rem) {
+    .cps__row { grid-auto-flow: row; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); overflow: visible; }
+  }
+  .cps__row :global(.device-box) { padding-inline: 1rem; }
+  .cps__cap { max-width: var(--measure); color: var(--fg-dim); margin: 0; }
+
+  /* the drawn screen, scaled to its phone by the script */
+  .cps__fit { position: absolute; inset: 0; overflow: hidden; background: var(--cp-surface); }
+  .cps__fit > :global(.cpd) { transform: scale(var(--cps-k, 1)); transform-origin: 0 0; }
+  .cps__fit[role='img'] :global(*) { pointer-events: none; }
+</style>
+
+<script>
+  // Scale each drawn screen to its phone.
+  const fit = (el: HTMLElement) => {
+    const draw = el.firstElementChild as HTMLElement | null;
+    if (draw) el.style.setProperty('--cps-k', String(el.clientWidth / draw.offsetWidth));
+  };
+  const ro = new ResizeObserver((entries) => entries.forEach((e) => fit(e.target as HTMLElement)));
+  document.querySelectorAll<HTMLElement>('[data-cps] .cps__fit').forEach((el) => { fit(el); ro.observe(el); });
+
+  // A row takes keyboard focus only while it scrolls.
+  const rows = new ResizeObserver((entries) => entries.forEach(({ target }) => {
+    const row = target as HTMLElement;
+    if (row.scrollWidth > row.clientWidth + 1) row.tabIndex = 0;
+    else row.removeAttribute('tabindex');
+  }));
+  document.querySelectorAll<HTMLElement>('[data-cps] .cps__row').forEach((row) => rows.observe(row));
+
+  // The points switch: settings and the scanner beside it follow it.
+  document.querySelectorAll<HTMLElement>('[data-cps]').forEach((set) => {
+    set.querySelectorAll<HTMLButtonElement>('[data-cp-switch]').forEach((sw) => {
+      sw.addEventListener('click', () => {
+        const on = sw.getAttribute('aria-checked') !== 'true';
+        sw.setAttribute('aria-checked', String(on));
+        set.querySelectorAll<HTMLElement>('[data-cp-points]').forEach((p) => { p.dataset.state = on ? 'on' : 'off'; });
+      });
+    });
+  });
+
+  // The recording: plays while on screen, not on its own under reduced motion.
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLVideoElement>('[data-cps-video]').forEach((v) => {
+    if (still) { v.controls = true; return; }
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) v.play().catch(() => { v.controls = true; });
+      else v.pause();
+    }, { threshold: 0.35 }).observe(v);
+  });
+</script>

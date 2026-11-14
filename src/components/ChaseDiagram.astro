@@ -1,0 +1,205 @@
+---
+/* ChaseDiagram.astro — two of the Chase Pay case's slides redrawn as UI
+   (the `diagram` block, names 'chase-study' and 'chase-flow'), because
+   the slide exports read soft and their small type couldn't be read.
+
+   - chase-study: the eight weeks before and during the store test as a
+     timeline — who did what, week by week, and the study's shape (12
+     customers, 60 minutes each, 6 iOS and 6 Android). Durations are the
+     deck's; the researcher's weeks are placed where the case says they
+     ran, alongside the end of the design work.
+   - chase-flow: the integration flow for a new Walmart Pay customer, the
+     deck's map reduced to the main path: Walmart screens white, new
+     Chase Pay screens blue, the stretch outside Walmart grouped, with the
+     browser fallback for when the Chase Pay app isn't installed. The steps
+     wrap onto as many lines as the column needs, so it's all in view.
+
+   Every word is real text, in reading order. Both sit on a fixed light
+   canvas like the screens (CHASE PAY SCREENS in tokens.css). The flow
+   wraps at every width; if a very narrow screen still can't hold a step
+   it scrolls sideways, arrow keys once focused. */
+interface Props { name: 'chase-study' | 'chase-flow'; caption?: string }
+const { name, caption } = Astro.props;
+
+const weeks = 8;
+const lanes = [
+  { who: 'Product designer', where: 'Me', bars: [
+    { from: 1, to: 6, text: 'Design sprints, mockups in Sketch', hers: true },
+    { from: 7, to: 7, text: 'Prototype in Adobe XD', hers: true },
+  ] },
+  { who: 'Design manager', where: 'San Bruno, CA', bars: [
+    { from: 1, to: 7, text: 'Design critiques', soft: true },
+  ] },
+  { who: 'User researcher', where: 'Seattle, WA', bars: [
+    { from: 5, to: 6, text: 'Recruiting participants' },
+    { from: 7, to: 7, text: 'Pilot test, script' },
+  ] },
+  { who: 'In the store', where: 'Dallas, TX', bars: [
+    { from: 8, to: 8, text: 'Testing', hers: true },
+  ] },
+];
+
+type Node = { text: string; chase?: boolean; modal?: boolean; tag?: string };
+const flow: (Node | { group: string; nodes: Node[]; fallback: Node[] })[] = [
+  { text: 'Account › Payment methods, or the Services tab' },
+  { text: 'Walmart Pay onboarding' },
+  { text: 'Choose a payment type', tag: 'Chase Pay entry' },
+  { text: 'Chase Pay benefits', chase: true },
+  { text: 'Leaving Walmart, back shortly', chase: true, modal: true },
+  { group: 'Outside Walmart', nodes: [
+    { text: 'Sign in, Chase Pay app', chase: true },
+    { text: 'Touch ID / Face ID', chase: true, modal: true },
+    { text: 'Complete setup, back to Walmart', chase: true },
+  ], fallback: [
+    { text: 'No Chase Pay app: sign in at chase.com in the browser', chase: true },
+  ] },
+  { text: 'Choose a default card', tag: 'Pay with points' },
+  { text: 'Create a Walmart PIN' },
+  { text: 'Scan the QR at the register', tag: 'Points on or off' },
+  { text: 'Payment confirmation', tag: 'Chase Pay used' },
+];
+---
+<figure class="cpg">
+  {name === 'chase-study' && (
+    <div class="cpg__canvas study" style={`--weeks: ${weeks};`}>
+      <div class="study__head" aria-hidden="true">
+        <span></span>
+        <span class="study__wks">{Array.from({ length: weeks }, (_, i) => <span class="study__wk">Wk {i + 1}</span>)}</span>
+      </div>
+      <ol class="study__lanes">
+        {lanes.map((l) => (
+          <li class="study__lane">
+            <p class="study__who"><b>{l.who}</b><span>{l.where}</span></p>
+            <ul class="study__bars">
+              {l.bars.map((b) => (
+                <li
+                  class:list={['study__bar', b.hers && 'is-hers', b.soft && 'is-soft']}
+                  style={`grid-column: ${b.from} / ${b.to + 1};`}
+                >
+                  {b.text}<span class="study__when">, week {b.from === b.to ? b.from : `${b.from} to ${b.to}`}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+      <dl class="study__facts">
+        <div><dt>12</dt><dd>Walmart + Chase customers</dd></div>
+        <div><dt>60 min</dt><dd>One-on-one, in the store</dd></div>
+        <div><dt>6 + 6</dt><dd>iOS and Android</dd></div>
+      </dl>
+    </div>
+  )}
+
+  {name === 'chase-flow' && (
+    <div class="cpg__canvas flow" data-cpg-scroll>
+      <ol class="flow__path">
+        {flow.map((n) => 'group' in n ? (
+          <li class="flow__group">
+            <p class="flow__label">{n.group}</p>
+            <ol class="flow__path flow__path--inner">
+              {n.nodes.map((m) => (
+                <li class:list={['flow__node', m.chase && 'is-chase', m.modal && 'is-modal']}>{m.text}</li>
+              ))}
+            </ol>
+            <p class="flow__or">If the app isn't on the phone</p>
+            <ol class="flow__path flow__path--inner">
+              {n.fallback.map((m) => (
+                <li class:list={['flow__node flow__node--wide', m.chase && 'is-chase']}>{m.text}</li>
+              ))}
+            </ol>
+          </li>
+        ) : (
+          <li class:list={['flow__node', n.chase && 'is-chase', n.modal && 'is-modal']}>
+            {n.text}
+            {n.tag && <span class="flow__tag">{n.tag}</span>}
+          </li>
+        ))}
+      </ol>
+      <ul class="flow__legend" aria-label="Key">
+        <li><i></i>Walmart Pay screen</li>
+        <li><i class="is-chase"></i>New Chase Pay screen</li>
+        <li><i class="is-modal"></i>Overlay</li>
+      </ul>
+    </div>
+  )}
+  {caption && <figcaption class="cpg__cap u-label-mono">{caption}</figcaption>}
+</figure>
+
+<style>
+  .cpg { margin: 0; display: grid; gap: 1rem; }
+  .cpg__cap { max-width: var(--measure); color: var(--fg-dim); margin: 0; }
+  .cpg__canvas {
+    background: var(--cp-diagram-canvas); border: 1px solid var(--cp-diagram-frame);
+    border-radius: var(--radius-device-box);
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+    color: var(--cp-ink); font-family: var(--font-sans); font-size: var(--step-copy);
+  }
+  .cpg ol, .cpg ul, .cpg dl, .cpg dd, .cpg p { list-style: none; margin: 0; padding: 0; }
+
+  /* ---- study timeline ---- */
+  .study { display: grid; gap: 0.75rem; }
+  .study__head, .study__lane { display: grid; grid-template-columns: 8.5rem 1fr; gap: 0.75rem; align-items: center; }
+  .study__wks, .study__bars { display: grid; grid-template-columns: repeat(var(--weeks), 1fr); gap: 0.25rem; }
+  .study__wk { font-family: var(--font-mono); font-size: var(--step-fine); color: var(--cp-ink-dim); text-transform: uppercase; border-left: 1px solid var(--cp-diagram-frame); padding-left: 0.35rem; }
+  .study__lanes { display: grid; gap: 0.5rem; }
+  .study__who { display: grid; line-height: 1.3; }
+  .study__who b { font-weight: inherit; }
+  .study__who span { font-family: var(--font-mono); font-size: var(--step-fine); color: var(--cp-ink-dim); }
+  .study__bar {
+    padding: 0.55rem 0.6rem; border-radius: var(--radius-tag); line-height: 1.25;
+    background: var(--cp-bar-team); color: var(--cp-ink);
+  }
+  .study__bar.is-hers { background: var(--cp-bar-hers); color: var(--cp-surface); }
+  .study__bar.is-soft { background: transparent; border: 1px dashed var(--cp-bar-team); color: var(--cp-ink-dim); }
+  .study__when { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .study__facts { display: flex; flex-wrap: wrap; gap: 1.5rem 2.5rem; margin-top: 0.75rem; padding-top: 1rem; border-top: 1px solid var(--cp-diagram-frame); }
+  .study__facts dt { font-family: var(--font-serif); font-weight: var(--weight-serif); font-size: var(--step-title); line-height: 1.1; }
+  .study__facts dd { color: var(--cp-ink-dim); }
+  @media (max-width: 40rem) {
+    .study__head { display: none; }
+    .study__lane { grid-template-columns: 1fr; gap: 0.35rem; }
+    .study__bars { display: flex; flex-wrap: wrap; }
+    .study__when { position: static; width: auto; height: auto; overflow: visible; clip-path: none; opacity: 0.7; }
+  }
+
+  /* ---- integration flow ---- */
+  .flow { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; display: grid; gap: 1.25rem; }
+  .flow__path { display: flex; align-items: center; gap: 1.6rem; width: max-content; }
+  .flow > .flow__path, .flow__path--inner { flex-wrap: wrap; width: auto; row-gap: 1.5rem; }
+  .flow__group { max-width: 100%; }
+  .flow__node--wide { max-width: 100%; }
+  .flow__node {
+    position: relative; width: 7.5rem; min-height: 5.5rem; padding: 0.6rem 0.65rem;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 0.4rem;
+    background: var(--cp-surface); border: 1px solid var(--cp-diagram-frame); border-top: 5px solid var(--cp-diagram-frame);
+    border-radius: var(--radius-cp-node); line-height: 1.3;
+  }
+  .flow__node--wide { width: 16.6rem; min-height: 0; }
+  .flow__node.is-chase { background: var(--cp-chase-tint); border-color: var(--cp-chase-tint); border-top-color: var(--cp-chase); color: var(--cp-chase-ink); }
+  .flow__node.is-modal { border-style: dashed; border-top-style: solid; }
+  /* the arrow to the next step */
+  .flow__path > li:not(:last-child)::after {
+    content: '→'; position: absolute; right: -1.35rem; top: 50%; transform: translateY(-50%);
+    color: var(--cp-ink-dim); font-size: var(--step-body);
+  }
+  .flow__group { position: relative; padding: 0.9rem; border-radius: var(--radius-cp-node); background: var(--cp-external); display: grid; gap: 0.6rem; }
+  .flow__label, .flow__or, .flow__tag { font-family: var(--font-mono); font-size: var(--step-fine); text-transform: uppercase; color: var(--cp-ink-dim); }
+  .flow__tag { color: var(--cp-chase-ink); text-transform: none; }
+  .flow__legend { display: flex; flex-wrap: wrap; gap: 1.25rem; color: var(--cp-ink-dim); }
+  .flow__legend li { display: flex; align-items: center; gap: 0.45rem; }
+  .flow__legend i { width: 0.9rem; height: 0.9rem; border-radius: 3px; background: var(--cp-surface); border: 1px solid var(--cp-diagram-frame); }
+  .flow__legend i.is-chase { background: var(--cp-chase-tint); border-color: var(--cp-chase); }
+  .flow__legend i.is-modal { border-style: dashed; border-color: var(--cp-ink-dim); }
+  .flow:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+</style>
+
+<script>
+  // The flow takes keyboard focus only while it scrolls.
+  const ro = new ResizeObserver((entries) => entries.forEach(({ target }) => {
+    const el = target as HTMLElement;
+    if (el.scrollWidth > el.clientWidth + 1) { el.tabIndex = 0; el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Integration flow, scrolls sideways'); }
+    else { el.removeAttribute('tabindex'); el.removeAttribute('role'); el.removeAttribute('aria-label'); }
+  }));
+  document.querySelectorAll<HTMLElement>('[data-cpg-scroll]').forEach((el) => ro.observe(el));
+</script>

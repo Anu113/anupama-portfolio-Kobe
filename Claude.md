@@ -593,7 +593,12 @@ walked back. Concretely, in the current implementation:
   numbers (`CaseNumbers.astro`) are the first metrics block of the case's
   Impact section, minus `[X]` placeholders and dates, shown only with two
   or more left; they count up from 0 when in view (CASE NUMBERS in
-  `tokens.css`), static under reduced motion.
+  `tokens.css`), static under reduced motion. The headline numbers, the Impact
+  section's numbers and the case snapshot's cells sit on the About page's
+  soft cards (3% ink fill, no border, 28px corners; CASE CARDS in
+  `tokens.css`) instead of hairlines, on request (2026-11-14) — a
+  requested exception to the square `--radius` rule, those three blocks
+  only. Section openers and the numbered lists keep their hairlines.
 - **Case tags are lime** (CASE TAGS in `tokens.css`: `#d4ff3a` fill,
   `#2b3600` ink, 11:1), picked on request from a round of neutral, neon
   and red/brown mocks. The company in mono, then its tags as 10px mono

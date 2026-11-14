@@ -1,6 +1,7 @@
 // The case-study set, shared by the home page (ACT 2) and /work.
 // Placeholder imagery — swap the image paths once real assets land in
-// /public/images. Numbers in brackets are still to be filled in.
+// /public/images. Impact lines were filled with stand-in numbers on her
+// request (2026-11-14); see the note at the top of cases.ts.
 //
 // All eight link to /work/<slug>. Nothing here sends a visitor off to a
 // Google Slides deck — a recruiter who lands on a Drive login has left the
@@ -65,7 +66,7 @@ export const work = [
     tagline: 'A ground-up rebuild of the admin console, shipped under live tenants.',
     summary: 'Admins ran identity for thousands of employees through a console built for a smaller company. I owned the design of the core administrative surfaces — entitlements, role management, the OIN publishing flow and developer onboarding — through a rebuild that shipped underneath live tenants, with no migration freeze.',
     role: 'Staff Product Designer · IAM + Developer Tools · Led 6 designers',
-    impact: 'Admin task time down [X]% across the four highest-volume flows',
+    impact: 'Admin task time down 32% across the four highest-volume flows',
     hoverState: 'case-study',
     tags: ['Product Strategy', 'Design Systems'], categories: ['identity'],
     href: '/work/okta-iam', image: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" },
@@ -117,15 +118,16 @@ export const work = [
     tagline: 'One extensible framework replaced four bespoke integration review flows.',
     summary: 'Every new OIN integration category meant a bespoke review flow built by hand. I designed one extensible framework instead — a shared manifest schema, validation engine and component kit — so a category Okta hasn\'t invented yet can launch on it without a new build.',
     role: 'Staff Product Designer · Integration Platform + Developer Ecosystem',
-    impact: 'Submission cycle time down [X]%, on one framework instead of four',
+    impact: 'Submission cycle time down 48%, on one framework instead of four',
     hoverState: 'case-study',
     tags: ['Platform', 'Design Systems'], categories: ['devtools'],
     href: '/work/okta-oin', image: '/images/okta/integrations.webp', alt: 'Auth0 onboarding screens: Applications, Organizations and Single Sign On Integrations' },
 
   // Written from her "PayPal Debit Card" deck — see the header comment on
   // `paypal-debit-card` in cases.ts. Replaced the old Unified Card System
-  // skeleton. The abandonment result, the hard call and her exact hands-on
-  // scope are still brackets. `showOnHome: false` until they're filled.
+  // skeleton. The hard call, her hands-on scope and the reflections were
+  // written as stand-ins on request (2026-11-14), for her to confirm.
+  // `showOnHome: false` is unchanged.
   { company: 'PayPal', theme: 'clay', device: 'phone', showOnHome: false,
     title: 'A debit card people finish signing up for',
     tagline: 'Card enrollment and cash back rebuilt inside the PayPal app.',
@@ -151,14 +153,15 @@ export const work = [
     href: '/work/paypal-id-proofing', image: '/images/paypal-id-proofing/hero.webp', alt: 'PayPal ID verification screens: Verify your ID easily in just 2 steps, and Scan your photo ID' },
 
   // Interest-based ads and the Auto Privacy Advisor, one case on request —
-  // see `paypal-ads-consent` in cases.ts. Mostly brackets until she fills
-  // in her role, the hard call and the outcome, and exports the ads screens.
+  // see `paypal-ads-consent` in cases.ts. Its role, hard call and outcome
+  // were written as stand-ins on request (2026-11-14), for her to confirm;
+  // the ads screens are still a coded rebuild until she exports them.
   { company: 'PayPal', theme: 'sage', device: 'phone',
     title: 'Privacy-first ad personalization',
     tagline: 'Ad data sharing moved from opted in by default to asking first.',
     summary: 'PayPal shared customer data with ad partners by default, and only about 1% of people ever opted out. When compliance moved the default to opted out, I designed how PayPal asks for consent, and proposed the Auto Privacy Advisor: a checkup that brings privacy settings to people.',
-    role: '[Owned the design] · Ads consent and privacy settings',
-    impact: '[Consent rate under the new default]',
+    role: 'Owned the design · Ads consent and privacy settings',
+    impact: '41% opted in once PayPal asked first',
     hoverState: 'case-study',
     tags: ['Ads & Personalization', 'Privacy & Data'], categories: ['fintech'],
     href: '/work/paypal-ads-consent', image: '/images/paypal-ads-consent/hero.webp', alt: 'The rebuilt PayPal ad consent screens: Data & Privacy, the ask, and Online ad preferences' },
