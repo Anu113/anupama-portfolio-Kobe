@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Home cards — how the product is shown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+/* Mock page for the home page's "Selected work" stages. Six ways to stage
+   the same real screens, against what's live now. Values are inlined here
+   on purpose (it's a mock); whichever is picked moves into tokens.css. */
+:root{
+  --paper:#fcfcfc; --ink:#262626; --dim:#707070; --line:rgb(0 0 0/.1);
+  --okta:#c9dcf2; --paypal:#e0d6ef; --walmart:#f4dc9c;
+  --bezel:#0e0e0f;
+  --ease:cubic-bezier(.16,1,.3,1); --dur:600ms;
+  --serif:'Crimson Pro',Georgia,serif; --sans:'Manrope',system-ui,sans-serif; --mono:'Azeret Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font:600 14px/1.5 var(--sans);padding:64px clamp(24px,5vw,80px) 160px}
+.intro{max-width:720px;margin-bottom:72px}
+.intro h1{font:300 44px/1.1 var(--serif)}
+.intro h1 em,.opt h2 em{font-style:italic}
+.intro p{color:var(--dim);margin-top:16px;max-width:60ch}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.toc a{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:6px 12px;text-decoration:none}
+.switch{margin-top:16px}.switch a{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--ink)}
+.toc a:hover{border-color:var(--ink)}
+
+.opt{border-top:1px solid var(--line);padding-top:24px;margin-top:96px;scroll-margin-top:24px}
+.opt__head{display:grid;grid-template-columns:64px 1fr;gap:0 16px;margin-bottom:28px;max-width:900px}
+.opt__k{font:400 11px var(--mono);color:var(--dim);padding-top:10px}
+.opt h2{font:300 32px/1.1 var(--serif)}
+.opt__why{color:var(--dim);margin-top:8px;max-width:64ch}
+.opt__ref{font:400 11px var(--mono);color:var(--dim);margin-top:8px;text-transform:uppercase;letter-spacing:.04em}
+
+/* the card, as on the home page: text left, stage right */
+.card{display:grid;grid-template-columns:5fr 7fr;height:540px;background:#fff;border:1px solid var(--line)}
+.card__body{padding:28px;display:flex;flex-direction:column}
+.num{font:400 11px var(--mono);color:var(--dim)}
+.meta{margin-top:auto;display:flex;gap:8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+.title{font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-top:12px}
+.tag{font-size:12px;color:var(--dim);margin-top:6px;max-width:38ch}
+.cta{font-size:12px;margin-top:28px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.row figure{display:flex;flex-direction:column;gap:8px}
+.row .stage{aspect-ratio:4/3}
+.row figcaption{font:400 10px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+
+/* ---------- stage primitives ---------- */
+.stage{position:relative;overflow:hidden;container-type:size;background:var(--hue)}
+.stage[data-hue=okta]{--hue:var(--okta)} .stage[data-hue=paypal]{--hue:var(--paypal)} .stage[data-hue=walmart]{--hue:var(--walmart)}
+.abs{position:absolute}
+.scr{position:relative;width:100%;height:100%;background-color:#fff;background-repeat:no-repeat;overflow:hidden}
+/* phone: --ph height, --ar screen aspect, --b bezel */
+.phone{--b:calc(var(--ph)*.016);height:var(--ph);width:calc((var(--ph) - 2*var(--b))*var(--ar) + 2*var(--b));
+  background:var(--bezel);padding:var(--b);border-radius:calc(var(--ph)*.07);
+  box-shadow:0 calc(var(--ph)*.04) calc(var(--ph)*.08) calc(var(--ph)*-.03) rgb(0 0 0/.4),0 1px 2px rgb(0 0 0/.2)}
+.phone>.scr{border-radius:calc(var(--ph)*.056)}
+/* frameless screen */
+.flat{height:var(--ph);width:calc(var(--ph)*var(--ar));border-radius:calc(var(--ph)*.035);overflow:hidden;
+  box-shadow:0 0 0 1px rgb(0 0 0/.06),0 calc(var(--ph)*.03) calc(var(--ph)*.07) calc(var(--ph)*-.02) rgb(0 0 0/.22)}
+.flat>.scr{border-radius:inherit}
+/* browser: --bh height */
+.browser{--bar:calc(var(--bh)*.055);height:var(--bh);width:calc((var(--bh) - var(--bar))*1.5641);background:#fff;border-radius:calc(var(--bh)*.018);overflow:hidden;
+  box-shadow:0 0 0 1px rgb(0 0 0/.08),0 calc(var(--bh)*.04) calc(var(--bh)*.09) calc(var(--bh)*-.03) rgb(0 0 0/.28)}
+.browser .bar{height:var(--bar);background:#f1f1f0;border-bottom:1px solid rgb(0 0 0/.06);display:flex;align-items:center;gap:calc(var(--bar)*.22);padding-left:calc(var(--bar)*.5)}
+.browser .bar i{width:calc(var(--bar)*.28);aspect-ratio:1;border-radius:50%;background:rgb(0 0 0/.14)}
+.browser .scr{height:calc(100% - var(--bar))}
+
+/* ---------- 0 · now ---------- */
+.s-now .phone{left:50%;top:50%;transform:translate(-50%,-50%)}
+.s-now .okta-img{left:8%;top:8%;width:84%;height:84%;object-fit:contain}
+
+/* ---------- A · fan ---------- */
+.s-fan .phone{left:50%;top:54%;transition:transform var(--dur) var(--ease)}
+.s-fan .f0{transform:translate(-50%,-50%) translateX(-58%) rotate(-7deg) scale(.86);filter:brightness(.96)}
+.s-fan .f1{transform:translate(-50%,-50%);z-index:2}
+.s-fan .f2{transform:translate(-50%,-50%) translateX(58%) rotate(7deg) scale(.86);filter:brightness(.96)}
+.card:hover .s-fan .f0,.stage.s-fan:hover .f0{transform:translate(-50%,-50%) translateX(-74%) rotate(-10deg) scale(.86)}
+.card:hover .s-fan .f2,.stage.s-fan:hover .f2{transform:translate(-50%,-50%) translateX(74%) rotate(10deg) scale(.86)}
+.card:hover .s-fan .f1,.stage.s-fan:hover .f1{transform:translate(-50%,-52%)}
+
+/* ---------- B · bleed ---------- */
+.s-bleed .phone{left:50%;top:16cqh;transform:translateX(-50%);transition:transform var(--dur) var(--ease)}
+.card:hover .s-bleed .phone,.stage.s-bleed:hover .phone{transform:translateX(-50%) translateY(-6cqh)}
+.s-bleed .browser{left:9cqw;top:14cqh;transition:transform var(--dur) var(--ease)}
+.card:hover .s-bleed .browser,.stage.s-bleed:hover .browser{transform:translate(-3cqw,-5cqh)}
+
+/* ---------- C · tilted table ---------- */
+.s-tilt .plane{left:50%;top:50%;display:flex;align-items:flex-end;gap:5cqh;transform:translate(-44%,-46%) rotateX(54deg) rotateZ(-34deg);transform-style:preserve-3d}
+.s-tilt .flat{transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease);flex:none}
+.s-tilt .flat:hover{transform:translateZ(5cqh)}
+.s-tilt .plane .flat{box-shadow:0 0 0 1px rgb(0 0 0/.06),-2cqh 3cqh 5cqh -1cqh rgb(0 0 0/.25)}
+
+/* ---------- D · flow strip ---------- */
+.s-strip .track{left:7cqw;top:12cqh;display:flex;align-items:flex-start;gap:0;transition:transform 900ms var(--ease)}
+.card:hover .s-strip .track,.stage.s-strip:hover .track{transform:translateX(var(--slide,-22cqw))}
+.s-strip .step{display:flex;flex-direction:column;gap:2.4cqh;flex:none}
+.s-strip .lab{font:400 max(9px,2.2cqh)/1.3 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:rgb(0 0 0/.62);max-width:calc(var(--ph)*var(--ar))}
+.s-strip .lab b{font-weight:400;color:rgb(0 0 0/.9);display:block}
+.s-strip .arr{flex:none;width:7cqh;height:var(--ph);display:grid;place-items:center;color:rgb(0 0 0/.4);font:400 max(10px,3cqh) var(--mono)}
+.s-strip .browser{flex:none}
+
+/* ---------- E · detail loupe ---------- */
+.s-loupe .phone{left:14cqw;top:50%;transform:translateY(-50%)}
+.s-loupe .browser{left:5cqw;top:50%;transform:translateY(-50%)}
+.s-loupe .ring{position:absolute;border:max(1.5px,.35cqh) solid var(--ink);border-radius:50%;transform:translate(-50%,-50%);transition:transform var(--dur) var(--ease)}
+.s-loupe .lens{right:7cqw;top:50%;width:50cqh;aspect-ratio:1;border-radius:50%;background-color:#fff;background-repeat:no-repeat;transform:translateY(-58%) scale(.96);
+  box-shadow:0 0 0 max(1.5px,.35cqh) var(--ink),0 3cqh 7cqh -2cqh rgb(0 0 0/.35);transition:transform var(--dur) var(--ease)}
+.card:hover .s-loupe .lens,.stage.s-loupe:hover .lens{transform:translateY(-58%) scale(1.04)}
+.s-loupe .note{right:7cqw;width:50cqh;top:calc(50% + 21cqh);font:400 max(9px,2.2cqh)/1.35 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:rgb(0 0 0/.7);text-align:center}
+
+/* ---------- F · screen over its system ---------- */
+.s-system .map{inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:.28;filter:grayscale(1) contrast(1.1);mix-blend-mode:multiply;transition:opacity var(--dur) var(--ease),filter var(--dur) var(--ease),transform 900ms var(--ease)}
+.card:hover .s-system .map,.stage.s-system:hover .map{opacity:.85;filter:grayscale(0);transform:scale(1.02)}
+.s-system .phone{left:50%;top:50%;transform:translate(-50%,-50%);transition:transform 900ms var(--ease)}
+.card:hover .s-system .phone,.stage.s-system:hover .phone{transform:translate(-50%,-50%) translate(var(--away,30cqw),6cqh) scale(.82)}
+.s-system .browser.back{left:6cqw;top:10cqh}
+.s-system .phone.front{left:auto;right:10cqw;top:auto;bottom:-6cqh;transform:none}
+.card:hover .s-system .phone.front,.stage.s-system:hover .phone.front{transform:translateY(-4cqh)}
+
+
+/* quiet set */
+.c{left:50%;top:50%;transform:translate(-50%,-50%)}
+.row2{display:flex;gap:4cqh;align-items:center}
+.row2>*{flex:none}
+.g{left:50%;top:12cqh;transform:translateX(-50%)}
+.g--d{left:10cqw;top:12cqh;transform:none}
+.stage>.abs{transition:translate var(--dur) var(--ease)}
+.card:hover .stage>.abs:not(.okta-img),.row .stage:hover>.abs:not(.okta-img){translate:0 -1.6cqh}
+.stage.s-neutral{background:#f1f0ee}
+.s-solo .flat,.s-neutral .flat,.s-pair .flat{box-shadow:0 0 0 1px rgb(0 0 0/.08),0 2cqh 5cqh -2cqh rgb(0 0 0/.18)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:900px){.card{grid-template-columns:1fr;height:auto}.card .stage{aspect-ratio:4/3;order:-1}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="intro">
+  <h1>Selected work, <em>quieter</em></h1>
+  <p>Same four projects, same real screens, different staging. One or two screens per card, no tilt, no zoom, no diagrams. The only motion is a small lift on hover. The busier set is at index.html.</p>
+  <nav class="toc" id="toc"></nav>
+  <p class="switch"><a href="index.html">← Busier set (A–F)</a></p>
+</header>
+<main id="opts"></main>
+
+<script>
+const I = '../../public/images/';
+const L = 'img/';
+// a screen: whole image (cover, top) or a crop of a board
+const whole = (src) => ({ src, cover:true });
+const crop = (src, W, H, x, y, w, h) => ({ src, W, H, x, y, w, h });
+function bg(s){
+  if (s.cover) return `background-image:url('${s.src}');background-size:cover;background-position:top center`;
+  const sx = s.W/s.w*100, sy = s.H/s.h*100;
+  const px = s.W===s.w?0:s.x/(s.W-s.w)*100, py = s.H===s.h?0:s.y/(s.H-s.h)*100;
+  return `background-image:url('${s.src}');background-size:${sx}% ${sy}%;background-position:${px}% ${py}%`;
+}
+const scr = (s, inner='') => `<div class="scr" style="${bg(s)}">${inner}</div>`;
+const phone = (s, ph, ar, cls='', style='', inner='') => `<div class="abs phone ${cls}" style="--ph:${ph};--ar:${ar};${style}">${scr(s, inner)}</div>`;
+const flat = (s, ph, ar, cls='', style='') => `<div class="flat ${cls}" style="--ph:${ph};--ar:${ar};${style}">${scr(s)}</div>`;
+const browser = (s, bh, cls='', style='', inner='') => `<div class="browser ${cls}" style="--bh:${bh};${style}"><div class="bar"><i></i><i></i><i></i></div>${scr(s, inner)}</div>`;
+
+const OKTA = I+'okta/my-apps.webp';
+const ENR = I+'paypal-debit/enroll.webp';
+const P = {
+  privacy: { hue:'paypal', co:'PayPal', title:'Privacy settings people can read',
+    tagline:'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.', tags:['Fintech','Research'],
+    ar:.45, screens:[1,2,3,4].map(n=>whole(I+`paypal-privacy/phone-${n}.webp`)),
+    labels:['Data and privacy','Deals and ads','Personalized deals and offers','How it works'],
+    detail:{ src:I+'paypal-privacy/phone-2.webp', W:350, H:756, cx:175, cy:375, R:310, screen:1, note:'“Deals on PayPal is ON”' },
+    map:I+'paypal-privacy/context-map.webp' },
+  okta: { hue:'okta', co:'Okta', title:'Rebuilding IAM for enterprise admins',
+    desktop:crop(OKTA,1500,806,174,60,976,624), ar:262/468, screens:[crop(OKTA,1500,806,1166,210,262,468)],
+    labels:['My Apps · desktop','My Apps · mobile'],
+    detail:{ src:OKTA, W:1500, H:806, cx:540, cy:450, R:240, note:'A new app, marked “NEW”' } },
+  chase: { hue:'walmart', co:'Walmart', title:'Chase Pay inside Walmart Pay',
+    ar:.5625, screens:[3,4,5,6].map(n=>whole(L+`chase-${n}.jpg`)), video:true,
+    labels:['Choose a payment type','You’re now leaving Walmart','Complete setup at Chase','Chase Pay is linked'],
+    detail:{ src:L+'chase-4.jpg', W:360, H:640, cx:180, cy:330, R:320, screen:1, note:'“You’re now leaving Walmart”' },
+    map:I+'chase-pay/flow.png' },
+  debit: { hue:'paypal', co:'PayPal', title:'A debit card people finish signing up for',
+    ar:138/347, screens:[0,143,284,422,566].map(x=>crop(ENR,720,347,x,0,138,347)),
+    labels:['Request your card','Confirm your info','Identity confirmed','Shipping address','Setting up your card'],
+    detail:{ src:ENR, W:720, H:347, cx:636, cy:100, R:150, screen:4, note:'“Beautiful. Setting up your new card…”' },
+    map:I+'paypal-debit/flow-enroll.webp' },
+};
+// Chase's first screen is the live recording in options that show one phone
+const video = `<video src="${I}chase-pay/prototype.mp4" muted autoplay loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>`;
+
+const lift = 'lift';
+const S = {
+  now(p){
+    if (p.desktop) return `<img class="abs okta-img" src="${OKTA}" alt="">`;
+    return phone(p.screens[0], '78cqh', p.ar, '', 'left:50%;top:50%;transform:translate(-50%,-50%)', p.video?video:'');
+  },
+  // 1 · one screen, no device
+  solo(p){
+    if (p.desktop) return `<div class="abs c">${browser(p.desktop,'66cqh')}</div>`;
+    return `<div class="abs c">${flat(p.screens[0],'82cqh',p.ar,'', '')}</div>`.replace('<div class="scr"', `<div class="scr"`) + (p.video?'':'');
+  },
+  // 2 · phone, bigger, sitting low and cut by the bottom edge
+  grounded(p){
+    if (p.desktop) return `<div class="abs g g--d">${browser(p.desktop,'96cqh')}</div>`;
+    return `<div class="abs g">${phone(p.screens[0],'104cqh',p.ar,'','position:relative',p.video?video:'')}</div>`;
+  },
+  // 3 · two screens, level, side by side
+  pair(p){
+    if (p.desktop) return `<div class="abs c row2">${browser(p.desktop,'58cqh')}${flat(p.screens[0],'58cqh',p.ar)}</div>`;
+    return `<div class="abs c row2">${flat(p.screens[0],'76cqh',p.ar)}${flat(p.screens[1],'76cqh',p.ar)}</div>`;
+  },
+  // 4 · same as 1, on a neutral ground
+  neutral(p){ return S.solo(p); },
+};
+
+const OPTS = [
+  { k:'now', key:'Now', name:'What’s <em>live</em>', why:'For comparison.', ref:'Live today' },
+  { k:'solo', key:'1', name:'One screen, <em>no device</em>', why:'Just the screen, large, with a hairline edge and a soft shadow. No bezel, nothing else in the box.', ref:'After apple.com feature tiles, rauno.me' },
+  { k:'grounded', key:'2', name:'Phone, <em>grounded</em>', why:'One phone, bigger, sitting low and cut off by the bottom edge, so it reads as placed rather than floating. Okta’s browser does the same off the bottom-right corner.', ref:'After linear.app, daneden.me' },
+  { k:'pair', key:'3', name:'Two screens, <em>level</em>', why:'Two steps of the flow side by side, same size, straight. Enough to show it’s a flow; still calm.', ref:'After Mobbin, danield.design' },
+  { k:'neutral', key:'4', name:'One screen, <em>neutral ground</em>', why:'Option 1 on a pale warm grey instead of the project hue. The quietest: all colour comes from the screen itself.', ref:'After allierho.com' },
+];
+const card = (o, p) => `<article class="card">
+  <div class="card__body"><p class="num">02</p>
+    <div class="meta"><span>${p.co}</span><span>·</span><span>${(p.tags||[]).join('  ')}</span></div>
+    <h3 class="title">${p.title}</h3><p class="tag">${p.tagline||''}</p><p class="cta">View case study →</p></div>
+  <div class="stage s-${o.k}" data-hue="${p.hue}">${S[o.k](p)}</div></article>`;
+const small = (o, id) => { const p = P[id]; return `<figure><div class="stage s-${o.k}" data-hue="${p.hue}" style="--slide:${id==='okta'?'-30cqw':'-40cqw'}">${S[o.k](p)}</div><figcaption>${p.co} · ${p.title}</figcaption></figure>`; };
+
+document.getElementById('opts').innerHTML = OPTS.map(o => `<section class="opt" id="${o.k}">
+  <div class="opt__head"><p class="opt__k">${o.key}</p><div><h2>${o.name}</h2><p class="opt__why">${o.why}</p><p class="opt__ref">${o.ref}</p></div></div>
+  ${card(o, P.privacy)}
+  <div class="row">${['okta','chase','debit'].map(id=>small(o,id)).join('')}</div></section>`).join('');
+document.getElementById('toc').innerHTML = OPTS.map(o=>`<a href="#${o.k}">${o.key} · ${o.name.replace(/<\/?em>/g,'')}</a>`).join('');
+
+</script>
+</body>
+</html>

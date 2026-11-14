@@ -538,7 +538,11 @@ walked back. Concretely, in the current implementation:
   ink); on the right, Work · About · Play (12px, grey, current page in
   ink), a hairline, the sound button and the Light/Dark theme toggle.
   Links fold into Menu below 900px. "Play" is the label only; the page
-  stays at /playground. There is no Contact link: the /contact page was
+  stays at /playground. On hover the name steps ink → grey (no
+  underline) and the links grey → ink; on all four the letters part
+  a little, one after another (option D of
+  `experiments/nav-name-tracking/`, NAV NAME in `tokens.css`, on
+  request, 2026-11-13). There is no Contact link: the /contact page was
   removed on request (2026-11-11), and the footer carries contact on
   every page. The old bottom dock (`Dock.astro`) is gone.
 - **Page sound** came back on request (2026-11-11) as a speaker button
@@ -589,7 +593,12 @@ walked back. Concretely, in the current implementation:
   numbers (`CaseNumbers.astro`) are the first metrics block of the case's
   Impact section, minus `[X]` placeholders and dates, shown only with two
   or more left; they count up from 0 when in view (CASE NUMBERS in
-  `tokens.css`), static under reduced motion.
+  `tokens.css`), static under reduced motion. The headline numbers, the Impact
+  section's numbers and the case snapshot's cells sit on the About page's
+  soft cards (3% ink fill, no border, 28px corners; CASE CARDS in
+  `tokens.css`) instead of hairlines, on request (2026-11-14) — a
+  requested exception to the square `--radius` rule, those three blocks
+  only. Section openers and the numbered lists keep their hairlines.
 - **Case tags are lime** (CASE TAGS in `tokens.css`: `#d4ff3a` fill,
   `#2b3600` ink, 11:1), picked on request from a round of neutral, neon
   and red/brown mocks. The company in mono, then its tags as 10px mono
@@ -686,8 +695,10 @@ walked back. Concretely, in the current implementation:
   `experiments/about-grid/slots.html`, after his CD player): a
   slot-loading record player with a speaker (`RecordPlayer.astro`,
   RECORD PLAYER in `tokens.css`). On a press the record rises and spins,
-  the grille pulses and a lilac pixel display scrolls the song with a
-  clock and level bars; no orange, on request. It plays her Spotify
+  the dome in its small round speaker bumps and a neon green pixel
+  display scrolls the song with a clock and level bars (speaker and
+  colour chosen on request, 2026-11-14, from
+  `experiments/record-player-cute/`); no orange, on request. It plays her Spotify
   playlist's real tracks, "My Playlist #2026" (`song` in
   `data/about.ts`), one after another, through Spotify's embedded
   player kept out of sight in the tile (on request, 2026-11-11: she

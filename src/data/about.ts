@@ -72,6 +72,11 @@ export const tabs = [
   { id: 'books', label: 'Books', rows: shelf },
 ];
 
+// ---- Updated on ---------------------------------------------------
+// The date under "About me" (on request, 2026-11-13). Change it when the
+// page's words change; ISO date, shown as "Updated on 13 Nov 2026".
+export const updated = '2026-11-13';
+
 // ---- Portrait ------------------------------------------------------
 // Her photo as given (camera looks and a cutout were tried in the mocks
 // and turned down), with her porch painting as a stamp. No post-it.
