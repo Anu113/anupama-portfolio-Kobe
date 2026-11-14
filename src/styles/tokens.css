@@ -1197,6 +1197,26 @@
 :root {
   --about-intro-max: 36rem;        /* 576px */
   --about-picks: 23.625rem;        /* 378px */
+/* ============================================================
+   CASE STORY (the sides, funnel, bars, fixes and aside blocks in
+   CaseBlocks.astro, and the "answers" on section openers), after
+   andreas.vision/work/schneider, on request (2026-11-14; mocks in
+   experiments/case-storytelling). Ink only, on hairlines: no accent,
+   no cards. The pale marks are decoration beside their numbers, which
+   are always printed, so they need no contrast ratio.
+   ============================================================ */
+:root {
+  --story-mark: var(--fg);                                   /* solid bar, kept mark */
+  --story-mark-pale: color-mix(in srgb, var(--fg) 18%, transparent);
+  --story-mark-ghost: color-mix(in srgb, var(--fg) 10%, transparent);
+  --story-square: 1.375rem;                                  /* 22px funnel mark */
+  --story-square-h: 2.125rem;                                /* 34px */
+  --story-bar-h: 1.125rem;                                   /* 18px */
+  --story-bar-label: 7rem;                                   /* label column */
+  --story-bar-value: 3.5rem;                                 /* value column */
+  --story-aside-rule: 2px;
+}
+
   --about-top-gap: 2.25rem;        /* intro ↔ tabs, and tabs ↔ grid */
   --about-grid-gap: 1.5rem;
   --about-card: color-mix(in srgb, var(--fg) 3%, var(--bg));

@@ -807,6 +807,18 @@ walked back. Concretely, in the current implementation:
   under-uses visual evidence relative to rule 3 above; new work on case
   studies should shift the balance toward screens/diagrams over paragraphs.
 - Images in `public/images/` are placeholder SVGs. Real imagery is pending an
+- **Case studies tell one story** (on request, 2026-11-14, after
+  andreas.vision/work/schneider; mocks in `experiments/case-storytelling/`,
+  first applied to PayPal Privacy): the outcome goes in the title; a
+  case's two sides (`thread`, e.g. People and GDPR and CCPA) are set out
+  once in the situation as a `sides` block, and each section's opener
+  names the side it answers (`answers`); the process shows as evidence
+  (`funnel`, `bars` against the bar to clear, `fixes` beside each
+  finding) rather than paragraphs; one gap is named mid-story (`aside`);
+  and scope carries one teamwork moment as rows (the pull, my call, what
+  it cost, what held). Ink on hairlines, no accent; values under CASE
+  STORY in `tokens.css`. Privacy's teamwork moment is a stand-in, on her
+  request, marked in `cases.ts`: replace it with her real account.
   NDA check on the Okta IAM console work — real screenshots are a priority
   once available, since the new direction depends on visual evidence more
   than the old one did.

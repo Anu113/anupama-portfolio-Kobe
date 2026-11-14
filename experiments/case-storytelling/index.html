@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayPal Privacy — storytelling mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-14. Five storytelling changes to the PayPal Privacy case,
+  from a comparison with andreas.vision/work/schneider. Each is shown as
+  Now (the page as it is) against Proposed.
+  Every number comes from the case as written in src/data/cases.ts.
+  [X] marks what she still has to confirm or write; nothing is invented.
+  Serve from the repo root (case-v2-mockup in launch.json):
+  /experiments/case-storytelling/index.html
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070;
+    --rule: rgb(0 0 0 / .1);
+    --card: color-mix(in srgb, #262626 3%, #fcfcfc);
+    --hue: #e0d6ef;                 /* PayPal lilac */
+    --wash: color-mix(in srgb, #f8b800 42%, transparent);
+    --accent: #b4482a;              /* marks only */
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f0efec; color: var(--fg); font: 600 14px/1.6 var(--font-sans); }
+  .doc { max-width: 1280px; margin: 0 auto; padding: 56px 32px 160px; }
+  .doc > h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 10px; letter-spacing: -0.01em; }
+  em { font-style: italic; }
+  .dek { color: var(--dim); margin: 0 0 12px; max-width: 72ch; }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 24px 0 56px; padding: 0; list-style: none; }
+  .toc a { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); text-decoration: none; }
+  .toc a:hover { color: var(--fg); }
+
+  .change { margin: 0 0 88px; scroll-margin-top: 24px; }
+  .change__head { display: grid; grid-template-columns: 48px 1fr; gap: 0 12px; border-top: 1px solid var(--rule); padding-top: 16px; margin-bottom: 24px; }
+  .change__n { font: 400 11px/1.9 var(--font-mono); color: var(--dim); }
+  .change__head h2 { font: 300 30px/1.15 var(--font-serif); margin: 0 0 6px; }
+  .change__head p { margin: 0; color: var(--dim); max-width: 74ch; }
+  .why { grid-column: 2; margin-top: 8px !important; font: 400 11px/1.6 var(--font-mono); color: var(--dim); }
+
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .pair--wide { grid-template-columns: 1fr 1.6fr; }
+  @media (max-width: 900px) { .pair, .pair--wide { grid-template-columns: 1fr; } }
+  .panel { background: var(--bg); padding: 32px; position: relative; }
+  .panel__tag { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin-bottom: 24px; display: flex; gap: 8px; align-items: center; }
+  .panel__tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--dim); }
+  .panel--new .panel__tag { color: var(--fg); }
+  .panel--new .panel__tag::before { background: var(--accent); }
+  .solo { background: var(--bg); padding: 40px; }
+
+  /* Case type, as on /work/[slug] */
+  .eyebrow { display: flex; gap: 10px; align-items: baseline; margin-bottom: 14px; }
+  .eyebrow .co { font: 400 12px/1 var(--font-mono); background: linear-gradient(transparent 55%, var(--wash) 55%); }
+  .eyebrow .t { font: 400 10px/1 var(--font-mono); text-transform: uppercase; color: var(--dim); }
+  .ctitle { font: 300 40px/1.08 var(--font-serif); margin: 0 0 14px; letter-spacing: -0.01em; }
+  .snippet { color: var(--dim); margin: 0; max-width: 52ch; }
+  .opener { display: flex; gap: 14px; font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); border-top: 1px solid var(--rule); padding-top: 12px; margin: 0 0 12px; }
+  .opener b { font-weight: 400; color: var(--fg); }
+  .shead { font: 300 22px/1.25 var(--font-serif); margin: 0 0 16px; }
+  .body { margin: 0 0 16px; max-width: 62ch; }
+  .muted { color: var(--dim); }
+  .x { font: 400 12px/1 var(--font-mono); background: var(--card); padding: 2px 5px; }
+
+  .cover { background: var(--hue); margin-top: 24px; aspect-ratio: 1800/862; overflow: hidden; }
+  .cover img { width: 100%; display: block; }
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .num { background: var(--card); border-radius: 28px; padding: 18px 20px; }
+  .num b { display: block; font: 300 30px/1 var(--font-serif); margin-bottom: 6px; }
+  .num span { font: 400 10px/1.4 var(--font-mono); color: var(--dim); text-transform: uppercase; }
+
+  /* 02 — the two sides */
+  .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 20px 0 0; }
+  .side { background: var(--card); border-radius: 28px; padding: 24px; }
+  .side__who { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); }
+  .side__time { font: 300 30px/1 var(--font-serif); margin: 10px 0 12px; }
+  .side__q { font: 300 18px/1.3 var(--font-serif); font-style: italic; margin: 0 0 14px; }
+  .side ul { margin: 0; padding: 0; list-style: none; font-size: 12px; }
+  .side li { border-top: 1px solid var(--rule); padding: 7px 0; }
+
+  .thread { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+  .thread li { display: grid; grid-template-columns: 34px 1fr 108px; gap: 12px; align-items: baseline; border-top: 1px solid var(--rule); padding: 12px 0; counter-increment: s; }
+  .thread li::before { content: counter(s, decimal-leading-zero); font: 400 11px/1 var(--font-mono); color: var(--dim); }
+  .thread .h { font: 300 18px/1.3 var(--font-serif); }
+  .thread .h small { display: block; font: 400 10px/1.4 var(--font-mono); color: var(--dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+  .pip { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; display: inline-flex; gap: 4px; justify-self: end; }
+  .pip i { width: 22px; height: 6px; border-radius: 3px; background: var(--rule); }
+  .pip i.on { background: var(--fg); }
+  .pip-key { display: flex; gap: 18px; font: 400 10px/1 var(--font-mono); text-transform: uppercase; color: var(--dim); margin-bottom: 12px; justify-content: flex-end; }
+  .lost { color: var(--dim); }
+  .lost .h { color: var(--dim); }
+
+  /* 03 — process as artefacts */
+  .funnel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-bottom: 36px; }
+  .stage { border-left: 1px solid var(--rule); padding: 0 16px 0; }
+  .stage:first-child { border-left: 0; padding-left: 0; }
+  .stage b { display: block; font: 300 44px/1 var(--font-serif); }
+  .stage span { font: 400 10px/1.5 var(--font-mono); text-transform: uppercase; color: var(--dim); letter-spacing: .04em; }
+  .stage .blocks { display: flex; gap: 4px; margin: 14px 0 10px; height: 34px; align-items: flex-end; }
+  .stage .blocks i { flex: 0 0 22px; height: 100%; background: var(--fg); opacity: .12; }
+  .stage .blocks i.k { opacity: .85; }
+
+  .chart { position: relative; margin: 6px 0 8px; }
+  .chart__row { display: grid; grid-template-columns: 110px 1fr 54px; gap: 12px; align-items: center; height: 40px; }
+  .chart__row span { font: 400 11px/1 var(--font-mono); color: var(--dim); text-transform: uppercase; }
+  .chart__row b { font: 300 22px/1 var(--font-serif); text-align: right; }
+  .track { position: relative; height: 18px; }
+  .bar { position: absolute; inset: 0 auto 0 0; background: var(--fg); opacity: .18; }
+  .bar.win { opacity: .85; }
+  .line70 { position: absolute; top: -8px; bottom: -8px; left: calc(110px + 12px + (100% - 110px - 54px - 24px) * .70); width: 0; border-left: 1px dashed var(--fg); }
+  .line70::after { content: '70% bar'; position: absolute; top: -16px; left: 6px; font: 400 10px/1 var(--font-mono); text-transform: uppercase; color: var(--fg); white-space: nowrap; }
+  .chart-note { font: 400 11px/1.6 var(--font-mono); color: var(--dim); margin: 14px 0 0; }
+
+  .fix { width: 100%; border-collapse: collapse; }
+  .fix th { text-align: left; font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); padding: 0 12px 10px 0; }
+  .fix td { border-top: 1px solid var(--rule); padding: 12px 12px 12px 0; vertical-align: top; }
+  .fix td:first-child { font: 400 10px/1.8 var(--font-mono); text-transform: uppercase; color: var(--dim); width: 86px; }
+  .fix td.arrow { width: 24px; color: var(--dim); font-family: var(--font-mono); }
+  .counts { display: flex; gap: 8px; margin-top: 20px; }
+  .counts .num { flex: 1; }
+
+  /* old process block */
+  .pts { list-style: none; margin: 0; padding: 0; counter-reset: p; }
+  .pts li { border-top: 1px solid var(--rule); padding: 10px 0; counter-increment: p; display: grid; grid-template-columns: 28px 1fr; font-size: 13px; }
+  .pts li::before { content: counter(p, decimal-leading-zero); font: 400 11px/1.8 var(--font-mono); color: var(--dim); }
+  .pts b { display: block; }
+  .pts span { color: var(--dim); }
+
+  /* 04 — moment */
+  .moment { display: grid; grid-template-columns: 180px 1fr; gap: 0 32px; }
+  .moment__time { font: 400 11px/1.6 var(--font-mono); text-transform: uppercase; color: var(--dim); border-top: 1px solid var(--fg); padding-top: 10px; }
+  .moment__time b { display: block; font: 300 30px/1 var(--font-serif); color: var(--fg); text-transform: none; margin: 8px 0; }
+  .beats { list-style: none; margin: 0; padding: 0; }
+  .beats li { display: grid; grid-template-columns: 96px 1fr; gap: 12px; border-top: 1px solid var(--rule); padding: 12px 0; }
+  .beats li span { font: 400 10px/1.9 var(--font-mono); text-transform: uppercase; color: var(--dim); }
+  .alt { margin-top: 28px; font: 400 11px/1.7 var(--font-mono); color: var(--dim); }
+  .alt b { font-weight: 400; color: var(--fg); }
+
+  /* 05 — gap aside */
+  .aside { display: grid; grid-template-columns: 4px 1fr; gap: 0 16px; margin: 20px 0; }
+  .aside::before { content: ''; background: var(--fg); }
+  .aside p { margin: 0; }
+  .aside .lbl { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin-bottom: 8px; }
+  .aside .txt { font: 300 20px/1.3 var(--font-serif); }
+  .evo { background: var(--hue); max-height: 220px; overflow: hidden; margin-top: 8px; }
+  .evo img { width: 100%; display: block; }
+  .ghost { height: 14px; background: var(--card); margin: 8px 0; }
+  .ghost.s { width: 60%; }
+</style>
+</head>
+<body>
+<main class="doc">
+  <h1>PayPal Privacy, told as a <em>story</em></h1>
+  <p class="dek">Five changes to the case study, from a read of andreas.vision/work/schneider. Each one is the page as it is now, beside the proposal. Every number is from the case as written; <span class="x">[X]</span> is something only you can confirm or write.</p>
+  <ul class="toc">
+    <li><a href="#c1">01 Outcome in the title</a></li>
+    <li><a href="#c2">02 Two sides, one thread</a></li>
+    <li><a href="#c3">03 Process as evidence</a></li>
+    <li><a href="#c4">04 One teamwork moment</a></li>
+    <li><a href="#c5">05 The gap, mid-story</a></li>
+  </ul>
+
+  <!-- 01 ============================================================ -->
+  <section class="change" id="c1">
+    <div class="change__head">
+      <span class="change__n">01</span>
+      <div>
+        <h2>Put the outcome in the <em>title</em></h2>
+        <p>A recruiter reads titles. The result is there now, but in the line under the title, and the title only names the product.</p>
+      </div>
+      <p class="why">Schneider: "A dashboard redesign that made $172M in 3 weeks."</p>
+    </div>
+    <div class="pair">
+      <div class="panel">
+        <div class="panel__tag">Now</div>
+        <div class="eyebrow"><span class="co">PayPal</span><span class="t">Privacy · Mobile · Research</span></div>
+        <h3 class="ctitle">Privacy settings people can read</h3>
+        <p class="snippet">75% of settings traffic stopped on the first page. I owned the design of PayPal's privacy settings so that every setting is one tap away and says what it does. Launched in early 2023, now used by more than 80 million people.</p>
+      </div>
+      <div class="panel panel--new">
+        <div class="panel__tag">Proposed</div>
+        <div class="eyebrow"><span class="co">PayPal</span><span class="t">Privacy · Mobile · Research</span></div>
+        <h3 class="ctitle">Privacy settings 80 million people can read, and 60% fewer calls about them</h3>
+        <p class="snippet">75% of settings traffic stopped on the first page. I owned the design from the first card sort to launch in early 2023: every setting one tap away, saying what it does, and still meeting GDPR and CCPA.</p>
+      </div>
+    </div>
+    <div class="pair" style="margin-top:16px">
+      <div class="panel">
+        <div class="panel__tag">Shorter, if the long one wraps to three lines</div>
+        <h3 class="ctitle" style="font-size:32px">Privacy settings that cut support calls by 60%</h3>
+      </div>
+      <div class="panel">
+        <div class="panel__tag">Leads with the scale</div>
+        <h3 class="ctitle" style="font-size:32px">Privacy settings for 80 million people, one tap to any of them</h3>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 ============================================================ -->
+  <section class="change" id="c2">
+    <div class="change__head">
+      <span class="change__n">02</span>
+      <div>
+        <h2>Two sides, stated once, <em>paid off</em> in every section</h2>
+        <p>The case has a two-sided problem: people who want to understand their settings, and a regulation that decides what must be said and kept. Today only the first side carries the story; the regulation side fades after the hard call, and "Your data rights" reads as an add-on.</p>
+      </div>
+      <p class="why">Schneider: a booth visitor (3 seconds) against an operator (a whole shift), set up once and returned to in every section.</p>
+    </div>
+
+    <div class="solo">
+      <div class="opener"><b>01</b> The situation</div>
+      <h3 class="shead">One screen, read by two very different <em>readers</em></h3>
+      <p class="body muted">The person changing a setting decides the hierarchy. The regulation decides what the screen must say: if it hides what PayPal keeps, it doesn't matter how easy it reads.</p>
+      <div class="sides">
+        <div class="side">
+          <div class="side__who">A PayPal customer</div>
+          <div class="side__time">One tap</div>
+          <p class="side__q">What is PayPal doing with my data, and how do I change it?</p>
+          <ul>
+            <li>Find any setting from the privacy page</li>
+            <li>See what it's set to, and what it does</li>
+            <li>Get a copy, or delete part, and keep the account</li>
+          </ul>
+        </div>
+        <div class="side">
+          <div class="side__who">GDPR and CCPA</div>
+          <div class="side__time">Every screen</div>
+          <p class="side__q">Is everything disclosed, and is what must be kept, kept?</p>
+          <ul>
+            <li>Say what's collected, why, and whether it's shared</li>
+            <li>Honour access and deletion requests</li>
+            <li>Name what PayPal must retain, not leave it silent</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="pair pair--wide" style="margin-top:16px">
+      <div class="panel">
+        <div class="panel__tag">Now: section heads</div>
+        <ul class="thread">
+          <li><span class="h"><small>The situation</small>75% of settings traffic stopped on the first page…</span><span></span></li>
+          <li><span class="h"><small>My scope</small>I owned the design from the first card sort…</span><span></span></li>
+          <li><span class="h"><small>The hard call</small>The first structure tested well and cost a tap…</span><span></span></li>
+          <li><span class="h"><small>How the work got made</small>Four card sorts, three prototypes…</span><span></span></li>
+          <li><span class="h"><small>The craft</small>Each setting says what it does…</span><span></span></li>
+          <li class="lost"><span class="h"><small>Your data rights</small>Get a copy of your data, or delete part of it…</span><span></span></li>
+          <li><span class="h"><small>Impact</small>60% fewer support calls about privacy…</span><span></span></li>
+        </ul>
+      </div>
+      <div class="panel panel--new">
+        <div class="panel__tag">Proposed: each head says which side it answers</div>
+        <div class="pip-key"><span>Person · Regulation</span></div>
+        <ul class="thread">
+          <li><span class="h"><small>The situation</small>75% stopped on the first page, and every new rule had nowhere to go.</span><span class="pip"><i class="on"></i><i class="on"></i></span></li>
+          <li><span class="h"><small>My scope</small>I owned the design, with two privacy officers on every screen.</span><span class="pip"><i class="on"></i><i class="on"></i></span></li>
+          <li><span class="h"><small>The hard call</small>The first structure tested well and cost a tap. I kept the groups and dropped the layer.</span><span class="pip"><i class="on"></i><i></i></span></li>
+          <li><span class="h"><small>How the work got made</small>Four structures, three prototypes, one cleared 70%.</span><span class="pip"><i class="on"></i><i></i></span></li>
+          <li><span class="h"><small>The craft</small>Each setting answers five questions the regulation asks, in words a person reads.</span><span class="pip"><i class="on"></i><i class="on"></i></span></li>
+          <li><span class="h"><small>What the law keeps</small>Delete part of your data, and see plainly what PayPal can't.</span><span class="pip"><i></i><i class="on"></i></span></li>
+          <li><span class="h"><small>Impact</small>60% fewer support calls, on settings 80 million people use.</span><span class="pip"><i class="on"></i><i class="on"></i></span></li>
+        </ul>
+        <p class="chart-note">"Your data rights" becomes the regulation side's own section, not an add-on. The five questions (what, where from, why, shared, what you control) are already in the hard call; they move to the craft, where they connect the two sides.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 ============================================================ -->
+  <section class="change" id="c3">
+    <div class="change__head">
+      <span class="change__n">03</span>
+      <div>
+        <h2>Show the process as <em>evidence</em>, not points</h2>
+        <p>"How the work got made" is three paragraphs and a row of numbers. The numbers are the strongest research evidence on the site. Drawn, they argue the method; listed, they get skimmed.</p>
+      </div>
+      <p class="why">Schneider: research board, scored competitor grid, a findings → changes list with counts (3 reviews, 8 findings, 7 shipped).</p>
+    </div>
+
+    <div class="pair pair--wide">
+      <div class="panel">
+        <div class="panel__tag">Now</div>
+        <div class="opener"><b>04</b> How the work got made</div>
+        <h3 class="shead">Four card sorts, three prototypes, and only one cleared the 70% bar.</h3>
+        <ol class="pts">
+          <li><div><b>Start from what people do</b><span>A year of settings traffic, a review with the product triad, and sessions with customer service…</span></div></li>
+          <li><div><b>Card sorts, then prototypes</b><span>Four closed card sorts tested the current structure against three alternatives…</span></div></li>
+          <li><div><b>Contextual privacy</b><span>Most privacy questions start somewhere else…</span></div></li>
+        </ol>
+        <div class="nums">
+          <div class="num"><b>74%</b><span>Prototype 3</span></div>
+          <div class="num"><b>68%</b><span>Prototype 1</span></div>
+          <div class="num"><b>67%</b><span>Prototype 2</span></div>
+        </div>
+      </div>
+
+      <div class="panel panel--new">
+        <div class="panel__tag">Proposed</div>
+        <div class="opener"><b>04</b> How the work got made</div>
+        <h3 class="shead">Four structures, three prototypes, and only one cleared the <em>70% bar</em>.</h3>
+
+        <div class="funnel">
+          <div class="stage"><b>1</b><div class="blocks"><i class="k"></i></div><span>Year of settings traffic sets the task order</span></div>
+          <div class="stage"><b>4</b><div class="blocks"><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div><span>Structures in closed card sorts, 20 tasks</span></div>
+          <div class="stage"><b>3</b><div class="blocks"><i class="k"></i><i class="k"></i><i class="k"></i><i></i></div><span>Survived, built as hi-fi prototypes</span></div>
+          <div class="stage"><b>1</b><div class="blocks"><i class="k"></i><i></i><i></i><i></i></div><span>Cleared 70% in the unmoderated test</span></div>
+        </div>
+
+        <div class="chart">
+          <div class="line70"></div>
+          <div class="chart__row"><span>Prototype 3</span><div class="track"><div class="bar win" style="width:74%"></div></div><b>74%</b></div>
+          <div class="chart__row"><span>Prototype 1</span><div class="track"><div class="bar" style="width:68%"></div></div><b>68%</b></div>
+          <div class="chart__row"><span>Prototype 2</span><div class="track"><div class="bar" style="width:67%"></div></div><b>67%</b></div>
+        </div>
+        <p class="chart-note">Task success, unmoderated test. Prototype 3: no one abandoned. Optional: a thumbnail of each prototype at the start of its row <span class="x">[X] screens</span>.</p>
+      </div>
+    </div>
+
+    <div class="pair pair--wide" style="margin-top:16px">
+      <div class="panel">
+        <div class="panel__tag">Now: in the hard call, findings then a paragraph</div>
+        <ol class="pts">
+          <li><div><b>Critical</b><span>People couldn't tell deals from ads.</span></div></li>
+          <li><div><b>Medium</b><span>To change marketing email, people looked under Notifications…</span></div></li>
+          <li><div><b>Medium</b><span>People didn't understand "Your data rights"…</span></div></li>
+        </ol>
+        <p class="body muted" style="margin-top:12px;font-size:13px">So I kept the groups and dropped the sheets. Every setting now sits on one page under three headings… "Correct your data" became "Update your data". Emails and notifications got their own link…</p>
+      </div>
+      <div class="panel panel--new">
+        <div class="panel__tag">Proposed: every finding next to what changed</div>
+        <table class="fix">
+          <thead><tr><th>Severity</th><th>What rapid research found</th><th></th><th>What changed</th></tr></thead>
+          <tbody>
+            <tr><td>Structure</td><td>The sheets cost one more tap before any setting, on every task.</td><td class="arrow">→</td><td>Sheets dropped. One page, three headings: 2 → 1 taps.</td></tr>
+            <tr><td>Critical</td><td>People couldn't tell deals from ads.</td><td class="arrow">→</td><td><span class="x">[X]</span> confirm the fix: "Deals &amp; ads" under Permissions, with "Learn how it works"?</td></tr>
+            <tr><td>Medium</td><td>People looked for marketing email under Notifications.</td><td class="arrow">→</td><td>Emails and notifications got their own link at the bottom.</td></tr>
+            <tr><td>Medium</td><td>"Correct your data" read as something other than updating details.</td><td class="arrow">→</td><td>"Correct" became "Update your data".</td></tr>
+          </tbody>
+        </table>
+        <div class="counts">
+          <div class="num"><b>4</b><span>Findings</span></div>
+          <div class="num"><b>3</b><span>Fixed, on this page</span></div>
+          <div class="num"><b>1</b><span><span class="x">[X]</span> confirm</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 ============================================================ -->
+  <section class="change" id="c4">
+    <div class="change__head">
+      <span class="change__n">04</span>
+      <div>
+        <h2>One teamwork moment instead of a <em>list</em></h2>
+        <p>"My scope" lists 3 PMs, 2 privacy officers and 15+ engineers. That's the size of the room. A Staff role is about what happened in it: one disagreement, the call you made, what it cost. Only you know the real one, so this is a template.</p>
+      </div>
+      <p class="why">Schneider: "Four decks became eight. I sent the dashboard at 80%, said plainly that the scope had doubled, and we agreed what to drop."</p>
+    </div>
+    <div class="solo">
+      <div class="moment">
+        <div class="moment__time"><b><span class="x">[X]</span></b>When: e.g. after rapid research, before the unmoderated test</div>
+        <ul class="beats">
+          <li><span>The pull</span><div><span class="x">[X]</span> Who wanted what. e.g. a product team wanted its own tile back; a privacy officer wanted the full legal text on the page.</div></li>
+          <li><span>My call</span><div><span class="x">[X]</span> What you argued, with what evidence (the 2 → 1 taps, the 70% bar, a year of traffic).</div></li>
+          <li><span>What it cost</span><div><span class="x">[X]</span> What was dropped or deferred to land it.</div></li>
+          <li><span>What held</span><div><span class="x">[X]</span> The outcome you can point to on the shipped screens.</div></li>
+        </ul>
+      </div>
+      <p class="alt">Candidates from what the case already records: <b>dropping the sheets</b> the four tiles came from, <b>the "what PayPal must keep" line</b> on the delete screen, <b>one file system for five designers</b>. Pick the one that really happened and had a disagreement in it.</p>
+    </div>
+  </section>
+
+  <!-- 05 ============================================================ -->
+  <section class="change" id="c5">
+    <div class="change__head">
+      <span class="change__n">05</span>
+      <div>
+        <h2>Name the gap in the middle, not only at the <em>end</em></h2>
+        <p>The reflection says labels were tested after structure. Said at the moment it happens, right after the findings, it reads as judgement; saved for the end, it reads as a lesson. The reflection then keeps "go rougher" and gains space for something new.</p>
+      </div>
+      <p class="why">Schneider: "We never sat with an operator, and it's the biggest gap in this project", in the research section.</p>
+    </div>
+    <div class="pair">
+      <div class="panel">
+        <div class="panel__tag">Now: the hard call, then on</div>
+        <div class="opener"><b>03</b> The hard call</div>
+        <div class="ghost"></div><div class="ghost s"></div>
+        <div class="evo"><img src="/public/images/paypal-privacy/evolution.webp" alt="Before, the first version, and the revised Data and privacy page"></div>
+        <div class="opener" style="margin-top:20px"><b>04</b> How the work got made</div>
+        <div class="ghost"></div>
+      </div>
+      <div class="panel panel--new">
+        <div class="panel__tag">Proposed: one line, at the evolution</div>
+        <div class="opener"><b>03</b> The hard call</div>
+        <div class="ghost"></div><div class="ghost s"></div>
+        <div class="evo"><img src="/public/images/paypal-privacy/evolution.webp" alt="Before, the first version, and the revised Data and privacy page"></div>
+        <div class="aside">
+          <div>
+            <p class="lbl">What we missed</p>
+            <p class="txt">The card sorts settled where every setting goes, but not what it's called. Two of the four findings were words: deals against ads, and "Correct your data". We tested labels after structure; I'd test them together.</p>
+          </div>
+        </div>
+        <div class="opener" style="margin-top:20px"><b>04</b> How the work got made</div>
+        <div class="ghost"></div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>
