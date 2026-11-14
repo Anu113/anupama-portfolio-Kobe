@@ -673,11 +673,20 @@ walked back. Concretely, in the current implementation:
   `tokens.css`), chosen on request (2026-11-11) from the mocks in
   `experiments/about-grid/` ("Half and half" + "Fan out"): her portrait
   on the left (her photo as given, the porch painting as a stamp, no
-  post-it; camera looks and a cutout were tried and turned down), held
-  in place while "About *me*", her bio in her words and the tabs scroll
-  beside it. The tabs (Experience, Case studies, Books, a list that
-  scrolls itself and loops) and Moss's field keep andreas.vision/about's
-  structure (2026-10-17). Under them, six tiles, three across: Talks
+  post-it; camera looks and a cutout were tried and turned down),
+  beside "About *me*", her bio in her words and the tabs. Since
+  2026-11-14, on request, the portrait stretches to that column's
+  height so both start and end on one line (it used to be 4:5 and
+  sticky), and the tab list is 200px tall (`--about-reel-h`); a "Read
+  more" fold for the bio was mocked and turned down. The tabs (a list that scrolls itself and loops) and Moss's
+  field keep andreas.vision/about's structure (2026-10-17); since
+  2026-11-14, on request, they are his three in his order:
+  Testimonials (her LinkedIn recommendations from the Wix site, one
+  sentence each word for word, with their photos; Vijaya Das's left
+  out), Experience (company logos, as his; /work keeps letter tiles)
+  and Tools (his list minus his own Cheval and GatherOS, each app's own
+  icon). Testimonials here are her request, an exception to the
+  "Don't add without asking" line below. Under them, six tiles, three across: Talks
   and people, Making, Travel, Food, Books, and the record player.
   Travel and Food are her photos (in `public/images/beyond/`), captioned
   in the reference's casual voice on request ("<3", ";)" as text, no
@@ -698,7 +707,8 @@ walked back. Concretely, in the current implementation:
   the dome in its small round speaker bumps and a neon green pixel
   display scrolls the song with a clock and level bars (speaker and
   colour chosen on request, 2026-11-14, from
-  `experiments/record-player-cute/`); no orange, on request. It plays her Spotify
+  `experiments/record-player-cute/`), standing on the page with no
+  card behind it; no orange, on request. It plays her Spotify
   playlist's real tracks, "My Playlist #2026" (`song` in
   `data/about.ts`), one after another, through Spotify's embedded
   player kept out of sight in the tile (on request, 2026-11-11: she
