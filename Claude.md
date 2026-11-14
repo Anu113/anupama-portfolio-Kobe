@@ -714,28 +714,30 @@ walked back. Concretely, in the current implementation:
   captions and inactive tabs at 3.2 : 1, quotes and row lines at
   2.5 : 1 (`--about-copy`, `--about-faint` under ABOUT). A requested
   exception to rule 4, this page only; don't spread these greys.
-  A fourth tile, approved on request (2026-11-11, "S5 · Speaker" from
-  `experiments/about-grid/slots.html`, after his CD player): a
-  slot-loading record player with a speaker (`RecordPlayer.astro`,
-  RECORD PLAYER in `tokens.css`). On a press the record rises and spins,
-  the dome in its small round speaker bumps and a neon green pixel
-  display scrolls the song with a clock and level bars (speaker and
-  colour chosen on request, 2026-11-14, from
-  `experiments/record-player-cute/`), standing on the page with no
-  card behind it; no orange, on request. It plays her Spotify
+  A sixth tile, the record player (`RecordPlayer.astro`, RECORD
+  PLAYER in `tokens.css`): since 2026-11-14, on request, a small cream
+  player with a handle and two little feet ("E · Little feet" from
+  `experiments/record-player-tiny/cute.html`; the bulkier slot-loader,
+  "S5 · Speaker", read as too big). It sits on the tiles' soft card with
+  a caption ("On repeat: song · artist") like the photo tiles. A round
+  dotted speaker on the left; on the right one column of three pills,
+  one width: "My Playlist #2026" pressed into the shell (muted on
+  request), the neon green display, and the keys (round Spotify, long
+  play). On a press the record rises and spins and the song scrolls
+  across the display; no orange, on request. It plays her Spotify
   playlist's real tracks, "My Playlist #2026" (`song` in
   `data/about.ts`), one after another, through Spotify's embedded
   player kept out of sight in the tile (on request, 2026-11-11: she
-  asked for her songs over the old made-up tune). The display, count
+  asked for her songs over the old made-up tune). The display, caption
   and the record's label (her covers, saved into
   `public/images/about/covers/`) follow the track playing. Spotify's
   script and player load only on the first press, so nobody contacts
   Spotify or gets its cookies without pressing play; signed-in
-  listeners hear whole tracks, others 30-second previews. A round
-  Spotify key opens the playlist in a new tab. Sound only
-  after a press, one at a time, stops when the tab is hidden; nothing
-  moves under reduced motion. Its reason: one personal detail she can
-  share in a press, the way the paintings share hers.
+  listeners hear whole tracks, others 30-second previews. The Spotify
+  key opens the playlist in a new tab. Sound only after a press, one
+  at a time, stops when the tab is hidden; nothing moves under reduced
+  motion. Its reason: one personal detail she can share in a press,
+  the way the paintings share hers.
 - The home page is now: hero → "Selected *work*" head + project cards →
   "Beyond *work*" ring → one-line playground pointer → Small talk →
   Now → footer (which carries contact).
