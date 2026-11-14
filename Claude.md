@@ -668,9 +668,12 @@ walked back. Concretely, in the current implementation:
   `tokens.css`), chosen on request (2026-11-11) from the mocks in
   `experiments/about-grid/` ("Half and half" + "Fan out"): her portrait
   on the left (her photo as given, the porch painting as a stamp, no
-  post-it; camera looks and a cutout were tried and turned down), held
-  in place while "About *me*", her bio in her words and the tabs scroll
-  beside it. The tabs (a list that scrolls itself and loops) and Moss's
+  post-it; camera looks and a cutout were tried and turned down),
+  beside "About *me*", her bio in her words and the tabs. Since
+  2026-11-14, on request, the portrait stretches to that column's
+  height so both start and end on one line (it used to be 4:5 and
+  sticky), and the tab list is 200px tall (`--about-reel-h`); a "Read
+  more" fold for the bio was mocked and turned down. The tabs (a list that scrolls itself and loops) and Moss's
   field keep andreas.vision/about's structure (2026-10-17); since
   2026-11-14, on request, they are his three in his order:
   Testimonials (her LinkedIn recommendations from the Wix site, one
