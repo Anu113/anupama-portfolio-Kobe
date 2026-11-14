@@ -1,23 +1,26 @@
 ---
-/* RecordPlayer.astro — the About page's fourth tile: a slot-loading
-   record player with a speaker ("S5 · Speaker", chosen on request
-   2026-11-11 from the mocks in experiments/about-grid/slots.html, after
-   andreas.vision/about's CD player). Values under RECORD PLAYER in
-   tokens.css; the song in data/about.ts (`song`).
+/* RecordPlayer.astro — the About page's sixth tile: a small cream
+   record player with a handle and two little feet, "E · Little feet"
+   (chosen on request 2026-11-14 from experiments/record-player-tiny/
+   cute.html; it replaced the larger slot-loader, "S5 · Speaker", which
+   read as bulky). It sits on the tiles' soft card with a caption under
+   it, like the photo tiles. Values under RECORD PLAYER in tokens.css;
+   the song in data/about.ts (`song`).
 
-   At rest the record sits low in its slot and the display is dark. Press
-   play and the record rises and spins, the dome in the small round
-   speaker bumps with the beat (speaker and neon green display chosen
-   on request, 2026-11-14, from experiments/record-player-cute/), the play key stays down, and the pixel display wakes:
-   "On repeat" with level bars, the song playing scrolling across, its
-   time and its place ("1/2"). It plays her playlist's real tracks, one
-   after another, through Spotify's embedded player (on request,
-   2026-11-11); the display, the count and the record's label (that
-   song's cover, cross-fading) follow the track actually playing.
-   Stopping pauses it where it was; play again picks up there. A round
-   Spotify key beside the play key opens the playlist in a new tab.
-   Press again (or Escape while it's focused) to stop; it also stops
-   when the tab is hidden. Only ever one sound, only after a press.
+   At rest the record sits low in its slot and the display is dim. On
+   the box: a round dotted speaker on the left; on the right, one column
+   of three pills, one width: "My Playlist #2026" pressed into the shell
+   (muted on request), the neon green display, and the keys (a round
+   Spotify key, then the long play key). Press play and the record
+   rises and spins, the song scrolls across the display, and the
+   caption ("On repeat: …") and the record's label (that song's cover,
+   cross-fading) follow the track actually playing. It plays her
+   playlist's real tracks, one after another, through Spotify's
+   embedded player (on request, 2026-11-11). Stopping pauses it where
+   it was; play again picks up there. The Spotify key opens the
+   playlist in a new tab. Press again (or Escape while it's focused) to
+   stop; it also stops when the tab is hidden. Only ever one sound,
+   only after a press.
 
    Sound: Spotify's iFrame API (open.spotify.com/embed/iframe-api). Its
    script and player load only on the first press, so a visitor who
@@ -29,53 +32,71 @@
    says so. Tracks in data/about.ts (`song`).
 
    A11y: one real button with aria-pressed and the playlist in its name; the
-   display is decorative (aria-hidden) and a polite status line says
-   "Playing …" once. Under reduced motion nothing rises, spins, pulses
-   or scrolls (the song shows still) and covers swap without a fade;
-   the sound still plays. */
+   display and the label are decorative (aria-hidden), the caption is
+   real text, and a polite status line says "Playing …" once. Under
+   reduced motion the record rests risen and nothing spins or scrolls
+   (the song shows still) and covers swap without a fade; the sound
+   still plays. */
 import { song } from '../data/about';
 const name = song.title;
 const first = song.tracks[0];
 const line = (t: typeof first) => `${t.title} · ${t.artist}`;
 ---
-<div class="rp" data-rp data-tracks={JSON.stringify(song.tracks.map(line))} data-uris={JSON.stringify(song.tracks.map((t) => t.uri))}>
-  <div class="rp__rec-wrap" aria-hidden="true">
-    <div class="rp__rec"><div class="rp__label">
-      {song.tracks.map((t, i) => <img class={i === 0 ? 'is-on' : undefined} src={t.cover} alt="" loading="lazy" decoding="async" data-rp-cover />)}
-    </div></div>
-  </div>
-  <div class="rp__box">
-    <span class="rp__slot" aria-hidden="true"></span>
-    <span class="rp__grille" aria-hidden="true"></span>
-    <div class="rp__lcd" aria-hidden="true">
-      <div class="rp__glass">
-        <div class="rp__px">
-          <div class="rp__line"><span>On repeat</span><span class="rp__vu"><i></i><i></i><i></i><i></i><i></i></span></div>
-          <div class="rp__line rp__marq"><span class="rp__ticker" data-rp-ticker><span>{line(first)}</span><span>{line(first)}</span></span></div>
-          <div class="rp__line"><span data-rp-time>00:00</span><span data-rp-count>1/{song.tracks.length}</span></div>
+<div class="rp" data-rp data-tracks={JSON.stringify(song.tracks.map(line))} data-uris={JSON.stringify(song.tracks.map((t) => t.uri))}
+  data-titles={JSON.stringify(song.tracks.map((t) => t.title))} data-artists={JSON.stringify(song.tracks.map((t) => t.artist))}>
+  <div class="rp__set">
+    <span class="rp__handle" aria-hidden="true"></span>
+    <div class="rp__rec-wrap" aria-hidden="true">
+      <div class="rp__rec"><div class="rp__label">
+        {song.tracks.map((t, i) => <img class={i === 0 ? 'is-on' : undefined} src={t.cover} alt="" loading="lazy" decoding="async" data-rp-cover />)}
+      </div></div>
+    </div>
+    <div class="rp__box">
+      <span class="rp__slot" aria-hidden="true"></span>
+      <span class="rp__name" aria-hidden="true">{name}</span>
+      <span class="rp__grille" aria-hidden="true"></span>
+      <div class="rp__right">
+        <div class="rp__lcd" aria-hidden="true">
+          <div class="rp__px"><span class="rp__ticker" data-rp-ticker><span>{line(first)}</span><span>{line(first)}</span></span></div>
+        </div>
+        <div class="rp__keys">
+          <a class="rp__spot" href={song.url} target="_blank" rel="noopener" aria-label={`${song.title} on Spotify (opens in a new tab)`}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 9.2c4.3-1.4 9.2-1 13 1.2M6.5 12.6c3.5-1 7.4-.7 10.5 1M7.6 15.9c2.7-.7 5.5-.5 7.9.8" /></svg>
+          </a>
+          <button class="rp__key" type="button" aria-pressed="false" aria-label={`Play ${name}`} data-rp-key>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+          </button>
         </div>
       </div>
+      <span class="rp__feet" aria-hidden="true"></span>
     </div>
-    <a class="rp__spot" href={song.url} target="_blank" rel="noopener" aria-label={`${song.title} on Spotify (opens in a new tab)`}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 9.2c4.3-1.4 9.2-1 13 1.2M6.5 12.6c3.5-1 7.4-.7 10.5 1M7.6 15.9c2.7-.7 5.5-.5 7.9.8" /></svg>
-    </a>
-    <button class="rp__key" type="button" aria-pressed="false" aria-label={`Play ${name}`} data-rp-key>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-    </button>
   </div>
+  <p class="rp__cap">On repeat: <b data-rp-title>{first.title}</b> · <span data-rp-artist>{first.artist}</span></p>
   <div class="rp__embed" data-rp-embed aria-hidden="true"></div>
   <span class="u-sr-only" role="status" data-rp-status></span>
 </div>
 
 <style>
-  .rp { position: absolute; inset: 0; container-type: size; }
+  /* Sized from the tile (container-type: size on .rp, so cqw is the
+     tile's width), centred with its caption like the photo stacks. */
+  .rp {
+    position: absolute; inset: 0; container-type: size;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8cqw;
+  }
+  .rp__set { position: relative; width: 58cqw; padding-top: 14cqw; }
+
+  /* the handle, behind the box and the record */
+  .rp__handle {
+    position: absolute; left: 50%; top: 3cqw; translate: -50% 0; width: 44cqw; height: 16cqw;
+    border: 2.2cqw solid var(--rp-handle); border-bottom: 0; border-radius: 12cqw 12cqw 0 0;
+  }
 
   /* the record: low in its slot at rest, risen and turning while it plays */
   .rp__rec-wrap {
-    position: absolute; left: 50%; top: 6%; width: 54%; aspect-ratio: 1;
-    translate: -50% 30%; transition: translate var(--dur-rp-rise) var(--ease-out);
+    position: absolute; z-index: 1; left: 50%; top: 0; width: 34cqw; aspect-ratio: 1;
+    translate: -50% 26%; transition: translate var(--dur-rp-rise) var(--ease-out);
   }
-  .rp.is-on .rp__rec-wrap { translate: -50% 0; }
+  .rp.is-on .rp__rec-wrap { translate: -50% -8%; }
   .rp__rec {
     position: absolute; inset: 0; border-radius: 50%;
     background: repeating-radial-gradient(circle, var(--rp-vinyl) 0 .32cqw, var(--rp-groove) .32cqw .56cqw), var(--rp-vinyl);
@@ -86,7 +107,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
     content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--rp-sheen);
     animation: rp-spin var(--dur-rp-turn) linear infinite reverse paused;
   }
-  .rp__label { position: absolute; inset: 33%; border-radius: 50%; overflow: hidden; }
+  .rp__label { position: absolute; inset: 32%; border-radius: 50%; overflow: hidden; }
   .rp__label img {
     position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover;
     opacity: 0; transition: opacity var(--dur-rp-cover) ease-out;
@@ -96,86 +117,79 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
   .rp.is-on .rp__rec, .rp.is-on .rp__rec::after { animation-play-state: running; }
   @keyframes rp-spin { to { rotate: 360deg; } }
 
-  /* the box */
+  /* the box: speaker | one column of three pills, one width */
   .rp__box {
-    position: absolute; z-index: 1; left: 7%; right: 7%; top: 42%; bottom: 8%;
-    border-radius: 2.6cqw; background: var(--rp-shell); box-shadow: var(--rp-shell-shadow);
+    position: relative; z-index: 2; display: grid; grid-template-columns: 15cqw minmax(0, 1fr);
+    gap: 2.4cqw 3cqw; align-items: center; padding: 4cqw; border-radius: 8cqw;
+    background: var(--rp-shell); box-shadow: var(--rp-shell-shadow);
   }
   .rp__slot {
-    position: absolute; left: 12%; right: 12%; top: -.7cqw; height: 1.8cqw; border-radius: 1cqw;
+    position: absolute; left: 12%; right: 12%; top: -.6cqw; height: 1.4cqw; border-radius: 1cqw;
     background: var(--rp-slot); box-shadow: var(--rp-slot-shadow);
   }
-  /* the speaker: one small round one, a dot grille in a ring with a
-     little dome in the middle that bumps on the beat */
+  .rp__name {
+    grid-column: 2; grid-row: 1; padding: 1.6cqw 1.4cqw; border-radius: 99px;
+    background: var(--rp-name-ground); box-shadow: var(--rp-name-shadow); color: var(--rp-name-ink);
+    font: 400 2.1cqw/1 var(--font-mono); letter-spacing: .03em; text-transform: uppercase;
+    text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .rp__grille {
-    position: absolute; left: 7%; top: 50%; translate: 0 -50%; width: 25cqw; aspect-ratio: 1; border-radius: 50%;
-    background:
-      radial-gradient(circle, var(--rp-grille-dot) .42cqw, transparent .5cqw) 50% 50% / 1.8cqw 1.8cqw,
-      var(--rp-grille-ground);
-    box-shadow: var(--rp-spk-shadow);
+    grid-column: 1; grid-row: 1 / 3; aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(circle, var(--rp-grille-dot) .3cqw, transparent .38cqw) 50% 50% / 1.25cqw 1.25cqw, var(--rp-grille-ground);
+    box-shadow: inset 0 .25cqw .7cqw rgb(0 0 0 / .18);
   }
-  .rp__grille::after {
-    content: ''; position: absolute; inset: 37%; border-radius: 50%;
-    background: var(--rp-dome); box-shadow: var(--rp-dome-shadow);
-  }
-  .rp.is-on .rp__grille::after { animation: rp-thump var(--dur-rp-beat) ease-in-out infinite alternate; }
-  @keyframes rp-thump { to { scale: 1.12; } }
+  .rp__right { grid-column: 2; grid-row: 2; display: grid; gap: 2.4cqw; min-width: 0; }
 
-  /* the pixel display, after his: a dot grid, text masked to the same grid */
+  /* the display: neon on dark glass, the text on a dot grid */
   .rp__lcd {
-    position: absolute; left: 41%; right: 6%; top: 16%; height: 44%; padding: .9cqw;
-    border-radius: 2cqw; background: var(--rp-bezel); box-shadow: var(--rp-bezel-shadow);
+    --p: .5cqw; --lit: 74%;
+    position: relative; height: 9cqw; border-radius: 4.5cqw; overflow: hidden;
+    background: var(--rp-glass); box-shadow: inset 0 .3cqw .7cqw rgb(0 0 0 / .55);
   }
-  .rp__glass {
-    --p: .6cqw; --lit: 74%;
-    position: relative; height: 100%; overflow: hidden; border-radius: 1.3cqw;
-    background:
-      linear-gradient(90deg, transparent var(--lit), var(--rp-glass) 0) 0 0 / var(--p) var(--p),
-      linear-gradient(transparent var(--lit), var(--rp-glass) 0) 0 0 / var(--p) var(--p),
-      color-mix(in srgb, var(--rp-ink) 6%, var(--rp-glass));
-    box-shadow: inset 0 .4cqw .8cqw rgb(0 0 0 / .55);
-  }
-  .rp__glass::after { content: ''; position: absolute; inset: 0; background: linear-gradient(170deg, rgb(255 255 255 / .08), transparent 45%); }
   .rp__px {
-    position: absolute; inset: 0; display: grid; align-content: center; gap: .8cqw; padding: 0 1.6cqw;
-    color: var(--rp-ink); font: 600 2.3cqw/1.2 var(--font-mono); text-transform: uppercase; white-space: nowrap; letter-spacing: .03em;
+    position: absolute; inset: 0; display: flex; align-items: center; padding: 0 2.6cqw; overflow: hidden;
+    color: var(--rp-ink); font: 600 2.9cqw/1 var(--font-mono); text-transform: uppercase; white-space: nowrap; letter-spacing: .04em;
     text-shadow: 0 0 .9cqw color-mix(in srgb, var(--rp-ink) 55%, transparent);
     mask-image: linear-gradient(90deg, #000 var(--lit), transparent 0), linear-gradient(#000 var(--lit), transparent 0);
     mask-size: var(--p) var(--p); mask-composite: intersect;
+    opacity: var(--rp-off); transition: opacity 150ms ease-out;
   }
-  .rp__line { display: flex; justify-content: space-between; align-items: center; gap: 2cqw; opacity: var(--rp-off); transition: opacity 150ms ease-out; }
-  .rp.is-on .rp__line { opacity: 1; transition-delay: 300ms; }
-  .rp__marq { overflow: hidden; }
-  .rp__ticker { display: flex; gap: 6cqw; width: max-content; animation: rp-tick var(--dur-rp-ticker) steps(170) infinite paused; }
+  .rp.is-on .rp__px { opacity: 1; transition-delay: 300ms; }
+  .rp__ticker { display: flex; width: max-content; animation: rp-tick var(--dur-rp-ticker) linear infinite paused; }
+  .rp__ticker > span { padding-right: 8cqw; }
   .rp.is-on .rp__ticker { animation-play-state: running; }
   @keyframes rp-tick { to { translate: -50% 0; } }
-  .rp__vu { display: inline-flex; gap: .5cqw; align-items: flex-end; height: 2.4cqw; }
-  .rp__vu i { width: .9cqw; height: 15%; background: currentColor; }
-  .rp.is-on .rp__vu i { animation: rp-vu 520ms steps(4) infinite alternate; }
-  .rp__vu i:nth-child(2) { animation-delay: -130ms; } .rp__vu i:nth-child(3) { animation-delay: -260ms; }
-  .rp__vu i:nth-child(4) { animation-delay: -390ms; } .rp__vu i:nth-child(5) { animation-delay: -60ms; }
-  @keyframes rp-vu { from { height: 15%; } to { height: 100%; } }
 
-  /* the long key */
-  .rp__spot {
-    position: absolute; left: 41%; bottom: 12%; width: 9cqw; height: 9cqw; border-radius: 50%;
-    display: grid; place-items: center; color: var(--rp-key-ink);
+  /* the keys: round Spotify, long play */
+  .rp__keys { display: flex; gap: 2cqw; }
+  .rp__spot, .rp__key {
+    flex: none; height: 7cqw; display: grid; place-items: center; color: var(--rp-key-ink);
     background: var(--rp-key); box-shadow: var(--rp-key-up);
     transition: translate 120ms ease-out, box-shadow 120ms ease-out, color 120ms ease-out;
   }
-  .rp__spot svg { width: 46%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .rp__spot { width: 7cqw; border-radius: 50%; }
+  .rp__spot svg { width: 52%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
   .rp__spot:hover { color: var(--rp-key-ink-on); }
   .rp__spot:active { translate: 0 .45cqw; box-shadow: var(--rp-key-down); }
-  .rp__spot:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
-  .rp__key {
-    position: absolute; left: calc(41% + 11cqw); right: 6%; bottom: 12%; height: 9cqw; padding: 0; border: 0; border-radius: 1.6cqw;
-    display: grid; place-items: center; cursor: pointer; color: var(--rp-key-ink);
-    background: var(--rp-key); box-shadow: var(--rp-key-up);
-    transition: translate 120ms ease-out, box-shadow 120ms ease-out, color 120ms ease-out;
-  }
-  .rp__key svg { height: 40%; fill: currentColor; }
+  .rp__key { flex: 1; padding: 0; border: 0; border-radius: 3.5cqw; cursor: pointer; }
+  .rp__key svg { height: 42%; fill: currentColor; }
+  .rp__key:hover { color: var(--rp-key-ink-on); }
   .rp__key[aria-pressed='true'] { translate: 0 .45cqw; box-shadow: var(--rp-key-down); color: var(--rp-key-ink-on); }
-  .rp__key:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .rp__spot:focus-visible, .rp__key:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+  /* two little feet */
+  .rp__feet {
+    position: absolute; z-index: -1; left: 10%; right: 10%; bottom: -3.4cqw; height: 3cqw;
+    background:
+      radial-gradient(ellipse at top, var(--rp-foot) 0 60%, transparent 62%) left / 7cqw 100% no-repeat,
+      radial-gradient(ellipse at top, var(--rp-foot) 0 60%, transparent 62%) right / 7cqw 100% no-repeat;
+  }
+
+  .rp__cap {
+    margin: 0; width: min(100%, 34ch); color: var(--about-copy);
+    font-size: var(--step-copy); line-height: 1.35; text-align: center; text-wrap: balance;
+  }
+  .rp__cap b { font-weight: inherit; color: var(--about-name); }
 
   /* Spotify's player: in the page (it has to be, to play) but out of
      sight and out of reach; the record player is its face. */
@@ -185,9 +199,9 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .rp__rec-wrap { translate: -50% 0; transition: none; }
-    .rp__rec, .rp__rec::after, .rp__ticker, .rp__vu i, .rp.is-on .rp__grille::after { animation: none; }
-    .rp__line, .rp__label img { transition: none; }
+    .rp__rec-wrap { translate: -50% -8%; transition: none; }
+    .rp__rec, .rp__rec::after, .rp__ticker { animation: none; }
+    .rp__px, .rp__label img, .rp__spot, .rp__key { transition: none; }
     .rp__ticker > span + span { display: none; }
   }
 </style>
@@ -207,7 +221,6 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
   const root = document.querySelector<HTMLElement>('[data-rp]');
   if (root) {
     const key = root.querySelector<HTMLButtonElement>('[data-rp-key]')!;
-    const time = root.querySelector<HTMLElement>('[data-rp-time]')!;
     const status = root.querySelector<HTMLElement>('[data-rp-status]')!;
     const host = root.querySelector<HTMLElement>('[data-rp-embed]')!;
     const name = key.getAttribute('aria-label')!.replace(/^Play /, '');
@@ -215,21 +228,20 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
     const uris = JSON.parse(root.dataset.uris!) as string[];
     const covers = [...root.querySelectorAll<HTMLImageElement>('[data-rp-cover]')];
     const ticker = root.querySelector<HTMLElement>('[data-rp-ticker]')!;
-    const count = root.querySelector<HTMLElement>('[data-rp-count]')!;
-    const fmt = (ms: number) => {
-      const s = Math.max(0, Math.floor(ms / 1000));
-      return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-    };
+    const titles = JSON.parse(root.dataset.titles!) as string[];
+    const artists = JSON.parse(root.dataset.artists!) as string[];
+    const capTitle = root.querySelector<HTMLElement>('[data-rp-title]')!;
+    const capArtist = root.querySelector<HTMLElement>('[data-rp-artist]')!;
 
-    // ---- which song: display, count and the record's label ----
+    // ---- which song: display, caption and the record's label ----
     let at = 0;
     function show(i: number) {
       at = i;
       covers.forEach((c, n) => c.classList.toggle('is-on', n === i));
       ticker.querySelectorAll('span').forEach((s) => { s.textContent = tracks[i]; });
       ticker.style.animation = 'none'; void ticker.offsetWidth; ticker.style.animation = '';   // from the start
-      count.textContent = `${i + 1}/${tracks.length}`;
-      time.textContent = '00:00';
+      capTitle.textContent = titles[i];
+      capArtist.textContent = artists[i];
     }
 
     // ---- Spotify: loaded on the first press only ----
@@ -252,7 +264,6 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
         c.addListener('ready', () => ok(c));
         c.addListener('playback_update', ({ data }) => {
           if (!on) return;
-          time.textContent = fmt(data.position);
           if (!data.isPaused && data.position > 0) started = true;
           // The track has ended (whole track or 30s preview): the next one.
           const ended = started && data.duration > 0 && (data.position >= data.duration - 400 || (data.isPaused && data.position === 0));
