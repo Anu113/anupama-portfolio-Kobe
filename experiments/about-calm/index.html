@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — calm mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@400;500;600&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  /* Mock only (2026-11-14). After andreas.vision/about: calm comes from
+     small type, grey copy, soft grounds, fading list edges and room.
+     Serve from the repo root so ../../public/ resolves. */
+  :root {
+    --bg: #fcfcfc; --ink: #262626;
+    --name: #262626;                 /* names, the one dark thing in a row */
+    --copy: #737373;                 /* lightest grey that passes AA on --bg: 4.6:1 */
+    --quiet: #737373;                /* quotes, tool lines, experience lines */
+    --card: color-mix(in srgb, var(--ink) 3%, var(--bg));
+    --row: color-mix(in srgb, var(--ink) 1.5%, var(--bg));
+    --row-hover: color-mix(in srgb, var(--ink) 4%, var(--bg));
+    --tab: color-mix(in srgb, var(--ink) 5%, var(--bg));
+    --icon: color-mix(in srgb, var(--ink) 5%, var(--bg));
+    --hair: color-mix(in srgb, var(--ink) 10%, var(--bg));
+    --shadow: 0 1px 2px rgb(0 0 0 / .08), 0 6px 16px rgb(0 0 0 / .1);
+    --ease: cubic-bezier(0.2, 0.715, 0.205, 0.99);
+    --w: 600;
+  }
+  /* tone switch: the reference's own greys, for comparison only (fail AA) */
+  body[data-tone="ref"] { --copy: #8f8f8f; --quiet: #a3a3a3; --name: #3a3a3a; }
+  body[data-tone="soft"] { --copy: #737373; --quiet: #737373; --name: #4a4a4a; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: var(--w) 14px/1.55 Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  img { display: block; }
+
+  /* ---------- mock chrome ---------- */
+  .bar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; padding: 12px 40px; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--hair); font: 400 11px/1 'Azeret Mono', monospace; text-transform: uppercase; letter-spacing: .05em; color: #707070; }
+  .bar .grp { display: flex; gap: 4px; align-items: center; }
+  .bar .grp > span { margin-right: 6px; }
+  .bar button { font: inherit; text-transform: inherit; letter-spacing: inherit; border: 0; padding: 7px 10px; border-radius: 14px; background: transparent; color: #707070; cursor: pointer; }
+  .bar button[aria-pressed="true"] { background: var(--tab); color: var(--ink); }
+  .note { margin: 0 auto; max-width: 1240px; padding: 20px 40px 0; font: 400 11px/1.6 'Azeret Mono', monospace; color: #707070; }
+  .note b { color: var(--ink); font-weight: 400; }
+
+  /* ---------- nav stand-in ---------- */
+  .nav { max-width: 1240px; margin: 0 auto; padding: 22px 40px; display: flex; justify-content: space-between; font-size: 14px; }
+  .nav .links { display: flex; gap: 20px; font-size: 12px; color: #707070; }
+  .nav .links b { color: var(--ink); font-weight: inherit; }
+
+  .page { max-width: 1240px; margin: 0 auto; padding: 56px 40px 140px; }
+
+  /* ---------- intro ---------- */
+  h1 { font: 300 italic 30px/1.15 'Crimson Pro', serif; margin: 0 0 22px; letter-spacing: -.005em; }
+  .bio p { margin: 0 0 14px; color: var(--copy); font-size: 13px; line-height: 1.65; max-width: 34rem; }
+  .bio a { color: var(--copy); text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 3px; }
+  .icons { display: flex; gap: 8px; margin-top: 24px; }
+  .icons a { width: 36px; height: 36px; border-radius: 10px; background: var(--icon); display: grid; place-items: center; color: var(--ink); transition: background 200ms; }
+  .icons a:hover { background: var(--row-hover); }
+  .icons svg { width: 16px; height: 16px; }
+
+  /* ---------- tabs ---------- */
+  .tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+  .tabs button { font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--copy); padding: 6px 12px; border-radius: 17px; cursor: pointer; transition: color 200ms, background 200ms; }
+  .tabs button[aria-selected="true"] { background: var(--tab); color: var(--ink); }
+  .tabs button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .box { position: relative; height: 168px; overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22px, #000 calc(100% - 30px), transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 22px, #000 calc(100% - 30px), transparent 100%); }
+  .reel { will-change: transform; }
+  .reel ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; }
+  .row { display: flex; gap: 12px; padding: 10px 12px; border-radius: 8px; background: var(--row); transition: background 200ms; }
+  .row:hover { background: var(--row-hover); }
+  .row .tile { flex: none; width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: var(--card); }
+  .row .tile.round { border-radius: 50%; }
+  .row .head { font-size: 12.5px; line-height: 1.35; color: var(--name); display: flex; justify-content: space-between; gap: 12px; }
+  .row .head .tag { color: var(--quiet); }
+  .row .head .yr { color: var(--quiet); font: 400 11px/1.35 'Azeret Mono', monospace; flex: none; }
+  .row .line { margin-top: 3px; font-size: 12.5px; line-height: 1.5; color: var(--quiet); }
+
+  /* ---------- Moss field ---------- */
+  .moss { margin-top: 18px; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; border-radius: 8px; background: var(--row); }
+  .moss img { width: 26px; height: 26px; object-fit: contain; }
+  .moss span { flex: 1; color: var(--copy); font-size: 13px; }
+  .moss i { width: 28px; height: 28px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 18%, var(--bg)); display: grid; place-items: center; color: var(--bg); font-style: normal; font-size: 14px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .pills span { font-size: 12px; padding: 5px 11px; border-radius: 14px; background: var(--tab); color: var(--copy); }
+
+  /* ---------- tiles ---------- */
+  .tiles { list-style: none; margin: 72px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .t { position: relative; isolation: isolate; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 28px; }
+  .t::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: 28px; background: var(--card); transition: scale 300ms cubic-bezier(.77,0,.175,1); }
+  .t:hover::before { scale: 1.02; }
+  .t .cap { margin: 0; color: var(--copy); font-size: 12px; text-align: center; text-wrap: balance; max-width: 30ch; }
+  .deck { position: relative; width: 44%; aspect-ratio: 3/4; }
+  .deck .s { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); background: #ddd; transition: transform 300ms var(--ease); }
+  .deck .s img { width: 100%; height: 100%; object-fit: cover; }
+  .deck .s:nth-child(1) { z-index: 5; }
+  .deck .s:nth-child(2) { z-index: 4; transform: translate(-14%, 2%) rotate(-4deg) scale(.94); }
+  .deck .s:nth-child(3) { z-index: 3; transform: translate(14%, 2%) rotate(4deg) scale(.94); }
+  .deck .s:nth-child(n+4) { z-index: 2; transform: translate(0, 3%) scale(.9); }
+  .t:hover .deck .s:nth-child(1) { transform: translateY(-3%) scale(1.03); }
+  .t:hover .deck .s:nth-child(2) { transform: translate(-48%, 2%) rotate(-8deg) scale(.84); }
+  .t:hover .deck .s:nth-child(3) { transform: translate(48%, 2%) rotate(8deg) scale(.84); }
+  .t:hover .deck .s:nth-child(4) { transform: translate(-80%, 6%) rotate(-13deg) scale(.7); }
+  .t:hover .deck .s:nth-child(5) { transform: translate(80%, 6%) rotate(13deg) scale(.7); }
+
+  /* portrait as a tile (variant A) */
+  .t.me .print { position: relative; width: 62%; aspect-ratio: 1; }
+  .t.me .print > img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+  .stamp { position: absolute; width: 26%; aspect-ratio: 4/5; padding: 4px; background: #fff; box-shadow: var(--shadow); rotate: 8deg; -webkit-mask: radial-gradient(circle 2.2px at 2.2px 2.2px, transparent 98%, #000) -2.2px -2.2px / 6px 6px; mask: radial-gradient(circle 2.2px at 2.2px 2.2px, transparent 98%, #000) -2.2px -2.2px / 6px 6px; }
+  .stamp img { width: 100%; height: 100%; object-fit: cover; }
+  .t.me .stamp { top: -8%; right: -10%; }
+  .player { width: 60%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #333 0 14%, #1d1d1d 15% 16%, #2a2a2a 17% 100%); box-shadow: var(--shadow); }
+
+  /* ---------- variant layouts ---------- */
+  .v { display: none; }
+  body[data-v="a"] .v-a, body[data-v="b"] .v-b, body[data-v="c"] .v-c, body[data-v="d"] .v-d { display: block; }
+
+  /* A: reference. words left, tabs right, portrait is tile one */
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) 24rem; column-gap: 80px; align-items: start; }
+
+  /* B: half and half. portrait held on the left */
+  .half { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 64px; align-items: start; }
+  .half .portrait { position: sticky; top: 72px; aspect-ratio: 4/5; border-radius: 28px; overflow: hidden; background: var(--card); }
+  .half .portrait > img { width: 100%; height: 100%; object-fit: cover; }
+  .half .portrait .stamp { bottom: 20px; right: 20px; width: 18%; }
+  .half .picks { margin-top: 40px; }
+
+  /* C: byline. small portrait beside the greeting */
+  .byline { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+  .byline img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; object-position: 50% 30%; }
+  .byline h1 { margin: 0; }
+  .byline small { display: block; font: 400 11px/1.4 'Azeret Mono', monospace; color: var(--copy); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+
+  /* D: prints. three small tilted prints, then the words */
+  .prints { position: relative; height: 210px; margin-bottom: 36px; }
+  .prints .p { position: absolute; top: 0; width: 150px; padding: 7px 7px 26px; background: #fff; box-shadow: var(--shadow); border-radius: 3px; transition: transform 360ms var(--ease); }
+  .prints .p img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+  .prints .p:nth-child(1) { left: 0; transform: rotate(-5deg); z-index: 2; }
+  .prints .p:nth-child(2) { left: 118px; top: 12px; transform: rotate(3deg); z-index: 3; }
+  .prints .p:nth-child(3) { left: 238px; top: 2px; transform: rotate(-2deg); z-index: 1; }
+  .prints:hover .p:nth-child(1) { transform: rotate(-8deg) translate(-12px, 4px); }
+  .prints:hover .p:nth-child(3) { transform: rotate(1deg) translate(16px, 0); }
+
+  @media (max-width: 1000px) {
+    .two, .half { grid-template-columns: 1fr; row-gap: 48px; }
+    .half .portrait { position: static; max-width: 30rem; }
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .page, .nav, .bar, .note { padding-inline: 16px; }
+    .tiles { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body data-v="a" data-tone="aa">
+
+<div class="bar" role="toolbar" aria-label="Mock controls">
+  <div class="grp" data-set="v"><span>Image</span>
+    <button data-val="a" aria-pressed="true">A · Portrait tile</button>
+    <button data-val="b">B · Held beside</button>
+    <button data-val="c">C · Byline</button>
+    <button data-val="d">D · Prints</button>
+  </div>
+  <div class="grp" data-set="tone"><span>Grey</span>
+    <button data-val="aa" aria-pressed="true">AA</button>
+    <button data-val="soft">AA, softer names</button>
+    <button data-val="ref">Reference (fails AA)</button>
+  </div>
+  <div class="grp" data-set="w"><span>Weight</span>
+    <button data-val="600" aria-pressed="true">600 (site)</button>
+    <button data-val="500">500</button>
+    <button data-val="400">400</button>
+  </div>
+</div>
+<p class="note" id="note"></p>
+
+<div class="nav"><span>Anupama Mishra</span><span class="links"><span>Work</span><b>About</b><span>Play</span></span></div>
+
+<main class="page">
+  <!-- A -->
+  <div class="v v-a">
+    <div class="two">
+      <section><h1>Hi, I’m Anupama.</h1><div data-bio></div></section>
+      <div data-picks></div>
+    </div>
+    <ul class="tiles" data-tiles="me"></ul>
+  </div>
+
+  <!-- B -->
+  <div class="v v-b">
+    <div class="half">
+      <div class="portrait"><img src="../../public/images/about/anupama-portrait.png" alt="Portrait of Anupama Mishra"><span class="stamp"><img src="../../public/images/beyond/art-porch.webp" alt=""></span></div>
+      <div><section><h1>Hi, I’m Anupama.</h1><div data-bio></div></section><div class="picks" data-picks></div></div>
+    </div>
+    <ul class="tiles" data-tiles></ul>
+  </div>
+
+  <!-- C -->
+  <div class="v v-c">
+    <div class="two">
+      <section>
+        <div class="byline"><img src="../../public/images/about/anupama-portrait.png" alt="Portrait of Anupama Mishra"><div><h1>Hi, I’m Anupama.</h1><small>Staff Product Designer · Bangalore</small></div></div>
+        <div data-bio></div>
+      </section>
+      <div data-picks></div>
+    </div>
+    <ul class="tiles" data-tiles></ul>
+  </div>
+
+  <!-- D -->
+  <div class="v v-d">
+    <div class="two">
+      <section>
+        <div class="prints" aria-hidden="true">
+          <div class="p"><img src="../../public/images/beyond/art-porch.webp" alt=""></div>
+          <div class="p"><img src="../../public/images/about/anupama-portrait.png" alt=""></div>
+          <div class="p"><img src="../../public/images/beyond/talk-smile.webp" alt=""></div>
+        </div>
+        <h1>Hi, I’m Anupama.</h1><div data-bio></div>
+      </section>
+      <div data-picks></div>
+    </div>
+    <ul class="tiles" data-tiles></ul>
+  </div>
+</main>
+
+<script>
+const P = '../../public/images/';
+const notes = {
+  a: '<b>A · Portrait tile.</b> The reference as it is: words left, tabs right, and her portrait opens the grid with the porch painting as a stamp. Calmest top screen; her face is lower down.',
+  b: '<b>B · Held beside.</b> Today’s layout (portrait held on the left) with the new greys and type. Her face and words read together on the first screen; busier than A.',
+  c: '<b>C · Byline.</b> A small round portrait beside the greeting, role and city under it in mono. Face on the first screen, nearly as calm as A.',
+  d: '<b>D · Prints.</b> Three small prints above the greeting (painting, her, on stage) that part a little on hover. Most personal; the most decoration of the four.',
+};
+const bio = `
+  <div class="bio">
+  <p>I’m a product designer based in Bangalore, working fluidly across product, design, and engineering. I think of design as a problem-solving framework with higher-leverage applications than screens and, at my best, deliver solutions in one fluid motion.</p>
+  <p>I’ve been designing consumer applications for the last 11 years and playing with code since I was 12. I’m currently a Staff Product Designer at Okta. Open to Staff or Lead Product Designer roles.</p>
+  <p>Outside of my design work, I’m a mother, wife, elder sister, and daughter, and a maker at heart: painting, baking, writing poetry.</p>
+  <p>Please do say hi, on <a href="#">LinkedIn</a> or by <a href="#">email</a>.</p>
+  </div>
+  <div class="icons">
+    <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
+    <a href="#" aria-label="Copy email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></a>
+    <a href="#" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg></a>
+  </div>`;
+
+const tabs = {
+  Testimonials: [
+    { img: 'about/people/tony-berman.webp', round: 1, name: 'Tony Berman', tag: 'Lead Technical Product Manager at PayPal', line: '“Anupama was always ready and willing to work directly with developers to find solutions to address and design around technical limitations.”' },
+    { img: 'about/people/mansi-singhal.webp', round: 1, name: 'Mansi Singhal', tag: 'Director, Product Management at Intuit', line: '“She was quick to grasp fintech specific concepts needed to understand the overall landscape, strategy and user expectations, even though this was a completely new product area.”' },
+    { img: 'about/people/suraj-s.webp', round: 1, name: 'Suraj S', tag: 'Co-founder at Platter', line: '“Her communication and ability to convince her designs has made her one of the best designers we ever came across.”' },
+  ],
+  Experience: [
+    { img: 'logos/okta.webp', name: 'Okta', tag: 'Staff Product Designer', yr: '2024–now', line: 'Identity and access management for the admins who decide who gets in. I lead a team of six.' },
+    { img: 'logos/paypal.webp', name: 'PayPal', tag: 'Lead UX Designer', yr: '2021–2024', line: 'Privacy and trust across PayPal, Venmo and Honey: the privacy center, ads consent, ID verification, the Debit Card.' },
+    { img: 'logos/walmart.webp', name: 'Walmart Labs', tag: 'UX Designer', yr: '2019–2021', line: 'Tools for merchants and suppliers, plus Walmart Pay with Chase Pay and Scan & Go.' },
+    { img: 'logos/deloitte.webp', name: 'Deloitte Digital', tag: 'UX Designer', yr: '2017–2019', line: 'Client work in finance, healthcare and the public sector.' },
+    { img: 'logos/zomato.webp', name: 'Zomato', tag: 'UI Designer', yr: '2015–2016', line: 'Product, web, branding and marketing design.' },
+  ],
+  Tools: [
+    { img: 'about/tools/figma.webp', name: 'Figma', line: 'Where the flows and screens take shape' },
+    { img: 'about/tools/claude.webp', name: 'Claude Code', line: 'Built this site with me' },
+    { img: 'about/tools/cursor.webp', name: 'Cursor', line: 'Prototypes in real code' },
+    { img: 'about/tools/dia.webp', name: 'Dia', line: 'The browser I read and research in' },
+    { img: 'about/tools/granola.webp', name: 'Granola', line: 'Notes from every call, so I can listen' },
+    { img: 'about/tools/grok.webp', name: 'Grok', line: 'A second opinion on hard questions' },
+  ],
+};
+const rowHTML = r => `<li><div class="row"><img class="tile${r.round ? ' round' : ''}" src="${P + r.img}" alt="">
+  <div><div class="head"><span>${r.name}${r.tag ? `<span class="tag"> / ${r.tag}</span>` : ''}</span>${r.yr ? `<span class="yr">${r.yr}</span>` : ''}</div>
+  <div class="line">${r.line}</div></div></div></li>`;
+
+function picks() {
+  const names = Object.keys(tabs);
+  return `<div class="tabs" role="tablist">${names.map((n, i) => `<button role="tab" aria-selected="${i === 0}" data-tab="${n}">${n}</button>`).join('')}</div>
+    <div class="box" tabindex="0"><div class="reel"></div></div>
+    <div class="moss"><img src="${P}moss/moss-sm.webp" alt=""><span>Ask Moss about my work</span><i>↑</i></div>
+    <div class="pills"><span>What level are you looking for?</span><span>What did you own at Okta?</span><span>Show me a case study</span></div>`;
+}
+
+const deck = (cap, srcs) => `<li class="t"><div class="deck">${srcs.map(s => `<div class="s"><img src="${P + s}" alt="" loading="lazy"></div>`).join('')}</div><p class="cap">${cap}</p></li>`;
+function tiles(withMe) {
+  const me = `<li class="t me"><div class="print"><img src="${P}about/anupama-portrait.png" alt="Portrait of Anupama Mishra"><span class="stamp"><img src="${P}beyond/art-porch.webp" alt=""></span></div><p class="cap">A maker at heart, deeply curious about the world around me</p></li>`;
+  return (withMe ? me : '') +
+    deck('On stage, at design meetups, and with my design community', ['beyond/talk-smile.webp','beyond/talk-poster.webp','beyond/sticky-wall.webp','beyond/event-selfie.webp']) +
+    deck('Painting, baking, and writing poems and books', ['beyond/art-sage.webp','beyond/baking-icing.webp','beyond/art-hermione.webp','beyond/baking-cookie.webp','beyond/art-green-eyes.webp']) +
+    deck('Broadening my horizons, one trip at a time &lt;3', ['beyond/travel-pagoda.webp','beyond/travel-fuji.webp','beyond/travel-otagi.webp','beyond/travel-lake.webp','beyond/travel-octopus.webp']) +
+    deck('Also a big foodie, ofc ;)', ['beyond/food-noodles.webp','beyond/food-burger.webp','beyond/food-sandwich.webp','beyond/food-fruit.webp','beyond/food-drink.webp']) +
+    (withMe ? '' : deck('Some of the ten on my shelf', ['books/design-of-everyday-things.jpg','books/sapiens.jpg','books/whereabouts.jpg','books/changing-world-order.jpg','books/eat-that-frog.jpg'])) +
+    `<li class="t"><div class="player"></div><p class="cap">Record player, unchanged</p></li>`;
+}
+
+document.querySelectorAll('[data-bio]').forEach(el => el.innerHTML = bio);
+document.querySelectorAll('[data-picks]').forEach(el => el.innerHTML = picks());
+document.querySelectorAll('[data-tiles]').forEach(el => el.innerHTML = tiles(el.dataset.tiles === 'me'));
+
+// tabs + a slow looping reel that stops under the pointer, like the live page
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+document.querySelectorAll('[data-picks]').forEach(root => {
+  const reel = root.querySelector('.reel'), box = root.querySelector('.box');
+  let y = 0, h = 0, paused = false;
+  const fill = name => {
+    const rows = tabs[name].map(rowHTML).join('');
+    reel.innerHTML = `<ul>${rows}</ul><ul aria-hidden="true">${rows}</ul>`;
+    y = 0; h = reel.firstElementChild.offsetHeight;
+  };
+  root.querySelectorAll('[role=tab]').forEach(b => b.onclick = () => {
+    root.querySelectorAll('[role=tab]').forEach(o => o.setAttribute('aria-selected', o === b));
+    fill(b.dataset.tab);
+  });
+  box.onpointerenter = () => paused = true; box.onpointerleave = () => paused = false;
+  fill('Testimonials');
+  let last = performance.now();
+  const tick = t => {
+    const dt = (t - last) / 1000; last = t;
+    if (!h) h = reel.firstElementChild.offsetHeight;
+    if (!paused && !reduce && h) { y = (y + 14 * dt) % h; reel.style.transform = `translateY(${-y}px)`; }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});
+
+// controls
+const note = document.getElementById('note');
+const setNote = () => note.innerHTML = notes[document.body.dataset.v];
+document.querySelectorAll('.bar .grp').forEach(g => g.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  g.querySelectorAll('button').forEach(o => o.setAttribute('aria-pressed', o === b));
+  const k = g.dataset.set;
+  if (k === 'w') document.body.style.setProperty('--w', b.dataset.val);
+  else document.body.dataset[k] = b.dataset.val;
+  setNote();
+  document.querySelectorAll('.reel').forEach(r => r.closest('[data-picks]'));
+}));
+setNote();
+</script>
+</body>
+</html>

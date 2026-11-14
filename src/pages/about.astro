@@ -4,10 +4,11 @@
    data/about.ts, values under ABOUT in tokens.css. Our fonts and role
    colours.
 
-   HEAD. Her portrait on the left (her porch painting as a stamp),
+   HEAD. Her portrait on the left (her porch painting as a stamp
+   inside its bottom-right corner, option A of experiments/about-calm/stamps.html),
    stretched to the height of the column beside it, so the photo and the
    words start and end on the same line (4:5 once the page is one
-   column). Right: "About me", then "Updated on …"
+   column). Right: "Hi, I’m Anupama." (all italic), then "Updated on …"
    (`updated` in data/about.ts) in mono, her bio in her words, how to
    reach her, three icon buttons (LinkedIn, copy email, email); then,
    after andreas.vision/about, his tabs in his order (Testimonials /
@@ -60,7 +61,7 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
       <div class="side">
       <section class="intro" aria-labelledby="about-h">
         <div class="words">
-          <h1 class="rise" id="about-h" style="--i:0">About <em>me</em></h1>
+          <h1 class="rise" id="about-h" style="--i:0"><em>Hi, I’m Anupama.</em></h1>
           <p class="updated u-label-mono rise" style="--i:0">Updated on <time datetime={updated}>{updatedLabel}</time></p>
           <div class="body">
             {/* Her bio, in her words (2026-11-11). */}
@@ -212,8 +213,8 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
     border-radius: inherit;
   }
   .stamp {
-    position: absolute; top: -3%; right: 5%; width: 18%; aspect-ratio: 0.87;
-    padding: 2.2%; background: var(--about-stamp-paper); transform: rotate(7deg);
+    position: absolute; bottom: var(--about-stamp-inset); right: var(--about-stamp-inset); width: 18%; aspect-ratio: 0.87;
+    padding: 2.2%; background: var(--about-stamp-paper); transform: rotate(4deg);
     filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.15));
     /* perforated edge: dots punched out of the margin only */
     mask:
@@ -228,10 +229,10 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
   .updated { margin: 0; }
   .words h1 {
     margin: 0; font-family: var(--font-serif); font-weight: 300;
-    font-size: var(--step-about-h); line-height: 1.2; letter-spacing: 0; color: var(--fg);
+    font-size: var(--step-about-h); line-height: 1.15; letter-spacing: 0; color: var(--fg);
   }
   .words h1 em { font-style: italic; }
-  .body { display: grid; gap: 0.75rem; color: var(--fg-dim); font-size: var(--step-body); line-height: var(--leading-body); }
+  .body { display: grid; gap: 0.75rem; color: var(--about-copy); font-size: var(--step-body); line-height: var(--leading-body); }
   .body p { margin: 0; }
   .body a { color: var(--fg); text-decoration: underline var(--link-thick) var(--link-line); text-underline-offset: var(--link-offset); }
   .body a:hover { text-decoration-color: var(--link-line-hover); text-decoration-thickness: var(--link-thick-hover); }
@@ -264,7 +265,7 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
   .tabs { display: flex; gap: 0.25rem; }
   .tabs button {
     padding: 0.25rem 0.75rem; border: 0; border-radius: var(--radius-about-tab);
-    background: transparent; color: var(--about-quiet);
+    background: transparent; color: var(--about-copy);
     font: inherit; font-size: var(--step-about-tab); line-height: 1.6; white-space: nowrap; cursor: pointer;
     transition: background-color var(--dur-micro) ease-out, color var(--dur-micro) ease-out;
   }
@@ -295,10 +296,10 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
   .tile--letter { display: grid; place-items: center; color: var(--about-soft); font-size: 0.9375rem; }
   .text { flex: 1; min-width: 0; display: grid; gap: 2px; font-size: var(--step-copy); line-height: 1.3; }
   .rhead { display: flex; justify-content: space-between; gap: 0.5rem; }
-  .name { color: var(--fg); }
-  .tag { color: var(--fg-dim); }
-  .year { flex: none; color: var(--fg-dim); font-family: var(--font-mono); font-size: var(--step-fine); }
-  .line { color: var(--fg-dim); text-wrap: pretty; }
+  .name { color: var(--about-name); }
+  .tag { color: var(--about-faint); }
+  .year { flex: none; color: var(--about-faint); font-family: var(--font-mono); font-size: var(--step-fine); }
+  .line { color: var(--about-faint); text-wrap: pretty; }
   .site { color: var(--fg); text-decoration: underline var(--link-thick) var(--link-line); text-underline-offset: var(--link-offset); }
   .site:hover { text-decoration-color: var(--link-line-hover); text-decoration-thickness: var(--link-thick-hover); }
   .site:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -327,7 +328,7 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
   .ptile--player::before { display: none; }   /* the player stands on the page, no card */
   @media (hover: hover) and (pointer: fine) { .ptile:hover::before { scale: 1.03; } }
   .caption {
-    margin: 4cqw 0 0; width: min(100%, 34ch); color: var(--fg-dim);
+    margin: 4cqw 0 0; width: min(100%, 34ch); color: var(--about-copy);
     font-size: var(--step-copy); line-height: 1.35; text-align: center; text-wrap: balance;
   }
 

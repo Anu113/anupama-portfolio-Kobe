@@ -679,9 +679,10 @@ walked back. Concretely, in the current implementation:
 - **The About page** (`pages/about.astro`, `data/about.ts`, ABOUT in
   `tokens.css`), chosen on request (2026-11-11) from the mocks in
   `experiments/about-grid/` ("Half and half" + "Fan out"): her portrait
-  on the left (her photo as given, the porch painting as a stamp, no
+  on the left (her photo as given, the porch painting as a stamp
+  inside its bottom-right corner, on request 2026-11-14, no
   post-it; camera looks and a cutout were tried and turned down),
-  beside "About *me*", her bio in her words and the tabs. Since
+  beside "Hi, I’m Anupama.", her bio in her words and the tabs. Since
   2026-11-14, on request, the portrait stretches to that column's
   height so both start and end on one line (it used to be 4:5 and
   sticky), and the tab list is 200px tall (`--about-reel-h`); a "Read
@@ -707,6 +708,12 @@ walked back. Concretely, in the current implementation:
   requested exception to the square `--radius` rule, this page only.
   Moss's field is `AskMoss.astro`, shared with Small talk: the field's
   second approved place, still one tree and one voice.
+  The heading is "Hi, I'm Anupama." in serif italic, 30px, and the page
+  uses the reference's lighter greys (on request, 2026-11-14, option B
+  of `experiments/about-calm/`, chosen knowing they fail AA): bio,
+  captions and inactive tabs at 3.2 : 1, quotes and row lines at
+  2.5 : 1 (`--about-copy`, `--about-faint` under ABOUT). A requested
+  exception to rule 4, this page only; don't spread these greys.
   A fourth tile, approved on request (2026-11-11, "S5 · Speaker" from
   `experiments/about-grid/slots.html`, after his CD player): a
   slot-loading record player with a speaker (`RecordPlayer.astro`,

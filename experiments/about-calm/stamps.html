@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stamp designs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  /* Mock only (2026-11-14): option 1 of portrait.html (stamp inside the
+     bottom-right corner), with different stamp designs. Each card shows
+     the stamp at its real size on the portrait, and a close-up. */
+  :root {
+    --bg: #fcfcfc; --ink: #262626; --dim: #707070;
+    --card: color-mix(in srgb, var(--ink) 3%, var(--bg));
+    --paper: #ffffff;
+    --mark: rgb(38 38 38 / .55);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 600 14px/1.5 Manrope, system-ui, sans-serif; }
+  img { display: block; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 48px 40px 120px; }
+  header h1 { font: 300 italic 30px/1.15 'Crimson Pro', serif; margin: 0 0 8px; }
+  header p { margin: 0; color: var(--dim); font-size: 13px; max-width: 70ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 80px 56px; margin-top: 56px; }
+  .opt h2 { font: 400 11px/1.4 'Azeret Mono', monospace; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 4px; }
+  .opt > p { margin: 0 0 20px; color: var(--dim); font-size: 12px; min-height: 3.2em; }
+  .show { display: grid; grid-template-columns: 1fr 200px; gap: 20px; align-items: end; }
+
+  .ph { position: relative; aspect-ratio: 4/5; border-radius: 28px; background: var(--card); }
+  .ph > .me { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; border-radius: inherit; }
+  .ph .st { position: absolute; bottom: 18px; right: 18px; width: 24%; }
+  .zoom { display: grid; place-items: center; height: 280px; border-radius: 16px; background: color-mix(in srgb, #c89a72 35%, var(--bg)); }
+  .zoom .st { width: 60px; zoom: 2.4; }   /* zoom scales the px masks too: a true close-up */
+
+  /* ---------- the stamp ---------- */
+  .st { position: relative; aspect-ratio: 4/5; rotate: 4deg; }
+  .st .face { position: absolute; inset: 0; background: var(--paper); padding: 9%; filter: drop-shadow(0 1px 2px rgb(0 0 0 / .18)); }
+  .st .face img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* A · today's perforation */
+  .a .face { mask: linear-gradient(#000 0 0) content-box, radial-gradient(circle, #0000 2.4px, #000 2.7px) -4px -4px / 8px 8px round; padding: 4px; }
+
+  /* B · fine perforation, smaller holes, closer */
+  .b .face { padding: 5px; mask: linear-gradient(#000 0 0) content-box, radial-gradient(circle, #0000 1.4px, #000 1.7px) -2.5px -2.5px / 5px 5px round; }
+
+  /* C · dotted cut line on plain paper */
+  .c .face { padding: 7px; }
+  .c .face::after { content: ''; position: absolute; inset: 3px; border: 1.5px dotted var(--mark); pointer-events: none; }
+
+  /* D · halftone: the painting itself drawn in dots */
+  .d .face { padding: 5px; mask: linear-gradient(#000 0 0) content-box, radial-gradient(circle, #0000 1.4px, #000 1.7px) -2.5px -2.5px / 5px 5px round; }
+  .d .face img { mask: radial-gradient(circle, #000 1.25px, #0000 1.6px) 0 0 / 3.4px 3.4px; }
+
+  /* E · ink halftone: one-colour dots, like a riso print */
+  .e .face { padding: 5px; mask: linear-gradient(#000 0 0) content-box, radial-gradient(circle, #0000 1.4px, #000 1.7px) -2.5px -2.5px / 5px 5px round; }
+  .e .face img { filter: grayscale(1) contrast(1.3) brightness(.85); mask: radial-gradient(circle, #000 1.1px, #0000 1.5px) 0 0 / 3px 3px; }
+
+  /* F · postmark: fine perforation with a dotted cancel ring over the corner */
+  .f .face { padding: 5px; mask: linear-gradient(#000 0 0) content-box, radial-gradient(circle, #0000 1.4px, #000 1.7px) -2.5px -2.5px / 5px 5px round; }
+  .f .pm { position: absolute; left: -34%; top: -16%; width: 78%; aspect-ratio: 1; pointer-events: none; }
+  .f .pm svg { width: 100%; height: 100%; overflow: visible; }
+
+  /* G · round seal with a dotted ring */
+  .g { aspect-ratio: 1; rotate: -6deg; }
+  .g .face { border-radius: 50%; padding: 10%; }
+  .g .face img { border-radius: 50%; }
+  .g .face::after { content: ''; position: absolute; inset: 4%; border-radius: 50%; border: 1.5px dotted var(--mark); }
+
+  /* H · scalloped edge: dots punched all round, wider margin, a mono line */
+  .h .face { padding: 6px 6px 16px; mask: linear-gradient(#000 0 0) content-box, radial-gradient(circle, #0000 1.9px, #000 2.2px) -3.5px -3.5px / 7px 7px round; }
+  .h .face img { position: relative; z-index: 1; }
+  .h .face img { height: calc(100% - 0px); }
+  .h .cap { position: absolute; left: 0; right: 0; bottom: 5px; text-align: center; font: 400 6.5px/1 'Azeret Mono', monospace; letter-spacing: .12em; color: var(--ink); }
+  .zoom .h .cap { font-size: 6.5px; }
+
+  /* I · dotted frame only, no paper: the painting with a dotted white line */
+  .i .face { background: none; padding: 0; filter: drop-shadow(0 1px 3px rgb(0 0 0 / .25)); }
+  .i .face img { border-radius: 4px; }
+  .i .face::after { content: ''; position: absolute; inset: 4px; border: 1.5px dotted rgb(255 255 255 / .9); border-radius: 2px; }
+
+  .tag { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 4px; background: var(--card); color: var(--dim); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Stamp designs</h1>
+    <p>All in the bottom-right corner, as in option 1. Left: on the portrait at real size. Right: the same stamp at 2.4×, so you can see the edge.</p>
+  </header>
+  <div class="grid" id="grid"></div>
+</div>
+
+<template id="stamp-a"><div class="st a"><div class="face"><img src="../../public/images/beyond/art-porch.webp" alt=""></div></div></template>
+
+<script>
+const ART = '../../public/images/beyond/art-porch.webp';
+const ME = '../../public/images/about/anupama-portrait.png';
+const postmark = `<div class="pm"><svg viewBox="0 0 100 100" aria-hidden="true">
+  <circle cx="50" cy="50" r="44" fill="none" stroke="rgb(38 38 38 / .5)" stroke-width="2" stroke-dasharray="0.1 5" stroke-linecap="round"/>
+  <circle cx="50" cy="50" r="34" fill="none" stroke="rgb(38 38 38 / .5)" stroke-width="1.4"/>
+  <defs><path id="arc" d="M 22 50 A 28 28 0 0 1 78 50"/></defs>
+  <text font-family="Azeret Mono, monospace" font-size="8.5" letter-spacing="2" fill="rgb(38 38 38 / .6)"><textPath href="#arc" startOffset="50%" text-anchor="middle">BANGALORE</textPath></text>
+  <path d="M84 40 q8 -6 16 0 t16 0 t16 0 M84 52 q8 -6 16 0 t16 0 t16 0 M84 64 q8 -6 16 0 t16 0 t16 0" fill="none" stroke="rgb(38 38 38 / .45)" stroke-width="1.6"/>
+</svg></div>`;
+const opts = [
+  ['a', 'A · Today’s perforation', 'The current stamp: big round holes, for reference.'],
+  ['b', 'B · Fine perforation', 'Smaller, closer holes. Reads more like a real stamp at this size, and quieter.'],
+  ['c', 'C · Dotted cut line', 'Plain white paper with a dotted line inside the edge, like a coupon to cut out.'],
+  ['d', 'D · Halftone', 'Fine perforation, and the painting itself printed in tiny dots, like a printed stamp.'],
+  ['e', 'E · Ink halftone', 'The same dots in one ink colour, like a riso print. Quietest against the portrait.'],
+  ['f', 'F · Postmark', 'Fine perforation with a dotted cancel ring and wavy lines over its corner, “Bangalore” on the ring.', postmark],
+  ['g', 'G · Round seal', 'A round stamp with a dotted ring, a little like a wax or rubber seal.'],
+  ['h', 'H · Stamp with a caption', 'Fine perforation and a wider bottom margin carrying a tiny mono line, as a real stamp carries its country.', '<span class="cap">BANGALORE</span>'],
+  ['i', 'I · Dotted frame, no paper', 'Just the painting with a white dotted line inside its edge. Lightest touch.'],
+];
+const stamp = (k, extra = '') => `<div class="st ${k}"><div class="face"><img src="${ART}" alt="">${k === 'h' ? extra : ''}</div>${k === 'f' ? extra : ''}</div>`;
+document.getElementById('grid').innerHTML = opts.map(([k, t, d, extra]) => `
+  <div class="opt"><h2>${t}</h2><p>${d}</p>
+    <div class="show">
+      <div class="ph"><img class="me" src="${ME}" alt="">${stamp(k, extra)}</div>
+      <div class="zoom">${stamp(k, extra)}</div>
+    </div></div>`).join('');
+</script>
+</body>
+</html>
