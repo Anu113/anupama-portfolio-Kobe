@@ -506,7 +506,7 @@ walked back. Concretely, in the current implementation:
   Focus rings are ink (`--focus`). `--accent-text` now resolves to ink,
   so anything reading it follows. The accent stays only for marks: the
   cursor trail, the hero shader, Moss's dot and his panel's caret, the
-  preloader, the reading strip's progress line, the before/after pins
+  preloader, the before/after pins
   (kept on request). Don't put the accent back on text, links or other
   buttons.
 - **Dark mode** came back on request, as the same palette re-inked rather
@@ -582,10 +582,16 @@ walked back. Concretely, in the current implementation:
 - **Case study contents and reading strip**, after felixrieseberg.com's
   posts (on request): the left rail (`CaseRail.astro`) is a "Contents"
   label over one mono line per section, "Start" first, grey with the
-  current one in ink. A strip under the nav (`CaseStrip.astro`) carries
+  current one in ink. Beside each line, a 3px bar as long as its
+  section, filling with ink as you read it (after
+  andreas.vision/work/schneider; option B of
+  `experiments/case-rail-line/`, 2026-11-14, on request: his labels
+  fade while scrolling, ours stay). Values under CASE RAIL in
+  `tokens.css`. A strip under the nav (`CaseStrip.astro`) carries
   "◂ Work", the title once the real one scrolls away, "Part n/N ▾" (a
   contents menu, the only contents under 1080px where the rail hides),
-  and a 2px accent progress line along its edge. It rides with the nav
+  and a 2px ink progress line along its edge (the accent until
+  2026-11-14; ink on request, to match the rail's line). It rides with the nav
   as it hides and returns. Values under CASE STRIP in `tokens.css`.
 - **Every case study opens the same way** (on request, after
   gauravi.design; split head chosen 2026-11-14, option B of

@@ -3,7 +3,7 @@
    After felixrieseberg.com's posts (on request): one thin line under the
    nav with "◂ Work" on the left, the case title beside it once the
    reader has scrolled past the real one, "Part 2/7 ▾" on the right, and
-   a 2px accent line along its bottom edge that fills with the reader's
+   a 2px ink line along its bottom edge that fills with the reader's
    progress through the case.
 
    Its reason: on a long case study the reader always knows where they
@@ -22,8 +22,9 @@
    on screens under 1080px, where the rail is hidden): Escape or a second
    press closes it and returns focus; choosing a section closes it.
 
-   Back link in the grey, ink on hover — no accent text at rest. The
-   accent is only the progress line. Values under CASE STRIP in
+   Back link in the grey, ink on hover — no accent anywhere. The
+   progress line was the accent until 2026-11-14; it's ink now, on
+   request, to match the rail's reading line. Values under CASE STRIP in
    tokens.css. */
 interface Props {
   title: string;
@@ -139,7 +140,7 @@ const parts = [{ id: 'top', nav: 'Start' }, ...sections];
     inset-inline: 0;
     bottom: -1px;
     height: var(--progress-h);
-    background: var(--accent);
+    background: var(--progress-fill);
     transform-origin: left center;
     transform: scaleX(var(--progress, 0));
   }
