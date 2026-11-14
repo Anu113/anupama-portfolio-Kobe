@@ -189,10 +189,11 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
   </div>
   {/* MOCK ONLY (branch about-reel-heights-mock): a switcher for the list's height. Not for main. */}
   <div class="hmock" role="group" aria-label="List height (mockup)">
-    <span>List height</span>
-    {[156, 220, 280, 340, 400, 460].map((h) => (
-      <button type="button" data-h={h} aria-pressed={h === 156 ? 'true' : 'false'}>{h === 156 ? 'Now · 156' : h}</button>
+    <span>Photo matches words · list height</span>
+    {[156, 200, 240, 280, 320].map((h) => (
+      <button type="button" data-h={h} aria-pressed={h === 240 ? 'true' : 'false'}>{h === 156 ? 'Now · 156' : h}</button>
     ))}
+    <button type="button" data-off aria-pressed="false">Today's page</button>
   </div>
 </Base>
 
@@ -421,6 +422,13 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
   /* MOCK ONLY */
   .hmock { position: fixed; z-index: 100; left: 50%; bottom: 20px; translate: -50% 0; display: flex; align-items: center; gap: 4px;
     padding: 6px; border-radius: 99px; background: #262626; color: #fcfcfc; font-size: 12px; box-shadow: 0 8px 30px rgb(0 0 0 / .25); }
+  /* the portrait stretches to the words + tabs column, top to bottom */
+  @media (min-width: 1024px) {
+    :global(html.match) .head { align-items: stretch; }
+    :global(html.match) .photo { position: relative; top: auto; aspect-ratio: auto; align-self: stretch; }
+    :global(html.match) .side { align-content: start; }
+  }
+  :global(html.still) .rise { animation: none !important; opacity: 1 !important; transform: none !important; }
   .hmock span { padding: 0 8px 0 10px; opacity: .7; }
   .hmock button { padding: 6px 12px; border: 0; border-radius: 99px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
   .hmock button[aria-pressed='true'] { background: #fcfcfc; color: #262626; }
@@ -428,8 +436,14 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
 
 <script>
   // MOCK ONLY: the list-height switcher
+  const root = document.documentElement;
+  const q = new URLSearchParams(location.search).get('h');
+  if (new URLSearchParams(location.search).has('still')) root.classList.add('still');
+  if (q === 'off') { /* today's page */ } else { root.classList.add('match'); root.style.setProperty('--about-reel-h', `${q || 240}px`); }
+  document.querySelectorAll<HTMLButtonElement>('.hmock button').forEach((x) => x.setAttribute('aria-pressed', String(q === 'off' ? x.dataset.off !== undefined : x.dataset.h === (q || '240'))));
   document.querySelectorAll<HTMLButtonElement>('.hmock button').forEach((b) => b.addEventListener('click', () => {
-    document.documentElement.style.setProperty('--about-reel-h', `${b.dataset.h}px`);
+    if (b.dataset.off !== undefined) { root.classList.remove('match'); root.style.removeProperty('--about-reel-h'); }
+    else { root.classList.add('match'); root.style.setProperty('--about-reel-h', `${b.dataset.h}px`); }
     document.querySelectorAll('.hmock button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
   }));
 
