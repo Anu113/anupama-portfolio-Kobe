@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case tags — replacing the lime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock for replacing the lime case-study tags (CASE TAGS in tokens.css).
+  Each option is the real case hero (company, tags, title, snippet, cover
+  on the project hue) in light and dark. Values are the site's tokens,
+  copied here so the page stands alone. Serve from the repo root:
+  /experiments/case-tags/index.html
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --hue-okta: #c9dcf2; --hue-paypal: #e0d6ef; --hue-walmart: #f4dc9c;
+    --hue-ink: #262626;
+  }
+  .light { --paper: #fcfcfc; --paper-2: #f7f7f7; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / .1); --line-strong: rgb(0 0 0 / .22); --accent: #b4482a; }
+  .dark  { --paper: #1b1a19; --paper-2: #252422; --ink: #ecebe8; --ink-dim: #a09d98; --line: rgb(255 255 255 / .12); --line-strong: rgb(255 255 255 / .28); --accent: #e0714f; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fcfcfc; color: #262626; font: 600 14px/1.6 var(--font-sans); }
+  .page { max-width: 1240px; margin: 0 auto; padding: 56px 32px 120px; }
+  h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 8px; letter-spacing: -0.01em; }
+  h1 em { font-style: italic; }
+  .dek { color: #707070; margin: 0 0 8px; max-width: 62ch; }
+  .was { display: inline-flex; gap: 8px; align-items: center; color: #707070; font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; margin: 8px 0 48px; }
+  .lime { background: #d4ff3a; color: #2b3600; border-radius: 4px; padding: 3px 7px; font-size: 10px; }
+
+  .opt { border-top: 1px solid rgb(0 0 0 / .1); padding: 28px 0 44px; }
+  .opt__head { display: flex; gap: 16px; align-items: baseline; margin-bottom: 6px; }
+  .opt__n { font: 400 11px/1 var(--font-mono); letter-spacing: .06em; color: #707070; }
+  .opt__name { font: 300 26px/1.1 var(--font-serif); margin: 0; }
+  .opt__name em { font-style: italic; }
+  .rec { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; border: 1px solid #262626; border-radius: 4px; padding: 3px 6px; }
+  .opt__why { color: #707070; margin: 0 0 18px; max-width: 70ch; }
+  .opt__why b { color: #262626; font-weight: 600; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .pair { grid-template-columns: 1fr; } }
+
+  /* The case hero, as on /work/[slug] */
+  .hero { background: var(--paper); color: var(--ink); padding: 28px 28px 0; border: 1px solid rgb(0 0 0 / .1); overflow: hidden; }
+  .eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+  .company { font: 400 12px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; margin: 0; }
+  .tags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font: 400 10px/16px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; border-radius: 4px; padding: 2px 7px; }
+  .title { font: 300 36px/1.1 var(--font-serif); letter-spacing: -0.01em; margin: 16px 0 10px; }
+  .snip { color: var(--ink-dim); margin: 0 0 22px; font-size: 14px; max-width: 46ch; }
+  .cover { height: 150px; background: var(--hue); display: grid; place-items: end center; }
+  .cover img { height: 132px; width: auto; display: block; }
+  .mode { font: 400 10px/1 var(--font-mono); color: #707070; text-transform: uppercase; letter-spacing: .06em; margin: 8px 0 0; }
+
+  /* 01 Hairline */
+  .o1 .tag { color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  /* 02 Grey chip */
+  .o2 .tag { color: var(--ink-dim); background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--line); }
+  /* 03 Project hue */
+  .o3 .tag { color: var(--hue-ink); background: var(--hue); }
+  /* 04 Brackets, no chip */
+  .o4 .tags { gap: 10px; }
+  .o4 .tag { color: var(--ink-dim); padding: 2px 0; }
+  .o4 .tag::before { content: '['; color: var(--line-strong); margin-right: 2px; }
+  .o4 .tag::after  { content: ']'; color: var(--line-strong); margin-left: 2px; }
+  /* 05 Ink chip */
+  .o5 .tag { color: var(--paper); background: var(--ink); }
+  /* 06 Clay dot */
+  .o6 .tags { gap: 14px; }
+  .o6 .tag { color: var(--ink-dim); padding: 2px 0; display: inline-flex; align-items: center; gap: 6px; }
+  .o6 .tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+  .hues { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+  @media (max-width: 900px) { .hues { grid-template-columns: 1fr; } }
+  .hues .hero { padding-bottom: 22px; }
+  .hues .title { font-size: 26px; margin-bottom: 0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Case tags, <em>without the lime</em></h1>
+  <p class="dek">The lime appears in one place: the tags beside the company name at the top of every case study. Six replacements, each on the real hero, in light and dark.</p>
+  <p class="was">Today <span class="lime">Fintech</span><span class="lime">Privacy &amp; Data</span></p>
+
+  <template id="hero">
+    <div class="hero" data-hue="paypal">
+      <div class="eyebrow">
+        <p class="company">PayPal</p>
+        <ul class="tags" aria-label="Tags">
+          <li class="tag">Fintech</li><li class="tag">Privacy &amp; Data</li><li class="tag">Information Architecture</li>
+        </ul>
+      </div>
+      <h2 class="title">Privacy settings people can read</h2>
+      <p class="snip">Rebuilt PayPal's Data and privacy settings so people can find, read and act on them.</p>
+      <div class="cover"><img src="/public/images/paypal-privacy/hero.webp" alt=""></div>
+    </div>
+  </template>
+
+  <section class="opt o3">
+    <div class="opt__head"><span class="opt__n">01</span><h2 class="opt__name">Project <em>hue</em></h2><span class="rec">Recommended</span></div>
+    <p class="opt__why"><b>The tag takes the company's own hue</b>, the same sky / lilac / butter that sits behind its cover. Colour stays with the work (rule 2), so no new colour enters the system, and the top of the page visually ties to the cover below it. Ink on every hue is 10:1 or better.</p>
+    <div class="pair" data-slot></div>
+    <div class="hues">
+      <div class="hero light" style="--hue: var(--hue-okta)"><div class="eyebrow"><p class="company">Okta</p><ul class="tags"><li class="tag">Identity</li><li class="tag">Product Strategy</li><li class="tag">Design Systems</li></ul></div><h2 class="title">Rebuilding IAM for enterprise admins</h2></div>
+      <div class="hero light" style="--hue: var(--hue-paypal)"><div class="eyebrow"><p class="company">PayPal</p><ul class="tags"><li class="tag">Fintech</li><li class="tag">Product Strategy</li></ul></div><h2 class="title">A debit card people finish signing up for</h2></div>
+      <div class="hero light" style="--hue: var(--hue-walmart)"><div class="eyebrow"><p class="company">Walmart Labs</p><ul class="tags"><li class="tag">Retail</li><li class="tag">0→1</li><li class="tag">Research</li></ul></div><h2 class="title">Scan &amp; Go, in-store</h2></div>
+    </div>
+  </section>
+
+  <section class="opt o1">
+    <div class="opt__head"><span class="opt__n">02</span><h2 class="opt__name">Hair<em>line</em></h2></div>
+    <p class="opt__why"><b>Ink text in a 1px outline.</b> The most neutral option: it reads as metadata, matches the site's hairline dividers, and re-inks in dark mode on its own.</p>
+    <div class="pair" data-slot></div>
+  </section>
+
+  <section class="opt o2">
+    <div class="opt__head"><span class="opt__n">03</span><h2 class="opt__name">Quiet <em>chip</em></h2></div>
+    <p class="opt__why"><b>Grey text on the raised surface</b> (<code>--paper-2</code>, the image-mount grey). Softest of the six: it steps back so the title leads.</p>
+    <div class="pair" data-slot></div>
+  </section>
+
+  <section class="opt o4">
+    <div class="opt__head"><span class="opt__n">04</span><h2 class="opt__name">Just <em>type</em></h2></div>
+    <p class="opt__why"><b>No chip at all:</b> grey mono labels in faint brackets, as in carlthomasiv.com's row, the reference the case type already follows. Most typographic, least UI.</p>
+    <div class="pair" data-slot></div>
+  </section>
+
+  <section class="opt o6">
+    <div class="opt__head"><span class="opt__n">05</span><h2 class="opt__name">Clay <em>dot</em></h2></div>
+    <p class="opt__why"><b>Grey labels, each led by a small terracotta dot.</b> The accent stays a mark, never text, so it's within the "no clay on text" rule, and it echoes Moss's dot.</p>
+    <div class="pair" data-slot></div>
+  </section>
+
+  <section class="opt o5">
+    <div class="opt__head"><span class="opt__n">06</span><h2 class="opt__name">Ink <em>chip</em></h2></div>
+    <p class="opt__why"><b>Paper text on solid ink</b>, inverting in dark mode. Keeps the lime's weight without the colour, though three dark blocks may outshout the company name.</p>
+    <div class="pair" data-slot></div>
+  </section>
+</div>
+<script>
+  const tpl = document.getElementById('hero');
+  document.querySelectorAll('[data-slot]').forEach((slot) => {
+    for (const mode of ['light', 'dark']) {
+      const wrap = document.createElement('div');
+      const hero = tpl.content.firstElementChild.cloneNode(true);
+      hero.classList.add(mode);
+      hero.style.setProperty('--hue', 'var(--hue-paypal)');
+      wrap.append(hero);
+      const label = document.createElement('p');
+      label.className = 'mode';
+      label.textContent = mode;
+      wrap.append(label);
+      slot.append(wrap);
+    }
+  });
+</script>
+</body>
+</html>

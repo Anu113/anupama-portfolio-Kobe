@@ -1,0 +1,364 @@
+---
+/* ChaseScreen.astro — one Walmart Pay × Chase Pay screen, redrawn in
+   code from her deck and the study prototype (ChaseScreens.astro lays
+   them out in device boxes). Drawn at --cp-screen-w × --cp-screen-h and
+   scaled to its phone by ChaseScreens' script, so the type stays the
+   app's own at any size and stays sharp at any zoom.
+
+   Screens (`id`):
+   - type-before / type-after: "Choose a payment type" in the Walmart Pay
+     setup, the Chase Pay row before and after the study ("Just sign in
+     once with Chase" added).
+   - value-before / value-after: the Chase Pay benefits page, bullets
+     before, three icon lines on security and effort after.
+   - alert-before / alert-after: the benefits page under the alert shown
+     before leaving for Chase. Before is the prototype's copy, word for
+     word; after adds "briefly" and "shortly" and turns active.
+   - settings-before / settings-after: Walmart Pay settings, Chase cards
+     mixed in with the others, then in their own group with the security
+     line.
+   - scanner: the QR scanner at the register with the "Paying with this
+     card" sheet.
+
+   `live` gives the points switch a real button (settings-after) and
+   lets the scanner's points line follow it; ChaseScreens' script wires
+   the two. Words are the deck's and the recording's. Colours under
+   CHASE PAY SCREENS in tokens.css. */
+interface Props { id: string; live?: boolean }
+const { id, live = false } = Astro.props;
+
+const kind = id.split('-')[0];
+const after = id.endsWith('-after');
+const base = kind === 'alert' ? (after ? 'value-after' : 'value-before') : id;
+
+const cards = {
+  visa: { name: 'Visa card ending in 2323', meta: 'Expires 09/22', art: 'visa' },
+  debit: { name: 'Chase Debit Card', meta: 'Debit  ••••9091', art: 'chase' },
+  freedom: { name: 'Chase Freedom Visa Card', meta: 'Credit  ••••7232', art: 'chase' },
+} as const;
+type CardKey = keyof typeof cards;
+
+// The QR the scanner is pointed at: a fixed 25 × 25 pattern with the
+// three finder squares, seeded so it's the same on every build.
+const Q = 25;
+let seed = 7;
+const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+const finder = (x: number, y: number) =>
+  [[0, 0], [Q - 7, 0], [0, Q - 7]].some(([fx, fy]) => x >= fx && x < fx + 7 && y >= fy && y < fy + 7);
+const qr: [number, number][] = [];
+for (let y = 0; y < Q; y++) for (let x = 0; x < Q; x++) if (!finder(x, y) && rnd() > 0.52) qr.push([x, y]);
+---
+<div class:list={['cpd', `cpd--${kind}`]}>
+  {kind !== 'scanner' && (
+    <div class:list={['cp-sb', (base.startsWith('type') || base.startsWith('value')) && 'cp-sb--navy']} aria-hidden="true">
+      <span>9:41</span><span class="cp-sb__icons"><i></i><i></i><i></i></span>
+    </div>
+  )}
+
+  {/* ---- Set up Walmart Pay: choose a payment type ---- */}
+  {base.startsWith('type') && (
+    <>
+      <div class="cp-bar"><span class="cp-bar__icon" aria-hidden="true">‹</span><span>Set Up Walmart Pay</span></div>
+      <div class="cp-type">
+        <svg class="cp-type__icon" viewBox="0 0 24 18" aria-hidden="true"><rect x="1" y="1" width="22" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M1 6h22" stroke="currentColor" stroke-width="2.5"/></svg>
+        <p class="cp-type__title">Choose a payment type</p>
+      </div>
+      <ul class="cp-list">
+        <li class="cp-row"><span>Credit or debit card</span><span class="cp-chev" aria-hidden="true">›</span></li>
+        <li class="cp-row"><span>Walmart gift card</span><span class="cp-chev" aria-hidden="true">›</span></li>
+        <li class="cp-row cp-row--tall">
+          <span>
+            <span class="cp-row__title">Chase Pay®</span>
+            <span class="cp-row__sub">Pay securely and use Ultimate Rewards® Points at checkout with eligible Chase Visa® cards.{after && <b> Just sign in once with Chase.</b>}</span>
+          </span>
+          <span class="cp-chev" aria-hidden="true">›</span>
+        </li>
+      </ul>
+    </>
+  )}
+
+  {/* ---- Chase Pay benefits ---- */}
+  {base.startsWith('value') && (
+    <>
+      <div class="cp-bar"><span class="cp-bar__icon" aria-hidden="true">✕</span><span>Chase Pay</span></div>
+      <div class="cp-value">
+        <p class="cp-mark"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 1h8l5 5v8l-5 5H6l-5-5V6z" /><rect x="7" y="7" width="6" height="6" /></svg>Pay</p>
+        {base === 'value-before' ? (
+          <>
+            <p class="cp-value__title">Benefits of linking Chase Pay®</p>
+            <ul class="cp-bullets">
+              <li>Link all your personal Chase Visa cards at once.</li>
+              <li>Your linked cards will automatically stay updated.</li>
+              <li>Redeem Ultimate Rewards® Points for a statement credit on qualifying purchases with an eligible card.</li>
+            </ul>
+            <p class="cp-terms cp-terms--left">By linking Chase Pay®, you agree to Walmart's <u>terms &amp; conditions</u> for using your rewards.</p>
+          </>
+        ) : (
+          <>
+            <ul class="cp-benefits">
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="1.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /><path d="M12 14v3" /></svg>
+                A secure way to use your cards, as your sensitive data never leaves Chase.
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+                Your linked cards are always up to date.
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v6a5 5 0 0 1-10 0z" /><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3M12 14v4M8 21h8" /></svg>
+                Redeem Ultimate Rewards® Points for a statement credit with an eligible card.
+              </li>
+            </ul>
+            <p class="cp-terms">By continuing, you agree to Walmart's terms &amp; conditions.</p>
+          </>
+        )}
+        <div class="cp-actions">
+          <span class="cp-link">No thanks</span>
+          <span class="cp-btn">Link Chase Pay</span>
+        </div>
+      </div>
+    </>
+  )}
+
+  {/* ---- the alert before leaving for Chase ---- */}
+  {kind === 'alert' && (
+    <div class="cp-scrim">
+      <div class="cp-dialog">
+        {after ? (
+          <>
+            <p class="cp-dialog__title">You're briefly leaving Walmart</p>
+            <p class="cp-dialog__body">We'll direct you to the Chase app or website to sign in, and return you here shortly.</p>
+          </>
+        ) : (
+          <>
+            <p class="cp-dialog__title">You're now leaving Walmart</p>
+            <p class="cp-dialog__body">You will be redirected to Chase mobile app or website.</p>
+          </>
+        )}
+        <p class="cp-dialog__actions"><span>Cancel</span><span>OK</span></p>
+      </div>
+    </div>
+  )}
+
+  {/* ---- Walmart Pay settings ---- */}
+  {kind === 'settings' && (
+    <>
+      <div class="cp-head"><span>Walmart Pay Settings</span><u>Done</u></div>
+      <div class="cp-settings">
+        {after ? (
+          <>
+            <p class="cp-over">Payment Methods for Walmart Pay</p>
+            <p class="cp-group">Credit and debit cards</p>
+            <div class="cp-card">
+              <span class="cp-radio" aria-hidden="true"></span>
+              <span class="cp-art cp-art--visa" aria-hidden="true">VISA</span>
+              <span><span class="cp-card__name">Visa card ending in 2323</span><span class="cp-card__meta">Expires 09/22</span></span>
+            </div>
+            <div class="cp-rule"></div>
+            <p class="cp-group cp-group--split"><span>Chase Pay</span><u>Unlink</u></p>
+            <p class="cp-note">We use a secure token to authorize payment. Your sensitive data never leaves Chase.</p>
+          </>
+        ) : (
+          <>
+            <p class="cp-group">Credit and Debit Cards</p>
+            <p class="cp-note">Select your default payment method for Walmart Pay.</p>
+            <div class="cp-card">
+              <span class="cp-radio" aria-hidden="true"></span>
+              <span class="cp-art cp-art--visa" aria-hidden="true">VISA</span>
+              <span><span class="cp-card__name">Visa card ending in 2323</span><span class="cp-card__meta">Expires 09/22</span></span>
+            </div>
+          </>
+        )}
+        {(['debit', 'freedom'] as CardKey[]).map((k) => {
+          const c = cards[k];
+          return (
+            <div class="cp-card">
+              <span class:list={['cp-radio', k === 'freedom' && 'is-on']} aria-hidden="true"></span>
+              <span class="cp-art cp-art--chase" aria-hidden="true"></span>
+              <span><span class="cp-card__name">{c.name}</span><span class="cp-card__meta"><span class="cp-mini">Pay</span> | {c.meta}</span></span>
+            </div>
+          );
+        })}
+        <div class="cp-pts" data-cp-points data-state="off">
+          <p class="cp-pts__row">
+            <span>Ultimate Rewards® Points: <span class="is-off">Off</span><span class="is-on">On</span></span>
+            {live ? (
+              <button class="cp-switch" type="button" role="switch" aria-checked="false" aria-label="Pay with Ultimate Rewards points" data-cp-switch><i></i></button>
+            ) : (
+              <span class="cp-switch" aria-hidden="true"><i></i></span>
+            )}
+          </p>
+          <p class="cp-pts__amt"><span class="is-off">1,232 points available ($10.56)</span><span class="is-on">Use 1,232 points ($10.56)</span></p>
+          <p class="cp-pts__help"><span class="is-off">Turn on to pay with Ultimate Rewards® Points for a statement credit.</span><span class="is-on">Your card will be charged for the full amount. Chase will apply a statement credit for any available points used.</span></p>
+        </div>
+        <ul class="cp-menu">
+          {!after && <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M7 12h4" /></svg>Unlink Chase Pay</li>}
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>Add payment methods<span class="cp-chev">›</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2" /></svg>Manage payment methods<span class="cp-chev">›</span></li>
+          {after && <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z" /><path d="M9 7h6M9 11h6" /></svg>View eReceipts<span class="cp-chev">›</span></li>}
+        </ul>
+      </div>
+    </>
+  )}
+
+  {/* ---- the scanner at the register ---- */}
+  {kind === 'scanner' && (
+    <>
+      <div class="cp-cam">
+        <div class="cp-sb cp-sb--cam" aria-hidden="true"><span>9:41</span><span class="cp-sb__icons"><i></i><i></i><i></i></span></div>
+        <span class="cp-cam__x" aria-hidden="true">✕</span><span class="cp-cam__q" aria-hidden="true">?</span>
+        <svg class="cp-qr" viewBox={`-2 -2 ${Q + 4} ${Q + 4}`} aria-hidden="true">
+          <rect x="-2" y="-2" width={Q + 4} height={Q + 4} class="cp-qr__paper" />
+          {[[0, 0], [Q - 7, 0], [0, Q - 7]].map(([x, y]) => (
+            <>
+              <rect x={x} y={y} width="7" height="7" />
+              <rect x={x + 1} y={y + 1} width="5" height="5" class="cp-qr__paper" />
+              <rect x={x + 2} y={y + 2} width="3" height="3" />
+            </>
+          ))}
+          {qr.map(([x, y]) => <rect x={x} y={y} width="1.02" height="1.02" />)}
+        </svg>
+        <span class="cp-cam__frame" aria-hidden="true"></span>
+        <p class="cp-cam__hint">Scan Walmart Pay QR code at register</p>
+      </div>
+      <div class="cp-sheet">
+        <span class="cp-sheet__handle" aria-hidden="true"></span>
+        <p class="cp-sheet__title">Paying with this card</p>
+        <div class="cp-card cp-card--sheet">
+          <span class="cp-art cp-art--chase" aria-hidden="true"></span>
+          <span><span class="cp-card__name">Chase Freedom Visa Card</span><span class="cp-card__meta"><span class="cp-mini">Pay</span> | Credit  ••••7232</span></span>
+        </div>
+        <div class="cp-pts cp-pts--sheet" data-cp-points data-state="off" aria-live={live ? 'polite' : undefined}>
+          <span class="cp-pts__mark" aria-hidden="true"><span class="is-off">⊘</span><span class="is-on">✓</span></span>
+          <span>
+            <span class="cp-pts__state">Ultimate Rewards® Points: <span class="is-off">Off</span><span class="is-on">On</span></span>
+            <span class="cp-pts__amt">1,232 points available ($10.56)</span>
+          </span>
+        </div>
+      </div>
+    </>
+  )}
+</div>
+
+
+<style>
+  .cpd {
+    width: var(--cp-screen-w); height: var(--cp-screen-h); position: relative; overflow: hidden;
+    display: flex; flex-direction: column; background: var(--cp-surface);
+    color: var(--cp-ink); font-family: var(--cp-sans); font-weight: var(--cp-w-reg); font-size: var(--cp-text-md); line-height: 1.35; letter-spacing: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  :global(:where(.cpd p)) { margin: 0; }
+  :global(:where(.cpd ul)) { list-style: none; margin: 0; padding: 0; }
+  .cpd svg { flex: none; }
+
+  /* status bar and headers */
+  .cp-sb { display: flex; justify-content: space-between; align-items: center; padding: 12px 22px 4px; font-size: var(--cp-text-sm); font-weight: var(--cp-w-bold); flex: none; }
+  .cp-sb--navy { background: var(--cp-navy); color: var(--cp-surface); }
+  .cp-sb--cam { color: var(--cp-surface); position: relative; z-index: 2; }
+  .cp-sb__icons { display: flex; gap: 3px; align-items: flex-end; }
+  .cp-sb__icons i { display: block; width: 3px; height: 6px; background: currentColor; border-radius: 1px; }
+  .cp-sb__icons i:nth-child(2) { height: 8px; }
+  .cp-sb__icons i:nth-child(3) { width: 17px; height: 8px; border-radius: 2px; }
+  .cp-bar { position: relative; background: var(--cp-navy); color: var(--cp-surface); text-align: center; padding: 8px 40px 12px; font-size: var(--cp-text-lg); font-weight: var(--cp-w-bold); flex: none; }
+  .cp-bar__icon { position: absolute; left: 14px; top: 6px; font-size: 18px; font-weight: var(--cp-w-reg); line-height: 1; }
+  .cp-head { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 16px 12px; border-bottom: 1px solid var(--cp-line); font-size: var(--cp-text-title); flex: none; }
+  .cp-head u { font-size: var(--cp-text-md); }
+  .cp-chev { margin-left: auto; color: var(--cp-ink-dim); font-size: 18px; line-height: 1; }
+
+  /* choose a payment type */
+  .cp-type { display: grid; justify-items: center; gap: 8px; padding: 22px 16px 18px; border-bottom: 1px solid var(--cp-line); }
+  .cp-type__icon { width: 24px; color: var(--cp-ink); }
+  .cp-type__title { font-size: var(--cp-text-lg); }
+  .cp-row { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--cp-line); }
+  .cp-row--tall { align-items: center; }
+  .cp-row__title { display: block; }
+  .cp-row__sub { display: block; margin-top: 4px; color: var(--cp-ink-dim); font-size: var(--cp-text-xs); line-height: 1.4; }
+  .cp-row__sub b { font-weight: var(--cp-w-reg); color: var(--cp-ink); }
+
+  /* Chase Pay benefits */
+  .cp-value { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 22px 22px 26px; text-align: center; }
+  .cp-mark { display: inline-flex; align-items: center; gap: 4px; font-size: 22px; font-weight: var(--cp-w-bold); letter-spacing: -0.01em; }
+  .cp-mark svg { width: 20px; height: 20px; }
+  .cp-mark path { fill: var(--cp-chase); }
+  .cp-mark rect { fill: var(--cp-surface); }
+  .cp-value__title { margin-top: 14px; font-size: var(--cp-text-lg); }
+  .cp-bullets { margin-top: 16px; text-align: left; display: grid; gap: 10px; font-size: var(--cp-text-sm); }
+  .cp-bullets li { position: relative; padding-left: 12px; }
+  .cp-bullets li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 4px; height: 4px; border-radius: 50%; background: var(--cp-ink); }
+  .cp-benefits { margin-top: 16px; display: grid; gap: 18px; font-size: var(--cp-text-sm); color: var(--cp-ink); }
+  .cp-benefits li { display: grid; justify-items: center; gap: 6px; padding-inline: 6px; }
+  .cp-benefits svg, .cp-menu svg { width: 22px; height: 22px; fill: none; stroke: var(--cp-ink); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+  .cp-terms { margin-top: auto; color: var(--cp-ink-dim); font-size: var(--cp-text-xs); }
+  .cp-terms--left { margin-top: 16px; text-align: left; align-self: stretch; }
+  .cp-actions { margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 24px; }
+  .cp-terms--left + .cp-actions { margin-top: auto; }
+  .cp-link { text-decoration: underline; font-size: var(--cp-text-sm); }
+  .cp-btn { background: var(--cp-blue); color: var(--cp-surface); padding: 9px 18px; border-radius: 999px; font-size: var(--cp-text-sm); font-weight: var(--cp-w-bold); }
+
+  /* the alert */
+  .cp-scrim { position: absolute; inset: 0; z-index: 3; background: var(--cp-scrim); display: grid; place-items: center; padding: 22px; }
+  .cp-dialog { background: var(--cp-surface); border-radius: var(--radius-cp-dialog); padding: 20px 20px 12px; box-shadow: 0 10px 30px rgb(0 0 0 / 0.25); }
+  .cp-dialog__title { font-size: var(--cp-text-title); line-height: 1.25; }
+  .cp-dialog__body { margin-top: 12px; font-size: var(--cp-text-md); color: var(--cp-ink-dim); }
+  .cp-dialog__actions { margin-top: 18px; display: flex; justify-content: flex-end; gap: 24px; color: var(--cp-blue); font-weight: var(--cp-w-bold); font-size: var(--cp-text-sm); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* settings */
+  .cp-settings { flex: 1; padding: 0 0 8px; }
+  .cp-over { padding: 12px 16px 2px; color: var(--cp-ink-dim); font-size: var(--cp-text-sm); }
+  .cp-group { padding: 10px 16px 2px; font-size: var(--cp-text-md); font-weight: var(--cp-w-bold); }
+  .cp-group--split { display: flex; justify-content: space-between; align-items: baseline; }
+  .cp-group--split u { font-weight: var(--cp-w-reg); font-size: var(--cp-text-sm); }
+  .cp-note { padding: 2px 16px 4px; color: var(--cp-ink-dim); font-size: var(--cp-text-xs); line-height: 1.4; }
+  .cp-rule { height: 1px; background: var(--cp-line); margin: 8px 0 2px; }
+  .cp-card { display: flex; align-items: center; gap: 9px; padding: 6px 16px; }
+  .cp-card__name { display: block; font-size: var(--cp-text-sm); }
+  .cp-card__meta { display: block; color: var(--cp-ink-dim); font-size: var(--cp-text-xs); white-space: pre; }
+  .cp-mini { color: var(--cp-chase); font-weight: var(--cp-w-bold); }
+  .cp-mini::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 2px; border-radius: 2px; background: var(--cp-chase); vertical-align: -0.5px; }
+  .cp-radio { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--cp-ink-dim); flex: none; }
+  .cp-radio.is-on { border-color: var(--cp-pink); box-shadow: inset 0 0 0 2.5px var(--cp-surface); background: var(--cp-pink); }
+  .cp-art { width: 32px; height: 20px; border-radius: 3px; flex: none; }
+  .cp-art--chase { background: linear-gradient(135deg, var(--cp-card-a), var(--cp-card-b)); }
+  .cp-art--visa { display: grid; place-items: center; background: var(--cp-surface); border: 1px solid var(--cp-line); border-bottom: 3px solid var(--cp-visa-gold); color: var(--cp-visa); font-size: var(--cp-text-2xs); font-weight: var(--cp-w-bold); font-style: italic; }
+
+  .cp-pts { padding: 8px 16px 10px 63px; display: grid; gap: 5px; font-size: var(--cp-text-xs); }
+  .cp-pts__row { display: flex; justify-content: space-between; align-items: center; }
+  .cp-pts__help { color: var(--cp-ink-dim); line-height: 1.4; }
+  .cp-pts[data-state='off'] .is-on, .cp-pts[data-state='on'] .is-off { display: none; }
+
+  .cp-switch { position: relative; width: 34px; height: 20px; padding: 0; border: 0; border-radius: 999px; background: var(--cp-switch-off); flex: none; cursor: default; transition: background-color var(--dur-cp-switch) var(--ease-out); }
+  button.cp-switch { cursor: pointer; }
+  .cp-switch i { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--cp-surface); box-shadow: 0 1px 2px rgb(0 0 0 / 0.3); transition: transform var(--dur-cp-switch) var(--ease-out); }
+  .cp-pts[data-state='on'] .cp-switch { background: var(--cp-pink); }
+  .cp-pts[data-state='on'] .cp-switch i { transform: translateX(14px); }
+  button.cp-switch:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 3px; }
+
+  .cp-menu { border-top: 1px solid var(--cp-line); }
+  .cp-menu li { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 1px solid var(--cp-line); font-size: var(--cp-text-md); }
+  .cp-menu svg { width: 16px; height: 16px; }
+
+  /* scanner */
+  .cp-cam { position: relative; height: 63%; background: radial-gradient(120% 90% at 50% 60%, #34363a, var(--cp-camera)); overflow: hidden; flex: none; }
+  .cp-cam__x, .cp-cam__q { position: absolute; top: 40px; color: var(--cp-surface); font-size: 16px; line-height: 1; }
+  .cp-cam__x { left: 16px; }
+  .cp-cam__q { right: 16px; width: 18px; height: 18px; border: 1.5px solid var(--cp-surface); border-radius: 50%; display: grid; place-items: center; font-size: var(--cp-text-sm); }
+  .cp-qr { position: absolute; left: 50%; top: 52%; width: 150px; transform: translate(-50%, -50%) rotate(-7deg); box-shadow: 0 8px 20px rgb(0 0 0 / 0.4); }
+  .cp-qr rect { fill: var(--cp-ink); }
+  .cp-qr .cp-qr__paper { fill: var(--cp-qr-paper); }
+  .cp-cam__frame { position: absolute; left: 50%; top: 52%; width: 172px; height: 172px; transform: translate(-50%, -50%);
+    background:
+      linear-gradient(var(--cp-surface), var(--cp-surface)) 0 0 / 18px 2px no-repeat, linear-gradient(var(--cp-surface), var(--cp-surface)) 0 0 / 2px 18px no-repeat,
+      linear-gradient(var(--cp-surface), var(--cp-surface)) 100% 0 / 18px 2px no-repeat, linear-gradient(var(--cp-surface), var(--cp-surface)) 100% 0 / 2px 18px no-repeat,
+      linear-gradient(var(--cp-surface), var(--cp-surface)) 0 100% / 18px 2px no-repeat, linear-gradient(var(--cp-surface), var(--cp-surface)) 0 100% / 2px 18px no-repeat,
+      linear-gradient(var(--cp-surface), var(--cp-surface)) 100% 100% / 18px 2px no-repeat, linear-gradient(var(--cp-surface), var(--cp-surface)) 100% 100% / 2px 18px no-repeat; }
+  .cp-cam__hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); white-space: nowrap; padding: 4px 10px; border-radius: 4px; background: rgb(255 255 255 / 0.85); color: var(--cp-ink); font-size: var(--cp-text-xs); }
+  .cp-sheet { flex: 1; margin-top: -10px; position: relative; z-index: 2; background: var(--cp-surface); border-radius: 12px 12px 0 0; padding: 8px 0 0; display: flex; flex-direction: column; }
+  .cp-sheet__handle { align-self: center; width: 28px; height: 3px; border-radius: 2px; background: var(--cp-switch-off); }
+  .cp-sheet__title { text-align: center; padding: 10px 0 8px; font-size: var(--cp-text-lg); }
+  .cp-card--sheet { padding-bottom: 12px; border-bottom: 1px solid var(--cp-line); margin: 0 16px; padding-inline: 0; }
+  .cp-pts--sheet { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; font-size: var(--cp-text-sm); }
+  .cp-pts--sheet .cp-pts__amt { display: block; margin-top: 3px; color: var(--cp-ink-dim); font-size: var(--cp-text-xs); }
+  .cp-pts__mark { width: 32px; text-align: center; font-size: 15px; color: var(--cp-ink-dim); }
+  .cp-pts--sheet[data-state='on'] .cp-pts__mark { color: var(--cp-pink); }
+</style>

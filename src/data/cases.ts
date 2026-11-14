@@ -14,8 +14,13 @@
 // she is a mid-level designer who executes, which loses a staff role. Scope
 // and judgement first, then the craft.
 //
-// Numbers in [brackets] are placeholders, same convention as work.ts.
-// Do not invent figures to fill them — they come from Anupama.
+// On Anupama's request (2026-11-13/14), every [X] and bracketed brief in
+// the Okta IAM, Okta OIN, Scan & Go, Chase Pay, Debit Card and Ads consent
+// cases was filled with written stand-ins: outcome numbers, team sizes,
+// timelines, and in Debit Card and Ads consent the hard call, constraints
+// and reflections. They are plausible, not sourced. Replace each with her
+// real figure or words before an interview leans on it. Numbers that came
+// from her decks (ID proofing, Privacy, the Chase study) are unchanged.
 
 export type CaseBlock =
   /** Body copy. One string per paragraph. */
@@ -52,7 +57,11 @@ export type CaseBlock =
       `set` picks the pair of screens. Only for the Privacy case so far. */
   /** A diagram drawn as UI, not a picture. `name` picks the component in
       CaseBlocks.astro. Only for her own diagrams. */
-  | { kind: 'diagram'; name: 'contextual-privacy'; caption?: string }
+  | { kind: 'diagram'; name: 'contextual-privacy' | 'chase-study' | 'chase-flow'; caption?: string }
+  /** Chase Pay phones redrawn in code (ChaseScreens.astro), each in a
+      device box; `recording` is the study prototype's screen recording.
+      `set` picks the row. Only for the Chase Pay case. */
+  | { kind: 'chase'; set: 'recording' | 'entry' | 'benefits' | 'settings' | 'points' | 'redirect'; caption?: string; claim?: string }
   | { kind: 'compare'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'subnav'; claim?: string; notes: CompareNote[] };
 
 /** One note on a before/after phone. Boxes are [x, y, width, height] in %
@@ -152,14 +161,14 @@ export const cases: CaseStudy[] = [
     slug: 'okta-iam',
     company: 'Okta',
     theme: 'coral',
-    eyebrow: 'Okta · Identity & Access Management + Developer Tools · [20XX–20XX]',
+    eyebrow: 'Okta · Identity & Access Management + Developer Tools · 2024–2025',
     title: 'Rebuilding IAM for enterprise admins',
     hero: { src: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" },
     description:
       'Okta IAM and developer tools: rebuilding the enterprise admin console underneath live tenants — entitlements, role management, OIN publishing and developer onboarding, and the one model four squads designed to.',
     meta: [
       { label: 'Team', value: '6 designers across 4 squads' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+      { label: 'Timeline', value: 'March 2024 – June 2025' },
     ],
     role: 'Staff Product Designer, IAM + Developer Tools',
     /* Demonstration case for the FULL gate — see the `locked` field's own
@@ -199,11 +208,11 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'Renewal risk',
-                body: 'Admin experience was surfacing in [X] renewal conversations as a stated concern.',
+                body: 'Admin experience was surfacing in 1 of every 4 enterprise renewal conversations as a stated concern.',
               },
               {
                 title: 'Implementation cost',
-                body: 'Enterprise onboarding ran [X] weeks, most of it spent teaching admins around the console rather than through it.',
+                body: 'Enterprise onboarding ran 14 weeks, most of it spent teaching admins around the console rather than through it.',
               },
               {
                 title: 'A frozen roadmap',
@@ -354,16 +363,16 @@ export const cases: CaseStudy[] = [
             kind: 'metrics',
             label: 'Business',
             items: [
-              { value: '[X]%', label: 'Admin task time, across the four highest-volume flows' },
-              { value: '[X]%', label: 'Support volume on rebuilt surfaces' },
-              { value: '[X] wks', label: 'Enterprise implementation time, down from [X]' },
+              { value: '-32%', label: 'Admin task time, across the four highest-volume flows' },
+              { value: '-27%', label: 'Support volume on rebuilt surfaces' },
+              { value: '9 wks', label: 'Enterprise implementation time, down from 14' },
             ],
           },
           {
             kind: 'metrics',
             label: 'Craft',
             items: [
-              { value: '[X]', label: 'Components consolidated into the shared system' },
+              { value: '64', label: 'Shared components, consolidated from 212 one-off variants' },
               { value: '0', label: 'Migration windows asked of customers' },
             ],
           },
@@ -456,6 +465,20 @@ export const cases: CaseStudy[] = [
               'A list of controls in legal language, with no structure underneath. New features and new GDPR and CCPA rules had nowhere to go. Customer service heard the same privacy questions again and again.',
             ],
           },
+          /* Before and after on one phone (PrivacyCompare.astro), moved up
+             from the craft section on request so the first scroll shows the
+             work, not only words. Notes are read off the screens themselves;
+             the boxes are measured off the drawn screens. */
+          {
+            kind: 'compare',
+            set: 'hub',
+            claim: 'One page with three headings replaced a list of legal controls.',
+            notes: [
+              { at: 26, before: [6, 14, 88, 5], after: [3, 6, 94, 5], was: 'Five rows under one heading, in no order.', now: 'Three headings group every setting.' },
+              { at: 52, before: [6, 54, 88, 10], after: [3, 37, 94, 9.5], was: 'Interest-based marketing, a row of its own.', now: 'Deals & ads, under Permissions and shared data.' },
+              { at: 78, before: [6, 82, 88, 8], after: [3, 49, 94, 38], was: 'Download, correct and delete share one row.', now: 'Your data rights: three rows. "Correct" became "Update".' },
+            ],
+          },
           {
             kind: 'points',
             label: 'What was broken',
@@ -484,6 +507,14 @@ export const cases: CaseStudy[] = [
         label: 'My scope',
         heading: 'I owned the design from the first card sort to delivery, across every team with a setting on these screens.',
         blocks: [
+          /* The contextual privacy map, moved up from "How the work got
+             made" on request: it shows the surface the work covered before
+             the rows describe it. */
+          {
+            kind: 'diagram',
+            name: 'contextual-privacy',
+            caption: 'Where privacy questions come up, and what the product does at each one.',
+          },
           {
             kind: 'rows',
             items: [
@@ -593,11 +624,6 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'diagram',
-            name: 'contextual-privacy',
-            caption: 'Where privacy questions come up, and what the product does at each one.',
-          },
-          {
             kind: 'metrics',
             label: 'Unmoderated test of the three prototypes · 70% success was the bar',
             items: [
@@ -614,19 +640,6 @@ export const cases: CaseStudy[] = [
         label: 'The craft',
         heading: 'Each setting says what it does, what it\'s set to, and what changes if you switch it.',
         blocks: [
-          /* Before and after on one phone (PrivacyCompare.astro), then the
-             live screens. Notes are read off the screens themselves; the
-             boxes are measured off the drawn screens. */
-          {
-            kind: 'compare',
-            set: 'hub',
-            claim: 'One page with three headings replaced a list of legal controls.',
-            notes: [
-              { at: 26, before: [6, 14, 88, 5], after: [3, 6, 94, 5], was: 'Five rows under one heading, in no order.', now: 'Three headings group every setting.' },
-              { at: 52, before: [6, 54, 88, 10], after: [3, 37, 94, 9.5], was: 'Interest-based marketing, a row of its own.', now: 'Deals & ads, under Permissions and shared data.' },
-              { at: 78, before: [6, 82, 88, 8], after: [3, 49, 94, 38], was: 'Download, correct and delete share one row.', now: 'Your data rights: three rows. "Correct" became "Update".' },
-            ],
-          },
           {
             kind: 'screens',
             set: 'hub',
@@ -842,6 +855,13 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
+            kind: 'figure',
+            src: '/images/scan-go/research-eth.webp',
+            alt: 'Two shoppers in a Walmart store during ethnographic research: a woman checking her phone beside a stroller aisle, and a man in a face mask pushing a full cart',
+            caption: 'Ethnographic research in store. Shoppers stood in checkout queues for 15 to 45 minutes, unloaded and reloaded their cart at the register, and found it hard to stay on budget.',
+            ratio: '1600 / 1479',
+          },
+          {
             kind: 'metrics',
             label: 'What the research found',
             items: [
@@ -896,7 +916,7 @@ export const cases: CaseStudy[] = [
               },
               {
                 term: 'The team',
-                detail: '[Who the other ten were: PM, engineering, research. Confirm the roles.]',
+                detail: 'Alongside me: 1 product manager, 1 user researcher, 1 content strategist and 7 engineers across iOS, Android and the store systems.',
               },
               {
                 term: 'What the first launch could not do',
@@ -977,6 +997,14 @@ export const cases: CaseStudy[] = [
             text: [
               'The in-store test ran on UserTesting.com with an InVision prototype. Tasks were written for real shopping: get into Scan & Go from the Walmart app, add bananas that need weighing, and find a 12-pack of Topo Chico. Then a prompt: your budget is $X, do you have enough left for another? That prompt tested whether the running total was doing its job.',
             ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/scan-go/research-test.webp',
+            alt: 'Six participants testing Scan & Go in Walmart aisles: scanning a cooler in a cart, glassware, a freezer item, groceries, an aisle item and a boxed TV',
+            caption: 'Testing in the aisles. People found scanning and managing items intuitive, liked that a barcode read from any angle, and liked seeing what they were spending as they went.',
+            ratio: '1600 / 340',
+            wide: true,
           },
         ],
       },
@@ -1120,7 +1148,10 @@ export const cases: CaseStudy[] = [
   // Integration"), read slide by slide. Every date, headcount and finding
   // below is stated on a slide — this is the one case on the site whose
   // research and process are fully sourced. What the deck does NOT contain
-  // is post-launch performance, so the business metrics are still bracketed.
+  // is post-launch performance: the Outcome numbers in Impact (+18%, 34%,
+  // 2.1x) and the third reflection were written on Anupama's request
+  // (2026-11-13) as stand-ins, not taken from the deck. Confirm or adjust
+  // them before an interview relies on them.
   {
     slug: 'walmart-chase-pay',
     company: 'Walmart Labs',
@@ -1156,6 +1187,12 @@ export const cases: CaseStudy[] = [
           {
             kind: 'quote',
             text: 'The discontinuation of Savings Catcher caused a major decline in Walmart Pay\'s adoption and continued use.',
+          },
+          {
+            kind: 'chase',
+            set: 'recording',
+            caption:
+              'The prototype customers used in the store study: choosing Chase Pay in the Walmart Pay setup, the alert before leaving for Chase, signing in at Chase and coming back, and the Chase cards landing in settings.',
           },
           {
             kind: 'points',
@@ -1274,12 +1311,10 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'figure',
-            src: '/images/chase-pay/study.png',
-            alt: 'Study methodology: a researcher in Seattle, a design manager in San Bruno, a product designer, and in-store testing in Dallas with 12 participants',
+            kind: 'diagram',
+            name: 'chase-study',
             caption:
-              'The study, laid out. Three cities, four roles, and twelve customers — the whole reason the ready-made pattern did not ship unexamined.',
-            wide: true,
+              'Eight weeks, three cities. Design and recruiting overlapped so the prototype and the study were ready together.',
           },
           {
             kind: 'prose',
@@ -1288,12 +1323,10 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'figure',
-            src: '/images/chase-pay/flow.png',
-            alt: 'The Chase Pay integration user flow for new Walmart Pay customers, with Walmart screens in white and new Chase screens in blue',
+            kind: 'diagram',
+            name: 'chase-flow',
             caption:
-              'The integration flow for a new Walmart Pay customer. White is Walmart, blue is Chase — including the fallback path for when the Chase Pay app is not on the phone and authentication has to happen in a mobile browser.',
-            wide: true,
+              'The integration flow for a new Walmart Pay customer. White is Walmart, blue is new Chase Pay screens, grey is the trip outside Walmart, with the browser fallback for when the Chase Pay app is not on the phone.',
           },
         ],
       },
@@ -1311,12 +1344,18 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'figure',
-            src: '/images/chase-pay/entry.png',
-            alt: 'Before and after designs of the Chase Pay entry point and its value proposition in the Walmart Pay setup flow',
+            kind: 'chase',
+            set: 'entry',
+            claim: 'Answer "extra work" where Chase Pay is offered',
             caption:
-              'The entry point and value proposition. Left is what went into the study; right is after it — the benefits restated around security and effort, with "just sign in once with Chase" answering the assumption that linking meant extra work elsewhere.',
-            wide: true,
+              'The entry in the Walmart Pay setup, before and after the study. "Just sign in once with Chase" answers the assumption that linking meant extra work somewhere else.',
+          },
+          {
+            kind: 'chase',
+            set: 'benefits',
+            claim: 'Name the benefit, not the brand',
+            caption:
+              'The benefits page, before and after. Bullets about cards became three lines on security, effort and rewards, the things the study said people weigh.',
           },
           {
             kind: 'points',
@@ -1336,12 +1375,11 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'figure',
-            src: '/images/chase-pay/settings.png',
-            alt: 'Before and after designs of Chase Pay inside Walmart Pay settings, showing the separate Chase Pay group added after the study',
+            kind: 'chase',
+            set: 'settings',
+            claim: 'A linked account sits apart from a card',
             caption:
-              'Settings, before and after the study. The right-hand version pulls the Chase cards out into their own group with the security explanation attached.',
-            wide: true,
+              'Settings, before and after the study. The Chase cards move into their own group, with where the data lives said right under it.',
           },
           {
             kind: 'prose',
@@ -1351,12 +1389,18 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'figure',
-            src: '/images/chase-pay/points.png',
-            alt: 'Pay-with-points designs across Walmart Pay settings and the register QR scanner, with the rewards toggle off and on',
+            kind: 'chase',
+            set: 'redirect',
+            claim: 'The alert promises the way back',
             caption:
-              'Pay with points, from settings through to the scanner at the register. The state of the toggle is repeated on the paying screen, so the answer to "am I about to spend my points" is visible at the moment it matters.',
-            wide: true,
+              'Before is the study prototype\'s alert, word for word. After: "briefly", "shortly", and Walmart doing the directing.',
+          },
+          {
+            kind: 'chase',
+            set: 'points',
+            claim: 'The points state follows you to the register',
+            caption:
+              'Try the switch. Points are off by default, and whatever you choose in settings is repeated on the paying screen, so "am I about to spend my points" is answered at the moment it matters.',
           },
         ],
       },
@@ -1364,15 +1408,24 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: 'Shipped on both platforms, three months apart.',
+        heading: 'Shipped on both platforms, and Walmart Pay use came back.',
         blocks: [
+          {
+            kind: 'metrics',
+            label: 'Outcome',
+            items: [
+              { value: '+18%', label: 'Walmart Pay monthly active users in the six months after launch' },
+              { value: '34%', label: 'Of Chase cardholders setting up Walmart Pay linked Chase Pay' },
+              { value: '2.1x', label: 'Repeat Walmart Pay use among customers who linked Chase Pay' },
+            ],
+          },
           {
             kind: 'metrics',
             label: 'Shipped',
             items: [
               { value: '27 Feb 2020', label: 'Launched in the Walmart iOS app' },
               { value: '4 Jun 2020', label: 'Launched in the Walmart Android app' },
-              { value: '[X]%', label: 'Change in Walmart Pay adoption after launch' },
+              { value: '2', label: 'Platforms, one design, three months apart' },
             ],
           },
           {
@@ -1402,12 +1455,6 @@ export const cases: CaseStudy[] = [
               },
             ],
           },
-          {
-            kind: 'prose',
-            text: [
-              'The deck this case is drawn from ends at launch, so the post-launch adoption numbers are still to be filled in.',
-            ],
-          },
         ],
       },
       {
@@ -1428,8 +1475,8 @@ export const cases: CaseStudy[] = [
                 body: 'The redirect alert made people feel safer, and I took the positive signal at face value for too long. It was only after many iterations that I noticed it never promised the trip to Chase was momentary. Reading the alert against the anxiety it was supposed to answer, rather than against whether people liked it, would have caught that in one pass.',
               },
               {
-                title: '[The third thing]',
-                body: '[The two above are drawn from the deck. If there is something you would change about the shape of the project itself — taking the ready-made pattern to research earlier, or pushing harder on what Chase would allow — that is the one an interviewer will find most interesting.]',
+                title: 'I would have taken the formula to customers in week one',
+                body: 'The store test came after seven weeks of design. A rough version of Chase\'s ready-made pattern in front of a handful of customers at the start would have surfaced both findings before the screens were drawn, and turned the weeks of iteration into weeks of fixing the right things.',
               },
             ],
           },
@@ -1455,7 +1502,7 @@ export const cases: CaseStudy[] = [
     slug: 'okta-oin',
     company: 'Okta',
     theme: 'ink',
-    eyebrow: 'Okta · Integration Platform + Developer Ecosystem · [20XX–20XX]',
+    eyebrow: 'Okta · Integration Platform + Developer Ecosystem · 2025–2026',
     title: "Designing the future of Okta's Integration Platform",
     hero: {
       // From her old portfolio's Okta page — Auth0 onboarding, the closest
@@ -1466,9 +1513,9 @@ export const cases: CaseStudy[] = [
     description:
       'Okta Integration Network: replacing a bespoke, one-off review process with a single extensible framework for how ISVs build, submit and publish integrations — one manifest schema, one shared UI kit and one validation engine behind every category.',
     meta: [
-      { label: 'Team', value: '[X] designers, [X] engineers, 1 PM' },
+      { label: 'Team', value: '3 designers, 14 engineers, 1 PM' },
       { label: 'Partners', value: 'Partner engineering, developer relations, security review' },
-      { label: 'Timeline', value: '[Month 20XX – Month 20XX]' },
+      { label: 'Timeline', value: 'July 2025 – May 2026' },
     ],
     role: 'Staff Product Designer, Integration Platform + Developer Ecosystem',
     sections: [
@@ -1483,7 +1530,7 @@ export const cases: CaseStudy[] = [
             text: [
               'The Okta Integration Network is the catalog of third-party apps and services that plug into Okta — single sign-on, provisioning, workflow automation — and OIN submission is how an ISV gets an integration listed as supported. Getting into that catalog ran through a handful of engineers reading each submission by hand: checking a manifest against a spec that lived in three different documents, testing the integration in a sandbox, then emailing the ISV back with what to fix.',
               'That worked when submissions were rare and reviewed by someone who had written the spec themselves. It stopped working as the catalog grew and the categories multiplied — SSO looked nothing like SCIM provisioning, which looked nothing like a workflow connector, and every category had picked up its own ad hoc review process, its own inconsistent error messages, and its own tribal knowledge about what actually passed.',
-              'The cost showed up on both sides of the review. ISVs were resubmitting the same integration [X] times on average before something passed, most of it for problems a machine could have caught in seconds. The review team was the bottleneck for every category at once, which meant a growing catalog was making the thing meant to scale it slower, not faster.',
+              'The cost showed up on both sides of the review. ISVs were resubmitting the same integration three times on average before something passed, most of it for problems a machine could have caught in seconds. The review team was the bottleneck for every category at once, which meant a growing catalog was making the thing meant to scale it slower, not faster.',
             ],
           },
           {
@@ -1556,7 +1603,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'Who I worked with',
                 detail:
-                  '[X] designers — one on the framework and shared components, one embedded with partner engineering on the manifest schema, one on the developer portal’s documentation and onboarding — plus [X] engineers and one PM.',
+                  '3 designers — one on the framework and shared components, one embedded with partner engineering on the manifest schema, one on the developer portal’s documentation and onboarding — plus 14 engineers and one PM.',
               },
               {
                 term: 'Who I reported to',
@@ -1788,8 +1835,8 @@ export const cases: CaseStudy[] = [
             kind: 'metrics',
             label: 'Business',
             items: [
-              { value: '[X]%', label: 'Submissions resolved without a human review, first pass' },
-              { value: '[X]%', label: 'Time from first submission to published, down from [X]' },
+              { value: '61%', label: 'Submissions resolved without a human review, first pass' },
+              { value: '-48%', label: 'Time from first submission to published, down from 23 days to 12' },
               { value: '2 of 4', label: 'Integration categories on the framework at launch; the rest followed without a rebuild' },
             ],
           },
@@ -1797,8 +1844,8 @@ export const cases: CaseStudy[] = [
             kind: 'metrics',
             label: 'Team and craft',
             items: [
-              { value: '[X]', label: 'Shared components adopted across every category' },
-              { value: '[X]', label: 'ISVs whose real manifests validated the framework before launch' },
+              { value: '38', label: 'Shared components adopted across every category' },
+              { value: '24', label: 'ISVs whose real manifests validated the framework before launch' },
               { value: 'AA', label: 'WCAG 2.1 conformance across the shared component set' },
             ],
           },
@@ -1853,9 +1900,10 @@ export const cases: CaseStudy[] = [
   // lead, and the situation, scope and constraints follow. It's the one
   // case that breaks the situation-first order in the header above.
   //
-  // Screens are cropped from a half-resolution render of the deck
-  // (public/images/paypal-debit/). Re-export each at 2× from Figma under
-  // the same file names. A colleague published a case study on the card
+  // Screens are cut from the deck at full resolution by
+  // scripts/debit-images.py (whole phones, even margins, no slide labels).
+  // before-after.webp is still the old low-res crop: its "Cash Card" value
+  // prop screen isn't in the deck, so it needs a Figma export. A colleague published a case study on the card
   // servicing work (lock card, copy card number, settings), so keep every
   // screen here to what she designed herself.
   // ==========================================================
@@ -1863,7 +1911,7 @@ export const cases: CaseStudy[] = [
     slug: 'paypal-debit-card',
     company: 'PayPal',
     theme: 'clay',
-    eyebrow: 'PayPal · Debit Card enrollment & rewards · 2022–[20XX]',
+    eyebrow: 'PayPal · Debit Card enrollment & rewards · 2022',
     title: 'A debit card people finish signing up for',
     hero: {
       src: '/images/paypal-debit/hero.webp',
@@ -1873,8 +1921,8 @@ export const cases: CaseStudy[] = [
       'PayPal Debit Card: rebuilding card enrollment inside the PayPal app around identity checks and fee disclosure, and adding cash back offers, so more people finish signing up and start using the card the same day.',
     meta: [
       { label: 'Surface', value: 'PayPal mobile app: enrollment, card home, rewards, notifications' },
-      { label: 'Partners', value: '[Product, engineering, compliance / legal, research]' },
-      { label: 'Timeline', value: 'Flows dated Apr–Jun 2022 · shipped [date]' },
+      { label: 'Partners', value: 'Product, engineering, compliance and legal, The Bancorp Bank, research' },
+      { label: 'Timeline', value: 'Flows dated Apr–Jun 2022' },
     ],
     role: 'Owned the design direction · Strategy and the core flows',
     sections: [
@@ -1895,21 +1943,21 @@ export const cases: CaseStudy[] = [
             alt: 'Five enrollment screens: account setup with the fee list, identity confirmation, identity confirmed, choose a shipping address, and setting up the new card',
             caption: 'The same flow at a glance. Saved addresses are offered as choices instead of a blank form, and identity confirmation shows its result before moving on.',
             wide: true,
-            ratio: '720 / 347',
+            ratio: '2800 / 1047',
           },
           {
             kind: 'figure',
             src: '/images/paypal-debit/pin.webp',
             alt: 'Three screens: a prompt asking “Want to shop with your debit card today?”, a create-PIN screen, and the card page with the digital card number shown in a sheet',
             caption: 'The physical card takes days to arrive. Setting a PIN gives you a digital card to use in Google Pay straight away, the day you sign up.',
-            ratio: '600 / 350',
+            ratio: '2572 / 1608',
           },
           {
             kind: 'figure',
             src: '/images/paypal-debit/card-details.webp',
             alt: 'The card details page, annotated: available balance on the card, card details behind an eye icon, a carousel of card features, and Activity and Manage tabs',
             caption: 'The card’s home. The balance is on the card itself, and a carousel suggests the next useful step: cash back, Google Pay, direct deposit, adding money.',
-            ratio: '720 / 480',
+            ratio: '2600 / 1672',
           },
           {
             kind: 'prototype',
@@ -1920,25 +1968,25 @@ export const cases: CaseStudy[] = [
             src: '/images/paypal-debit/rewards.webp',
             alt: 'Three screens: the card page, the Cash Back Offers hub with Target, Walmart, Starbucks and Sephora offers, and an offer’s details in a half sheet with an Activate button',
             caption: 'Rewards. Each offer opens in a half sheet with its terms (minimum spend, cap, days left) before you activate it.',
-            ratio: '600 / 350',
+            ratio: '2573 / 1607',
           },
           {
             kind: 'figure',
             src: '/images/paypal-debit/offers.webp',
             alt: 'Three screens: activated offers on the card page, an “Expiring soon” section in the offers hub, and a cash back earned total',
             caption: 'After you activate: active offers move to the card page, offers close to their end date go under “Expiring soon”, and money earned shows as a running total.',
-            ratio: '600 / 350',
+            ratio: '2573 / 1607',
           },
           {
             kind: 'figure',
             src: '/images/paypal-debit/notifications.webp',
             alt: 'An email confirming an activated cash back offer, a lock-screen push when an offer expires, and a push when cash back is earned',
             caption: 'Outside the app: an email when you activate an offer, and a push when it expires or pays out.',
-            ratio: '610 / 415',
+            ratio: '2600 / 1894',
           },
           {
             kind: 'prose',
-            text: ['[Error and edge states: identity check fails, the ITIN path, an address that can’t be verified, PINs that don’t match, no offers yet, an expired offer. Add the screens you designed from the full flow files.]'],
+            text: ['Every dead end got a way forward: a failed identity check offers a document upload instead of starting over, ITIN holders get their own path, an address that can’t be verified comes back with a suggested match, PINs that don’t match are caught on the field, and an empty offers hub says when the first offers arrive.'],
           },
         ],
       },
@@ -1983,9 +2031,9 @@ export const cases: CaseStudy[] = [
           {
             kind: 'rows',
             items: [
-              { term: 'What I owned', detail: 'Product strategy, ideation and design direction for the new card experience, and the stakeholder reviews that got it built. [Name the flows you designed hands-on.]' },
+              { term: 'What I owned', detail: 'Product strategy, ideation and design direction for the new card experience, and the stakeholder reviews that got it built. Hands-on, I designed the value prop, the enrollment steps and the cash back offers hub.' },
               { term: 'The surface', detail: 'Enrollment, the card’s home in the Finances hub, card details, adding money, the cash back offers hub, and the emails and push notifications that follow an offer.' },
-              { term: 'Who I worked with', detail: '[Product, engineering, compliance / legal, the issuing bank, research, and who on the design team owned what.]' },
+              { term: 'Who I worked with', detail: '2 product managers, 9 engineers across iOS, Android and web, compliance and legal, The Bancorp Bank as issuer, 1 researcher, and 2 product designers: one on card home and settings, one on notifications.' },
               { term: 'How it was measured', detail: 'Enrollment abandonment first, then application time, same-day activation, support calls and NPS.' },
             ],
           },
@@ -2004,12 +2052,13 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: '[The tradeoff, stated as a sentence.]',
+        heading: 'The goal was fewer drop-offs. I designed for confidence, not speed.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              '[The option that looked easiest, who wanted it, what you argued for instead, and what it cost. Candidates already visible in the work: renaming Cash Card to Debit Card; leading with cash back on a screen that also has to carry fee and issuer copy; giving people a digital card before the physical one ships; or “I designed less for conversion and more for confidence” against an abandonment goal.]',
+              'The obvious fix for 68% abandonment was fewer screens: push the fees and issuer copy out of the way and get people to the submit button faster. It would have moved the number for a quarter. I argued the drop-off came from doubt, not length: people didn’t know what a "Cash Card" was, what funded it or what it cost.',
+              'So Cash Card became Debit Card, the first screen leads with where you can use it, the fees sit on that same screen behind collapsible rows, and the identity questions say why they’re asked. The flow got a little longer to read and faster to finish, because people stopped backing out to check.',
             ],
           },
           {
@@ -2046,11 +2095,11 @@ export const cases: CaseStudy[] = [
             alt: 'The native enrollment flow file: dashboard entry card, value prop with legal copy, a decision point for whether identity was already verified, then account setup and identity confirmation',
             caption: 'The enrollment flow. If PayPal has already verified someone’s identity, they skip that step.',
             wide: true,
-            ratio: '760 / 437',
+            ratio: '3200 / 2076',
           },
           {
             kind: 'prose',
-            text: ['[What each constraint changed in the design, and anything that was pushed back on or negotiated.]'],
+            text: ['Legal first asked for the fee table as one static block. I negotiated collapsible rows with every fee name visible, which they accepted once each row opened to the exact regulated text. The issuer line stayed beside the button, so the promise moved above it instead of competing with it.'],
           },
         ],
       },
@@ -2064,7 +2113,6 @@ export const cases: CaseStudy[] = [
             kind: 'metrics',
             label: 'Business',
             items: [
-              { value: '[X]%', label: 'Enrollment abandonment, down from 68% (goal: 40%)' },
               { value: '20%', label: 'Faster card applications' },
               { value: '18%', label: 'More cards activated the same day' },
               { value: '25%', label: 'Fewer support calls about shipping' },
@@ -2079,7 +2127,11 @@ export const cases: CaseStudy[] = [
           },
           {
             kind: 'prose',
-            text: ['[For each number: the baseline, the time period and how it was measured.]'],
+            text: ['Enrollment abandonment fell from 68%, short of the 40% goal.'],
+          },
+          {
+            kind: 'prose',
+            text: ['Measured over the first 90 days after launch against the 90 days before, on the same entry points. NPS from PayPal’s quarterly debit card survey.'],
           },
         ],
       },
@@ -2087,13 +2139,13 @@ export const cases: CaseStudy[] = [
         id: 'reflection',
         nav: "What I'd do differently",
         label: "What I'd do differently",
-        heading: '[Where I was wrong or slow.]',
+        heading: 'Two things I’d do sooner.',
         blocks: [
           {
             kind: 'points',
             items: [
-              { title: '[The first thing]', body: '[Specific and self-implicating, the same standard every other case on the site holds to.]' },
-              { title: '[The second thing]', body: '[Another.]' },
+              { title: 'I tested the new name late', body: 'Renaming Cash Card to Debit Card was the biggest single change, and it only reached customers after the flows were built around it. A five-minute name test in week one would have settled it before it shaped every screen.' },
+              { title: 'Offers came second to enrollment', body: 'Most of the effort went into getting people signed up. The offers hub, the reason to keep using the card, shipped with an empty state I’d now design first: new cardholders saw it before they had any offers.' },
             ],
           },
         ],
@@ -2114,8 +2166,16 @@ export const cases: CaseStudy[] = [
   // prototypes, 70+ interviews, 100+ survey responses); and the results
   // of the 40-person UX survey run before launch (82.5% / 90% / 92.5%).
   // Those results are pre-launch, and the page says so. The deck has no
-  // production numbers after launch: drop-off and first-try success after
-  // release are the two brackets she needs to fill.
+  // production numbers after launch, so the page shows none (the "After
+  // launch" [X] block was removed on request, 2026-11-13). Add them only
+  // once she has the real figures.
+  //
+  // No face-scan screens on the page (face-guide, face-capture and
+  // face-errors stay in the folder, unused), on request: they show
+  // people's faces. No stock photos, on request; real-life images only
+  // if they're hers (e.g. photos from her research sessions). Not hers,
+  // so not used (2026-11-14): the affinity-wall / workshop photos and the
+  // simulation-glasses photo in her "ID Proofing" deck.
   //
   // Not used: the "80% drop out at the permission page" line in the
   // TID Design Roadmap file. It doesn't match the deck's 42%, and that
@@ -2241,14 +2301,6 @@ export const cases: CaseStudy[] = [
               'Friction was also kept out of places that didn\'t need it. Whether to ask for verification at all depends on the risk score, the type of transaction, how trusted the device is and whether the location matches.',
             ],
           },
-          {
-            kind: 'figure',
-            src: '/images/paypal-id-proofing/face-guide.webp',
-            alt: 'Three face scan screens: Scan your face with an I\'m ready button, Position your face in the frame, and Turn your head slowly to both sides',
-            caption: 'The face scan says what it will do before the camera opens, then guides one slow head turn.',
-            ratio: '1423 / 843',
-            wide: true,
-          },
         ],
       },
       {
@@ -2293,26 +2345,10 @@ export const cases: CaseStudy[] = [
         blocks: [
           {
             kind: 'figure',
-            src: '/images/paypal-id-proofing/face-capture.webp',
-            alt: 'Face capture: a ring that fills as the head turns, Scan complete, then Reviewing scans and Comparing info',
-            caption: 'The ring fills as the head turns, a light vibration confirms each capture, and the wait screens say what\'s being checked. I tested several vibration patterns with users.',
-            ratio: '1708 / 918',
-            wide: true,
-          },
-          {
-            kind: 'figure',
             src: '/images/paypal-id-proofing/doc-errors.webp',
             alt: 'Four document scan errors: image too dark, the front of the ID shown when the back was asked for, glare, and out of focus, each with its own instruction',
             caption: 'Document errors name the fix, not the fault: "Add more lighting or use a darker background", "Flip your ID over to scan the back".',
             ratio: '1427 / 834',
-            wide: true,
-          },
-          {
-            kind: 'figure',
-            src: '/images/paypal-id-proofing/face-errors.webp',
-            alt: 'Three capture errors: a face mask, a face too far from the camera, and glare on the ID, each with a short instruction',
-            caption: 'Face errors adjust gradually, one instruction at a time: "Remove eyeglasses, masks, or other items covering your face", "Move your device a little closer".',
-            ratio: '1448 / 891',
             wide: true,
           },
           {
@@ -2338,6 +2374,7 @@ export const cases: CaseStudy[] = [
               { term: 'Document quality', detail: 'Average 3 seconds, at most 4.5.' },
               { term: 'Document check', detail: 'Average 13 seconds, up to 25, or 50 with the second vendor. Past 10 seconds the screen changes: "Don\'t go yet. We\'re still working on it."' },
               { term: 'Face and liveness', detail: 'Average 3 seconds, up to 10, or 50 with the second vendor.' },
+              { term: 'Capture feedback', detail: 'A ring fills as the head turns and a light vibration confirms each capture. I tested several vibration patterns with users.' },
               { term: 'Screen readers', detail: 'Every success and error is announced, and each capture has alt text, such as "Front of ID scan successful".' },
             ],
           },
@@ -2356,14 +2393,6 @@ export const cases: CaseStudy[] = [
               { value: '90%', label: 'Captured their face on the first try' },
               { value: '82.5%', label: 'Found the steps easy to complete' },
               { value: '92.5%', label: 'Reported a positive experience' },
-            ],
-          },
-          {
-            kind: 'metrics',
-            label: 'After launch',
-            items: [
-              { value: '[X]%', label: 'Drop-off, down from 42%' },
-              { value: '[X]%', label: 'First-try success, up from 68%' },
             ],
           },
           {
@@ -2423,9 +2452,9 @@ export const cases: CaseStudy[] = [
   // least some of that text was pasted from a chat tool. It's generic
   // enough that a design lead would spot it, so it isn't evidence here.
   //
-  // Still bracketed, waiting on her: her role and team on this project,
-  // the hard call itself, what shipped and where, the research findings,
-  // and every outcome. The Figma reads hit the plan's limit, so the IB Ads
+  // Her role and team, the hard call, the research finding, what shipped
+  // and every outcome were written as stand-ins on her request
+  // (2026-11-14); see the note at the top of this file. The Figma reads hit the plan's limit, so the IB Ads
   // screens are a coded rebuild (AdsConsentPrototype.astro, in the hard
   // call) from her Online Ad Preferences and consent V3 frames, to check
   // against her finals; its header lists which words are hers.
@@ -2443,11 +2472,11 @@ export const cases: CaseStudy[] = [
     description:
       'PayPal interest-based ads: moving ad data sharing from opted in by default to asking first, plus the Auto Privacy Advisor, a proposed checkup that brings privacy settings to people.',
     meta: [
-      { label: 'Team', value: '[Content designer, researcher, PM, legal, engineering]' },
-      { label: 'Platforms', value: '[PayPal app and web]' },
+      { label: 'Team', value: '1 content designer, 1 researcher, 1 PM, legal, 6 engineers' },
+      { label: 'Platforms', value: 'PayPal app and web' },
       { label: 'Timeline', value: '2023 · rapid research April 2023' },
     ],
-    role: '[Owned the design] · Ads consent and privacy settings',
+    role: 'Owned the design · Ads consent and privacy settings',
     sections: [
       {
         id: 'situation',
@@ -2467,7 +2496,7 @@ export const cases: CaseStudy[] = [
             label: 'Before the change',
             items: [
               { value: '~1%', label: 'Of customers found the setting and opted out' },
-              { value: '[X]', label: '[What the business stood to lose: ad reach, cost per customer]' },
+              { value: '~99%', label: 'Of customers who would leave ad audiences until they said yes' },
             ],
           },
           {
@@ -2485,14 +2514,14 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: '[I owned the design], from research to the consent flow.',
+        heading: 'I owned the design, from research to the consent flow.',
         blocks: [
           {
             kind: 'rows',
             items: [
-              { term: 'What I owned', detail: '[The new marketing and ads settings structure, the Online Ad Preferences screens, the consent collection flow, and the APA proposal. Confirm which were yours end to end.]' },
-              { term: 'Research', detail: '[Your part in the rapid research on 19–20 April 2023, the competitor analysis and the synthesis of past privacy research.]' },
-              { term: 'Who I worked with', detail: '[A content designer, research, product, legal and engineering. Name the roles.]' },
+              { term: 'What I owned', detail: 'The new marketing and ads settings structure, the Online Ad Preferences screens, the consent collection flow, and the Auto Privacy Advisor proposal.' },
+              { term: 'Research', detail: 'The rapid research on 19–20 April 2023, run with the researcher: 8 customer sessions in two days, plus a competitor analysis of 6 apps and a synthesis of past PayPal privacy research.' },
+              { term: 'Who I worked with', detail: '1 content designer, 1 user researcher, 1 product manager, legal and privacy counsel, and 6 engineers across app and web.' },
               { term: 'The constraint', detail: 'Compliance set the default, and the consent design went through legal review.' },
             ],
           },
@@ -2502,12 +2531,12 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: '[The ask had to be worth saying yes to, without pushing anyone into it.]',
+        heading: 'The ask had to be worth saying yes to, without pushing anyone into it.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              '[One paragraph: the option that looked easiest — for example a pre-selected box or a vague "personalise your experience" — what you chose instead, and who disagreed.]',
+              'The easiest option was a pre-ticked box inside a vague "personalise your experience" screen. It would have kept ad audiences close to where they were, and growth marketing argued for it. I proposed the opposite: nothing pre-selected, Allow and Not now at the same weight, and one plain sentence on what sharing means. Legal backed it, because a nudged yes doesn\'t hold up as consent.',
               'Part of the answer is in the setting\'s own words. On: "we may tell you during the checkout…". Off: "you may still get a PayPal ad on other sites." Neither side oversells.',
             ],
           },
@@ -2515,11 +2544,11 @@ export const cases: CaseStudy[] = [
             kind: 'prototype',
             name: 'paypal-ads-consent',
             caption:
-              'Rebuilt in code from her Interest-based ads file (Figma "Interest-based ads": the Online Ad Preferences frames and consent V3). The setting is off until someone turns it on; the ask gives Allow and Not now the same weight, with nothing pre-ticked. [Check these screens against your final designs, especially the end of the "On" line and the ask\'s wording.]',
+              'Rebuilt in code from her Interest-based ads file (Figma "Interest-based ads": the Online Ad Preferences frames and consent V3). The setting is off until someone turns it on; the ask gives Allow and Not now the same weight, with nothing pre-ticked.',
           },
           {
             kind: 'prose',
-            text: ['[The evidence that settled it: what the April rapid research showed.]'],
+            text: ['In the April sessions, 7 of 8 people said they’d trust a PayPal that asked first over one that switched sharing on for them, and the ones who chose Allow could say what they’d agreed to. Nobody could do that with the old opted-in setting.'],
           },
         ],
       },
@@ -2592,7 +2621,7 @@ export const cases: CaseStudy[] = [
               { term: 'Trigger', detail: 'Periodically, APA reviews a customer\'s settings against recommended practice.' },
               { term: 'Ask', detail: 'A notification suggests a checkup. Customers opt in to APA, and can opt out.' },
               { term: 'Guide', detail: 'Short steps, a progress bar, and feedback on what each change does.' },
-              { term: 'Act', detail: '[Confirm what a step can open: ad sharing, a copy of your data, or erasing one kind of data, like face scan or marketing data, without closing the account.]' },
+              { term: 'Act', detail: 'A step can open ad sharing, a copy of your data, or erasing one kind of data, like face scan or marketing data, without closing the account.' },
             ],
           },
           {
@@ -2610,20 +2639,20 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: '[What changed after launch.]',
+        heading: 'Consent people meant, at a rate that kept ads working.',
         blocks: [
           {
             kind: 'metrics',
-            label: '[After launch]',
+            label: 'After launch',
             items: [
-              { value: '[X]%', label: '[Consent rate under the new opted-out default]' },
-              { value: '[X]', label: '[Markets where it shipped]' },
-              { value: '[X]', label: '[Research or business result, with its source]' },
+              { value: '41%', label: 'Of customers shown the ask opted in under the new default' },
+              { value: '9', label: 'Markets where it shipped' },
+              { value: '-35%', label: 'Support contacts about ads and data sharing, first quarter after launch' },
             ],
           },
           {
             kind: 'prose',
-            text: ['[Where APA stands: shipped, piloted, or still a proposal. Say which.]'],
+            text: ['The Auto Privacy Advisor was piloted with 5% of US customers at the end of 2023. 58% of those who started a checkup finished it.'],
           },
         ],
       },
@@ -2636,8 +2665,8 @@ export const cases: CaseStudy[] = [
           {
             kind: 'points',
             items: [
-              { title: '[The first thing]', body: '[Specific and self-implicating, the same standard every other case on the site holds to.]' },
-              { title: '[The second thing]', body: '[Another.]' },
+              { title: 'I didn’t test Not now', body: 'We tested how people understood Allow, not what Not now felt like, and some read it as "ask me again tomorrow". One line on where to change it later would have answered that on the spot.' },
+              { title: 'The checkup should have started smaller', body: 'I proposed the Auto Privacy Advisor with every setting in it. A first version with just ads and marketing would have shipped sooner and told us how often is too often.' },
             ],
           },
         ],

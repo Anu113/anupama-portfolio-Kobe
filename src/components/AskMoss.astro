@@ -144,13 +144,14 @@ const data = JSON.stringify({ tree: pixelTree, keys: pixelKeys, unknown: pixelUn
 </style>
 
 <script>
+  import { cssMs } from '../scripts/css-time';
   interface Link { label: string; title?: string; href: string; external?: boolean }
   interface Node { q: string; say: string[]; cards?: Link[]; exits?: Link[]; next?: string[] }
 
   const root = document.documentElement;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   const spring = getComputedStyle(root).getPropertyValue('--ease-talk-spring').trim() || 'ease-out';
-  const dur = parseFloat(getComputedStyle(root).getPropertyValue('--dur-talk-open')) || 750;
+  const dur = cssMs('--dur-talk-open', 750);
 
   // Animate an element's height from what it was to what it is now.
   function grow(el: HTMLElement, from: number) {

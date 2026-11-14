@@ -51,6 +51,7 @@ import LockedGate from '../../components/LockedGate.astro';
 import LockIcon from '../../components/LockIcon.astro';
 import { cases, caseBySlug } from '../../data/cases';
 import { hueFor, labelsFor, work } from '../../data/work';
+import { site } from '../../data/site';
 
 export function getStaticPaths() {
   return cases.map((c) => ({ params: { slug: c.slug }, props: { study: c } }));
@@ -75,6 +76,7 @@ const gateId = `${study.slug}-gate-content`;
 const workEntry = work.find((w) => w.href === `/work/${study.slug}`);
 const tags = workEntry ? labelsFor(workEntry) : [];
 const num = (i: number) => String(i + 1).padStart(2, '0');
+const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
 const pageId = `${study.slug}-page-content`;
 /* The rail's and the strip's contents: only the free sections, plus one
    entry for the gate when there is one — a link that scrolled to hidden
@@ -244,6 +246,16 @@ const headline = impactMetrics?.kind === 'metrics'
             </div>
           </section>
         )}
+
+        {/* The closing line, on every case (on request): the page is the
+            short version, and the detailed one is a conversation away.
+            Opens Gmail to site.email, like the footer's "conversation". */}
+        <Reveal still>
+          <p class="cs-end">
+            For the detailed case study,{' '}
+            <a href={gmail} target="_blank" rel="noopener">reach out to me<span class="cs-end__vh"> (opens Gmail in a new tab)</span></a>.
+          </p>
+        </Reveal>
       </div>
     </div>
   </Section>
@@ -388,24 +400,26 @@ const headline = impactMetrics?.kind === 'metrics'
   /* The meta row: Role first, then this case's own fields. No divider —
      the image above and the whitespace here already separate it from what
      comes next; a rule on top of that read as one line too many. */
-  /* The case snapshot opens like a section — a hairline, then its name in
-     mono — so it reads as the first part of the case, not a caption on
+  /* The case snapshot opens on its name in mono, then its cards — so it reads as the first part of the case, not a caption on
      the cover. Its margins carry the gaps on both sides itself rather than
      leaning on a sibling rule: Reveal wraps each block in its own div (see
      Reveal.astro), so a `.x + .cs` selector would never match. */
   .snapshot { margin: 2.5rem 0 var(--space-case); }
-  .snapshot__label {
-    margin: 0 0 1.75rem;
-    padding-top: 0.9rem;
-    border-top: 1px solid var(--rule);
-  }
+  .snapshot__label { margin: 0 0 1rem; }
+  /* Role and the case's meta on soft cards, the About page's, as the
+     numbers above (CASE CARDS in tokens.css). */
   .meta {
     margin: 0;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1.75rem var(--col-gap);
+    gap: var(--case-card-gap);
   }
-  .meta__cell { min-width: 0; }
+  .meta__cell {
+    min-width: 0;
+    background: var(--case-card);
+    border-radius: var(--radius-case-card);
+    padding: var(--case-card-pad);
+  }
   .meta__label { margin: 0 0 0.5rem; }
   .meta__value {
     margin: 0;
@@ -460,6 +474,24 @@ const headline = impactMetrics?.kind === 'metrics'
     flex-direction: column;
     gap: clamp(1.75rem, 3vw, 2.5rem);
     margin-block-start: 1.25rem;
+  }
+
+  /* The closing line: a hairline like a section's, then one serif line at
+     the section-head size. The link is the site's ink link (global.css). */
+  .cs-end {
+    margin: var(--space-case) 0 0;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-serif);
+    font-size: var(--step-title);
+    line-height: 1.25;
+    letter-spacing: var(--tracking-serif);
+    font-weight: var(--weight-serif);
+    max-width: var(--measure);
+  }
+  .cs-end__vh {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
   }
 
   /* --- Next / footer -------------------------------------------------- */

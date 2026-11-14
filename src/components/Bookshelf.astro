@@ -416,6 +416,7 @@ const spineText = (t: string) => t.replace(/’/g, "'");
 
 <script>
   import { layoutShelf, openState, leanState, shelfWidth, type ShelfBook } from '../data/books';
+  import { cssMs } from '../scripts/css-time';
 
   const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -428,7 +429,7 @@ const spineText = (t: string) => t.replace(/’/g, "'");
     const frames = [...row.querySelectorAll<HTMLElement>('[data-book]')];
     const btns = [...row.querySelectorAll<HTMLButtonElement>('[data-book-btn]')];
     const inners = [...row.querySelectorAll<HTMLElement>('[data-book-inner]')];
-    const DUR = parseFloat(getComputedStyle(shelf).getPropertyValue('--dur-book')) || 650;
+    const DUR = cssMs('--dur-book', 650, shelf);
     const width = shelfWidth(books);
 
     let current = 0;

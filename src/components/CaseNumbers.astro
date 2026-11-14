@@ -10,6 +10,9 @@
    block's own label ("After launch in early 2023") is the source note
    under the row, after gauravi.design/case-fxonline.html.
 
+   Each number sits on one of the About page's soft cards (CASE CARDS in
+   tokens.css), not on a hairline.
+
    ROLLING NUMBERS, after the same reference (on request): when the row
    comes into view, each number counts up from 0 over --dur-count with an
    ease-out, one after another --count-stagger apart, and replays each
@@ -47,14 +50,19 @@ const { items, note } = Astro.props;
 
 <style>
   .numbers { margin-block: var(--space-case); }
-  .numbers__label { margin: 0 0 1.5rem; }
+  .numbers__label { margin: 0 0 1rem; }
   .numbers__stats {
     margin: 0;
     display: grid;
     grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
-    gap: 2rem var(--col-gap);
+    gap: var(--case-card-gap);
   }
-  .numbers__stat { border-top: 1px solid var(--rule); padding-top: 1rem; }
+  /* Soft cards, not hairlines (CASE CARDS in tokens.css). */
+  .numbers__stat {
+    background: var(--case-card);
+    border-radius: var(--radius-case-card);
+    padding: var(--case-card-pad);
+  }
   .numbers__value {
     font-family: var(--font-serif);
     font-size: var(--step-heading);
@@ -83,18 +91,15 @@ const { items, note } = Astro.props;
 </style>
 
 <script>
-  const num = (prop: string, fallback: number) => {
-    const n = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(prop));
-    return Number.isFinite(n) ? n : fallback;
-  };
+  import { cssMs } from '../scripts/css-time';
   // Prefix, the first number (commas and decimals kept), the rest.
   const PARTS = /^([^\d]*)(\d[\d,]*(?:\.\d+)?)([\s\S]*)$/;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
 
   document.querySelectorAll<HTMLElement>('[data-numbers]').forEach((row) => {
     const rolls = [...row.querySelectorAll<HTMLElement>('[data-roll]')];
-    const dur = num('--dur-count', 1000);
-    const stagger = num('--count-stagger', 180);
+    const dur = cssMs('--dur-count', 1000);
+    const stagger = cssMs('--count-stagger', 180);
     const runs = new Map<HTMLElement, number>();
 
     const roll = (el: HTMLElement, i: number) => {
