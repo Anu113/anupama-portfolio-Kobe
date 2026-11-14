@@ -100,9 +100,11 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
               or by <a href={gmail} target="_blank" rel="noopener">email</a>.
             </p>
           </div>
+          <button class="more" type="button" aria-expanded="false" data-more>Read more</button>
         </div>
 
         <div class="links rise" style="--i:7">
+          <span class="sayhi">Say hi</span>
           <a class="icon" href={site.linkedin} target="_blank" rel="me noopener" aria-label="LinkedIn (opens in a new tab)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
           </a>
@@ -194,6 +196,10 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
       <button type="button" data-h={h} aria-pressed={h === 240 ? 'true' : 'false'}>{h === 156 ? 'Now · 156' : h}</button>
     ))}
     <button type="button" data-off aria-pressed="false">Today's page</button>
+    <span>· Fix</span>
+    {['none', 'more', 'tight', 'both'].map((f) => (
+      <button type="button" data-fix={f} aria-pressed={f === 'none' ? 'true' : 'false'}>{({ none: 'None', more: 'Read more', tight: 'Tighter', both: 'Both' } as Record<string, string>)[f]}</button>
+    ))}
   </div>
 </Base>
 
@@ -428,6 +434,21 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
     :global(html.match) .photo { position: relative; top: auto; aspect-ratio: auto; align-self: stretch; }
     :global(html.match) .side { align-content: start; }
   }
+  /* fixes for the fold (mock): read more, tighter, or both */
+  .more, .sayhi { display: none; }
+  .more {
+    justify-self: start; padding: 0; border: 0; background: none; cursor: pointer;
+    font: inherit; font-size: var(--step-body); color: var(--fg);
+    text-decoration: underline var(--link-thick) var(--link-line); text-underline-offset: var(--link-offset);
+  }
+  .more:hover { text-decoration-color: var(--link-line-hover); text-decoration-thickness: var(--link-thick-hover); }
+  :global(html:is(.fix-more, .fix-both)) .more { display: inline; }
+  :global(html:is(.fix-more, .fix-both)) .body:not(.open) p:is(:nth-child(3), :nth-child(5), :nth-child(6)) { display: none; }
+  :global(html:is(.fix-tight, .fix-both)) .about { padding-top: calc(var(--nav-h) + 1rem); }
+  :global(html:is(.fix-tight, .fix-both)) .side { gap: 1.5rem; }
+  :global(html:is(.fix-tight, .fix-both)) .intro { gap: 1rem; }
+  :global(html:is(.fix-tight, .fix-both)) .body p:nth-child(6) { display: none; }
+  :global(html:is(.fix-tight, .fix-both)) .sayhi { display: inline-flex; align-items: center; margin-right: 0.25rem; color: var(--fg-dim); font-size: var(--step-body); }
   :global(html.still) .rise { animation: none !important; opacity: 1 !important; transform: none !important; }
   .hmock span { padding: 0 8px 0 10px; opacity: .7; }
   .hmock button { padding: 6px 12px; border: 0; border-radius: 99px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
@@ -440,11 +461,20 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
   const q = new URLSearchParams(location.search).get('h');
   if (new URLSearchParams(location.search).has('still')) root.classList.add('still');
   if (q === 'off') { /* today's page */ } else { root.classList.add('match'); root.style.setProperty('--about-reel-h', `${q || 240}px`); }
-  document.querySelectorAll<HTMLButtonElement>('.hmock button').forEach((x) => x.setAttribute('aria-pressed', String(q === 'off' ? x.dataset.off !== undefined : x.dataset.h === (q || '240'))));
-  document.querySelectorAll<HTMLButtonElement>('.hmock button').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll<HTMLButtonElement>('.hmock [data-h], .hmock [data-off]').forEach((x) => x.setAttribute('aria-pressed', String(q === 'off' ? x.dataset.off !== undefined : x.dataset.h === (q || '240'))));
+  const fixes = ['fix-more', 'fix-tight', 'fix-both'];
+  const setFix = (f: string) => { root.classList.remove(...fixes); if (f !== 'none') root.classList.add(`fix-${f}`);
+    document.querySelectorAll<HTMLButtonElement>('.hmock [data-fix]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.fix === f))); };
+  setFix(new URLSearchParams(location.search).get('fix') || 'none');
+  document.querySelectorAll<HTMLButtonElement>('.hmock [data-fix]').forEach((b) => b.addEventListener('click', () => setFix(b.dataset.fix!)));
+  document.querySelector<HTMLButtonElement>('[data-more]')?.addEventListener('click', (e) => {
+    const b = e.currentTarget as HTMLButtonElement; const body = b.previousElementSibling!;
+    const open = body.classList.toggle('open'); b.setAttribute('aria-expanded', String(open)); b.textContent = open ? 'Show less' : 'Read more';
+  });
+  document.querySelectorAll<HTMLButtonElement>('.hmock [data-h], .hmock [data-off]').forEach((b) => b.addEventListener('click', () => {
     if (b.dataset.off !== undefined) { root.classList.remove('match'); root.style.removeProperty('--about-reel-h'); }
     else { root.classList.add('match'); root.style.setProperty('--about-reel-h', `${b.dataset.h}px`); }
-    document.querySelectorAll('.hmock button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    document.querySelectorAll('.hmock [data-h], .hmock [data-off]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
   }));
 
   const still = matchMedia('(prefers-reduced-motion: reduce)');
