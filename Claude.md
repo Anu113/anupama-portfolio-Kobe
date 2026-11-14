@@ -670,9 +670,15 @@ walked back. Concretely, in the current implementation:
   on the left (her photo as given, the porch painting as a stamp, no
   post-it; camera looks and a cutout were tried and turned down), held
   in place while "About *me*", her bio in her words and the tabs scroll
-  beside it. The tabs (Experience, Case studies, Books, a list that
-  scrolls itself and loops) and Moss's field keep andreas.vision/about's
-  structure (2026-10-17). Under them, six tiles, three across: Talks
+  beside it. The tabs (a list that scrolls itself and loops) and Moss's
+  field keep andreas.vision/about's structure (2026-10-17); since
+  2026-11-14, on request, they are his three in his order:
+  Testimonials (her LinkedIn recommendations from the Wix site, one
+  sentence each word for word, with their photos; Vijaya Das's left
+  out), Experience (company logos, as his; /work keeps letter tiles)
+  and Tools (his list minus his own Cheval and GatherOS, each app's own
+  icon). Testimonials here are her request, an exception to the
+  "Don't add without asking" line below. Under them, six tiles, three across: Talks
   and people, Making, Travel, Food, Books, and the record player.
   Travel and Food are her photos (in `public/images/beyond/`), captioned
   in the reference's casual voice on request ("<3", ";)" as text, no

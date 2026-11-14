@@ -6,11 +6,11 @@
 // The tabs and Moss's field keep andreas.vision/about's structure
 // (2026-10-17). Facts come from site.ts, work.ts, books.ts and
 // beyond.ts (her photos and paintings, alt text as there). Bracketed
-// values are hers to confirm, same convention as cases.ts. His
-// Testimonials and Tools tabs aren't here: she has no Okta-era quote yet
-// and her tools aren't on the site.
+// values are hers to confirm, same convention as cases.ts. The tabs are
+// his three, in his order (on request, 2026-11-14): Testimonials,
+// Experience, Tools. They replaced Case studies and Books (case studies
+// live on /work, her books in the Books tile).
 
-import { work } from './work';
 import { books } from './books';
 
 const b = '/images/beyond/';
@@ -30,46 +30,61 @@ export interface Row {
 // Titles (her last at each) and years from her LinkedIn (checked
 // 2026-11-13). Lines after felixrieseberg.com's Work list: what the work
 // was, in one or two plain sentences, then the company's site. Facts from
-// her LinkedIn and cases.ts only. Letter tiles, on request (2026-11-13):
-// company logos were tried and read as five loud colours; the logo files
-// stay in public/images/logos/, unused, with alternatives in
-// experiments/experience-rows/.
+// her LinkedIn and cases.ts only. On the About page each row shows the
+// company's logo, as his do (on request, 2026-11-14; files in
+// public/images/logos/). /work's list keeps the letter tiles (on request,
+// 2026-11-13, when logos there read as five loud colours).
 export const experience: Row[] = [
-  { tile: { letter: 'O' }, name: 'Okta', tag: 'Staff Product Designer', year: '2024–now',
+  { tile: { letter: 'O', src: '/images/logos/okta.webp' }, name: 'Okta', tag: 'Staff Product Designer', year: '2024–now',
     line: 'Identity and access management for the admins who decide who gets in: entitlements, access reviews and policy, plus the integration flows developers build on. I lead a team of six.',
     site: { label: 'okta.com', href: 'https://www.okta.com' } },
-  { tile: { letter: 'P' }, name: 'PayPal', tag: 'Lead UX Designer', year: '2021–2024',
+  { tile: { letter: 'P', src: '/images/logos/paypal.webp' }, name: 'PayPal', tag: 'Lead UX Designer', year: '2021–2024',
     line: 'Three years on privacy and trust across PayPal, Venmo and Honey: the privacy center, ads consent, ID verification and the Debit Card. I joined as a product designer and left leading UX for Global Data & Privacy.',
     site: { label: 'Data & Privacy', href: 'https://www.paypal.com/us/security/protect-your-account' } },
-  { tile: { letter: 'W' }, name: 'Walmart Labs', tag: 'User Experience Designer', year: '2019–2021',
+  { tile: { letter: 'W', src: '/images/logos/walmart.webp' }, name: 'Walmart Labs', tag: 'User Experience Designer', year: '2019–2021',
     line: 'Two years on tools for merchants, suppliers and Walmart’s own people, plus Walmart Pay with Chase Pay and Scan & Go. I led interaction design on the design system.',
     site: { label: 'Scan & Go', href: 'https://www.walmart.com/cp/scan-go/9679980' } },
-  { tile: { letter: 'D' }, name: 'Deloitte Digital', tag: 'User Experience Designer', year: '2017–2019',
+  { tile: { letter: 'D', src: '/images/logos/deloitte.webp' }, name: 'Deloitte Digital', tag: 'User Experience Designer', year: '2017–2019',
     line: 'Client work from Bengaluru in finance, healthcare and the public sector, among it Mint’s credit score, personal loans for RatanIndia and quick loans for Dialog in Sri Lanka.',
     site: { label: 'deloittedigital.com', href: 'https://www.deloittedigital.com' } },
-  { tile: { letter: 'Z' }, name: 'Zomato', tag: 'User Interface Designer', year: '2015–2016',
+  { tile: { letter: 'Z', src: '/images/logos/zomato.webp' }, name: 'Zomato', tag: 'User Interface Designer', year: '2015–2016',
     line: 'A year on product, web, branding and marketing design across Zomato’s consumer products.',
     site: { label: 'zomato.com', href: 'https://www.zomato.com' } },
 ];
 
-const cases: Row[] = work.slice(0, 6).map((w) => ({
-  tile: { src: w.image },
-  name: w.company,
-  tag: w.title,
-  line: w.tagline,
-  href: w.href,
-}));
+// Testimonials: her LinkedIn recommendations, as on her Wix site
+// (pulled on request, 2026-11-14, photos saved into
+// public/images/about/people/). Each quote is one sentence of theirs,
+// word for word, cut from a longer recommendation; titles as on the Wix
+// site. Vijaya Das's was left out, as when these were first used
+// (2026-10-01).
+const p = '/images/about/people/';
+export const testimonials: Row[] = [
+  { tile: { src: p + 'tony-berman.webp' }, name: 'Tony Berman', tag: 'Lead Technical Product Manager at PayPal',
+    line: '“Anupama was always ready and willing to work directly with developers to find solutions to address and design around technical limitations.”' },
+  { tile: { src: p + 'mansi-singhal.webp' }, name: 'Mansi Singhal', tag: 'Director, Product Management at Intuit',
+    line: '“She was quick to grasp fintech specific concepts needed to understand the overall landscape, strategy and user expectations, even though this was a completely new product area.”' },
+  { tile: { src: p + 'suraj-s.webp' }, name: 'Suraj S', tag: 'Co-founder at Platter',
+    line: '“Her communication and ability to convince her designs has made her one of the best designers we ever came across.”' },
+];
 
-const shelf: Row[] = books.map((bk) => ({
-  tile: { src: bk.art },
-  name: bk.title,
-  line: bk.author,
-}));
+// Tools: the ones on andreas.vision/about (on request, 2026-11-14),
+// minus his own Cheval and GatherOS. Icons are each app's own, from its
+// site, in public/images/about/tools/. [Lines are hers to confirm.]
+const t = '/images/about/tools/';
+export const tools: Row[] = [
+  { tile: { src: t + 'figma.webp' }, name: 'Figma', line: 'Where the flows and screens take shape' },
+  { tile: { src: t + 'claude.webp' }, name: 'Claude Code', line: 'Built this site with me' },
+  { tile: { src: t + 'cursor.webp' }, name: 'Cursor', line: 'Prototypes in real code' },
+  { tile: { src: t + 'dia.webp' }, name: 'Dia', line: 'The browser I read and research in' },
+  { tile: { src: t + 'granola.webp' }, name: 'Granola', line: 'Notes from every call, so I can listen' },
+  { tile: { src: t + 'grok.webp' }, name: 'Grok', line: 'A second opinion on hard questions' },
+];
 
 export const tabs = [
+  { id: 'testimonials', label: 'Testimonials', rows: testimonials },
   { id: 'experience', label: 'Experience', rows: experience },
-  { id: 'cases', label: 'Case studies', rows: cases },
-  { id: 'books', label: 'Books', rows: shelf },
+  { id: 'tools', label: 'Tools', rows: tools },
 ];
 
 // ---- Updated on ---------------------------------------------------
