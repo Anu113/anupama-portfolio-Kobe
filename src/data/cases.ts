@@ -2173,7 +2173,9 @@ export const cases: CaseStudy[] = [
   // No face-scan screens on the page (face-guide, face-capture and
   // face-errors stay in the folder, unused), on request: they show
   // people's faces. No stock photos, on request; real-life images only
-  // if they're hers (e.g. photos from her research sessions).
+  // if they're hers (e.g. photos from her research sessions). Not hers,
+  // so not used (2026-11-14): the affinity-wall / workshop photos and the
+  // simulation-glasses photo in her "ID Proofing" deck.
   //
   // Not used: the "80% drop out at the permission page" line in the
   // TID Design Roadmap file. It doesn't match the deck's 42%, and that
