@@ -722,15 +722,18 @@ walked back. Concretely, in the current implementation:
   a caption ("On repeat: song · artist") like the photo tiles. A round
   dotted speaker on the left; on the right one column of three pills,
   one width: "My Playlist #2026" pressed into the shell (muted on
-  request), the neon green display, and the keys (round Spotify, long
-  play). On a press the record rises and spins and the song scrolls
+  request), the neon green display, and the keys (round Spotify, round
+  next, long play). On a press the record rises and spins and the song scrolls
   across the display; no orange, on request. It plays her Spotify
   playlist's real tracks, "My Playlist #2026" (`song` in
   `data/about.ts`), one after another, through Spotify's embedded
   player kept out of sight in the tile (on request, 2026-11-11: she
   asked for her songs over the old made-up tune). The display, caption
   and the record's label (her covers, saved into
-  `public/images/about/covers/`) follow the track playing. Spotify's
+  `public/images/about/covers/`) follow the track playing. Since 2026-11-15, on
+  request: the caption is just title · artist (no "On repeat"), the
+  playlist stops after its last song instead of starting over, and
+  the next key skips a song. Spotify's
   script and player load only on the first press, so nobody contacts
   Spotify or gets its cookies without pressing play; signed-in
   listeners hear whole tracks, others 30-second previews. The Spotify

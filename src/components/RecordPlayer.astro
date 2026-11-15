@@ -11,12 +11,16 @@
    the box: a round dotted speaker on the left; on the right, one column
    of three pills, one width: "My Playlist #2026" pressed into the shell
    (muted on request), the neon green display, and the keys (a round
-   Spotify key, then the long play key). Press play and the record
-   rises and spins, the song scrolls across the display, and the
-   caption ("On repeat: …") and the record's label (that song's cover,
-   cross-fading) follow the track actually playing. It plays her
-   playlist's real tracks, one after another, through Spotify's
-   embedded player (on request, 2026-11-11). Stopping pauses it where
+   Spotify key, a round next key, then the long play key). Press play
+   and the record rises and spins, the song scrolls across the display,
+   and the caption (title · artist, no "On repeat", on request
+   2026-11-15) and the record's label (that song's cover, cross-fading)
+   follow the track actually playing. It plays her playlist's real
+   tracks, one after another, through Spotify's embedded player (on
+   request, 2026-11-11), and stops after the last one rather than
+   starting over (on request, 2026-11-15). The next key skips to the
+   following song, playing or not (after the last, back to the first).
+   Stopping pauses it where
    it was; play again picks up there. The Spotify key opens the
    playlist in a new tab. Press again (or Escape while it's focused) to
    stop; it also stops when the tab is hidden. Only ever one sound,
@@ -63,6 +67,9 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
           <a class="rp__spot" href={song.url} target="_blank" rel="noopener" aria-label={`${song.title} on Spotify (opens in a new tab)`}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 9.2c4.3-1.4 9.2-1 13 1.2M6.5 12.6c3.5-1 7.4-.7 10.5 1M7.6 15.9c2.7-.7 5.5-.5 7.9.8" /></svg>
           </a>
+          <button class="rp__next" type="button" aria-label="Next song" data-rp-next>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6v12l9-6zM16 6h2.5v12H16z" /></svg>
+          </button>
           <button class="rp__key" type="button" aria-pressed="false" aria-label={`Play ${name}`} data-rp-key>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
           </button>
@@ -71,7 +78,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
       <span class="rp__feet" aria-hidden="true"></span>
     </div>
   </div>
-  <p class="rp__cap">On repeat: <b data-rp-title>{first.title}</b> · <span data-rp-artist>{first.artist}</span></p>
+  <p class="rp__cap"><b data-rp-title>{first.title}</b> · <span data-rp-artist>{first.artist}</span></p>
   <div class="rp__embed" data-rp-embed aria-hidden="true"></div>
   <span class="u-sr-only" role="status" data-rp-status></span>
 </div>
@@ -162,12 +169,16 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
 
   /* the keys: round Spotify, long play */
   .rp__keys { display: flex; gap: 2cqw; }
-  .rp__spot, .rp__key {
+  .rp__spot, .rp__next, .rp__key {
     flex: none; height: 7cqw; display: grid; place-items: center; color: var(--rp-key-ink);
     background: var(--rp-key); box-shadow: var(--rp-key-up);
     transition: translate 120ms ease-out, box-shadow 120ms ease-out, color 120ms ease-out;
   }
-  .rp__spot { width: 7cqw; border-radius: 50%; }
+  .rp__spot, .rp__next { width: 7cqw; border-radius: 50%; }
+  .rp__next { padding: 0; border: 0; cursor: pointer; }
+  .rp__next svg { width: 44%; fill: currentColor; }
+  .rp__next:hover { color: var(--rp-key-ink-on); }
+  .rp__next:active { translate: 0 .45cqw; box-shadow: var(--rp-key-down); }
   .rp__spot svg { width: 52%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
   .rp__spot:hover { color: var(--rp-key-ink-on); }
   .rp__spot:active { translate: 0 .45cqw; box-shadow: var(--rp-key-down); }
@@ -175,7 +186,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
   .rp__key svg { height: 42%; fill: currentColor; }
   .rp__key:hover { color: var(--rp-key-ink-on); }
   .rp__key[aria-pressed='true'] { translate: 0 .45cqw; box-shadow: var(--rp-key-down); color: var(--rp-key-ink-on); }
-  .rp__spot:focus-visible, .rp__key:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .rp__spot:focus-visible, .rp__next:focus-visible, .rp__key:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
   /* two little feet */
   .rp__feet {
@@ -201,7 +212,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
   @media (prefers-reduced-motion: reduce) {
     .rp__rec-wrap { translate: -50% -8%; transition: none; }
     .rp__rec, .rp__rec::after, .rp__ticker { animation: none; }
-    .rp__px, .rp__label img, .rp__spot, .rp__key { transition: none; }
+    .rp__px, .rp__label img, .rp__spot, .rp__next, .rp__key { transition: none; }
     .rp__ticker > span + span { display: none; }
   }
 </style>
@@ -221,6 +232,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
   const root = document.querySelector<HTMLElement>('[data-rp]');
   if (root) {
     const key = root.querySelector<HTMLButtonElement>('[data-rp-key]')!;
+    const nextKey = root.querySelector<HTMLButtonElement>('[data-rp-next]')!;
     const status = root.querySelector<HTMLElement>('[data-rp-status]')!;
     const host = root.querySelector<HTMLElement>('[data-rp-embed]')!;
     const name = key.getAttribute('aria-label')!.replace(/^Play /, '');
@@ -257,6 +269,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
     let player: Promise<SpotifyController> | null = null;
     let started = false;      // the current track has been heard playing
     let advancing = false;
+    let stale = false;        // the player still holds a song we've skipped past
     const getPlayer = () => (player ??= loadApi().then((A) => new Promise<SpotifyController>((ok) => {
       const el = document.createElement('div');
       host.append(el);
@@ -268,8 +281,12 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
           // The track has ended (whole track or 30s preview): the next one.
           const ended = started && data.duration > 0 && (data.position >= data.duration - 400 || (data.isPaused && data.position === 0));
           if (ended && !advancing) {
-            advancing = true; started = false;
-            show((at + 1) % uris.length);
+            started = false;
+            if (at === uris.length - 1) {          // the last song: stop, ready at the first
+              set(false); show(0); stale = true; return;
+            }
+            advancing = true;
+            show(at + 1);
             c.loadUri(uris[at]);
             c.play();
             setTimeout(() => { advancing = false; }, 1500);
@@ -290,11 +307,25 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
         const giveUp = window.setTimeout(() => {
           if (on && !started) { set(false); status.textContent = 'Spotify could not be reached.'; }
         }, 8000);
-        getPlayer().then((c) => { if (!on) return; first ? c.play() : c.resume(); })
+        getPlayer().then((c) => {
+          if (!on) return;
+          if (stale) { stale = false; c.loadUri(uris[at]); c.play(); } else if (first) c.play(); else c.resume();
+        })
           .catch(() => { clearTimeout(giveUp); if (on) { set(false); status.textContent = 'Spotify could not be reached.'; } });
       } else player?.then((c) => c.pause());
     }
     key.addEventListener('click', () => set(!on));
+    // next song: plays it if we're playing, otherwise queues it for play
+    nextKey.addEventListener('click', () => {
+      show((at + 1) % uris.length);
+      started = false;
+      if (on && player) {
+        advancing = true;
+        player.then((c) => { c.loadUri(uris[at]); c.play(); });
+        setTimeout(() => { advancing = false; }, 1500);
+        status.textContent = `Playing ${tracks[at]}`;
+      } else if (player) stale = true;
+    });
     key.addEventListener('keydown', (e) => { if (e.key === 'Escape' && on) set(false); });
     document.addEventListener('visibilitychange', () => { if (document.hidden && on) set(false); });
   }
