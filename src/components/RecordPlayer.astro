@@ -13,8 +13,9 @@
    (muted on request), the neon green display, and the keys (a round
    Spotify key, a round next key, then the long play key). Press play
    and the record rises and spins, the song scrolls across the display,
-   and the caption (title · artist, no "On repeat", on request
-   2026-11-15) and the record's label (that song's cover, cross-fading)
+   and the caption (title · artist; for screen readers only since
+   2026-11-15, on request, so nothing sits under the player) and the
+   record's label (that song's cover, cross-fading)
    follow the track actually playing. It plays her playlist's real
    tracks, one after another, through Spotify's embedded player (on
    request, 2026-11-11), and stops after the last one rather than
@@ -78,7 +79,7 @@ const line = (t: typeof first) => `${t.title} · ${t.artist}`;
       <span class="rp__feet" aria-hidden="true"></span>
     </div>
   </div>
-  <p class="rp__cap"><b data-rp-title>{first.title}</b> · <span data-rp-artist>{first.artist}</span></p>
+  <p class="rp__cap u-sr-only"><b data-rp-title>{first.title}</b> · <span data-rp-artist>{first.artist}</span></p>
   <div class="rp__embed" data-rp-embed aria-hidden="true"></div>
   <span class="u-sr-only" role="status" data-rp-status></span>
 </div>

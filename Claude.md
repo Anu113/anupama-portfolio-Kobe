@@ -731,7 +731,7 @@ walked back. Concretely, in the current implementation:
   asked for her songs over the old made-up tune). The display, caption
   and the record's label (her covers, saved into
   `public/images/about/covers/`) follow the track playing. Since 2026-11-15, on
-  request: the caption is just title · artist (no "On repeat"), the
+  request: there is no visible caption under the player (title · artist stays for screen readers), the
   playlist stops after its last song instead of starting over, and
   the next key skips a song. Spotify's
   script and player load only on the first press, so nobody contacts
