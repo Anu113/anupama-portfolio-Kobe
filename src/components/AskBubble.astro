@@ -5,6 +5,8 @@
    Art: Anupama's own watercolour and her 8s clip of him looking around,
    public/images/moss/ — every frame cut out of its backdrop:
    moss-sprite.webp (48 frames, 8x6 grid of 188x223 cells, 4px clear gutter
+   — and moss-sprite-96.webp, every 2nd frame, 12x8, swapped in with the
+   portrait's own 96 —
    so scaled cells can't bleed; same frames-of-the-clip as hero-sprite),
    moss-idle.webp (frame 0), moss-sm.webp (frame 0, panel avatar),
    moss-head.webp (frame 0, header crop). Export recipe: see
@@ -27,8 +29,7 @@
      (static under reduced motion); the words are the "click me" signal. Moss has no
      idle motion; he only answers the pointer, in lockstep with the
      portrait: HeroIllustration dispatches `hero-scrub:frame` whenever it
-     draws a new frame and Moss shows the same frame of his own clip,
-     mixing its two neighbours by the same amount as hers
+     draws a new frame and Moss shows the same frame of his own clip
      (looking left, round, up, back),
      so the two share one timeline and can't drift. Over Moss himself he
      also perks up — grows a little from the feet. Fine pointers only (the
@@ -90,7 +91,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
 <div class="pixel-launch">
   <button class="pixel-launcher" type="button" aria-label="Psst… Want the short version? Ask Moss about Anupama’s work" aria-expanded="false" aria-controls="pixel-panel" aria-haspopup="dialog">
     <span class="pixel-launcher__contact"></span>
-    <span class="pixel-launcher__moss"><span class="pixel-launcher__pic" data-pic="a"></span><span class="pixel-launcher__pic" data-pic="b"></span><span class="pixel-launcher__lamp"></span><span class="pixel-launcher__rim"></span></span>
+    <span class="pixel-launcher__moss"><span class="pixel-launcher__lamp"></span><span class="pixel-launcher__rim"></span></span>
     <span class="pixel-launcher__card" aria-hidden="true">
       <span class="pixel-launcher__who">Moss</span>
       <span class="pixel-launcher__first">Psst<span class="pixel-launcher__dots"><i></i><i></i><i></i></span></span>
@@ -152,33 +153,17 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
   }
   .pixel-launcher__moss.has-sprite {
     --moss-img: url('/images/moss/moss-sprite.webp');
-    --moss-size: 800% 600%;
-    --moss-pos: calc(var(--moss-col, 0) * 100% / 7) calc(var(--moss-row, 0) * 100% / 5);
-    --moss-pos-shift: calc(var(--moss-col, 0) * 100% / 7 + var(--rim-dx, 0px)) calc(var(--moss-row, 0) * 100% / 5 + var(--rim-dy, 0px));
-    /* His picture is drawn by the two layers below, not this background. */
-    background: none;
-    isolation: isolate;
+    --moss-cols: 8;
+    --moss-rows: 6;
+    --moss-size: calc(var(--moss-cols) * 100%) calc(var(--moss-rows) * 100%);
+    --moss-pos: calc(var(--moss-col, 0) * 100% / (var(--moss-cols) - 1)) calc(var(--moss-row, 0) * 100% / (var(--moss-rows) - 1));
+    --moss-pos-shift: calc(var(--moss-col, 0) * 100% / (var(--moss-cols) - 1) + var(--rim-dx, 0px)) calc(var(--moss-row, 0) * 100% / (var(--moss-rows) - 1) + var(--rim-dy, 0px));
   }
-  /* Between two pictures he is a mix of both, by the same amount as the
-     portrait (--moss-mix, 0-1): the picture he's leaving at 1 - mix and
-     the next at mix, added (plus-lighter), so his edges don't brighten.
-     z-index 0 keeps them under his night shade and lamp layers (1). */
-  .pixel-launcher__pic { display: none; }
-  .pixel-launcher__moss.has-sprite .pixel-launcher__pic {
-    display: block;
-    position: absolute; inset: 0; z-index: 0;
-    pointer-events: none;
-    background: var(--moss-img) no-repeat;
-    background-size: var(--moss-size);
-  }
-  .pixel-launcher__pic[data-pic='a'] {
-    background-position: calc(var(--moss-col-a, 0) * 100% / 7) calc(var(--moss-row-a, 0) * 100% / 5);
-    opacity: calc(1 - var(--moss-mix, 0));
-  }
-  .pixel-launcher__pic[data-pic='b'] {
-    background-position: calc(var(--moss-col-b, 0) * 100% / 7) calc(var(--moss-row-b, 0) * 100% / 5);
-    opacity: var(--moss-mix, 0);
-    mix-blend-mode: plus-lighter;
+  /* His 96 pictures, once the portrait has moved to hers (12 x 8). */
+  .pixel-launcher__moss.has-sprite.has-96 {
+    --moss-img: url('/images/moss/moss-sprite-96.webp');
+    --moss-cols: 12;
+    --moss-rows: 8;
   }
   /* The cursor lamp on him (CURSOR LAMP in tokens.css). The script sets
      --lamp-x/--lamp-y (the lamp, in his box), --lamp-r (its reach),
@@ -242,7 +227,6 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
     pointer-events: none;
     -webkit-mask: var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat;
     mask: var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat;
-    z-index: 1;
     opacity: var(--hero-night);
     transition: opacity var(--dur-night) var(--ease-out);
   }
@@ -464,7 +448,9 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
 
   // Moss plays the frame the portrait is on (HeroIllustration dispatches
   // `hero-scrub:frame`); both clips are the same 48 frames of an 8s, 24fps
-  // timeline. The sprite is only fetched where the portrait scrubs — the
+  // timeline, and the same 96 once the portrait has swapped to its finer
+  // clip (the event's `count`): his 96 sheet is fetched then, and until
+  // it's in he shows the nearest of his 48. The sprite is only fetched where the portrait scrubs — the
   // same fine-pointer, full-motion test HeroIllustration uses — and is
   // swapped in once decoded, so he never flashes blank.
   const stage = launcher?.closest<HTMLElement>('.hero__stage');
@@ -475,17 +461,24 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
     const sprite = new Image();
     sprite.src = '/images/moss/moss-sprite.webp';
     sprite.decode().then(() => moss.classList.add('has-sprite')).catch(() => {});
+    let fine: 'no' | 'loading' | 'yes' = 'no';
+    let shown = { frame: 0, count: 48 };
+    const show = ({ frame, count }: typeof shown) => {
+      shown = { frame, count };
+      const cols = count === 96 && fine === 'yes' ? 12 : COLS;
+      if (count === 96 && cols === COLS) frame = Math.round(frame * 47 / 95);   // his 48 meanwhile
+      moss.style.setProperty('--moss-col', String(frame % cols));
+      moss.style.setProperty('--moss-row', String(Math.floor(frame / cols)));
+    };
     stage.addEventListener('hero-scrub:frame', (e) => {
-      const { frame, from = frame, to = frame, mix = 0 } = (e as CustomEvent<{ frame: number; from?: number; to?: number; mix?: number }>).detail;
-      // The nearest picture cuts his night shade and lamp layers; the
-      // two neighbours and the mix draw him.
-      moss.style.setProperty('--moss-col', String(frame % COLS));
-      moss.style.setProperty('--moss-row', String(Math.floor(frame / COLS)));
-      moss.style.setProperty('--moss-col-a', String(from % COLS));
-      moss.style.setProperty('--moss-row-a', String(Math.floor(from / COLS)));
-      moss.style.setProperty('--moss-col-b', String(to % COLS));
-      moss.style.setProperty('--moss-row-b', String(Math.floor(to / COLS)));
-      moss.style.setProperty('--moss-mix', String(mix));
+      const { frame, count = 48 } = (e as CustomEvent<{ frame: number; count?: number }>).detail;
+      if (count === 96 && fine === 'no') {
+        fine = 'loading';
+        const s96 = new Image();
+        s96.src = '/images/moss/moss-sprite-96.webp';
+        s96.decode().then(() => { fine = 'yes'; moss.classList.add('has-96'); show(shown); }).catch(() => {});
+      }
+      show({ frame, count });
     });
 
     // The cursor lamp (CursorLamp.astro): where it is in his box, how far

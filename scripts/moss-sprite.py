@@ -4,7 +4,9 @@
     python3 scripts/moss-sprite.py frames
 
 Takes every 4th frame (48), the same frames of the timeline hero-sprite.webp
-uses, so frame N of Moss pairs with frame N of the portrait (AskBubble.astro
+uses, into moss-sprite.webp (8x6). Given every 2nd frame (96, mod(n\\,2)
+above) it writes moss-sprite-96.webp (12x8) instead, paired with
+hero-sprite-96.webp, and leaves the rest alone. Either way so frame N of Moss pairs with frame N of the portrait (AskBubble.astro
 shows whichever frame HeroIllustration dispatches).
 
 Matte: the backdrop is flood-filled from the frame edges and made
@@ -47,11 +49,15 @@ def matte(path):
 
 
 frames = [matte(f) for f in FRAMES]
-assert len(frames) == 48, len(frames)
+assert len(frames) in (48, 96), len(frames)
+COLS, ROWS = (8, 6) if len(frames) == 48 else (12, 8)
 
-sprite = Image.new('RGBA', (CW * 8, CH * 6), (0, 0, 0, 0))
+sprite = Image.new('RGBA', (CW * COLS, CH * ROWS), (0, 0, 0, 0))
 for i, im in enumerate(frames):
-    sprite.paste(im.resize((FW, FH), Image.LANCZOS), ((i % 8) * CW + PAD, (i // 8) * CH + PAD))
+    sprite.paste(im.resize((FW, FH), Image.LANCZOS), ((i % COLS) * CW + PAD, (i // COLS) * CH + PAD))
+if len(frames) == 96:
+    sprite.save(f'{OUT}/moss-sprite-96.webp', 'WEBP', quality=82, alpha_quality=85, method=6)
+    sys.exit()
 sprite.save(f'{OUT}/moss-sprite.webp', 'WEBP', quality=82, alpha_quality=85, method=6)
 
 idle = Image.new('RGBA', (CW, CH), (0, 0, 0, 0))
