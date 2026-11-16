@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!--
+  Render one redrawn screen (or one part of it) at 393 pt wide, for
+  scripts/work-play-render.mjs, which screenshots it at 2x into
+  public/images/work-play/. Query: ?k=<screen key>&part=<part>&h=<height>
+  Parts: full (default), base (Scan & Go before the scan), sheet / alert
+  (only that layer, transparent), under (all but the sheet or alert),
+  bar (only the top bar, or Scan & Go's subtotal bar), nospin.
+  Also exposes window.measure(): positions of each screen's tap target,
+  spinner and scan frame, as shares of the 393 × 852 screen.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="redraw.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  #host { position: relative; width: 393px; overflow: hidden; }
+  #host .ui { position: relative; }
+  .p-transparent .ui { background: transparent !important; }
+  .p-transparent .home { display: none; }
+  .p-only .ui * { visibility: hidden; }
+  .p-only .ui .keep, .p-only .ui .keep * { visibility: visible; }
+  .p-hide .ui .drop, .p-hide .ui .drop * { visibility: hidden !important; }
+  .p-base .sgx-sheet, .p-base .sgx-hit { visibility: hidden; }
+  .p-base .sgx-amt i:first-child { opacity: 1; }
+  .p-base .sgx-amt i:last-child { opacity: 0; }
+</style>
+</head>
+<body>
+<div id="host"></div>
+<script src="redraw.js"></script>
+<script src="proto.js"></script>
+<script>
+  const q = new URLSearchParams(location.search);
+  const k = q.get('k'), part = q.get('part') || 'full', h = +(q.get('h') || 852);
+  const host = document.getElementById('host');
+  host.style.height = h + 'px';
+  if (k) {
+    host.innerHTML = ui[k]();
+    const u = host.querySelector('.ui');
+    u.style.height = h + 'px';
+    const only = (sel) => { document.body.classList.add('p-only', 'p-transparent'); host.querySelectorAll(sel).forEach((e) => e.classList.add('keep')); };
+    const drop = (sel) => { document.body.classList.add('p-hide'); host.querySelectorAll(sel).forEach((e) => e.classList.add('drop')); };
+    if (part === 'base') document.body.classList.add('p-base');
+    if (part === 'sheet') only('.sheet');
+    if (part === 'alert') only('.alert');
+    if (part === 'under') drop('.sheet, .alert');
+    if (part === 'bar') only(k === 'sg-scan' ? '.sgx-bar' : '.ui > div:first-child');
+    if (part === 'nospin') drop('.spin');
+  }
+  // tap targets etc., for src/data/workPlay.ts
+  window.measure = (keys) => {
+    const out = {};
+    for (const key of keys) {
+      host.innerHTML = ui[key]();
+      const u = host.querySelector('.ui'); u.style.height = '852px';
+      const R = u.getBoundingClientRect();
+      const pos = (el) => { const r = el.getBoundingClientRect(); return { x: +((r.left - R.left + r.width / 2) / 393 * 100).toFixed(2), y: +((r.top - R.top + r.height / 2) / 852 * 100).toFixed(2), w: +(r.width / 393 * 100).toFixed(2), h: +(r.height / 852 * 100).toFixed(2) }; };
+      const o = {};
+      const hh = hot[key];
+      if (hh) { let t = typeof hh === 'string' ? byText(u, hh) : u.querySelector(hh.sel); if (t) o.tap = pos(tappable(t)); }
+      const sp = u.querySelector('.spin'); if (sp) o.spinner = pos(sp);
+      const band = u.querySelector('.sgx-band'); if (band) { o.frame = pos(band); o.hit = pos(u.querySelector('.sgx-hit')); }
+      out[key] = o;
+    }
+    return out;
+  };
+</script>
+</body>
+</html>

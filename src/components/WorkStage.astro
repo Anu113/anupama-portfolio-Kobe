@@ -1,0 +1,161 @@
+---
+/* WorkStage.astro — the picture inside a /work card (CaseCard), when the
+   case has an entry in data/workPlay.ts.
+
+   Two kinds, chosen on request (2026-11-16) from experiments/work-phones:
+   - Play: one iPhone 15 Pro in white titanium on the project hue, on the
+     flow's first screen. Hover or focus the card and the flow plays
+     (scripts/work-play.ts): a touch mark lands where a person would
+     press, the next screen arrives as iOS brings it, then it loops.
+     Three step dots sit in the corner. The screens are images rendered
+     by scripts/work-play-render.mjs.
+   - Desk: a MacBook with the iPhone in front, still (Okta IAM — desktop
+     work shown across devices).
+
+   The device is drawn in CSS, every length a share of its own width
+   (container units), so it scales with the tile. Materials and timing
+   are tokens (WORK PLAY in tokens.css). The stage is one image to
+   assistive tech, with `label` describing the flow; the screens inside
+   are decorative. Reduced motion: the first screen only. */
+import { isPlay, type Play, type Desk } from '../data/workPlay';
+import { layerHtml } from '../scripts/work-play-layer';
+
+interface Props { stage: Play | Desk }
+const { stage } = Astro.props;
+const play = isPlay(stage) ? stage : null;
+const desk = play ? null : (stage as Desk);
+const phone = (screen: string) =>
+  `<div class="wp-phone"><i></i><i></i><i></i><i></i><div class="wp-body"><div class="wp-glass"><div class="wp-screen">${screen}</div></div></div></div>`;
+---
+{play && (
+  <div class="wp-stage wp-stage--play" role="img" aria-label={play.label} data-play={JSON.stringify(play)}>
+    <Fragment set:html={phone(layerHtml(play.steps[0]))} />
+    <div class="wp-dots" aria-hidden="true">{play.steps.map((_, i) => <i class={i ? '' : 'on'}></i>)}</div>
+  </div>
+)}
+{desk && (
+  <div class="wp-stage wp-stage--desk" role="img" aria-label={desk.label}>
+    <div class="wp-mac">
+      <div class="wp-mac__lid"><div class="wp-mac__screen"><img src={desk.desk} alt="" loading="lazy" decoding="async" /></div></div>
+      <div class="wp-mac__base"></div>
+    </div>
+    <Fragment set:html={phone(`<div class="wp-layer"><img class="wp-img" src="${desk.phone}" alt="" loading="lazy" decoding="async"></div>`)} />
+  </div>
+)}
+
+<script>
+  import '../scripts/work-play';
+</script>
+
+<style is:global>
+  /* Global, prefixed .wp-: work-play.ts adds screens after load, and
+     those don't carry this component's scope hash. */
+  .wp-stage { position: absolute; inset: 0; }
+  .wp-stage--play { display: flex; align-items: center; justify-content: center; }
+
+  /* ---- iPhone 15 Pro ---------------------------------------------- */
+  .wp-phone {
+    position: relative; flex: none;
+    height: var(--work-phone-h); aspect-ratio: var(--work-phone-ratio);
+    container-type: inline-size;
+  }
+  .wp-body {
+    position: absolute; inset: 0;
+    border-radius: 17cqw; padding: 1.2cqw;
+    background: linear-gradient(135deg, var(--work-metal-1), var(--work-metal-2) 45%, var(--work-metal-3));
+    box-shadow: inset 0 0 0 0.25cqw rgb(0 0 0 / 0.1), 0 0.6cqw 1.2cqw rgb(0 0 0 / 0.08), 0 6cqw 12cqw -4cqw var(--work-device-shadow);
+  }
+  .wp-glass { height: 100%; border-radius: 15.8cqw; background: var(--work-glass); padding: 2.3cqw; }
+  .wp-screen { position: relative; height: 100%; border-radius: 13.5cqw; overflow: hidden; isolation: isolate; background: var(--work-glass); }
+  .wp-screen::after { /* the Dynamic Island */
+    content: ''; position: absolute; z-index: 20; left: 50%; top: 3cqw; transform: translateX(-50%);
+    width: 29cqw; height: 8.4cqw; border-radius: 99px; background: var(--work-island);
+  }
+  .wp-phone > i { position: absolute; width: 0.9cqw; background: var(--work-metal-3); border-radius: 0.5cqw; }
+  .wp-phone > i:nth-of-type(1) { left: -0.6cqw; top: 22%; height: 6%; }
+  .wp-phone > i:nth-of-type(2) { left: -0.6cqw; top: 32%; height: 10%; }
+  .wp-phone > i:nth-of-type(3) { left: -0.6cqw; top: 44.5%; height: 10%; }
+  .wp-phone > i:nth-of-type(4) { right: -0.6cqw; top: 33%; height: 15%; }
+
+  /* ---- a screen ---------------------------------------------------- */
+  .wp-layer { position: absolute; inset: 0; overflow: hidden; background: var(--work-glass); }
+  .wp-img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .wp-tall { position: absolute; left: 0; right: 0; top: 0; }
+  .wp-tall .wp-img { height: auto; }
+  .wp-tall.is-down { transform: translateY(var(--wp-shift)); }
+  .wp-bar, .wp-over, .wp-scan-sheet, .wp-scan-bar { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; pointer-events: none; }
+
+  /* arrivals, iOS-like */
+  .wp-layer[data-in='push'] { animation: wp-in var(--dur-work-push) var(--ease-work) both; }
+  .wp-layer[data-out='push'] { animation: wp-out var(--dur-work-push) var(--ease-work) both; }
+  .wp-layer[data-in='fade'], .wp-layer[data-in='sheet'], .wp-layer[data-in='alert'] { animation: wp-fade var(--dur-work-fade) ease-out both; }
+  .wp-layer[data-in='sheet'] .wp-over { animation: wp-rise var(--dur-work-sheet) var(--ease-work) both; }
+  .wp-layer[data-in='alert'] .wp-over { animation: wp-pop 300ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+  .wp-layer[data-in='scroll'] .wp-tall { animation: wp-scroll var(--dur-work-scroll) var(--ease-work) both; }
+  @keyframes wp-in { from { transform: translateX(100%); } }
+  @keyframes wp-out { to { transform: translateX(-30%); filter: brightness(0.85); } }
+  @keyframes wp-fade { from { opacity: 0; } }
+  @keyframes wp-rise { from { transform: translateY(60%); opacity: 0; } 40% { opacity: 1; } }
+  @keyframes wp-pop { from { opacity: 0; transform: scale(1.12); } }
+  @keyframes wp-scroll { from { transform: none; } }
+
+  /* the touch mark */
+  .wp-tap {
+    position: absolute; z-index: 21; width: 11%; aspect-ratio: 1; translate: -50% -50%;
+    border-radius: 50%; background: var(--work-tap); box-shadow: 0 0 0 1.5px var(--work-tap-ring);
+    pointer-events: none; animation: wp-tap var(--dur-work-tap) var(--ease-out) both;
+  }
+  .wp-tap--swipe { animation-name: wp-swipe; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+  @keyframes wp-tap { 0% { opacity: 0; transform: scale(1.5); } 25% { opacity: 1; transform: scale(1); } 45% { transform: scale(0.82); } 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }
+  @keyframes wp-swipe { 0% { opacity: 0; transform: translateY(0) scale(1.3); } 15% { opacity: 1; transform: translateY(0) scale(1); } 75% { opacity: 1; transform: translateY(-260%); } 100% { opacity: 0; transform: translateY(-260%); } }
+
+  /* ---- Scan & Go's scan (end state at rest; plays while live) ------ */
+  .wp-band { position: absolute; overflow: hidden; border-radius: 1.5cqw; pointer-events: none;
+    --c: var(--work-scan-frame);
+    background:
+      linear-gradient(var(--c), var(--c)) top left / 7.6cqw 0.8cqw no-repeat, linear-gradient(var(--c), var(--c)) top left / 0.8cqw 7.6cqw no-repeat,
+      linear-gradient(var(--c), var(--c)) top right / 7.6cqw 0.8cqw no-repeat, linear-gradient(var(--c), var(--c)) top right / 0.8cqw 7.6cqw no-repeat,
+      linear-gradient(var(--c), var(--c)) bottom left / 7.6cqw 0.8cqw no-repeat, linear-gradient(var(--c), var(--c)) bottom left / 0.8cqw 7.6cqw no-repeat,
+      linear-gradient(var(--c), var(--c)) bottom right / 7.6cqw 0.8cqw no-repeat, linear-gradient(var(--c), var(--c)) bottom right / 0.8cqw 7.6cqw no-repeat; }
+  .wp-band::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 0.8cqw; border-radius: 1cqw;
+    background: var(--work-scan-line); box-shadow: 0 0 4cqw 1.3cqw var(--work-scan-glow); opacity: 0; }
+  .wp-hit { position: absolute; border: 0.8cqw solid var(--work-scan-hit); border-radius: 1.5cqw; box-shadow: 0 0 0 1cqw var(--work-scan-hit-glow); pointer-events: none; }
+  .wp-flash { position: absolute; inset: 0; background: var(--work-scrim-flash); opacity: 0; pointer-events: none; }
+  .is-live .wp-band::after { animation: wp-sweep 1500ms ease-in-out 200ms both; }
+  .is-live .wp-hit { animation: wp-hit 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) 1650ms both; }
+  .is-live .wp-flash { animation: wp-flash 380ms ease-out 1650ms both; }
+  .is-live .wp-scan-sheet { animation: wp-rise-full 560ms var(--ease-work) 2050ms both; }
+  .is-live .wp-scan-bar { animation: wp-fade 300ms ease-out 2400ms both; }
+  @keyframes wp-sweep { 0% { top: 0; opacity: 0; } 8% { opacity: 1; } 55% { top: calc(100% - 0.8cqw); } 92% { top: 62%; opacity: 1; } 100% { top: 62%; opacity: 0; } }
+  @keyframes wp-hit { from { opacity: 0; transform: scale(1.35); } }
+  @keyframes wp-flash { 0% { opacity: 0; } 30% { opacity: 0.5; } 100% { opacity: 0; } }
+  @keyframes wp-rise-full { from { transform: translateY(40%); opacity: 0; } 30% { opacity: 1; } }
+
+  /* the Debit Card's loading ring */
+  .wp-spin { position: absolute; border-radius: 50%; border: 1.1cqw solid var(--work-spin-track); border-top-color: var(--work-spin);
+    animation: wp-turn 900ms linear infinite; }
+  @keyframes wp-turn { to { transform: rotate(360deg); } }
+
+  /* step dots */
+  .wp-dots { position: absolute; right: clamp(0.75rem, 1.5vw, 1rem); bottom: clamp(0.75rem, 1.5vw, 1rem); display: flex; gap: 6px; }
+  .wp-dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--work-dot);
+    transition: background var(--dur-hover) var(--ease-out), width var(--dur-reveal) var(--ease-out); }
+  .wp-dots i.on { width: 16px; background: var(--work-dot-on); }
+
+  /* ---- Desk: MacBook + iPhone ------------------------------------- */
+  .wp-mac { position: absolute; width: 68%; left: 10%; top: 13%; container-type: inline-size; }
+  .wp-mac__lid { background: var(--work-mac-lid); border-radius: 2.6cqw 2.6cqw 0 0; padding: 1.8cqw 1.8cqw 2.4cqw; box-shadow: 0 0 0 0.35cqw var(--work-metal-2); }
+  .wp-mac__screen { aspect-ratio: 16 / 10; overflow: hidden; border-radius: 0.6cqw 0.6cqw 0 0; position: relative; }
+  .wp-mac__screen img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .wp-mac__screen::after { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 11cqw; height: 2.1cqw; background: var(--work-mac-lid); border-radius: 0 0 1cqw 1cqw; }
+  .wp-mac__base { position: relative; height: 2.6cqw; margin: 0 -6.5cqw; border-radius: 0 0 4cqw 4cqw / 0 0 2.6cqw 2.6cqw;
+    background: linear-gradient(var(--work-mac-base-1), var(--work-mac-base-2) 70%, var(--work-mac-base-3)); box-shadow: 0 2cqw 4cqw -1cqw var(--work-device-shadow); }
+  .wp-mac__base::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 15cqw; height: 1cqw; background: var(--work-mac-lip); border-radius: 0 0 1.2cqw 1.2cqw; }
+  .wp-stage--desk .wp-phone { position: absolute; height: var(--work-phone-h-desk); right: 10%; bottom: 9%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wp-stage *, .wp-stage *::after { animation: none !important; transition: none !important; }
+  }
+</style>

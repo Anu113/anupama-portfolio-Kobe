@@ -1,0 +1,257 @@
+/* Redrawn screens — round 7.
+   Each case's phone screens rebuilt as code from her own exports: same
+   content, same flow, same brand, drawn on one iOS grid so nothing is
+   cropped, blurred or cut by the bezel. 393 × 852 artboard (iPhone 15
+   Pro points), scaled to the phone by redraw.js.
+   The grid: 20px side margins, 54px status bar, 44px nav, primary
+   action pinned above the home indicator with 34px under it, 8px
+   spacing steps, one radius per element kind. */
+
+.ui {
+  position: absolute; top: 0; left: 0; width: 393px; height: 852px;
+  transform-origin: 0 0;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--ui-bg, #fff); color: #101114;
+  font: 400 15px/1.4 -apple-system, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
+  letter-spacing: -.01em; text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+.ui * { box-sizing: border-box; margin: 0; }
+.ui svg { display: block; flex: none; }
+
+/* status bar + home indicator */
+.ui .sb { height: 54px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 6px 30px 0 46px; font-weight: 600; font-size: 16px; color: var(--sb-ink, #000); }
+.ui .sb__r { display: flex; gap: 6px; align-items: center; }
+.ui .home { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); width: 136px; height: 5px; border-radius: 3px; background: var(--home, #000); z-index: 9; }
+
+/* nav */
+.ui .nav { height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; color: var(--nav-ink, #101114); }
+.ui .nav__t { font-weight: 600; font-size: 17px; }
+.ui .nav--bar { background: var(--b); --nav-ink: #fff; padding: 0 16px; }
+.ui .nav--bar .nav__t { flex: 1; margin-left: 12px; }
+
+/* layout */
+.ui .body { flex: 1; padding: 8px 20px 0; display: flex; flex-direction: column; min-height: 0; }
+.ui .foot { flex: none; padding: 12px 20px 42px; display: flex; flex-direction: column; gap: 4px; background: var(--ui-bg, #fff); }
+.ui .foot--row { flex-direction: row; gap: 12px; }
+.ui .foot--row > * { flex: 1; }
+
+/* type */
+.ui .h1 { font-size: 28px; line-height: 1.18; font-weight: 700; letter-spacing: -.02em; }
+.ui .h2 { font-size: 22px; line-height: 1.22; font-weight: 700; letter-spacing: -.015em; }
+.ui .h3 { font-size: 17px; font-weight: 600; }
+.ui .sub { color: #5c6068; font-size: 15px; line-height: 1.45; }
+.ui .small { color: #6b6f77; font-size: 13px; line-height: 1.45; }
+.ui .eyebrow { color: #6b6f77; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.ui .link { color: var(--b2, var(--b)); font-weight: 600; }
+.ui .center { text-align: center; }
+
+/* buttons */
+.ui .btn { height: 52px; border-radius: 26px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 17px; background: var(--b); color: #fff; }
+.ui .btn--ghost { background: none; color: var(--b2, var(--b)); }
+.ui .btn--line { background: none; color: var(--b); box-shadow: inset 0 0 0 1.5px var(--b); }
+.ui .btn--sm { height: 36px; border-radius: 18px; font-size: 14px; padding: 0 16px; display: inline-flex; }
+.ui .btn--sq { border-radius: 10px; }
+
+/* surfaces */
+.ui .card { background: #fff; border-radius: 16px; box-shadow: 0 0 0 1px rgb(0 0 0 / .05), 0 2px 8px rgb(0 0 0 / .05); }
+.ui .group { background: #fff; border-radius: 14px; overflow: hidden; }
+.ui .row { display: flex; align-items: center; gap: 14px; min-height: 54px; padding: 0 16px; font-size: 16px; }
+.ui .row + .row { box-shadow: inset 0 1px 0 rgb(0 0 0 / .07); }
+.ui .row__end { margin-left: auto; color: #8a8e96; display: flex; gap: 6px; align-items: center; font-size: 15px; }
+.ui .ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: none; background: var(--tint, #eef3fb); color: var(--b2, var(--b)); }
+.ui .ico--round { border-radius: 50%; }
+
+/* bits */
+.ui .toggle { width: 51px; height: 31px; border-radius: 16px; background: #34c759; position: relative; flex: none; }
+.ui .toggle::after { content: ''; position: absolute; top: 2px; right: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgb(0 0 0 / .2); }
+.ui .toggle--b { background: var(--b2, var(--b)); }
+.ui .toggle--off { background: #e3e4e8; }
+.ui .toggle--off::after { right: auto; left: 2px; }
+.ui .field { height: 58px; border-radius: 12px; box-shadow: inset 0 0 0 1px #c9ccd2; padding: 9px 14px; display: flex; flex-direction: column; justify-content: center; position: relative; }
+.ui .field small { font-size: 12px; color: #6b6f77; }
+.ui .field b { font-weight: 400; font-size: 16px; }
+.ui .field--empty b { color: #6b6f77; }
+.ui .field > svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #5c6068; }
+.ui .list { display: flex; flex-direction: column; gap: 14px; }
+.ui .li { display: flex; gap: 12px; align-items: flex-start; font-size: 15px; line-height: 1.4; }
+.ui .li svg { margin-top: 1px; color: var(--b2, var(--b)); }
+.ui .stepper { display: flex; align-items: center; height: 36px; border-radius: 18px; box-shadow: inset 0 0 0 1px #c9ccd2; }
+.ui .stepper span { width: 36px; display: grid; place-items: center; font-size: 20px; color: var(--b2); }
+.ui .stepper b { min-width: 28px; text-align: center; font-weight: 600; }
+.ui .tabbar { flex: none; height: 84px; display: flex; justify-content: space-around; padding: 10px 12px 0; box-shadow: 0 -1px 0 rgb(0 0 0 / .06); background: #fff; }
+.ui .tabbar div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 500; color: #8a8e96; }
+.ui .tabbar .on { color: var(--b); }
+
+/* sheets and alerts */
+.ui .scrim { position: absolute; inset: 0; background: rgb(0 0 0 / .4); z-index: 5; }
+.ui .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: #fff; border-radius: 28px 28px 0 0; padding: 10px 20px 42px; display: flex; flex-direction: column; }
+.ui .sheet__grab { width: 36px; height: 5px; border-radius: 3px; background: #d4d6db; margin: 0 auto 14px; }
+.ui .alert { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); width: 270px; z-index: 6; border-radius: 14px; background: rgb(242 242 247 / .96); text-align: center; overflow: hidden; }
+.ui .alert__b { padding: 20px 16px 16px; }
+.ui .alert__b b { display: block; font-size: 17px; line-height: 1.3; font-weight: 600; margin-bottom: 4px; }
+.ui .alert__b p { font-size: 13px; line-height: 1.35; }
+.ui .alert__a { display: flex; box-shadow: inset 0 1px 0 rgb(60 60 67 / .29); }
+.ui .alert__a span { flex: 1; height: 44px; display: grid; place-items: center; font-size: 17px; color: #007aff; }
+.ui .alert__a span + span { box-shadow: inset 1px 0 0 rgb(60 60 67 / .29); font-weight: 600; }
+
+/* letter logos (stand-ins for third-party marks) */
+.ui .logo { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 18px; flex: none; }
+
+/* Brand type. PayPal: PayPal Sans Big, installed on this Mac (Regular
+   and Medium; no Bold exists in the set, so headings use Medium).
+   Walmart (Scan & Go, Walmart Pay with Chase Pay): Bogle, Walmart's own
+   face — not installed here, so it falls back to Helvetica Neue until
+   Bogle is. Licensed fonts: fine for a mock and for exported images,
+   not to be served as files on the live site. */
+@font-face { font-family: 'PP Sans'; font-weight: 100 450; src: local('PayPal Sans Big'), local('PayPalSansBig-Regular'); }
+@font-face { font-family: 'PP Sans'; font-weight: 451 900; src: local('PayPal Sans Big Medium'), local('PayPalSansBig-Medium'), local('PayPalSansBigMedium-Regular'); }
+.ui--pp { font-family: 'PP Sans', -apple-system, system-ui, sans-serif; letter-spacing: 0; }
+.ui--pp .h1, .ui--pp .h2 { font-weight: 400; letter-spacing: -.01em; }
+.ui--pp .h3, .ui--pp .btn, .ui--pp .link, .ui--pp .eyebrow, .ui--pp .nav__t, .ui--pp .row p[style*="font-weight:600"] { font-weight: 500; }
+.ui--wm { font-family: Bogle, 'Bogle', 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: 0; }
+.ui--wm .h1, .ui--wm .h2 { font-weight: 700; }
+.ui .sb, .ui .alert { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; } /* iOS's own chrome stays in SF */
+
+/* ---- Prototype (proto.js) ------------------------------------------
+   One large iPhone in a dialog. iOS-like timing: pushes 420ms on a
+   fast-out curve, sheets rise, alerts pop. */
+.ui .spin { animation: ui-spin 900ms linear infinite; }
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+
+.proto { border: 0; padding: 0; margin: auto; background: none; color: var(--fg); overflow: visible;
+  display: none; flex-direction: column; align-items: center; gap: 20px; max-height: 100vh; }
+.proto[open] { display: flex; }
+.proto::backdrop { background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px); }
+.proto__head { text-align: center; }
+.proto__co { color: var(--dim); margin: 0 0 4px; }
+.proto__title { margin: 0; font: 400 12px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+.proto__phone .iphone { height: min(72vh, 720px); }
+.proto__screen { isolation: isolate; }
+.proto__layer { position: absolute; inset: 0; overflow: hidden; background: #fff; }
+.proto__bar { display: flex; align-items: center; gap: 8px; }
+.proto__btn { font: 400 18px/1 var(--font-mono); color: var(--fg); background: none; border: 1px solid var(--rule); border-radius: 99px; height: 36px; min-width: 36px; padding: 0 12px; cursor: pointer; }
+.proto__btn--text { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; margin-left: 8px; }
+.proto__btn:disabled { opacity: .35; cursor: default; }
+.proto__btn:not(:disabled):hover { border-color: var(--fg); }
+.proto__count { color: var(--dim); min-width: 120px; text-align: center; }
+.proto__tip { color: var(--dim); margin: 0; }
+.proto__close { position: fixed; top: 20px; right: 24px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--rule); background: var(--bg); color: var(--fg); font: 400 22px/1 var(--font-sans); cursor: pointer; }
+.proto button:focus-visible, .proto [data-hot]:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.proto [data-hot] { cursor: pointer; }
+.proto [data-hot="next"]:focus-visible, .proto [data-hot="toggle"]:focus-visible { outline: 3px solid #0a84ff; outline-offset: 3px; }
+
+/* where to tap: a soft blue ring, as Figma's hotspot hint */
+.proto .is-hint { animation: proto-hint 1100ms ease-out 2; }
+@keyframes proto-hint { 0% { box-shadow: 0 0 0 0 rgb(10 132 255 / .55); } 100% { box-shadow: 0 0 0 14px rgb(10 132 255 / 0); } }
+
+.proto__layer[data-in="push"] { animation: p-in 420ms cubic-bezier(.32, .72, 0, 1) both; }
+.proto__layer[data-out="push"] { animation: p-out 420ms cubic-bezier(.32, .72, 0, 1) both; }
+.proto__layer[data-in="back"] { animation: p-back-in 420ms cubic-bezier(.32, .72, 0, 1) both; }
+.proto__layer[data-out="back"] { z-index: 2; animation: p-back-out 420ms cubic-bezier(.32, .72, 0, 1) both; box-shadow: -10px 0 30px rgb(0 0 0 / .15); }
+@keyframes p-in { from { transform: translateX(100%); } }
+@keyframes p-out { to { transform: translateX(-30%); filter: brightness(.85); } }
+@keyframes p-back-in { from { transform: translateX(-30%); filter: brightness(.85); } }
+@keyframes p-back-out { to { transform: translateX(100%); } }
+.proto__layer[data-in="sheet"], .proto__layer[data-in="alert"] { animation: p-fade 220ms ease-out both; }
+.proto__layer[data-in="sheet"] .sheet { animation: p-sheet 460ms cubic-bezier(.32, .72, 0, 1) both; }
+.proto__layer[data-in="sheet"] .scrim, .proto__layer[data-in="alert"] .scrim { animation: p-fade 300ms ease-out both; }
+.proto__layer[data-in="alert"] .alert { animation: p-alert 300ms cubic-bezier(.2, .9, .3, 1.2) both; }
+@keyframes p-fade { from { opacity: 0; } }
+@keyframes p-sheet { from { transform: translateY(100%); } }
+@keyframes p-alert { from { opacity: 0; transform: translate(-50%, -50%) scale(1.15); } }
+
+/* the tile opener */
+.media__open { position: absolute; inset: 0; z-index: 3; background: none; border: 0; cursor: pointer; }
+.media__open:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+.media__open span { position: absolute; left: 50%; bottom: 14px; transform: translate(-50%, 6px); opacity: 0; transition: opacity 300ms cubic-bezier(.16, 1, .3, 1), transform 500ms cubic-bezier(.16, 1, .3, 1);
+  font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--bg); background: var(--fg); border-radius: 99px; padding: 9px 14px; white-space: nowrap; }
+.media__open:hover span, .media__open:focus-visible span { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .proto *, .proto__layer { animation: none !important; transition: none !important; }
+}
+
+/* ---- Hover play (hover.js), design N ------------------------------ */
+.solo-play .iphone { height: 86%; }
+.media[data-play] { cursor: default; }
+.media[data-play]:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+.play { isolation: isolate; }
+.proto__layer[data-in="fade"] { animation: p-fade 360ms ease-out both; }
+.play__steps { position: absolute; right: 16px; bottom: 16px; display: flex; gap: 6px; }
+.play__steps i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--fg) 22%, transparent); transition: background 300ms cubic-bezier(.16, 1, .3, 1), width 500ms cubic-bezier(.16, 1, .3, 1); }
+.play__steps i.on { background: var(--fg); width: 16px; border-radius: 3px; }
+/* the touch mark */
+.play__tap { position: absolute; z-index: 20; width: var(--d); height: var(--d); margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
+  border-radius: 50%; background: rgb(120 120 128 / .45); box-shadow: 0 0 0 1.5px rgb(255 255 255 / .7); pointer-events: none;
+  animation: play-tap 900ms cubic-bezier(.16, 1, .3, 1) both; }
+@keyframes play-tap { 0% { opacity: 0; transform: scale(1.5); } 25% { opacity: 1; transform: scale(1); } 45% { transform: scale(.82); } 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }
+.ui .is-pressed { filter: brightness(.9); transform: scale(.97); transition: transform 120ms ease, filter 120ms ease; }
+@media (prefers-reduced-motion: reduce) { .play__tap { display: none; } }
+
+/* ---- Privacy hub, from her redesign (w59 on the Wix site) --------- */
+.ui .pvhub { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+.ui .pvhub__scroll { transition: none; }
+.ui .pvhub__scroll.is-down { transform: translateY(-372px); }
+.ui .pvhub__head { background: #fff; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 32px 28px; }
+.ui .pvhub__body { padding: 24px 20px 40px; display: flex; flex-direction: column; gap: 12px; }
+.ui .pvcard { background: #1040c1; color: #fff; border-radius: 12px; padding: 20px; display: flex; gap: 12px; }
+.ui .pvcard__t { font-size: 20px; line-height: 1.25; }
+.ui .pvcard__s { font-size: 15px; line-height: 1.4; margin-top: 8px; opacity: .92; }
+.ui .pvcard__l { font-size: 17px; font-weight: 500; margin-top: 20px; }
+.ui .pvhub__h { font-size: 20px; line-height: 1.3; margin: 20px 0 2px; }
+.ui .pvrow { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgb(0 0 0 / .06); padding: 16px; display: flex; gap: 16px; align-items: center; }
+.ui .pvrow__t { font-size: 16px; font-weight: 500; }
+.ui .pvrow__s { font-size: 14px; line-height: 1.4; color: #5c6068; margin-top: 2px; }
+/* scrolling in, as a thumb would: the new layer starts where the old one was */
+.proto__layer[data-in="scroll"] .pvhub__scroll { animation: p-scroll 1100ms cubic-bezier(.32, .72, 0, 1) both; }
+@keyframes p-scroll { from { transform: none; } }
+
+/* ---- Scan & Go: the scan, played when the screen is live --------- */
+/* At rest the screen shows its end state (item found, card up). While
+   live (hover play, prototype) it runs: a scan line sweeps the frame,
+   the barcode is caught in green with a flash, the item card rises and
+   the subtotal ticks to $2.50. */
+.ui .sgx-band { position: absolute; overflow: hidden; pointer-events: none; }
+.ui .sgx-band::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; border-radius: 2px; background: #ffc220; box-shadow: 0 0 16px 5px rgb(255 194 32 / .65); opacity: 0; }
+.ui .sgx-hit { position: absolute; border: 3px solid #2a8703; border-radius: 6px; box-shadow: 0 0 0 4px rgb(42 135 3 / .28); pointer-events: none; }
+.ui .sgx-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.ui .sgx-amt { display: inline-grid; }
+.ui .sgx-amt i { grid-area: 1 / 1; font-style: normal; }
+.ui .sgx-amt i:first-child { opacity: 0; }
+.is-live .ui .sgx-band::after { animation: sgx-sweep 1500ms ease-in-out 200ms both; }
+.is-live .ui .sgx-hit { animation: sgx-hit 420ms cubic-bezier(.2, .9, .3, 1.2) 1650ms both; }
+.is-live .ui .sgx-flash { animation: sgx-flash 380ms ease-out 1650ms both; }
+.is-live .ui .sgx-sheet { animation: sgx-sheet 560ms cubic-bezier(.32, .72, 0, 1) 2050ms both; }
+.is-live .ui .sgx-amt i:first-child { animation: sgx-out 1ms 2400ms reverse both; }
+.is-live .ui .sgx-amt i:last-child { animation: sgx-in 300ms ease-out 2400ms both; }
+@keyframes sgx-sweep { 0% { top: 0; opacity: 0; } 8% { opacity: 1; } 55% { top: calc(100% - 3px); } 92% { top: 62%; opacity: 1; } 100% { top: 62%; opacity: 0; } }
+@keyframes sgx-hit { from { opacity: 0; transform: scale(1.35); } }
+@keyframes sgx-flash { 0% { opacity: 0; } 30% { opacity: .5; } 100% { opacity: 0; } }
+@keyframes sgx-sheet { from { transform: translateY(130%); } }
+@keyframes sgx-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes sgx-out { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .is-live .ui * { animation: none !important; } }
+.play__tap--swipe { animation: play-swipe 1000ms cubic-bezier(.4, 0, .2, 1) both; }
+@keyframes play-swipe { 0% { opacity: 0; transform: translateY(0) scale(1.3); } 15% { opacity: 1; transform: translateY(0) scale(1); } 75% { opacity: 1; transform: translateY(var(--dy)); } 100% { opacity: 0; transform: translateY(var(--dy)); } }
+
+/* ---- Debit card, drawn (debitCard() in redraw.js) ----------------- */
+.ui .dcard3d { perspective: 900px; padding: 20px 0 10px; }
+.ui .dcard3d__face { position: relative; width: 292px; height: 184px; border-radius: 14px; overflow: hidden;
+  background: linear-gradient(135deg, #22239a, #191a7c 60%, #14156a);
+  transform: rotateX(16deg) rotateY(-14deg) rotateZ(-12deg);
+  box-shadow: 0 1px 0 rgb(255 255 255 / .12) inset, 0 18px 30px -16px rgb(20 21 106 / .55); }
+.ui .dcard3d__mark { position: absolute; left: 18px; top: 16px; display: flex; gap: 8px; align-items: center; color: #fff; font-size: 13px; font-weight: 500; }
+.ui .dcard3d__p { position: absolute; left: 104px; top: 20px; }
+.ui .dcard3d__mc { position: absolute; right: 16px; bottom: 16px; display: flex; }
+.ui .dcard3d__mc i { width: 30px; height: 30px; border-radius: 50%; background: #eb001b; }
+.ui .dcard3d__mc i + i { background: #f79e1b; margin-left: -12px; mix-blend-mode: hard-light; opacity: .95; }
+/* the scan frame, drawn (the photo's own frame, box and line were
+   painted out of art/sg-camera.png) */
+.ui .sgx-band { border-radius: 6px;
+  --c: rgb(255 255 255 / .95);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 30px 3px no-repeat, linear-gradient(var(--c), var(--c)) top left / 3px 30px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 30px 3px no-repeat, linear-gradient(var(--c), var(--c)) top right / 3px 30px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 30px 3px no-repeat, linear-gradient(var(--c), var(--c)) bottom left / 3px 30px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 30px 3px no-repeat, linear-gradient(var(--c), var(--c)) bottom right / 3px 30px no-repeat; }

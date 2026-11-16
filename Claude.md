@@ -155,7 +155,10 @@ effect:
   her far side dimmed, a faint glint on the laptop lid, and behind her
   a little extra floor light with her shadow cut out of it plus contact
   pools under the legs (all night). Moss gets the same light, rim and
-  contact pool. Values under CURSOR LAMP in `tokens.css`.
+  contact pool. In light mode the lamp is off the page entirely
+  (`display: none`), not just at zero strength: a screen-blended layer
+  fixed over the page made the browser re-blend what scrolled under it.
+  Values under CURSOR LAMP in `tokens.css`.
 - **Moss, the "ask about my work" character (`AskBubble.astro`),
   approved on request.** Called Pixel in the code (`.pixel-*`, `pixelTree`,
   the "Pixel" block in `tokens.css`) — that's the internal name; the visitor
@@ -558,6 +561,18 @@ walked back. Concretely, in the current implementation:
   2026-11-13); don't add one back. Its reason: a felt response, only for a visitor who
   asks for it. Don't wire sounds beyond the nav without asking; the
   About page's record player plays on its own press, apart from this.
+- **Wheel scrolls glide, with Lenis** (on request, 2026-11-16: the page
+  "stopped dead" when the wheel stopped; Lenis itself also on request).
+  `scripts/smooth-scroll.ts`, loaded in `Base.astro`. Lenis moves the
+  real document scroll, no transformed wrapper, so sticky, scroll
+  listeners and observers are untouched. Ease is `--scroll-glide` under
+  MOTION in `tokens.css` (Lenis's lerp; lower glides longer). Touch
+  stays native; wheels a component already took (defaultPrevented: the
+  playground wall, the pan canvas), inner boxes that scroll (nested
+  scroll on; `data-lenis-prevent` by hand) and anything while a modal
+  `<dialog>` is open are left to the browser. `html.lenis` turns off the
+  CSS `scroll-behavior: smooth` so the two don't fight; anchor links go
+  through Lenis. Off under reduced motion.
 - **The location line** (`LocalTime.astro`) sits above the hero
   headline, after abstract.systems: a green "available" light with a
   pinging ring, `BANGALORE,IN`, a live weather icon, and 24h time with
@@ -792,6 +807,25 @@ walked back. Concretely, in the current implementation:
   five seconds) and no Screens/Prototype label on the stage. Its reason: a skimming
   recruiter sees the product working, not a thumbnail. Sizes and
   timing under PHONE CARDS in `tokens.css`.
+- **The /work tiles play their flow on hover** (`WorkStage.astro`,
+  `scripts/work-play.ts`, `data/workPlay.ts`, WORK PLAY in
+  `tokens.css`; on request, 2026-11-16, design N of
+  `experiments/work-phones/`): each phone case is one iPhone 15 Pro in
+  white titanium on its project hue, at rest on the flow's first
+  screen. Hover or focus the card and the flow plays: a grey touch mark
+  lands where a person would press, the next screen arrives as iOS
+  brings it (push, sheet, alert, scroll), then it holds and loops;
+  leave and it fades back. Scan & Go's first screen plays its own scan
+  (line, green catch, the item card rising). Okta IAM is a MacBook with
+  the phone in front, still; the Integration Platform keeps its
+  picture. Text under each tile stays title first. The screens are her
+  own, redrawn on one iOS grid in the experiment (`redraw.js`, in each
+  brand's type — PayPal Sans is licensed, installed only on her Mac) and
+  rendered to 2x images by `scripts/work-play-render.mjs`; illustrations
+  and photos in them are cut from her exports and boards, never drawn.
+  Re-render after changing a screen. Nothing plays under reduced motion
+  or on touch. Its reason: the grid stays calm for a skimming recruiter;
+  whoever pauses on a case sees the product working.
 - **On case studies, a phone sits in a device box** (`DeviceBox.astro`,
   `styles/device-box.css`, on request, measured off danield.design's
   phone tiles): a plain white box (no colour behind the phone), 1px
