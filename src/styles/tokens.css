@@ -818,7 +818,8 @@
   --compare-handle-shadow: 0 3px 12px rgb(0 0 0 / 0.3);
   --compare-handle-size: 34px;
   --compare-pin-before: #262626;   /* what was wrong: ink */
-  --compare-pin-after: #b4482a;    /* the fix: the light-mode accent, 5.6:1 with the pin ink */
+  --compare-pin-after: #2456c9;    /* the fix: a plain blue, 6.3:1 with the pin ink. Not the
+                                      accent: no clay on case pages (on request, 2026-11-16) */
   --compare-pin-ink: #ffffff;
   --compare-pin-size: 22px;
   --compare-pin-size-sm: 16px;     /* on the short web strip, on phones */
@@ -830,6 +831,12 @@
   --compare-tag-after-ink: #ffffff;
   --dur-compare-flip: 360ms;       /* a note turning from Before to After, a pin moving */
   --dur-compare-ring: 700ms;       /* the ring that marks a pin as it appears */
+  --compare-fixed: #2456c9;        /* a note's dot once it's fixed, on the page ground */
+  /* No hairlines on case pages (on request, 2026-11-16): items in a list
+     are parted by space, blocks in a section by a clearly larger gap. */
+  --case-list-gap: 1.5rem;          /* between items of a list: notes, points, rows */
+  --case-list-gap-tight: 0.75rem;   /* between short lines */
+  --case-block-gap: clamp(2.75rem, 4.5vw, 4rem);
   --cmp-browser-dot: #d6d6d6;      /* the web pair's plain browser frame */
   /* The web account settings, redrawn from her screenshots: drawn at this
      size, scaled to the frame. PayPal's blues, read off them. */
@@ -841,6 +848,9 @@
   --pp-web-sub-old-ink: #d6e4f7;
   --pp-web-ground: #f5f7fa;
   --pp-web-skeleton: #e3e7ec;
+}
+:root[data-mode='dark'] {
+  --compare-fixed: #7ea2f2;        /* 6.9:1 on the dark ground */
 }
 
 /* PRIVACY COVER (PrivacyCover.astro) — the Privacy case's main image:

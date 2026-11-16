@@ -506,9 +506,10 @@ walked back. Concretely, in the current implementation:
   Focus rings are ink (`--focus`). `--accent-text` now resolves to ink,
   so anything reading it follows. The accent stays only for marks: the
   cursor trail, the hero shader, Moss's dot and his panel's caret, the
-  preloader, the before/after pins
-  (kept on request). Don't put the accent back on text, links or other
-  buttons.
+  preloader. None on case study pages (on request, 2026-11-16): the
+  before/after pins and fixed-note dots are a plain blue
+  (`--compare-pin-after`, `--compare-fixed`). Don't put the accent back
+  on text, links, other buttons or case pages.
 - **Dark mode** came back on request, as the same palette re-inked rather
   than a second one: `:root[data-mode='dark']` in `tokens.css` redefines
   only the palette tokens (ground `#1b1a19`, ink `#ecebe8`, grey
@@ -574,10 +575,13 @@ walked back. Concretely, in the current implementation:
 - **Case study type** (`work/[slug].astro`, `CaseBlocks.astro`), after
   carlthomasiv.com/work/ona-conversations, chosen on request from a mock:
   the title is the one large line (`--step-case-title`, 30→40px); section
-  heads drop to `--step-title`; each section opens on a hairline with
-  "01  THE SITUATION" in 11px mono caps; labels, row terms, captions and
+  heads drop to `--step-title`; each section opens on
+  "01  THE SITUATION" in 11px mono caps (no hairlines on case pages since
+  2026-11-16, on request: lists, notes, rows, facts and section openers
+  are parted by space — `--case-list-gap`, `--case-block-gap` under
+  BEFORE / AFTER in `tokens.css`; don't add hairlines back); labels, row terms, captions and
   citations are mono too. "What was broken"-style points are a numbered
-  13px list. The pull quote is roman serif on a 1px ink rule — no italic
+  13px list. The pull quote is roman serif with no rule beside it (2026-11-16) — no italic
   and no accent, on request. Body stays Manrope 600.
 - **Case study contents and reading strip**, after felixrieseberg.com's
   posts (on request): the left rail (`CaseRail.astro`) is a "Contents"
@@ -610,7 +614,7 @@ walked back. Concretely, in the current implementation:
   (2026-11-14) — a requested exception to the square `--radius` rule,
   those blocks only. The old "Case snapshot" cards became the head's
   facts. Head spacing under CASE HEAD in `tokens.css`. Section openers
-  and the numbered lists keep their hairlines.
+  and the numbered lists are parted by space, no hairlines.
 - **Case tags are a crayon wash** (CASE TAGS in `tokens.css`, on
   request, 2026-11-14, from `experiments/case-spacing/`, over the lime
   and a cream chip): no chip, ink text on a highlighter stroke of her
