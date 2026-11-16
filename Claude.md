@@ -188,7 +188,9 @@ effect:
     scrubs through his clip in lockstep with the portrait —
     `HeroIllustration` dispatches `hero-scrub:frame` and Moss shows the same
     frame, one timeline for both, so keep the two clips at the same 48
-    frames — and perks up when hovered. Fine pointers only; frame 0 and
+    frames. Between two pictures both are drawn as a mix of the pair
+    (option B of `experiments/hero-frames/`, on request, 2026-11-16), so
+    they move with every bit of pointer travel instead of stepping — and perks up when hovered. Fine pointers only; frame 0 and
     still under reduced motion.
   - Panel: opens on click as a dialog with a scrim; dark (the site's `ink`
     values) and **monospace throughout** — deliberately unlike the rest of

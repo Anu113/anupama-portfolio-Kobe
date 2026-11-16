@@ -22,11 +22,13 @@ type Sub = (dt: number, now: number) => boolean;
 const awake = new Set<Sub>();
 let raf = 0;
 let last = 0;
+let askedAt = 0;   // when the pending frame was requested
 
 const FRAME = 1000 / 60;
 const MAX_DT = 50;   // after a stall, step as if ~3 frames passed, no more
 
 const tick = (now: number) => {
+  askedAt = performance.now();
   const dt = Math.min(MAX_DT, Math.max(0, now - last));
   last = now;
   for (const fn of [...awake]) {
@@ -39,10 +41,20 @@ const tick = (now: number) => {
   raf = awake.size ? requestAnimationFrame(tick) : 0;
 };
 
+// A frame asked for while the page was hidden can be dropped (seen in
+// an embedded browser; back/forward restores can do it too). Then raf
+// stays set, wake() thinks the loop is running, and everything on it
+// freezes until a reload. So a request older than this is treated as
+// lost and asked for again.
+const STALE_MS = 250;
+
 export function wake(fn: Sub) {
   awake.add(fn);
+  const now = performance.now();
+  if (raf && now - askedAt > STALE_MS) { cancelAnimationFrame(raf); raf = 0; }
   if (!raf) {
-    last = performance.now() - FRAME;   // first step is one ordinary frame
+    last = now - FRAME;   // first step is one ordinary frame
+    askedAt = now;
     raf = requestAnimationFrame(tick);
   }
 }
