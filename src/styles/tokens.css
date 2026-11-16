@@ -1452,6 +1452,19 @@
   --work-scan-frame: rgb(255 255 255 / 0.95);   /* the camera's corner brackets */
   --work-dot: rgb(0 0 0 / 0.2);           /* step dots on the (always light) project hue */
   --work-dot-on: rgb(0 0 0 / 0.72);
+  /* WORK GROUND — what the device stands on (data/workPlay.ts `ground`):
+     a photo under a dark wash, a blurred photo under a lighter one, or
+     the project hue as a lit gradient. The "Mix" of experiments/
+     work-phones, round 17, on request (2026-11-16). */
+  --work-wash-photo: linear-gradient(rgb(16 16 22 / 0.34), rgb(16 16 22 / 0.5));
+  --work-wash-blur: linear-gradient(rgb(16 16 22 / 0.22), rgb(16 16 22 / 0.38));
+  --work-ground-pale: #fff 55%;          /* the colour block's lit corner */
+  --work-ground-deep: #3d4f86 16%;       /* and its far corner */
+  --work-ground-glow: rgb(255 255 255 / 0.55);
+  --work-ground-glow-corner: rgb(255 255 255 / 0.6);
+  --work-dot-photo: rgb(255 255 255 / 0.4);   /* step dots on a photo */
+  --work-dot-photo-on: #fff;
+  --work-device-shadow-photo: rgb(0 0 0 / 0.4);
   /* Scan & Go's scan: Walmart's spark yellow line, the found-it green */
   --work-scan-line: #ffc220;
   --work-scan-glow: rgb(255 194 32 / 0.65);

@@ -828,6 +828,13 @@ walked back. Concretely, in the current implementation:
   Re-render after changing a screen. Nothing plays under reduced motion
   or on touch. Its reason: the grid stays calm for a skimming recruiter;
   whoever pauses on a case sees the product working.
+  Under each device a ground, mixed across the grid so it has a rhythm
+  (on request, 2026-11-16, "Mix" in the experiment): a photo under a
+  dark wash (ID check, Ads consent, Chase Pay), the photo blurred to a
+  soft texture (Privacy, Scan & Go) or the project hue as a lit colour
+  block (Okta IAM, Debit Card); `ground` in `data/workPlay.ts`, WORK
+  GROUND in `tokens.css`. The photos are stand-ins from PayPal's and
+  Walmart's sites until licensed or her own ones replace them.
 - **On case studies, a phone sits in a device box** (`DeviceBox.astro`,
   `styles/device-box.css`, on request, measured off danield.design's
   phone tiles): a plain white box (no colour behind the phone), 1px
