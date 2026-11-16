@@ -46,6 +46,11 @@ const data = JSON.stringify({ tree: pixelTree, keys: pixelKeys, unknown: pixelUn
 <style>
   .amoss {
     --a-step: var(--step-talk);
+    /* The field itself in the item role (18px), like the Small talk
+       questions above it, so it reads as one more question
+       (2026-11-16, experiments/small-talk-stacked). */
+    --a-input: var(--step-item);
+    --a-input-track: var(--tracking-item);
     --a-chip: var(--step-talk-chip);
     --a-pad: var(--talk-ask-pad);
     --a-pad-start: var(--talk-pad);
@@ -56,6 +61,8 @@ const data = JSON.stringify({ tree: pixelTree, keys: pixelKeys, unknown: pixelUn
   }
   .amoss--small {
     --a-step: var(--step-amoss-sm);
+    --a-input: var(--step-amoss-sm);
+    --a-input-track: 0;
     --a-chip: var(--step-label);
     --a-pad: var(--amoss-sm-pad);
     --a-pad-start: var(--amoss-sm-pad-start);
@@ -71,13 +78,13 @@ const data = JSON.stringify({ tree: pixelTree, keys: pixelKeys, unknown: pixelUn
   }
   .ask input {
     flex: 1; min-width: 0; padding: 0.375rem 0; border: 0; outline: none; background: none;
-    color: var(--fg); font: inherit; font-size: var(--a-step); line-height: 1.2; letter-spacing: 0; text-overflow: ellipsis;
+    color: var(--fg); font: inherit; font-size: var(--a-input); line-height: 1.2; letter-spacing: var(--a-input-track); text-overflow: ellipsis;
   }
   /* Focus: none, exactly his (chosen on request over a deeper ground);
      the caret is the only sign the field has focus. */
   /* his placeholder is 28% ink and fails AA; ours is the lightest grey that passes */
   .ask input::placeholder { color: var(--fg-dim); opacity: 1; }
-  @media (pointer: coarse) { .ask input { font-size: max(16px, var(--a-step)); } }
+  @media (pointer: coarse) { .ask input { font-size: max(16px, var(--a-input)); } }
   .send {
     display: grid; flex: none; place-items: center; width: var(--a-send); height: var(--a-send);
     padding: 0; border: 0; border-radius: var(--radius-pill);

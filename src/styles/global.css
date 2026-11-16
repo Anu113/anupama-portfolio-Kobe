@@ -65,7 +65,7 @@ h1, h2, h3, h4, h5, h6 {
    The whole system, as classes. Components that set type themselves
    read the same tokens.
      .u-display  the hero sentence — serif 300, 50px
-     .u-heading  section/page headlines — serif 300, 44px
+     .u-heading  section/page headlines — serif 300, 40px
      .u-title    sub-headings — serif 300, 22px
      .u-label    labels, captions — Manrope 600, 12px, uppercase
      .u-nav      the name and nav links — Manrope 600, 14px, uppercase
@@ -154,12 +154,13 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   gap: 0.5em;
-  font-family: var(--font-sans);
-  font-size: var(--step-label);
-  font-weight: var(--weight-sans);
+  /* The label role (mono 11px caps), as every label on the site. */
+  font-family: var(--font-mono);
+  font-size: var(--step-fine);
+  font-weight: var(--weight-mono);
   line-height: var(--leading-label);
   text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  letter-spacing: var(--tracking-mono-label);
   text-decoration: none;
   border-radius: var(--radius-pill);
   /* The reference's pill: 10px 18px around a 12px label. */
@@ -239,18 +240,18 @@ h1, h2, h3, h4, h5, h6 {
    with --secondary or --tertiary, e.g. the password show/hide toggle. */
 .btn--icon { padding: 0.6rem; aspect-ratio: 1; gap: 0; }
 
-/* Not a pill at all — the reference's "VIEW ALL WORK": a label-sized
-   uppercase link with an underline that draws in on hover. */
+/* Not a pill at all — the reference's "VIEW ALL WORK": a label-role
+   (mono caps) link with an underline that draws in on hover. */
 .btn--link {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
-  font-family: var(--font-sans);
-  font-size: var(--step-label);
-  font-weight: var(--weight-sans);
+  font-family: var(--font-mono);
+  font-size: var(--step-fine);
+  font-weight: var(--weight-mono);
   line-height: var(--leading-label);
   text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  letter-spacing: var(--tracking-mono-label);
   padding: 0;
   border: none;
   border-radius: 0;

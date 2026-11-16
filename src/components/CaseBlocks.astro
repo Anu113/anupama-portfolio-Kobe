@@ -37,7 +37,7 @@
    case answers to, set once in the situation), `funnel` (4 → 3 → 1),
    `bars` (scores against the bar to clear, numbers always printed),
    `fixes` (each finding beside what changed) and `aside` (a gap named
-   where it happened). Ink on hairlines, values under CASE STORY in
+   where it happened). Ink only, no hairlines; values under CASE STORY in
    tokens.css. */
 import type { CaseBlock } from '../data/cases';
 import Reveal from './Reveal.astro';
@@ -417,13 +417,12 @@ const claimNum = blocks.map((b) =>
     text-wrap: pretty;
   }
 
-  /* --- sides: the two readers, on hairlines ----------------------------- */
+  /* --- sides: the two readers, side by side ----------------------------- */
   .sides {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--col-gap);
   }
-  .side { border-top: 1px solid var(--fg); padding-top: 0.9rem; }
   .side__who { margin: 0; }
   .side__span {
     font-family: var(--font-serif); font-weight: var(--weight-serif);
@@ -435,22 +434,18 @@ const claimNum = blocks.map((b) =>
     font-style: italic; font-size: var(--step-title); line-height: 1.3;
     letter-spacing: var(--tracking-serif); margin: 0 0 1rem; text-wrap: balance;
   }
-  .side__needs { list-style: none; margin: 0; padding: 0; font-size: var(--step-small); color: var(--fg-dim); }
-  .side__needs li { border-top: 1px solid var(--rule); padding-block: 0.5rem; }
-  .side__needs li:last-child { border-bottom: 1px solid var(--rule); }
+  .side__needs { list-style: none; margin: 0; padding: 0; display: grid; row-gap: var(--case-list-gap-tight); font-size: var(--step-small); color: var(--fg-dim); }
 
   /* --- funnel: the process as narrowing numbers -------------------------- */
   .funnel {
     list-style: none; margin: 0; padding: 0;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    column-gap: var(--case-list-gap);
   }
   .stage {
     display: flex; flex-direction: column;
-    padding-inline: 1rem;
-    border-left: 1px solid var(--rule);
   }
-  .stage:first-child { border-left: 0; padding-left: 0; }
   .stage__value {
     font-family: var(--font-serif); font-weight: var(--weight-serif);
     font-size: var(--step-heading); letter-spacing: var(--tracking-serif); line-height: 1;
@@ -494,15 +489,14 @@ const claimNum = blocks.map((b) =>
   .bars__note { margin: 1rem 0 0; text-transform: none; letter-spacing: 0.03em; line-height: 1.6; max-width: var(--measure); }
 
   /* --- fixes: found → changed ------------------------------------------- */
-  .fixes { width: 100%; border-collapse: collapse; font-size: var(--step-small); line-height: 1.55; }
-  .fixes th { text-align: left; font-weight: inherit; padding: 0 1rem 0.75rem 0; }
-  .fixes td { border-top: 1px solid var(--rule); padding: 0.85rem 1rem 0.85rem 0; vertical-align: top; color: var(--fg-dim); }
-  .fixes tr:last-child td { border-bottom: 1px solid var(--rule); }
+  .fixes { width: 100%; border-collapse: separate; border-spacing: 0 var(--case-list-gap); margin-block: calc(-1 * var(--case-list-gap)); font-size: var(--step-small); line-height: 1.55; }
+  .fixes th { text-align: left; font-weight: inherit; padding: 0 1rem 0 0; }
+  .fixes td { padding: 0 1rem 0 0; vertical-align: top; color: var(--fg-dim); }
   .fixes__tag { width: 6.5rem; line-height: 1.9; }
   .fixes td.fixes__changed { color: var(--fg); }
 
   /* --- aside: the gap, named mid-story ---------------------------------- */
-  .aside { border-inline-start: var(--story-aside-rule) solid var(--fg); padding-inline-start: 1.25rem; max-width: var(--measure); }
+  .aside { max-width: var(--measure); }
   .aside__label { margin: 0 0 0.6rem; }
   .aside__text {
     margin: 0;
@@ -514,12 +508,11 @@ const claimNum = blocks.map((b) =>
   @media (max-width: 820px) {
     .sides { grid-template-columns: 1fr; }
     .funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 1.5rem; }
-    .stage:nth-child(odd) { border-left: 0; padding-left: 0; }
     .fixes, .fixes tbody, .fixes tr, .fixes td { display: block; width: auto; }
     .fixes thead { display: none; }
-    .fixes tr { border-top: 1px solid var(--rule); padding-block: 0.75rem; }
-    .fixes td { border: 0; padding: 0.15rem 0; }
-    .fixes tr:last-child td { border: 0; }
+    .fixes { margin-block: 0; }
+    .fixes tbody { display: grid; row-gap: var(--case-list-gap); }
+    .fixes td { padding: 0.15rem 0; }
     .fixes td.fixes__changed::before { content: '→ '; color: var(--fg-dim); }
     .metrics { grid-template-columns: 1fr; }
     .row { grid-template-columns: 1fr; }

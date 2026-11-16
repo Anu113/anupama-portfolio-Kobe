@@ -8,7 +8,7 @@
      Light    A green dot with a ring that pings outward every 2.5s, the
               "available" light. It carries a screen-reader label from
               site.ask, so the meaning isn't in the colour alone.
-     City     Label role (Manrope 600, uppercase), from site.location /
+     City     Label role (Azeret Mono 11px caps), from site.location /
               site.countryCode.
      Weather  Fetched in the browser from Open-Meteo (free, no key, no
               cookies) for site.coords, cached for 30 minutes per tab.
@@ -56,11 +56,11 @@ const digits = Array.from({ length: 6 });
     display: flex; align-items: center; gap: var(--lt-gap);
     margin: 0;
     color: var(--fg-dim);
-    font-family: var(--font-sans);
-    font-weight: var(--weight-sans);
-    font-size: var(--step-clock-place);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-fine);
     line-height: 1;
-    letter-spacing: var(--tracking-label);
+    letter-spacing: var(--tracking-mono-label);
     text-transform: uppercase;
     white-space: nowrap;
   }

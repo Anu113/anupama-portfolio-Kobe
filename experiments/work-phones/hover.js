@@ -91,7 +91,7 @@
   // pointerover would fire again each time a new screen slides in under a
   // still pointer, and restart the flow.
   const start = (m) => { if (!m._on) { m._on = true; play(m); } };
-  const end = (m) => { if (m._on && !m.matches(':hover') && document.activeElement !== m) { m._on = false; stop(m); } };
+  const end = (m) => { if (m.dataset.auto) return; if (m._on && !m.matches(':hover') && document.activeElement !== m) { m._on = false; stop(m); } };
   const isTile = (e) => e.target.matches && e.target.matches('[data-play]') ? e.target : null;
   document.addEventListener('pointerenter', (e) => { const m = isTile(e); if (m && e.pointerType === 'mouse') start(m); }, true);
   document.addEventListener('pointerleave', (e) => { const m = isTile(e); if (m && e.pointerType === 'mouse') setTimeout(() => end(m)); }, true);

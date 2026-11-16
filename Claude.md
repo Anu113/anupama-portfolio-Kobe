@@ -185,9 +185,12 @@ effect:
     scrubs through his clip in lockstep with the portrait —
     `HeroIllustration` dispatches `hero-scrub:frame` and Moss shows the same
     frame, one timeline for both, so keep the two clips at the same 48
-    frames. Between two pictures both are drawn as a mix of the pair
-    (option B of `experiments/hero-frames/`, on request, 2026-11-16), so
-    they move with every bit of pointer travel instead of stepping — and perks up when hovered. Fine pointers only; frame 0 and
+    frames — and the same 96: once the page is up, both swap quietly to
+    96 pictures (every 2nd frame of their clips, `hero-sprite-96.webp`,
+    `moss-sprite-96.webp`, from the same scripts with `96`), so they step
+    half as far per move (option C of `experiments/hero-frames/`, on
+    request, 2026-11-16; a blend of the 48 showed two faces mid-turn and
+    was dropped). The page never waits for the 96 — and he perks up when hovered. Fine pointers only; frame 0 and
     still under reduced motion.
   - Panel: opens on click as a dialog with a scrim; dark (the site's `ink`
     values) and **monospace throughout** — deliberately unlike the rest of
@@ -488,7 +491,22 @@ walked back. Concretely, in the current implementation:
   (`--step-title`), project titles on cards as 12px caps, the footer
   sign-off 32px (`--step-signoff`). The reference's 70px page titles were
   not taken; ours stay at 44px. Emphasis is the serif turning italic mid-line, nothing
-  else. One palette: `#fcfcfc` ground, `#262626` ink, one terracotta accent
+  else.
+  **Superseded on the home page, nav, footer and buttons by ONE TYPE
+  SCALE** (on request, 2026-11-16, after an audit found 22 text styles
+  on the home page; mock in `experiments/type-scale/`). Five roles:
+  display (serif 50px, the hero line only), heading (serif 32→40px,
+  every section head and the footer sign-off), item (sans 18px, card
+  titles and Small talk questions), copy (sans 12px / 1.8, every
+  paragraph — the hero subtext's style, kept on request) and label
+  (Azeret Mono 11px caps: labels, tags, numbers, `.btn`, `.btn--link`,
+  nav links, the location line, the footer's base row). Home spacing is
+  one gap between sections (`--space-home`, 128px at 1440) and three
+  steps inside them (16 / 24 / 32); section heads sit on the left edge,
+  except Beyond's, which the ring is built round. Values under ONE TYPE
+  SCALE and HOME SPACING in `tokens.css`. Other pages still carry the
+  older roles (`.u-label` sans caps, 14px body) until they're moved
+  over; don't add a new size outside the five. One palette: `#fcfcfc` ground, `#262626` ink, one terracotta accent
   (`#b4482a`, her own — the reference's purple was swapped out) for marks
   only, never text, links or buttons (see Links, below), square corners except pill buttons and the 4px case tags (and the two approved curves: Moss's
   panel and the page's end over the black footer). Deliberate departures
@@ -592,11 +610,11 @@ walked back. Concretely, in the current implementation:
   heads drop to `--step-title`; each section opens on
   "01  THE SITUATION" in 11px mono caps (no hairlines on case pages since
   2026-11-16, on request: lists, notes, rows, facts and section openers
-  are parted by space — `--case-list-gap`, `--case-block-gap` under
-  BEFORE / AFTER in `tokens.css`; don't add hairlines back); labels, row terms, captions and
+  are parted by space — `--case-list-gap`, `--case-block-gap` under CASE
+  STORY; don't add hairlines back); labels, row terms, captions and
   citations are mono too. "What was broken"-style points are a numbered
-  13px list. The pull quote is roman serif with no rule beside it (2026-11-16) — no italic
-  and no accent, on request. Body stays Manrope 600.
+  13px list. The pull quote is roman serif with no rule beside it (on
+  request, 2026-11-16) — no italic and no accent, on request. Body stays Manrope 600.
 - **Case study contents and reading strip**, after felixrieseberg.com's
   posts (on request): the left rail (`CaseRail.astro`) is a "Contents"
   label over one mono line per section, "Start" first, grey with the
@@ -668,7 +686,7 @@ walked back. Concretely, in the current implementation:
 - **The footer's content** (option C of three mocks): row 1 — "Let's start with a
   *conversation*." in ink, where "conversation" is the link (Gmail
   compose, new tab; the site's link style, below),
-  over one line in grey at `--step-small` (13px), exactly as wide as the
+  over one line in grey in the copy role (12px), exactly as wide as the
   headline: "Open to `site.seeking` roles. Projects, questions and
   feedback are welcome too." — the role on a neutral marker-pen wash
   of the ink (`--accent-wash`), and the line ends on her crayon smiley
@@ -781,7 +799,8 @@ walked back. Concretely, in the current implementation:
   square `--radius` rule for this list only. The questions are his five;
   answers come from `site.ts` and what the site says, with `[X]` where
   she still has to write it (how she got into design, what she wants
-  next). Under the cards, his "Ask the cloud anything else" field as
+  next); a question whose answer still has an `[X]` is hidden until
+  she writes it (`talkShown` in `talk.ts`, on request, 2026-11-16). Under the cards, his "Ask the cloud anything else" field as
   "Ask Moss anything else" (see Moss, above), with his behaviour: tiny
   Moss at its start, a send arrow faded until there's text, a rotating
   "thinking" line, the answer writing itself out under the field, then
@@ -856,12 +875,6 @@ walked back. Concretely, in the current implementation:
   "Before" phones left the screens rows for it. Values under BEFORE /
   AFTER in `tokens.css`. Its reason: the difference between the two
   screens is the decision, and seeing it beats a paragraph about it.
-- `cases.ts` holds case-study content as structural prose with `[X]`
-  placeholders for real numbers — written from what this file already
-  records about each project, not confirmed by Anupama. It also currently
-  under-uses visual evidence relative to rule 3 above; new work on case
-  studies should shift the balance toward screens/diagrams over paragraphs.
-- Images in `public/images/` are placeholder SVGs. Real imagery is pending an
 - **Case studies tell one story** (on request, 2026-11-14, after
   andreas.vision/work/schneider; mocks in `experiments/case-storytelling/`,
   first applied to PayPal Privacy): the outcome goes in the title; a
@@ -871,9 +884,15 @@ walked back. Concretely, in the current implementation:
   (`funnel`, `bars` against the bar to clear, `fixes` beside each
   finding) rather than paragraphs; one gap is named mid-story (`aside`);
   and scope carries one teamwork moment as rows (the pull, my call, what
-  it cost, what held). Ink on hairlines, no accent; values under CASE
+  it cost, what held). Ink, no hairlines, no accent; values under CASE
   STORY in `tokens.css`. Privacy's teamwork moment is a stand-in, on her
   request, marked in `cases.ts`: replace it with her real account.
+- `cases.ts` holds case-study content as structural prose with `[X]`
+  placeholders for real numbers — written from what this file already
+  records about each project, not confirmed by Anupama. It also currently
+  under-uses visual evidence relative to rule 3 above; new work on case
+  studies should shift the balance toward screens/diagrams over paragraphs.
+- Images in `public/images/` are placeholder SVGs. Real imagery is pending an
   NDA check on the Okta IAM console work — real screenshots are a priority
   once available, since the new direction depends on visual evidence more
   than the old one did.
