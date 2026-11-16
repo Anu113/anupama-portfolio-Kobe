@@ -33,7 +33,7 @@
   /* --- TYPE SCALE ---------------------------------------
      Reference sizes, 390px → 1440px wide, linear between:
        display   34 → 50px   the hero sentence
-       heading   32 → 44px   every section / page headline
+       heading   32 → 40px   every section / page headline (44 until 2026-11-16)
        nav       14px        the name and nav links
        label     12px        labels, buttons, captions, card titles
        mono      18px        arrow glyphs
@@ -43,8 +43,23 @@
      Measured across the reference's home, work, about and case pages
      (2026-10-16). Its page titles are 70px; ours stay at heading (44px),
      because the site read as too big. No page scale: 1x everywhere. */
+  /* ONE TYPE SCALE (2026-11-16, on request, from the audit mock in
+     experiments/type-scale): five roles, three faces, one weight each.
+       display  serif 50px          the hero sentence only
+       heading  serif 32 → 40px     every section head, the footer sign-off
+       item     sans 18px           card titles, Small talk questions
+       copy     sans 12px / 1.8     every paragraph (the hero subtext's
+                                    style, kept on request)
+       label    mono 11px caps      labels, tags, numbers, buttons, links
+                                    (.u-label-mono, .btn, .btn--link)
+     Applied to the home page and the shared nav, footer and buttons
+     first; other pages follow. */
   --step-display: clamp(2.125rem, 1.754rem + 1.524vw, 3.125rem);
-  --step-heading: clamp(2rem, 1.721rem + 1.143vw, 2.75rem);
+  --step-heading: clamp(2rem, 1.814rem + 0.762vw, 2.5rem);
+  /* 18px — the item role: a card's title, a Small talk question. */
+  --step-item: 1.125rem;
+  --leading-item: 1.35;
+  --tracking-item: -0.01em;
   /* 22px — sub-heads: the reference's case-study and project-name h3. */
   --step-title: 1.375rem;
   /* 30 → 40px: a case study's title. Smaller than --step-heading on
@@ -58,7 +73,7 @@
   /* 12px — short copy: the reference's intro lines, card lines, meta. */
   --step-copy: 0.75rem;
   /* 32px — the footer's sign-off, as the reference's "Let's chat." */
-  --step-signoff: 2rem;
+  --step-signoff: var(--step-heading);   /* one heading size, footer included */
   --step-small: 0.8125rem;  /* 13px — the footer's one-line note, under body */
   --step-nav: 0.875rem;
   --step-label: 0.75rem;
@@ -158,6 +173,13 @@
      above the heading is ~118px at 1440 (was 175, and 338 at 1920). */
   --space-hero-work: clamp(3rem, 4.5vw, 4rem);
   --space-head: clamp(3.5rem, 5.5vw, 5rem);
+  /* HOME SPACING (2026-11-16, experiments/type-scale): one gap between
+     every home section (128px at 1440), and three steps inside them. */
+  --space-home: clamp(4rem, 8.9vw, 8rem);
+  --space-head-link: 1rem;      /* a heading or label → its link or text */
+  --space-head-body: 1.5rem;    /* a heading → its paragraph; between card groups */
+  --space-body-actions: 2rem;   /* a paragraph → its buttons */
+  --space-head-cards: 3rem;     /* "Selected work" → the first card */
 
   /* The top bar is 64px tall on the reference. */
   --nav-h: 4rem;
@@ -1076,6 +1098,7 @@
   --dur-preloader-fade: 450ms;           /* reduced motion: the curtain fades instead */
   --dur-preloader-skip: 600ms;           /* a key, click, tap or scroll: out at once, faster */
   --dur-preloader-skip-grace: 1200ms;    /* inputs this soon after load don't skip (a held Cmd+R, scroll momentum) */
+  --dur-preloader-failsafe: 20s;         /* if the script never runs, everything shows by now */
 }
 
 /* ============================================================
@@ -1095,7 +1118,7 @@
      near arc dropped below the pills), not from a tall band, which made
      the ring rounder (option E of experiments/beyond-work/oval.html). */
   --ring-h: clamp(46rem, 116svh, 66rem);
-  --ring-tail: var(--space-band);          /* extra room under the ring, before the playground line */
+  --ring-tail: 0;          /* the playground line's own top padding (--space-home) is the gap */
   /* The ring is laid out inside the page's content edge, not the window:
      its stage is inset by --gutter plus this, as on the reference, so on
      wide screens it centres on the same column as everything else instead
@@ -1113,7 +1136,6 @@
   --ring-pill-gap: 8px;
   --ring-scrim: color-mix(in srgb, var(--bg) 82%, transparent);   /* phones: keeps the words readable over cards */
   --dur-ring-swap: 600ms;                   /* the arrow sliding out and a new one in, on hover */
-  --dur-preloader-failsafe: 20s;         /* if the script never runs, everything shows by now */
   --ease-ring-swap: cubic-bezier(0.77, 0, 0.175, 1);
   --dur-ring-press: 100ms;                  /* the pill's press and hover scale */
 }
@@ -1133,18 +1155,18 @@
 :root {
   --talk-soft: color-mix(in srgb, var(--fg) 62%, var(--bg));     /* answers, dek */
   --talk-sign: color-mix(in srgb, var(--fg) 55%, var(--bg));     /* the + (his 42% fails 3:1) */
-  --talk-card: color-mix(in srgb, var(--fg) 1.5%, var(--bg));
+  --talk-card: color-mix(in srgb, var(--fg) 3%, var(--bg));   /* 3%, the site's other soft cards (was 1.5%, barely visible; 2026-11-16) */
   --talk-chip: color-mix(in srgb, var(--fg) 5%, var(--bg));
   --talk-chip-hover: color-mix(in srgb, var(--fg) 9%, var(--bg));
   --talk-chip-ink: color-mix(in srgb, var(--fg) 68%, var(--bg));
   --radius-talk: 12px;
   /* NOW (Now.astro), after carlthomasiv.com's: 40px under the hairline,
      16px under the label, the line held to a readable measure */
-  --now-pad: 2.5rem;
+  --now-pad: var(--space-head-body);
   --now-label-gap: 1rem;
   --now-max: 46rem;
-  --step-talk: 1.0625rem;          /* 17px */
-  --step-talk-chip: 0.9375rem;     /* 15px */
+  --step-talk: var(--step-copy);   /* 12px: the copy role (was 17px) */
+  --step-talk-chip: var(--step-copy);   /* 12px (was 15px) */
   --talk-gap: 0.5rem;              /* between cards */
   --talk-pad: 1.25rem;             /* 20px; 18px on the + side */
   --talk-pad-end: 1.125rem;
@@ -1157,7 +1179,7 @@
   --talk-send: 2rem;
   --talk-send-bg: color-mix(in srgb, var(--fg) 89%, var(--bg));
   --talk-send-off: 0.16;
-  --talk-answer-max: 30em;
+  --talk-answer-max: none;   /* answers fill their card (was 30em; 2026-11-16) */
   --talk-head-max: 22rem;          /* the dek */
   --talk-moss: 1.75rem;            /* Moss at the field's start: his pet's 28px */
   --talk-moss-shadow: color-mix(in srgb, var(--fg) 22%, transparent);
@@ -1215,6 +1237,35 @@
   --case-card-gap: var(--locked-card-gap);
 }
 
+/* ============================================================
+   CASE STORY (the sides, funnel, bars, fixes and aside blocks in
+   CaseBlocks.astro, and the "answers" on section openers), after
+   andreas.vision/work/schneider, on request (2026-11-14; mocks in
+   experiments/case-storytelling). Ink only, no hairlines, no accent,
+   no cards. The pale marks are decoration beside their numbers, which
+   are always printed, so they need no contrast ratio.
+   ============================================================ */
+:root {
+  --story-mark: var(--fg);                                   /* solid bar, kept mark */
+  --story-mark-pale: color-mix(in srgb, var(--fg) 18%, transparent);
+  --story-mark-ghost: color-mix(in srgb, var(--fg) 10%, transparent);
+  --story-square: 1.375rem;                                  /* 22px funnel mark */
+  --story-square-h: 2.125rem;                                /* 34px */
+  --story-bar-h: 1.125rem;                                   /* 18px */
+  --story-bar-label: 7rem;                                   /* label column */
+  --story-bar-value: 3.5rem;                                 /* value column */
+  /* No hairlines on case pages (on request, 2026-11-16): items in a list
+     are parted by space, sections by the section gap. */
+  --case-list-gap: 1.5rem;          /* between items of a list: notes, points, rows */
+  --case-list-gap-tight: 0.75rem;   /* between short lines: a side's needs */
+  --case-block-gap: clamp(2.75rem, 4.5vw, 4rem); /* between blocks in a section: clearly more
+                                      than --case-list-gap, so a new block reads as new */
+  --compare-fixed: #2456c9;         /* a compare note's dot once it's fixed, on the page ground */
+}
+:root[data-mode='dark'] {
+  --compare-fixed: #7ea2f2;         /* 6.9:1 on the dark ground */
+}
+
 /* =====================================================   ABOUT (pages/about.astro, AskMoss.astro's small size). The tabs,
    Moss's field and the rounded rows are after andreas.vision/about
    (measured 2026-10-17). The layout (2026-11-11, from the mocks in
@@ -1229,26 +1280,6 @@
 :root {
   --about-intro-max: 36rem;        /* 576px */
   --about-picks: 23.625rem;        /* 378px */
-/* ============================================================
-   CASE STORY (the sides, funnel, bars, fixes and aside blocks in
-   CaseBlocks.astro, and the "answers" on section openers), after
-   andreas.vision/work/schneider, on request (2026-11-14; mocks in
-   experiments/case-storytelling). Ink only, on hairlines: no accent,
-   no cards. The pale marks are decoration beside their numbers, which
-   are always printed, so they need no contrast ratio.
-   ============================================================ */
-:root {
-  --story-mark: var(--fg);                                   /* solid bar, kept mark */
-  --story-mark-pale: color-mix(in srgb, var(--fg) 18%, transparent);
-  --story-mark-ghost: color-mix(in srgb, var(--fg) 10%, transparent);
-  --story-square: 1.375rem;                                  /* 22px funnel mark */
-  --story-square-h: 2.125rem;                                /* 34px */
-  --story-bar-h: 1.125rem;                                   /* 18px */
-  --story-bar-label: 7rem;                                   /* label column */
-  --story-bar-value: 3.5rem;                                 /* value column */
-  --story-aside-rule: 2px;
-}
-
   --about-top-gap: 2.25rem;        /* intro ↔ tabs, and tabs ↔ grid */
   --about-grid-gap: 1.5rem;
   --about-card: color-mix(in srgb, var(--fg) 3%, var(--bg));

@@ -72,7 +72,7 @@ const cards = homeCards.map((c) => {
          visitor the work is below the fold, then fades on the first
          scroll because the hint is spent. Static (no bobbing arrow), and
          aria-hidden: a screen reader already knows there's more page. -->
-    <p class="u-label hero__cue" aria-hidden="true" data-hero-cue>Scroll<svg class="hero__cue-arrow" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 1v10M1.5 3.5 4 1l2.5 2.5M1.5 8.5 4 11l2.5-2.5"/></svg></p>
+    <p class="u-label-mono hero__cue" aria-hidden="true" data-hero-cue>Scroll<svg class="hero__cue-arrow" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 1v10M1.5 3.5 4 1l2.5 2.5M1.5 8.5 4 11l2.5-2.5"/></svg></p>
   </Section>
 
   <script>
@@ -84,8 +84,8 @@ const cards = homeCards.map((c) => {
     }
   </script>
 
-  <!-- Selected work. Section head in allierho.com's pattern: a centred
-       serif line with its key phrase in italic, a label link under it. -->
+  <!-- Selected work. Section head: a serif line with its key phrase in
+       italic, a label link under it, on the page's left edge. -->
 <Section theme="bone" full id="work" class="workhead-section">
   <div class="u-shell workhead">
     <h2 class="u-heading">Selected <em>work</em></h2>
@@ -116,8 +116,8 @@ const cards = homeCards.map((c) => {
        the window's edges. -->
   <BeyondWork />
 
-  <!-- The playground, pointed to — the same centred head as Selected
-       work, standing on its own. Contact is the footer's job. -->
+  <!-- The playground, pointed to — the same head as Selected work,
+       standing on its own. Contact is the footer's job. -->
   <Section theme="bone" class="playline">
     <div class="workhead">
       <h2 class="u-heading">Smaller experiments live in the <em>playground.</em></h2>
@@ -194,7 +194,7 @@ const cards = homeCards.map((c) => {
   /* 26ch, was 22ch: the headline ended ~70px short of its own column,
      and that width went to the gap before the illustration. */
   .hero__line { max-width: 26ch; text-wrap: pretty; }
-  .hero__more { font-size: var(--step-copy); line-height: var(--leading-copy); letter-spacing: var(--tracking-copy); color: var(--fg-dim); max-width: 54ch; margin: 1.5rem 0 0; text-wrap: pretty; }
+  .hero__more { font-size: var(--step-copy); line-height: var(--leading-copy); letter-spacing: var(--tracking-copy); color: var(--fg-dim); max-width: 54ch; margin: var(--space-head-body) 0 0; text-wrap: pretty; }
   .hero__co { color: var(--fg); }
 
   /* Hero copy + portrait side by side on desktop, portrait first and
@@ -335,7 +335,7 @@ const cards = homeCards.map((c) => {
 
   /* The location line sits above the headline, a label's distance
      from it — the first thing read is where and when she is. */
-  .hero__eyebrow { margin: 0 0 1.4rem; }
+  .hero__eyebrow { margin: 0 0 var(--space-head-body); }
 
 
   /* Started at 1.13rem, picked live against a mockup slider — but that
@@ -348,7 +348,7 @@ const cards = homeCards.map((c) => {
      the smaller nav gap above) while still sitting closer than the
      2.75rem peak, back in proportion with the hansonwu.com-matched top
      gap. */
-  .intro__links { display: flex; align-items: center; gap: 0.75rem; padding-top: 2.25rem; margin: 0; }
+  .intro__links { display: flex; align-items: center; gap: 0.75rem; padding-top: var(--space-body-actions); margin: 0; }
   /* Resume/LinkedIn now use the shared .btn system (global.css) —
      Primary/Secondary — instead of their own bespoke pill rules. */
 
@@ -365,20 +365,23 @@ const cards = homeCards.map((c) => {
      the content. #work (the "Selected work" label) and .worklist are one
      band split across two Sections: the label takes the band's top, the
      list its bottom, and only --space-label sits between them. */
-  :global(#work),
-  :global(.worklist),
-  :global(.playline) { padding-block: var(--space-band); }
-  :global(#work) { padding-block-start: var(--space-hero-work); padding-block-end: 0; }
-  :global(#work + .worklist) { padding-block-start: 0; }
+  /* One gap between home sections, --space-home (128px at 1440;
+     HOME SPACING in tokens.css, 2026-11-16). The hero is a full screen
+     (min-height above), so its own spare height is the gap to "Selected
+     work" and #work adds none. */
+  :global(#work) { padding-block: 0; }
+  :global(#work + .worklist) { padding-block: 0 var(--space-home); }
+  :global(.playline) { padding-block: var(--space-home) 0; }
 
-  /* Section head, allierho.com's pattern: centred serif line, label link
-     a step under it. */
+  /* Section head: serif line, label link a step under it. Left on the
+     page's edge like Small talk and Now (they used to be centred; only
+     Beyond, built round its ring, stays centred). */
   .workhead {
-    display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
-    text-align: center; padding-bottom: var(--space-head);
+    display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-head-link);
+    text-align: left; padding-bottom: var(--space-head-cards);
   }
   .workhead .u-heading { max-width: 20ch; }
-  .playline .workhead { padding-bottom: 0; }
+  :global(.playline) .workhead { padding-bottom: 0; }
 
   /* The "Selected work" label owns the list right below it, so that pair
      closes up: no section padding underneath, and the list drops its own

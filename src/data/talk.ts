@@ -48,6 +48,12 @@ export const talk: TalkItem[] = [
   },
 ];
 
+/** The questions the page shows: any whose answer still holds an [X]
+ *  (hers to write) is left out until she writes it, on request
+ *  (2026-11-16) — a visible [X] reads as an unfinished site. Fill the
+ *  [X] above and the question comes back on its own. */
+export const talkShown = talk.filter((t) => !t.a.some((line) => line.includes('[X]')));
+
 /** Moss's field, after his "Ask the cloud anything else". */
 export const talkMoss = {
   placeholder: 'Ask Moss anything else',

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayPal Privacy — calm, flat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-14. The PayPal Privacy case in one calm, centred column,
+  after andreas.vision/work/schneider, rebuilt on her feedback:
+  - no handmade look (no tilts, tape, pins, clips, pencil, stickies);
+  - no shadows of any kind: groups are soft fills (3% ink), flat;
+  - the site's mono caps labels kept ("01  THE SITUATION" on a hairline);
+  - Manrope 600 throughout, square corners;
+  - the case tags as the site's crayon-yellow wash.
+  Her layering notes and the research findings are shown flat, in her
+  words. Every fact is from src/data/cases.ts or her old Wix page.
+  Serve from the repo root (case-v2-mockup in launch.json):
+  /experiments/case-calm/index.html
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc;
+    --ink: #262626;
+    --dim: #707070;
+    --rule: rgb(0 0 0 / .1);
+    --card: color-mix(in srgb, #262626 3%, #fcfcfc);   /* the site's soft card */
+    --hue: #e0d6ef;                                      /* PayPal lilac */
+    --wash: color-mix(in srgb, #f8b800 42%, transparent); /* case-tag crayon */
+    --col: 640px;
+    --wide: 960px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 600 14px/1.6 var(--font-sans); -webkit-font-smoothing: antialiased; }
+  em { font-style: italic; }
+  .page { padding: 72px 24px 200px; }
+  .col { max-width: var(--col); margin: 0 auto; }
+  .wide { max-width: var(--wide); margin: 0 auto; }
+  .mono { font: 400 11px/1.5 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); }
+
+  /* Head ------------------------------------------------------------- */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; margin: 0 0 22px; padding: 0; list-style: none; }
+  .tags li { font: 400 10px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink);
+    background: linear-gradient(transparent 38%, var(--wash) 38% 88%, transparent 88%); padding: 0 3px; }
+  .tags li:first-child { font-size: 12px; }
+  h1 { font: 300 46px/1.08 var(--font-serif); letter-spacing: -0.02em; margin: 0 0 18px; text-wrap: balance; }
+  .lede { color: var(--dim); margin: 0 0 32px; font-size: 15px; }
+  .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 24px; margin: 0; }
+  .facts div { padding: 0; }
+  .facts dt { margin-bottom: 4px; }
+  .facts dd { margin: 0; font-size: 13px; }
+  .cover { margin-top: 64px; background: var(--hue); overflow: hidden; }
+  .cover img { width: 100%; display: block; }
+
+  /* Sections ----------------------------------------------------------- */
+  .sec { margin-top: 144px; }
+  .opener { display: flex; gap: 14px; margin: 0 0 18px; }
+  .opener b { font-weight: 400; color: var(--ink); }
+  h2 { font: 300 28px/1.22 var(--font-serif); letter-spacing: -0.012em; margin: 0 0 14px; text-wrap: balance; }
+  .col > p { color: var(--dim); margin: 0 0 14px; }
+  .fig { margin-top: 44px; }
+  .cap { margin: 12px auto 0; max-width: var(--col); text-transform: none; letter-spacing: .03em; }
+
+  /* Two sides: soft cards, flat -------------------------------------- */
+  .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .side { background: var(--card); padding: 26px 26px 22px; }
+  .side__span { font: 300 34px/1 var(--font-serif); margin: 10px 0 10px; }
+  .side__q { font: 300 italic 19px/1.3 var(--font-serif); margin: 0 0 16px; }
+  .side ul { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--dim); display: grid; gap: 6px; }
+
+  /* Quote: flat, photo plain ----------------------------------------- */
+  .quote { display: grid; grid-template-columns: 72px 1fr; gap: 20px; align-items: start; max-width: var(--col); margin: 56px auto 0; }
+  .quote__face { width: 72px; height: 72px; overflow: hidden; position: relative; background: var(--card); }
+  .quote__face img { position: absolute; left: -60px; top: -17px; width: 190px; height: 143px; max-width: none; }
+  .quote p { font: 300 22px/1.35 var(--font-serif); margin: 0 0 10px; }
+  .quote cite { font-style: normal; display: block; }
+
+  /* Findings beside what changed: flat table -------------------------- */
+  .found { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-size: 13px; line-height: 1.55; margin-top: -6px; }
+  .found th { text-align: left; font-weight: 400; padding: 0 16px 4px 0; }
+  .found th:first-child { padding-left: 18px; }
+  .found td { background: var(--card); padding: 16px 16px 16px 0; vertical-align: top; }
+  .found td:first-child { padding-left: 18px; }
+  .found td:first-child { width: 116px; padding-top: 18px; }
+  .found td:nth-child(2) { color: var(--dim); width: 44%; }
+  
+  .evo { background: var(--hue); overflow: hidden; }
+  .evo img { width: 100%; display: block; }
+
+  /* What we missed: a quiet aside on an ink rule ---------------------- */
+  .aside { border-left: 2px solid var(--ink); padding-left: 18px; margin-top: 48px; }
+  .aside p { font: 300 20px/1.35 var(--font-serif); margin: 6px 0 0; }
+
+  /* Layering notes, flat ---------------------------------------------- */
+  .layers { display: grid; grid-template-columns: 0.8fr 1.2fr 1.2fr; gap: 12px; }
+  .layer { background: var(--card); padding: 22px 22px 20px; }
+  .layer__n { font: 300 36px/1 var(--font-serif); margin: 0 0 4px; }
+  .layer__name { margin: 0 0 16px; }
+  .layer h4 { margin: 0 0 6px; font: 600 13px/1.3 var(--font-sans); }
+  .layer ul, .layer ol { margin: 0 0 14px; padding-left: 18px; font-size: 13px; color: var(--dim); }
+  .layer li { margin: 2px 0; }
+  .layer__note { margin-top: 18px; font-size: 12.5px; color: var(--dim); }
+  .layer__note .mono { display: block; margin-bottom: 4px; }
+
+  /* Scores, 60–80 so the gap shows ------------------------------------ */
+  .result { margin-top: 56px; }
+  .path { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0 0 26px; color: var(--dim); font-size: 13px; }
+  .path b { font: 300 26px/1 var(--font-serif); color: var(--ink); margin-right: 6px; }
+  .gap { position: relative; padding-top: 24px; --l: 104px; --r: 196px; }
+  .gap__axis { position: absolute; top: 0; left: var(--l); right: var(--r); height: 18px; }
+  .gap__axis span { position: absolute; left: calc((var(--at) - 60) / 20 * 100%); translate: -50% 0; }
+  .gap__axis .is-bar { color: var(--ink); }
+  .gap__line { position: absolute; top: 18px; bottom: 0; left: calc(var(--l) + (100% - var(--l) - var(--r)) * .5); border-left: 1px dashed var(--ink); }
+  .gap__row { display: grid; grid-template-columns: 92px 1fr 56px 128px; gap: 12px; align-items: center; height: 40px; }
+  .gap__row > span:first-child { color: var(--dim); }
+  .gap__track { position: relative; height: 10px; background: rgb(0 0 0 / .05); }
+  .gap__track i { position: absolute; inset: 0 auto 0 0; width: calc((var(--v) - 60) / 20 * 100%); background: rgb(0 0 0 / .2); }
+  .is-win .gap__track i { background: var(--ink); }
+  .is-win > span:first-child { color: var(--ink); }
+  .gap__val { font: 300 22px/1 var(--font-serif); text-align: right; }
+  .gap__note { font-size: 12px; color: var(--dim); }
+  .is-win .gap__note { color: var(--ink); }
+
+  .impact { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 28px; }
+  .impact div { background: var(--card); padding: 22px; }
+  .impact b { display: block; font: 300 40px/1 var(--font-serif); margin-bottom: 10px; }
+  .impact span { font-size: 13px; color: var(--dim); }
+
+  @media (max-width: 900px) {
+    h1 { font-size: 36px; }
+    .sides, .layers, .impact, .facts { grid-template-columns: 1fr; }
+    .found td:nth-child(2) { width: auto; }
+    .gap { --r: 60px; --l: 92px; }
+    .gap__row { grid-template-columns: 80px 1fr 48px; }
+    .gap__note { display: none; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <!-- Head -->
+  <header class="col">
+    <ul class="tags"><li>PayPal</li><li>Fintech</li><li>Privacy &amp; data</li><li>Information architecture</li></ul>
+    <h1>Privacy settings 80 million people can read, and 60% fewer calls about them</h1>
+    <p class="lede">75% of settings traffic stopped on the first page. I owned the design from the first card sort to launch in early 2023: every setting one tap away, saying what it does, and still meeting GDPR and CCPA.</p>
+    <dl class="facts">
+      <div><dt class="mono">Role</dt><dd>Owned the design · Research through delivery</dd></div>
+      <div><dt class="mono">Team</dt><dd>4 other designers, content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers</dd></div>
+      <div><dt class="mono">Platforms</dt><dd>PayPal app, mobile first, and web</dd></div>
+      <div><dt class="mono">Timeline</dt><dd>March 2021 – January 2023</dd></div>
+    </dl>
+  </header>
+  <figure class="wide cover"><img src="/public/images/paypal-privacy/hero.webp" alt="The redesigned Data and privacy page in a phone, with three pieces of the redesign beside it"></figure>
+
+  <!-- 01 Situation -->
+  <section class="sec">
+    <div class="col">
+      <p class="opener mono"><b>01</b> The situation</p>
+      <h2>75% of settings traffic stopped on the first page, and every new rule had <em>nowhere to go</em></h2>
+      <p>A list of controls in legal language, with no structure underneath. Customer service heard the same privacy questions again and again. Two readers had to be satisfied by the same screens.</p>
+    </div>
+    <div class="wide fig">
+      <div class="sides">
+        <div class="side">
+          <p class="mono" style="margin:0">A PayPal customer</p>
+          <p class="side__span">One tap</p>
+          <p class="side__q">What is PayPal doing with my data, and how do I change it?</p>
+          <ul><li>Find any setting from the privacy page</li><li>See what it's set to, and what it does</li><li>Get a copy, or delete part, and keep the account</li></ul>
+        </div>
+        <div class="side">
+          <p class="mono" style="margin:0">GDPR and CCPA</p>
+          <p class="side__span">Every screen</p>
+          <p class="side__q">Is everything disclosed, and is what must be kept, kept?</p>
+          <ul><li>Say what's collected, why, and whether it's shared</li><li>Honour requests to see or delete data</li><li>Name what PayPal must retain, not leave it silent</li></ul>
+        </div>
+      </div>
+    </div>
+    <figure class="quote">
+      <!-- PayPal's own photo (digital-wallet page), hands and phone only,
+           on her request; loaded from paypalobjects.com in this mock only. -->
+      <span class="quote__face"><img src="https://www.paypalobjects.com/marketing/web26/digital-wallet/card-wrapped-002-size-all.jpg?quality=75&amp;width=900&amp;format=webp" alt="Hands holding a phone" width="190" height="143"></span>
+      <div>
+        <p>"It's not explained clearly. I have to fill in the holes with my own prior knowledge."</p>
+        <cite class="mono">A participant in customer research</cite>
+      </div>
+    </figure>
+  </section>
+
+  <!-- 02 Hard call -->
+  <section class="sec">
+    <div class="col">
+      <p class="opener mono"><b>02</b> The hard call</p>
+      <h2>The first structure tested well and <em>cost a tap</em>. I kept the groups and dropped the extra layer.</h2>
+      <p>The first version came straight from the card sorts: four tiles, each opening a sheet of settings. In rapid research the groups worked. The sheets didn't, and some of the words failed.</p>
+    </div>
+    <div class="col fig">
+      <p class="mono" style="margin:0 0 14px">What rapid research found, and what changed</p>
+      <table class="found">
+        <thead><tr><th class="mono"><span style="position:absolute;clip:rect(0 0 0 0)">Severity</span></th><th class="mono">Found</th><th class="mono">Changed</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">Structure</td><td>The sheets cost one more tap before any setting, on every task.</td><td>Sheets dropped: one page, three headings. 2 → 1 taps to any setting.</td></tr>
+          <tr><td class="mono">Critical</td><td>People couldn't tell deals from ads.</td><td>Interest-based marketing became "Deals &amp; ads" under Permissions and shared data, with "Learn how it works".</td></tr>
+          <tr><td class="mono">Medium</td><td>To change marketing email, people looked under Notifications, not Data and Privacy.</td><td>Emails and notifications got their own link at the bottom, where people looked.</td></tr>
+          <tr><td class="mono">Medium</td><td>People read "Correct your data" as something other than updating their details.</td><td>"Correct your data" became "Update your data".</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="wide fig">
+      <div class="evo"><img src="/public/images/paypal-privacy/evolution.webp" alt="Before, the first version, and the revised Data and privacy page"></div>
+      <p class="cap mono">Before, the first version, and the revised page.</p>
+    </div>
+    <div class="col">
+      <div class="aside">
+        <p class="mono" style="margin:0">What we missed</p>
+        <p>The card sorts settled where every setting goes, not what it's called. Two of the four findings were words, and we tested the labels after the structure.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 How the work got made -->
+  <section class="sec">
+    <div class="col">
+      <p class="opener mono"><b>03</b> How the work got made</p>
+      <h2>Four structures, three prototypes, and only one cleared the <em>70% bar</em></h2>
+      <p>Four closed card sorts tested the current structure against three alternatives, on 20 tasks. Before any screen, I worked out what each layer of the settings had to hold, and what it might look like.</p>
+    </div>
+    <div class="wide fig">
+      <p class="mono" style="margin:0 0 14px">Layering the IA: my early notes</p>
+      <div class="layers">
+        <div class="layer">
+          <p class="layer__n">1</p><p class="mono layer__name">Layer</p>
+          <h4>Data &amp; privacy settings</h4>
+        </div>
+        <div class="layer">
+          <p class="layer__n">2</p><p class="mono layer__name">Layer</p>
+          <h4>Product categories</h4>
+          <ul><li>Payments</li><li>Shopping</li><li>Giving</li><li>Credit</li><li>Ads and Marketing</li></ul>
+          <h4>Experience</h4>
+          <ul><li>When you pay/use</li><li>When you browse</li><li>When you shop</li><li>When you donate</li></ul>
+          <div class="layer__note"><span class="mono">Open question</span>Do we want a privacy hub connection here?</div>
+          <div class="layer__note"><span class="mono">UI elements</span>Mix of list and card · Accordions · Half sheet, for layer 3 maybe? · Multiple tabs: one for privacy, one for data</div>
+        </div>
+        <div class="layer">
+          <p class="layer__n">3</p><p class="mono layer__name">Layer</p>
+          <h4>Answer to 5 questions</h4>
+          <ol><li>What data do we collect?</li><li>Where do we get the data from?</li><li>What is the purpose of the data collection?</li><li>Is the data shared with anyone?</li><li>What consumer controls are available?</li></ol>
+          <div class="layer__note"><span class="mono">UI elements</span>Controls: toggles? · Card based approach · Mix of list and card (banner) · Accordions</div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="result">
+        <p class="path"><span><b>4</b>structures card-sorted</span><span><b>3</b>built as prototypes</span><span><b>1</b>cleared the bar</span></p>
+        <div class="gap">
+          <div class="gap__axis mono" aria-hidden="true"><span style="--at:60">60%</span><span style="--at:70" class="is-bar">70% bar</span><span style="--at:80">80%</span></div>
+          <div class="gap__line" aria-hidden="true"></div>
+          <div class="gap__row is-win"><span>Prototype 3</span><div class="gap__track"><i style="--v:74"></i></div><span class="gap__val">74%</span><span class="gap__note">Cleared, no one abandoned</span></div>
+          <div class="gap__row"><span>Prototype 1</span><div class="gap__track"><i style="--v:68"></i></div><span class="gap__val">68%</span><span class="gap__note">2 points short</span></div>
+          <div class="gap__row"><span>Prototype 2</span><div class="gap__track"><i style="--v:67"></i></div><span class="gap__val">67%</span><span class="gap__note">3 points short</span></div>
+        </div>
+        <p class="cap mono" style="margin:14px 0 0">Task success, unmoderated test, drawn from 60% to 80% so the gap to the bar shows.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 Impact -->
+  <section class="sec">
+    <div class="col">
+      <p class="opener mono"><b>04</b> Impact</p>
+      <h2>60% fewer support calls about privacy, on settings now used by <em>more than 80 million people</em></h2>
+      <div class="impact">
+        <div><b>60%</b><span>Fewer support calls about privacy settings</span></div>
+        <div><b>76%</b><span>Faster data access time</span></div>
+        <div><b>4.7/5</b><span>Average rating, from 150 users</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

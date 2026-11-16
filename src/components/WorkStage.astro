@@ -19,24 +19,22 @@
    Under the device, the case's `ground` (data/workPlay.ts): a photo
    under a dark wash, a blurred photo, or a colour block — mixed across
    the grid so it has a rhythm. On photo and blur the step dots turn
-   white. Values under WORK GROUND in tokens.css. The stage is one image to
+   white. The ground itself is WorkGround.astro, shared with the home
+   page's cards. The stage is one image to
    assistive tech, with `label` describing the flow; the screens inside
    are decorative. Reduced motion: the first screen only. */
 import { isPlay, type Play, type Desk } from '../data/workPlay';
 import { layerHtml } from '../scripts/work-play-layer';
+import WorkGround from './WorkGround.astro';
 
 interface Props { stage: Play | Desk }
 const { stage } = Astro.props;
 const play = isPlay(stage) ? stage : null;
 const desk = play ? null : (stage as Desk);
-const ground = stage.ground;
-const groundStyle = ground?.photo
-  ? `--wp-photo: url(${ground.photo}); --wp-pos: ${ground.pos ?? 'center'}; --wp-size: ${ground.size ?? 'cover'};`
-  : undefined;
 const phone = (screen: string) =>
   `<div class="wp-phone"><i></i><i></i><i></i><i></i><div class="wp-body"><div class="wp-glass"><div class="wp-screen">${screen}</div></div></div></div>`;
 ---
-{ground && <div class="wp-ground" data-kind={ground.kind} style={groundStyle} aria-hidden="true"></div>}
+{stage.ground && <WorkGround ground={stage.ground} />}
 {play && (
   <div class="wp-stage wp-stage--play" role="img" aria-label={play.label} data-play={JSON.stringify(play)}>
     <Fragment set:html={phone(layerHtml(play.steps[0]))} />
@@ -62,18 +60,6 @@ const phone = (screen: string) =>
      those don't carry this component's scope hash. */
   .wp-stage { position: absolute; inset: 0; }
 
-  /* ---- the ground under the device --------------------------------- */
-  .wp-ground { position: absolute; inset: 0; }
-  .wp-ground[data-kind='photo'], .wp-ground[data-kind='blur'] {
-    background: var(--work-wash-photo), var(--wp-photo) var(--wp-pos) / var(--wp-size) no-repeat, var(--hue); }
-  .wp-ground[data-kind='blur'] { background: var(--work-wash-blur), var(--wp-photo) center / cover no-repeat, var(--hue); }
-  .wp-ground[data-kind='colour'] {
-    --pale: color-mix(in oklab, var(--hue), var(--work-ground-pale));
-    --deep: color-mix(in oklab, var(--hue), var(--work-ground-deep));
-    background:
-      radial-gradient(42% 46% at 50% 46%, var(--work-ground-glow), transparent 72%),
-      radial-gradient(60% 55% at 12% 0%, var(--work-ground-glow-corner), transparent 70%),
-      linear-gradient(155deg, var(--pale) 0%, var(--hue) 50%, var(--deep) 100%); }
   .wp-ground:is([data-kind='photo'], [data-kind='blur']) ~ .wp-stage .wp-dots i { background: var(--work-dot-photo); }
   .wp-ground:is([data-kind='photo'], [data-kind='blur']) ~ .wp-stage .wp-dots i.on { background: var(--work-dot-photo-on); }
   .wp-ground:is([data-kind='photo'], [data-kind='blur']) ~ .wp-stage .wp-body { box-shadow: inset 0 0 0 0.25cqw rgb(0 0 0 / 0.1), 0 6cqw 12cqw -4cqw var(--work-device-shadow-photo); }

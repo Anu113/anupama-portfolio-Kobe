@@ -272,20 +272,152 @@
   .switch--finish::before { content: 'iPhone'; font: 400 11px/30px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin-right: 4px; }
   .switch--text::before { content: 'Text'; }
   .switch--source::before { content: 'Screens'; }
+  .switch--ground::before { content: 'Ground'; }
+  .switch--corner::before { content: 'Corners'; }
+  .switch--idphoto::before { content: 'ID check photo'; }
+
+  /* ---- Grounds behind the device (round 10), after gauravi.design ----
+     Her tiles sit each device on a soft, light gradient — pale at the
+     top left, a touch deeper at the bottom right — with a glow of light
+     behind the device; some phones rise large out of the bottom edge.
+     Built from each company's own hue, so the colour still belongs to
+     the work. */
+  .media { --deep: color-mix(in oklab, var(--hue), #3d4f86 16%); --pale: color-mix(in oklab, var(--hue), #fff 55%); }
+  [data-ground='gradient'] .media { background: linear-gradient(155deg, var(--pale) 0%, var(--hue) 52%, var(--deep) 100%); }
+  [data-ground='glow'] .media, [data-ground='rise'] .media {
+    background:
+      radial-gradient(42% 46% at 50% 46%, rgb(255 255 255 / .55), transparent 72%),
+      radial-gradient(60% 55% at 12% 0%, rgb(255 255 255 / .6), transparent 70%),
+      linear-gradient(155deg, var(--pale) 0%, var(--hue) 50%, var(--deep) 100%); }
+  [data-ground='glow'] .media::before, [data-ground='rise'] .media::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .35; mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  /* Rise: the phone larger, coming up out of the bottom edge, cropped */
+  [data-ground='rise'] .solo-play { align-items: flex-start; padding-top: 7%; }
+  [data-ground='rise'] .solo-play .iphone { height: 128%; }
+  [data-ground='rise'] .play__steps { display: none; }
+  [data-corner='round'] .media { border-radius: 20px; }
+
+  /* ---- After hansonwu.com (round 11): the device in a lit scene ------
+     He photographs each device in a place — a phone on a table in
+     afternoon window light, a laptop on a desk, screens over a blurred
+     stadium for sports work. Without photos of her own devices, two
+     ways to get there: window light falling across a surface (drawn),
+     and the product's own setting blurred behind it (her photos). */
+  [data-ground^='window'] .media, [data-ground='context'] .media { --surface: #d8d0c4; --light: rgb(255 246 228 / .62); --shade: rgb(60 45 30 / .22); }
+  [data-ground='window'] .media { background: var(--surface); }
+  [data-ground='window-hue'] .media, [data-ground='context'] .media:not([data-ctx]) { background: color-mix(in oklab, var(--hue), #6b5a48 10%); }
+  /* the window: two tall panes of light across the surface, soft-edged,
+     with the frame's shadow between them; light from the upper left */
+  [data-ground^='window'] .media::before, [data-ground='context'] .media:not([data-ctx])::before {
+    content: ''; position: absolute; inset: -30%; pointer-events: none; z-index: 0;
+    background: linear-gradient(118deg, transparent 18%, var(--light) 24%, var(--light) 38%, transparent 40.5%, transparent 42.5%, var(--light) 45%, var(--light) 60%, transparent 66%);
+    filter: blur(10px); mix-blend-mode: screen; }
+  [data-ground^='window'] .media::after, [data-ground='context'] .media::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(120% 90% at 30% 25%, transparent 50%, var(--shade)); }
+  /* the phone lies in that light and casts a long soft shadow away from it */
+  [data-ground^='window'] .iphone, [data-ground='context'] .iphone,
+  [data-ground^='window'] .mac, [data-ground='context'] .mac { filter: drop-shadow(1.4vw 1.8vw 1.4vw rgb(45 32 20 / .32)); }
+  [data-ground^='window'] .stage, [data-ground='context'] .stage { z-index: 1; }
+  /* in context: the store, blurred, dimmed (Walmart cases) */
+  [data-ground='context'] .media[data-ctx='store'] { background: #3b3a35 url(art/ctx-store.webp) center / cover; }
+  [data-ground='context'] .media[data-ctx]::after { background: linear-gradient(rgb(0 0 0 / .05), rgb(0 0 0 / .28)); }
+  [data-ground='context'] .media[data-ctx] .iphone { filter: drop-shadow(0 2vw 2.4vw rgb(0 0 0 / .45)); }
+  [data-ground^='window'] .play__steps i, [data-ground='context'] .play__steps i { background: rgb(0 0 0 / .25); }
+  [data-ground^='window'] .play__steps i.on, [data-ground='context'] .play__steps i.on { background: rgb(0 0 0 / .7); }
+  [data-ground='context'] .media[data-ctx] .play__steps i { background: rgb(255 255 255 / .35); }
+  [data-ground='context'] .media[data-ctx] .play__steps i.on { background: #fff; }
+
+  /* ---- Brand photo (round 12): a photo from the company's own site
+     behind each case, a different one per case, under a soft wash of
+     the project hue so it sits back and the phone stays the subject.
+     Mock only: these photos belong to PayPal, Okta and Walmart. */
+  [data-ground='photo'] .media { background: var(--photo) var(--bgpos, center) / var(--bgsize, cover) no-repeat, var(--hue); }
+  [data-ground='photo'] .media::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: linear-gradient(rgb(16 16 22 / .34), rgb(16 16 22 / .5)); }   /* a dark wash: the photo sits back without glare */
+  [data-ground='photo'] .stage { z-index: 1; }
+  [data-ground='photo'] .iphone, [data-ground='photo'] .mac { filter: drop-shadow(0 1.6vw 2vw rgb(0 0 0 / .4)); }
+  [data-ground='photo'] .play__steps i { background: rgb(255 255 255 / .4); }
+  [data-ground='photo'] .play__steps i.on { background: #fff; }
+
+  /* ---- Mix (round 16): not a photo on every tile. Some cases keep
+     their brand photo, some show it blurred to a texture, one sits on a
+     plain colour block, so the grid has a rhythm and the photos read as
+     moments rather than wallpaper (Hanson Wu mixes scenes and plain
+     grounds; Gauravi's grounds are quiet). data-treat per case. */
+  [data-ground='mix'] .media[data-treat='photo'] { background: var(--photo) var(--bgpos, center) / var(--bgsize, cover) no-repeat, var(--hue); }
+  [data-ground='mix'] .media[data-treat='photo']::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: linear-gradient(rgb(16 16 22 / .34), rgb(16 16 22 / .5)); }
+  [data-ground='mix'] .media[data-treat='blur'] { background: var(--hue); }
+  [data-ground='mix'] .media[data-treat='blur']::before { content: ''; position: absolute; inset: -40px; z-index: 0; pointer-events: none;
+    background: var(--photo) center / cover no-repeat; filter: blur(22px) saturate(1.1); }
+  [data-ground='mix'] .media[data-treat='blur']::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: linear-gradient(rgb(16 16 22 / .22), rgb(16 16 22 / .38)); }
+  [data-ground='mix'] .media[data-treat='colour'] {
+    background:
+      radial-gradient(42% 46% at 50% 46%, rgb(255 255 255 / .55), transparent 72%),
+      radial-gradient(60% 55% at 12% 0%, rgb(255 255 255 / .6), transparent 70%),
+      linear-gradient(155deg, var(--pale) 0%, var(--hue) 50%, var(--deep) 100%); }
+  [data-ground='mix'] .stage { z-index: 1; }
+  [data-ground='mix'] .iphone, [data-ground='mix'] .mac { filter: drop-shadow(0 1.6vw 2vw rgb(0 0 0 / .32)); }
+  [data-ground='mix'] .media:not([data-treat='colour']) .play__steps i { background: rgb(255 255 255 / .4); }
+  [data-ground='mix'] .media:not([data-treat='colour']) .play__steps i.on { background: #fff; }
+
+  /* ---- Illustrated, half the tile (round 15): the same photo turned
+     into an illustration — flat colour, or a pencil line — filling the
+     right half, faded into the company colour on the left; the phone
+     moves left so both read. Made in OpenCV from the photo
+     (art/illo/), not drawn. */
+  [data-ground^='illo'] .media { background: color-mix(in oklab, var(--hue), #fff 30%); }
+  [data-ground^='illo'] .media::before { content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 56%; z-index: 0; pointer-events: none;
+    background: var(--illo) center 30% / cover no-repeat;
+    -webkit-mask: linear-gradient(to right, transparent, #000 22%); mask: linear-gradient(to right, transparent, #000 22%); }
+  [data-ground='illo-flat'] .media { --illo: var(--illo-flat); }
+  [data-ground='illo-line'] .media { --illo: var(--illo-line); }
+  [data-ground^='illo'] .stage { z-index: 1; }
+  [data-ground^='illo'] .solo-play { justify-content: flex-start; padding-left: 16%; }
+  [data-ground^='illo'] .stage.desk .mac { left: 4%; }
+  [data-ground^='illo'] .stage.desk .iphone { right: auto; left: 54%; }
+  [data-ground^='illo'] .iphone, [data-ground^='illo'] .mac { filter: drop-shadow(0 1.4vw 1.8vw rgb(0 0 0 / .22)); }
   .why { color: var(--dim); margin: 0 0 32px; min-height: 1.8em; }
   .why b { color: var(--fg); font-weight: 600; }
+  /* ---- Home page view (round 17): the same grounds in the home page's
+     "Selected work" cards — four full-width rows that pin and stack as
+     you scroll, text left, the stage right (ProjectCard.astro). On the
+     home page the phone plays by itself while the card is on screen. */
+  .switch--page { margin-bottom: 20px; }
+  .home-head { display: flex; justify-content: space-between; align-items: baseline; margin: 24px 0 32px; }
+  .home-head h2 { font: 300 40px/1.1 var(--font-serif, 'Crimson Pro', serif); margin: 0; letter-spacing: -.01em; }
+  .home-head h2 em { font-style: italic; }
+  .home-head a { font: 400 11px/1.5 'Azeret Mono', monospace; letter-spacing: .04em; text-transform: uppercase; color: var(--fg); text-decoration: underline dotted 1px; text-underline-offset: .2em; }
+  #grid.is-home { display: block; }
+  .hc { position: sticky; top: 24px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 24px; height: 640px; padding: 40px;
+    background: var(--bg); margin-bottom: 24px; box-shadow: 0 -1px 0 rgb(0 0 0 / .04); }
+  .hc__body { display: flex; flex-direction: column; min-width: 0; }
+  .hc__num, .hc__meta, .hc__cta { font: 400 11px/1.5 'Azeret Mono', monospace; letter-spacing: .04em; text-transform: uppercase; color: var(--dim); margin: 0 0 24px; }
+  .hc__meta { margin-bottom: 16px; display: flex; gap: 1rem; flex-wrap: wrap; }
+  .hc__title { font: 600 18px/1.35 var(--font-sans); margin: 0 0 8px; max-width: 30ch; }
+  .hc__line { color: var(--dim); margin: 0; max-width: 40ch; }
+  .hc__cta { margin: auto 0 0; color: var(--fg); text-decoration: underline dotted 1px; text-underline-offset: .2em; }
+  .hc .media { aspect-ratio: auto; height: 100%; }
+  .hc .stage.desk .mac { width: 84%; }
 </style>
 <link rel="stylesheet" href="redraw.css">
 </head>
 <body>
-  <p class="mono" style="color:var(--dim);margin:0 0 12px">Mock · /work tiles · round 9</p>
+  <p class="mono" style="color:var(--dim);margin:0 0 12px">Mock · /work tiles · round 17</p>
   <h1>One <em>iPhone</em>, and the desktop beside it</h1>
   <p class="intro">The /work grid as it would look, two across. Every option uses the same iPhone 15 Pro on the company colour; only the staging changes. C to F are taken from your reference sites. G and H add the desktop: a MacBook or a browser window with the iPhone in front. Arrow keys switch too.</p>
 
+  <div class="switch switch--page" role="toolbar" aria-label="Page" id="page"></div>
   <div class="switch" role="toolbar" aria-label="Design" id="switch"></div>
   <div class="switch switch--finish" role="toolbar" aria-label="iPhone finish" id="finish"></div>
   <div class="switch switch--finish switch--text" role="toolbar" aria-label="Tile text" id="text"></div>
   <div class="switch switch--finish switch--source" role="toolbar" aria-label="Screens" id="source"></div>
+  <div class="switch switch--finish switch--ground" role="toolbar" aria-label="Ground" id="ground"></div>
+  <div class="switch switch--finish switch--corner" role="toolbar" aria-label="Corners" id="corner"></div>
+  <div class="switch switch--finish switch--idphoto" role="toolbar" aria-label="ID check photo" id="idphoto"></div>
   <p class="why" id="why"></p>
 
   <div class="grid" id="grid"></div>
@@ -341,6 +473,10 @@ const designs = [
 ];
 
 let text = 'now';
+// ID check: options to choose from (round 14)
+let idPhoto = 'id-laptop';
+const idPos = { 'id-laptop': '30% 60%', 'id-phone': '50% 30%', 'id-smile': '0% 18%', 'id-shades': '0% 24%', 'id-card': '50% 40%', 'id-coffee': '50% 50%' };
+const idSize = { 'id-smile': '160%', 'id-shades': '160%' };
 let source = 'redraw';
 const asUI = (sc) => sc && sc.ui;
 const uiBox = (sc) => `<div class="ui-host" style="position:absolute;inset:0">${ui[sc.ui]()}</div>`;
@@ -395,11 +531,17 @@ const sw = document.getElementById('switch');
 const why = document.getElementById('why');
 function show(d) {
   grid.dataset.d = d;
+  grid.classList.toggle('is-home', page === 'home');
+  if (page === 'home') return showHome(d);
   grid.innerHTML = cases.map((c) => {
     const i = cases.indexOf(c);
     const openBtn = source === 'redraw' && c.ui && d !== 'now' && d !== 'n' ? `<button type="button" class="media__open" onclick="openProto(${i}, this)" aria-label="Open the ${c.title} prototype" aria-haspopup="dialog"><span>Try the prototype</span></button>` : '';
     const plays = d === 'n' && source === 'redraw' && c.ui && !c.desk;
-    const media = `<div class="media" style="--hue:var(--hue-${c.hue})"${plays ? ` data-play="${i}" tabindex="0" aria-label="${c.title}: the flow plays on hover or focus"` : ''}>${stage(c, d)}${openBtn}</div>`;
+    const ctx = (c.hue === 'walmart' ? ' data-ctx="store"' : '')
+      + ` data-treat="${(Object.entries({ 'Rebuilding': 'colour', 'Privacy settings': 'blur', 'A debit card': 'colour', 'Scan & Go': 'blur' }).find(([t]) => c.title.startsWith(t)) || [0, 'photo'])[1]}"`;
+    const photo = [['Rebuilding', 'okta', '50% 30%'], ['Privacy settings', 'privacy', '70% 35%'], ['An ID check', idPhoto, idPos[idPhoto] || '50% 50%', idSize[idPhoto]], ['Privacy-first', 'ads', '60% 60%'], ['A debit card', 'debit', '50% 35%'], ['Scan', 'scan', '50% 50%'], ['Chase', 'chase', '74% 42%', '165%']].find(([t]) => c.title.startsWith(t));
+    const bgVars = photo ? `;--photo:url(art/bg/${photo[1]}.webp);--bgpos:${photo[2]}${photo[3] ? `;--bgsize:${photo[3]} auto` : ''};--illo-flat:url(art/illo/${photo[1]}-flat.webp);--illo-line:url(art/illo/${photo[1]}-line.webp)` : '';
+    const media = `<div class="media"${ctx} style="--hue:var(--hue-${c.hue})${bgVars}"${plays ? ` data-play="${i}" tabindex="0" aria-label="${c.title}: the flow plays on hover or focus"` : ''}>${stage(c, d)}${openBtn}</div>`;
     if (text === 'under') return `<div class="tile tile--under">${media}${kicker(c)}${outcome(c)}</div>`;
     if (text === 'above') return `<div class="tile tile--above">${kicker(c)}${outcome(c)}${media}</div>`;
     return `<div class="tile">${media}${caption(c)}</div>`;
@@ -434,6 +576,54 @@ src.innerHTML = sources.map(([id, l]) => `<button type="button" data-s="${id}">$
 const setSource = (v) => { source = v; src.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.s === v)); if (grid.dataset.d) show(grid.dataset.d); };
 src.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setSource(b.dataset.s); });
 setSource('redraw');
+let page = 'work';
+const homeOrder = [[0, 'Enterprise · IAM · Design systems'], [1, 'Fintech · Privacy · Content'], [6, 'Retail · Payments · Partnerships'], [4, 'Fintech · Onboarding · Prototype']];
+function mediaFor(c, i, d) {
+  const treat = (Object.entries({ 'Rebuilding': 'colour', 'Privacy settings': 'blur', 'A debit card': 'colour', 'Scan & Go': 'blur' }).find(([t]) => c.title.startsWith(t)) || [0, 'photo'])[1];
+  const photo = [['Rebuilding', 'okta', '50% 30%'], ['Privacy settings', 'privacy', '70% 35%'], ['An ID check', idPhoto, idPos[idPhoto] || '50% 50%', idSize[idPhoto]], ['Privacy-first', 'ads', '60% 60%'], ['A debit card', 'debit', '50% 35%'], ['Scan', 'scan', '50% 50%'], ['Chase', 'chase', '74% 42%', '165%']].find(([t]) => c.title.startsWith(t));
+  const bg = photo ? `;--photo:url(art/bg/${photo[1]}.webp);--bgpos:${photo[2]}${photo[3] ? `;--bgsize:${photo[3]} auto` : ''}` : '';
+  const plays = d === 'n' && c.ui && !c.desk;
+  return `<div class="media" data-treat="${treat}" style="--hue:var(--hue-${c.hue})${bg}"${plays ? ` data-play="${i}" data-auto="1" tabindex="0" aria-label="${c.title}: the flow plays while on screen"` : ''}>${stage(c, d)}</div>`;
+}
+function showHome(d) {
+  grid.innerHTML = `<div class="home-head"><h2>Selected <em>work</em></h2><a href="#">All work ↗</a></div>` + homeOrder.map(([i, tags], n) => {
+    const c = cases[i];
+    return `<article class="hc"><div class="hc__body"><p class="hc__num">0${n + 1}</p><p class="hc__meta"><span>${c.co}</span><span>·</span><span>${tags}</span></p><h3 class="hc__title">${c.title}</h3><p class="hc__line">${c.impact}</p><a class="hc__cta" href="#">View case study ↗</a></div>${mediaFor(c, i, d)}</article>`;
+  }).join('');
+  fitUI(grid);
+  why.innerHTML = 'The home page’s Selected work: four cards that pin and stack as you scroll, with the same grounds as /work. On the home page each phone plays by itself while its card is on screen.';
+  sw.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.id === d));
+  // autoplay on screen, as the home cards do
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    const m = e.target;
+    if (e.isIntersecting && !m._on) m.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+  }), { threshold: .4 });
+  grid.querySelectorAll('[data-auto]').forEach((m) => io.observe(m));
+}
+{
+  const el = document.getElementById('page');
+  el.innerHTML = [['work', '/work grid'], ['home', 'Home page cards']].map(([v, l]) => `<button type="button" data-v="${v}">${l}</button>`).join('');
+  const set = (v) => { page = v; el.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === v)); if (grid.dataset.d) show(grid.dataset.d); };
+  el.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) set(b.dataset.v); });
+  set(new URLSearchParams(location.search).get('page') === 'home' ? 'home' : 'work');
+}
+const toolbar = (id, attr, opts, def) => {
+  const el = document.getElementById(id);
+  el.innerHTML = opts.map(([v, l]) => `<button type="button" data-v="${v}">${l}</button>`).join('');
+  const set = (v) => { grid.dataset[attr] = v; el.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === v)); };
+  el.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) set(b.dataset.v); });
+  set(def);
+};
+toolbar('ground', 'ground', [['flat', 'Flat hue (now)'], ['gradient', 'Soft gradient'], ['glow', 'Gradient + glow'], ['rise', 'Glow + phone rising'], ['window', 'Window light'], ['window-hue', 'Window light on hue'], ['context', 'In context'], ['photo', 'Brand photo'], ['mix', 'Mix: photo, blur, colour']], 'mix');
+{
+  const el = document.getElementById('idphoto');
+  const opts = [['id-laptop', 'Card at a laptop'], ['id-phone', 'On his phone'], ['id-water', 'Paddleboard on water'], ['id-smile', 'Smiling portrait'], ['id-shades', 'Portrait, sunglasses'], ['id-card', 'Card in hand'], ['id-headphones', 'Headphones'], ['id-coffee', 'Coffee table']];
+  el.innerHTML = opts.map(([v, l]) => `<button type="button" data-v="${v}">${l}</button>`).join('');
+  const set = (v) => { idPhoto = v; el.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === v)); if (grid.dataset.d) show(grid.dataset.d); };
+  el.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) set(b.dataset.v); });
+  set('id-laptop');
+}
+toolbar('corner', 'corner', [['square', 'Square (now)'], ['round', 'Rounded 20px']], 'square');
 show(designs.some((x) => x.id === location.hash.slice(1)) ? location.hash.slice(1) : 'n');
 </script>
 </body>

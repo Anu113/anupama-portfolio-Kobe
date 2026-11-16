@@ -7,7 +7,7 @@
           The word "conversation" is a link (Gmail compose to `site.email`,
           new tab), in the site's link style (LINKS in tokens.css): a 45%
           ink underline that goes solid and thickens on hover/focus.
-        - one line under it, in grey at 13px (--step-small), exactly as
+        - one line under it, in grey at 12px (the copy role), exactly as
           wide as the headline: the ask first ("Open to <site.seeking>
           roles."), then everyone else ("Projects, questions and feedback
           are welcome too."). The role steps up to ink on a neutral
@@ -47,7 +47,9 @@
    links and icons rest in grey and turn ink on hover, as the top nav's
    do; "conversation" uses the link underline.
    Type follows allierho.com's system: the sign-off is the serif at
-   32px (--step-signoff, as the reference's "Let's chat."), the note body text, links and labels 12px uppercase. */
+   the heading size (--step-signoff = --step-heading, 40px), the note
+   in the copy role (12px), the base row in the mono label role (11px
+   caps) — ONE TYPE SCALE in tokens.css. */
 import { site } from '../data/site';
 
 const year = new Date().getFullYear();
@@ -166,8 +168,10 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
   .foot__words { width: fit-content; max-width: 100%; }
   .foot__note {
     contain: inline-size;
-    margin: 1.25rem 0 0;
-    font-size: var(--step-small);
+    margin: var(--space-head-link) 0 0;
+    font-size: var(--step-copy);
+    line-height: var(--leading-copy);
+    letter-spacing: var(--tracking-copy);
     color: var(--fg-dim);
   }
   /* Keeps "too." and the smiley together so it never wraps alone. */
@@ -217,7 +221,8 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     font-family: var(--font-mono);
     font-weight: var(--weight-mono);
     font-size: var(--step-fine);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-mono-label);
+    text-transform: uppercase;
     line-height: 1.4;
   }
   /* The one quiet thing in the row (everything else is ink), as on
@@ -234,7 +239,8 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     font-family: var(--font-mono);
     font-weight: var(--weight-mono);
     font-size: var(--step-fine);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-mono-label);
+    text-transform: uppercase;
   }
   /* Grey at rest, ink on hover, as the top nav's links. */
   .foot__nav a {

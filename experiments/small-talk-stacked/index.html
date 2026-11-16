@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Small talk: side by side vs stacked (mock)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-16. "Now" is Small talk as built at 1440px (measured):
+  heading and intro in columns 1-6, the list in 8-12 (543px), cards at
+  1.5% ink, answers capped at 360px, the Ask field's placeholder at 12px.
+  "Stacked" (option B): heading and intro on the left edge, the list
+  under them at 720px, like "Selected work" and Now. Plus the three small
+  fixes: cards at 3% ink (the site's other soft cards), answers as wide as
+  their row, the Ask field's placeholder at 18px like the questions.
+  The playground line above and Now below are there for the rhythm.
+-->
+<style>
+  :root {
+    --bg: #fcfcfc; --ink: #262626; --grey: #707070; --soft: #777; --line: rgb(0 0 0 / .1);
+    --serif: 'Crimson Pro', Georgia, serif;
+    --sans: 'Manrope', system-ui, sans-serif;
+    --mono: 'Azeret Mono', ui-monospace, monospace;
+    --gutter: 40px;
+    --mark: #e8603c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #ecebe8; color: var(--ink); font-family: var(--sans); font-weight: 600; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; }
+
+  .bar { position: sticky; top: 0; z-index: 10; display: flex; gap: 20px; align-items: center; padding: 12px 24px; background: #1b1a19; color: #ecebe8; font: 400 12px/1.4 var(--mono); }
+  .bar strong { font-weight: 400; opacity: .6; margin-right: auto; }
+  .seg { display: inline-flex; border: 1px solid #555; border-radius: 99px; overflow: hidden; }
+  .seg button { all: unset; cursor: pointer; padding: 6px 14px; }
+  .seg button[aria-pressed=true] { background: #ecebe8; color: #1b1a19; }
+  .seg button:focus-visible { outline: 2px solid #ecebe8; outline-offset: 2px; }
+
+  .notes { max-width: 1440px; margin: 24px auto; padding: 24px 40px; background: var(--bg); font: 400 12px/1.7 var(--mono); color: var(--grey); }
+  .notes b { font-weight: 400; color: var(--ink); }
+  .m-now .n-new, .m-new .n-now { display: none; }
+
+  .page { max-width: 1440px; margin: 0 auto 64px; background: var(--bg); padding: 0 var(--gutter); }
+
+  .gap { position: relative; }
+  .gap { height: var(--h); }
+  .m-new .gap[data-new-h] { height: var(--hn); }
+  .show-gaps .gap { background: color-mix(in srgb, var(--mark) 14%, transparent); }
+  .show-gaps .gap::after { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); font: 400 10px/1 var(--mono); color: #b4482a; background: var(--bg); padding: 2px 6px; content: attr(data-l); }
+  .show-gaps.m-new .gap[data-ln]::after { content: attr(data-ln); }
+
+  .heading { font: 300 40px/1.15 var(--serif); letter-spacing: -.03em; }
+  .copy { font: 600 12px/1.8 var(--sans); letter-spacing: .03em; color: var(--soft); }
+  .label { font: 400 11px/1.5 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--grey); }
+  .lnk { font: 400 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+
+  /* Small talk */
+  .talk { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); column-gap: 40px; align-items: start; }
+  .head { grid-column: 1 / 7; display: flex; flex-direction: column; gap: 24px; }
+  .head .copy { max-width: 352px; }
+  .body { grid-column: 8 / 13; }
+  .m-new .talk { display: block; }
+  .m-new .head .copy { max-width: none; }
+  .m-new .body { max-width: 720px; margin-top: 48px; }
+
+  .list { list-style: none; display: grid; gap: 8px; }
+  .card { border-radius: 12px; background: color-mix(in srgb, var(--ink) 1.5%, var(--bg)); }
+  .m-new .card { background: color-mix(in srgb, var(--ink) 3%, var(--bg)); }
+  .row { all: unset; box-sizing: border-box; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 18px 20px 20px; font: 600 18px/1.35 var(--sans); letter-spacing: -.01em; cursor: pointer; border-radius: 12px; }
+  .row:focus-visible { outline: 2px solid var(--ink); }
+  .sign { width: 20px; height: 20px; flex: none; color: color-mix(in srgb, var(--ink) 55%, var(--bg)); transition: transform .3s; }
+  .card.open .sign { transform: rotate(45deg); }
+  .ans { display: none; padding: 0 20px 20px; max-width: 360px; box-sizing: content-box; }
+  .m-new .ans { max-width: none; box-sizing: border-box; }
+  .card.open .ans { display: block; }
+  .ans p + p { margin-top: 12px; }
+  .ans a { color: var(--ink); text-decoration: underline 1px rgb(38 38 38 / .45); text-underline-offset: 3px; }
+  .ph { color: #b4482a; }
+  .hide-x .card.x { display: none; }
+
+  .ask { margin-top: 8px; display: flex; align-items: center; gap: 14px; padding: 12px 12px 12px 18px; border-radius: 12px; background: color-mix(in srgb, var(--ink) 1.5%, var(--bg)); }
+  .m-new .ask { background: color-mix(in srgb, var(--ink) 3%, var(--bg)); }
+  .ask img { width: 28px; height: 28px; }
+  .ask input { all: unset; flex: 1; font: 600 12px/1.2 var(--sans); }
+  .m-new .ask input { font: 600 18px/1.35 var(--sans); letter-spacing: -.01em; }
+  .ask input::placeholder { color: var(--grey); }
+  .send { width: 32px; height: 32px; border-radius: 50%; background: rgb(38 38 38 / .16); flex: none; }
+
+  .now { border-top: 1px solid var(--line); }
+  .now p { max-width: 736px; }
+</style>
+</head>
+<body class="m-now show-gaps">
+
+<div class="bar">
+  <strong>Small talk · 1440px</strong>
+  <span class="seg" role="group" aria-label="Version">
+    <button type="button" data-mode="now" aria-pressed="true">Now</button>
+    <button type="button" data-mode="new" aria-pressed="false">Stacked</button>
+  </span>
+  <span class="seg" role="group" aria-label="Spacing overlay">
+    <button type="button" data-gaps="on" aria-pressed="true">Spacing on</button>
+    <button type="button" data-gaps="off" aria-pressed="false">Off</button>
+  </span>
+  <span class="seg" role="group" aria-label="Unwritten answers">
+    <button type="button" data-x="show" aria-pressed="true">[X] shown</button>
+    <button type="button" data-x="hide" aria-pressed="false">Hidden</button>
+  </span>
+</div>
+
+<div class="notes">
+  <p class="n-now"><b>Now, as built.</b> Heading and intro take columns 1–6, the list 8–12 (543px), leaving about 460px empty between them and about 360px under the intro. Cards at 1.5% ink (hard to see), answers stop at 360px, the Ask field's placeholder is 12px under 18px questions.</p>
+  <p class="n-new"><b>Stacked (B).</b> Heading and intro on the left edge, 48px to the list (as "Selected work" to its cards), list 720px wide. Cards at 3% ink, like the site's other soft cards. Answers fill their row. The Ask field reads like a sixth question (18px). Spacing: 128 above and below, 24 heading → intro, 8 between cards (kept, now a token).</p>
+  <p>The <span class="ph">[X]</span> answers are her notes to write and show on the live site today. "Hidden" shows the section without those two questions.</p>
+</div>
+
+<div class="page">
+  <div class="gap" style="--h:64px" data-l="… playground line above"></div>
+  <section>
+    <h2 class="heading">Smaller experiments<br>live in the <em>playground.</em></h2>
+    <div class="gap" style="--h:16px" data-l="16"></div>
+    <span class="lnk">Explore playground</span>
+  </section>
+
+  <div class="gap" style="--h:128px" data-l="128"></div>
+
+  <section class="talk">
+    <div class="head">
+      <h2 class="heading">Small <em>talk</em></h2>
+      <p class="copy">The short ones are here. For anything else, ask Moss.</p>
+    </div>
+    <div class="body">
+      <ul class="list">
+        <li class="card open x"><button class="row" type="button" aria-expanded="true"><span>How did you get into design?</span><svg class="sign" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 3v14M3 10h14"/></svg></button>
+          <div class="ans copy"><p><span class="ph">[X] Her story, in her words. Two short paragraphs.</span></p></div></li>
+        <li class="card"><button class="row" type="button" aria-expanded="false"><span>What’s your main thing?</span><svg class="sign" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 3v14M3 10h14"/></svg></button>
+          <div class="ans copy"><p>Fintech first: payments, cards and privacy at PayPal. Then enterprise software and developer tools: identity, access and the integration platform at Okta.</p><p>Complicated systems, made usable, down to the last pixel.</p></div></li>
+        <li class="card"><button class="row" type="button" aria-expanded="false"><span>Where are you based?</span><svg class="sign" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 3v14M3 10h14"/></svg></button>
+          <div class="ans copy"><p>Bangalore, India. The clock at the top of the page is mine.</p></div></li>
+        <li class="card x"><button class="row" type="button" aria-expanded="false"><span>Where do you see yourself in the future?</span><svg class="sign" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 3v14M3 10h14"/></svg></button>
+          <div class="ans copy"><p>In a Staff or Lead Product Designer role, with my hands on the work.</p><p><span class="ph">[X] The team, product or problem she wants next.</span></p></div></li>
+        <li class="card"><button class="row" type="button" aria-expanded="false"><span>How can I get in touch?</span><svg class="sign" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 3v14M3 10h14"/></svg></button>
+          <div class="ans copy"><p><a href="#">Email</a> is fastest. <a href="#">LinkedIn</a> works too.</p><p>And if your question isn’t up here, ask Moss. He knows the rest.</p></div></li>
+      </ul>
+      <label class="ask"><img src="img/moss-sm.webp" alt=""><input type="text" placeholder="Ask Moss anything else" aria-label="Ask Moss anything else"><span class="send" aria-hidden="true"></span></label>
+    </div>
+  </section>
+
+  <div class="gap" style="--h:128px" data-l="128"></div>
+
+  <section class="now">
+    <div class="gap" style="--h:24px" data-l="24"></div>
+    <h2 class="label">Now</h2>
+    <div class="gap" style="--h:16px" data-l="16"></div>
+    <p class="copy">Right now I'm thinking about trust: specifically, how much of it AI tools have actually earned versus assumed. Watching how background agents and parallel workflows are reshaping what engineering work even needs to be real-time anymore.</p>
+    <div class="gap" style="--h:128px" data-l="128"></div>
+  </section>
+</div>
+
+<script>
+  const b = document.body;
+  const seg = (attr, fn) => document.querySelectorAll(`[${attr}]`).forEach(btn => btn.addEventListener('click', () => {
+    fn(btn.getAttribute(attr));
+    document.querySelectorAll(`[${attr}]`).forEach(x => x.setAttribute('aria-pressed', x === btn));
+  }));
+  seg('data-mode', v => { b.classList.toggle('m-now', v === 'now'); b.classList.toggle('m-new', v === 'new'); });
+  seg('data-gaps', v => b.classList.toggle('show-gaps', v === 'on'));
+  seg('data-x', v => b.classList.toggle('hide-x', v === 'hide'));
+  // One open at a time, as on the site.
+  document.querySelectorAll('.row').forEach(row => row.addEventListener('click', () => {
+    const card = row.closest('.card');
+    const open = !card.classList.contains('open');
+    document.querySelectorAll('.card').forEach(c => { c.classList.remove('open'); c.querySelector('.row').setAttribute('aria-expanded', 'false'); });
+    if (open) { card.classList.add('open'); row.setAttribute('aria-expanded', 'true'); }
+  }));
+</script>
+</body>
+</html>

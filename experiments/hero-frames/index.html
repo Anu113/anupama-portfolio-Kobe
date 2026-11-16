@@ -1,0 +1,142 @@
+<!doctype html>
+<!-- Hero portrait: how she follows the pointer, three ways.
+     A  today: 48 pictures, she jumps from one to the next.
+     B  blend: the same 48, each faded into the next as the pointer moves.
+     C  more pictures: 96 cut from her clip (every 2nd frame, not every 4th).
+     All three read one pointer, mapped exactly as HeroIllustration does
+     (x across the page, 28% y, eased 0.14 per 60fps frame).
+     Frames in ./frames are her clip through scripts/hero-sprite.py's matte,
+     at 420x588. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero portrait — three ways to follow the pointer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#fcfcfc; --fg:#262626; --dim:#707070; --rule:#e6e6e6; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font: 600 12px/1.8 Manrope, system-ui, sans-serif; padding: 40px 48px 64px; min-height: 100vh; cursor: crosshair; }
+  h1 { font: 300 40px/1.1 'Crimson Pro', Georgia, serif; margin: 0 0 8px; }
+  h1 em { font-style: italic; }
+  .lede { color: var(--dim); max-width: 60ch; margin: 0 0 24px; }
+  .bar { display: flex; gap: 8px; align-items: center; margin-bottom: 32px; flex-wrap: wrap; }
+  .mono { font: 400 11px/1.4 'Azeret Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em; }
+  button { font: 400 11px/1 'Azeret Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em;
+    background: transparent; color: var(--fg); border: 1px solid var(--fg); border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  figure { margin: 0; }
+  canvas { width: 100%; aspect-ratio: 420 / 588; display: block; }
+  .tag { display: flex; justify-content: space-between; margin: 16px 0 6px; }
+  .tag b { font-weight: 400; color: var(--dim); }
+  figcaption p { margin: 0; color: var(--dim); max-width: 42ch; }
+  figcaption strong { display: block; font: 600 18px/1.3 Manrope, sans-serif; color: var(--fg); margin-bottom: 4px; }
+  .cost { margin-top: 10px; color: var(--fg); }
+  .loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); z-index: 2; }
+</style>
+</head>
+<body>
+<div class="loading mono" id="loading">Loading her frames…</div>
+
+<h1>She follows the pointer, <em>three ways</em></h1>
+<p class="lede">Move the pointer slowly across the page: all three read it the same way the hero does. Or press a sweep to watch without moving. The number in each corner is the picture on screen.</p>
+
+<div class="bar">
+  <span class="mono" style="color:var(--dim)">Sweep</span>
+  <button type="button" data-sweep="0" aria-pressed="true">Off — use pointer</button>
+  <button type="button" data-sweep="slow" aria-pressed="false">Slow</button>
+  <button type="button" data-sweep="fast" aria-pressed="false">Fast</button>
+</div>
+
+<div class="grid">
+  <figure>
+    <canvas id="a" width="420" height="588"></canvas>
+    <figcaption>
+      <div class="tag mono"><span>A · Today</span><b data-n="a">0 / 47</b></div>
+      <strong>Steps between 48 pictures</strong>
+      <p>What's live. She holds a pose, then jumps to the next one about every 40px of pointer travel.</p>
+      <p class="cost mono">Download 4.6MB · no change</p>
+    </figcaption>
+  </figure>
+  <figure>
+    <canvas id="b" width="420" height="588"></canvas>
+    <figcaption>
+      <div class="tag mono"><span>B · Blend</span><b data-n="b">0 / 47</b></div>
+      <strong>Same 48, faded into each other</strong>
+      <p>Between two pictures she is a mix of both, so every pixel of pointer travel changes her. On a quick turn you may catch a faint double outline.</p>
+      <p class="cost mono">Download 4.6MB · code only</p>
+    </figcaption>
+  </figure>
+  <figure>
+    <canvas id="c" width="420" height="588"></canvas>
+    <figcaption>
+      <div class="tag mono"><span>C · More pictures</span><b data-n="c">0 / 95</b></div>
+      <strong>96 pictures from her clip</strong>
+      <p>Twice as many real drawings, so the steps are half the size, with no mixing. She still steps, just about every 20px.</p>
+      <p class="cost mono" id="cost-c">Download 9.6MB · loader waits longer</p>
+    </figcaption>
+  </figure>
+</div>
+
+<script>
+  const N = 96, SMOOTH = 0.14, Y_INF = 0.28;
+  const imgs = Array.from({ length: N }, (_, i) => { const im = new Image(); im.src = `frames/${String(i).padStart(3, '0')}.webp`; return im; });
+  const ctx = id => document.getElementById(id).getContext('2d');
+  const A = ctx('a'), B = ctx('b'), C = ctx('c');
+  const num = k => document.querySelector(`[data-n="${k}"]`);
+
+  // One pointer value, 0..1, as the hero blends it.
+  let target = 0, cur = 0, sweep = 0, sweepT = 0;
+  addEventListener('pointermove', e => {
+    if (sweep) return;
+    const nx = e.clientX / innerWidth, ny = e.clientY / innerHeight;
+    target = Math.min(1, Math.max(0, nx * (1 - Y_INF) + ny * Y_INF));
+  });
+
+  document.querySelectorAll('[data-sweep]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-sweep]').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+    sweep = b.dataset.sweep === '0' ? 0 : b.dataset.sweep === 'slow' ? 14000 : 3000;
+    sweepT = performance.now();
+  }));
+
+  const draw = (c, im, a = 1) => { c.globalAlpha = a; c.drawImage(im, 0, 0, 420, 588); };
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(50, now - last); last = now;
+    if (sweep) { const p = ((now - sweepT) % sweep) / sweep; target = p < .5 ? p * 2 : 2 - p * 2; }
+    cur += (target - cur) * (1 - Math.pow(1 - SMOOTH, dt / (1000 / 60)));
+
+    // A: today — 48 pictures, rounded (every 2nd of the 96).
+    const ia = Math.round(cur * 47);
+    A.clearRect(0, 0, 420, 588); A.globalCompositeOperation = 'source-over'; draw(A, imgs[ia * 2]);
+    num('a').textContent = `${ia} / 47`;
+
+    // B: blend — the two neighbouring pictures of the 48, added in
+    // proportion (premultiplied, so edges don't double up in brightness).
+    const fb = cur * 47, f0 = Math.floor(fb), f1 = Math.min(47, f0 + 1), t = fb - f0;
+    B.clearRect(0, 0, 420, 588);
+    B.globalCompositeOperation = 'lighter';
+    draw(B, imgs[f0 * 2], 1 - t); draw(B, imgs[f1 * 2], t);
+    B.globalCompositeOperation = 'source-over'; B.globalAlpha = 1;
+    num('b').textContent = `${fb.toFixed(1)} / 47`;
+
+    // C: 96 pictures, rounded.
+    const ic = Math.round(cur * 95);
+    C.clearRect(0, 0, 420, 588); draw(C, imgs[ic]);
+    num('c').textContent = `${ic} / 95`;
+
+    requestAnimationFrame(frame);
+  }
+
+  Promise.all(imgs.map(im => im.decode())).then(() => {
+    document.getElementById('loading').remove();
+    requestAnimationFrame(frame);
+  });
+</script>
+</body>
+</html>
