@@ -1012,47 +1012,45 @@
 }
 
 /* ============================================================
-   PRELOADER — the first-paint loader (Preloader.astro), chosen on
-   request from rounds of mocks: a terracotta sheet with a faint grain;
-   the cursor line, in cream, sits as a dot in the middle and follows
-   only the visitor's pointer (a still dot until they move it); under
-   it, centred, a mouse icon and "A line is a dot that went for a walk"
-   in 16px mono caps, which starts as a row of dots, one per letter, and
-   turns into its letters as the page loads (the progress; there's no
-   number). At 100% the words fade and the terracotta shrinks, as a
-   slowly lumping blob, into the orange dot beside "Moss" in his card,
-   so the loader becomes a piece of the page. Where that dot isn't on
-   screen, the sheet lifts instead.
-   Colour: the light-mode accent, held in dark mode too (the dark
-   accent under cream text is 2.6:1; this is 4.9:1), and everything on
-   it is cream. A requested exception to rule 2's "no themed colour
-   band": it is on screen for a few seconds, on the home page only.
-   Pacing: the words follow the page's real images but never run ahead
-   of a paced schedule of --dur-preloader-min.
+   PRELOADER — the first-paint loader (Preloader.astro), on request,
+   after huyml.co, chosen from the mocks in experiments/preloader-moss/
+   (take 2, page B "soft focus", Moss 2 "peeks up"). The page's ground
+   with only the hero sentence on it, centred, under a flat curtain in
+   the ink colour (no shadow, a hard edge): first the whole screen, then
+   it draws back to open a strip on the left.
+   Moss strolls in with his cup and raises his paw as he reaches the
+   curtain; while his paw is up the curtain's edge is on it. He pushes
+   it across as the page loads (the progress), with one pause halfway;
+   it leaves the screen just as his paw comes down, and he strolls out,
+   smiling. Then the sentence glides to its place, the rest of the hero
+   comes into focus, and Moss peeks up from behind his books.
+   His frames: public/images/moss/moss-push.webp, cut from her clip by
+   scripts/moss-push-sprite.py. The frame cues (when his paw rises,
+   meets the curtain, comes down) are in Preloader.astro.
    ============================================================ */
 :root {
-  --preloader-ground: #b4482a;           /* the light-mode accent, in both modes */
-  --preloader-ink: #f5f1e8;              /* cream (--loader-cream): 4.9:1 on the ground */
-  --preloader-ink-dim: rgb(245 241 232 / 0.78);   /* the words, the dots, the icon's detail */
-  --preloader-grain: url('/images/paper-grain.svg');
-  --preloader-grain-blend: soft-light;   /* lightens and darkens a little, so it reads on red */
-  --preloader-grain-opacity: 0.22;
-  --preloader-hint-size: 16px;
-  --preloader-hint-tracking: 0.05em;
-  --preloader-icon-size: 24px;
-  --preloader-offset: 4vh;               /* the words sit this far below the middle, where the dot starts */
-  --preloader-blob-lumps: 0.38;          /* how lumpy the shrinking blob is at full size (0 = a circle) */
-  --dur-preloader-min: 4000ms;           /* the shortest a full load takes */
+  --preloader-ground: var(--bg);
+  --preloader-curtain: var(--fg);        /* ink: near-black in light mode, re-inked light in dark */
+  --preloader-moss-h: min(27vh, 40vw);   /* how tall he stands */
+  --preloader-floor: 0.86;               /* his feet, as a share of the window's height */
+  --preloader-fps: 14;                   /* his clip, frames a second (the clip's own pace is 12) */
+  --preloader-push-fps: 1.3;             /* his steps run this much quicker while pushing */
+  --preloader-stroll: 0.6;               /* walking pace, in his own widths a second */
+  --preloader-push: 0.17;                /* pushing pace, in screen widths a second */
+  --preloader-pause-at: 0.5;             /* the one pause, this far across */
+  --dur-preloader-pause: 650ms;
+  --dur-preloader-black: 600ms;          /* first, the whole screen is curtain this long */
+  --dur-preloader-open: 700ms;           /* ...then it draws back to open the strip */
+  --ease-preloader-open: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-preloader-max: 6000ms;           /* images still out by now count as in */
-  --dur-preloader-words: 300ms;          /* the words fading at 100% */
-  --dur-preloader-hold: 380ms;           /* from 100% to the exit */
-  --dur-preloader-blob: 1300ms;          /* the blob shrinking into Moss's dot */
-  --dur-preloader-lift: 1000ms;          /* the fallback lift, when his dot isn't on screen */
-  --ease-preloader-lift: cubic-bezier(0.785, 0.135, 0.15, 0.86);
-  --dur-preloader-fade: 450ms;           /* reduced motion: fades instead */
-  --dur-preloader-skip: 600ms;           /* a key, click, tap or scroll: the same exit, faster */
-  --dur-preloader-stall: 700ms;          /* no new letter for this long = stuck: the next letter starts trying characters */
-  --dur-preloader-try: 90ms;             /* how often a stuck letter changes */
+  --dur-preloader-glide: 1000ms;         /* the sentence gliding from the middle to its place */
+  --ease-preloader-glide: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-preloader-focus: 900ms;          /* each piece of the hero coming into focus */
+  --dur-preloader-focus-step: 160ms;     /* ...one after another */
+  --preloader-focus-blur: 10px;
+  --dur-preloader-peek: 900ms;           /* Moss popping up from behind his books */
+  --dur-preloader-fade: 450ms;           /* reduced motion: the curtain fades instead */
+  --dur-preloader-skip: 600ms;           /* a key, click, tap or scroll: out at once, faster */
   --dur-preloader-skip-grace: 1200ms;    /* inputs this soon after load don't skip (a held Cmd+R, scroll momentum) */
 }
 
@@ -1091,6 +1089,7 @@
   --ring-pill-gap: 8px;
   --ring-scrim: color-mix(in srgb, var(--bg) 82%, transparent);   /* phones: keeps the words readable over cards */
   --dur-ring-swap: 600ms;                   /* the arrow sliding out and a new one in, on hover */
+  --dur-preloader-failsafe: 20s;         /* if the script never runs, everything shows by now */
   --ease-ring-swap: cubic-bezier(0.77, 0, 0.175, 1);
   --dur-ring-press: 100ms;                  /* the pill's press and hover scale */
 }
