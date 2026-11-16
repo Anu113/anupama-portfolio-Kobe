@@ -29,7 +29,7 @@
 
    Same security model as CaseGate — static site, no server, so this is a
    soft deterrent, not confidentiality. See cases.ts. */
-import { site } from '../data/site';
+import { gmailCompose } from '../data/site';
 import LockIcon from './LockIcon.astro';
 
 interface Props {
@@ -47,7 +47,7 @@ const {
   slug, caseTitle, company, role, scope, outcome,
   password, backHref = '/work', targetId,
 } = Astro.props;
-const mailSubject = encodeURIComponent(`Passcode for "${caseTitle}"`);
+const mailHref = gmailCompose(`Passcode for "${caseTitle}"`);
 const facts = [
   { term: 'Role', detail: role },
   { term: 'Scope', detail: scope },
@@ -104,11 +104,11 @@ const facts = [
       <button class="locked__submit btn btn--primary" type="submit">Unlock</button>
     </form>
     <p class="locked__reach">
-      No passcode? <a href={`mailto:${site.email}?subject=${mailSubject}`}>Email me</a> and I'll walk you through it.
+      No passcode? <a href={mailHref} target="_blank" rel="noopener">Email me<span class="u-sr-only"> (opens Gmail in a new tab)</span></a> and I'll walk you through it.
     </p>
 
     <a class="locked__back u-label-mono" href={backHref}>
-      <span aria-hidden="true">&larr;</span> All work
+      <span aria-hidden="true">◂</span> All work
     </a>
   </div>
 </div>
@@ -233,22 +233,17 @@ const facts = [
 
   .locked__err { margin: 0.6rem 0 0; font-size: var(--step-small); color: var(--accent-text); }
   .locked__reach { margin: 1rem 0 0; font-size: var(--step-small); color: var(--fg-dim); }
-  .locked__reach a {
-    color: var(--fg);
-    text-decoration: underline;
-    text-decoration-color: var(--rule);
-    text-underline-offset: 4px;
-    transition: color var(--dur-hover) var(--ease-out), text-decoration-color var(--dur-hover) var(--ease-out);
-  }
-  .locked__reach a:hover { color: var(--accent-text); text-decoration-color: currentColor; }
+  /* Its link is the site's plain link (LINKS in tokens.css, `a` in
+     global.css): no rule of its own here. */
 
   .locked__back {
     margin-top: 2.5rem;
     color: var(--fg-dim);
     text-decoration: none;
-    transition: color var(--dur-hover) var(--ease-out);
+    transition: color var(--dur-micro) var(--ease-out);
   }
-  .locked__back:hover { color: var(--fg); }
+  .locked__back:hover,
+  .locked__back:focus-visible { color: var(--fg); }
 </style>
 
 <script>

@@ -89,10 +89,10 @@ const parts = [{ id: 'top', nav: 'Start' }, ...sections];
   .strip__back {
     color: var(--fg-dim);
     text-decoration: none;
-    transition: color var(--dur-micro) ease;
+    transition: color var(--dur-micro) var(--ease-out);
   }
   .strip__back:hover,
-  .strip__back:focus-visible { color: var(--accent-text); }
+  .strip__back:focus-visible { color: var(--fg); }
 
   /* The title only arrives once the real one has scrolled away, so the
      page never shows it twice. */
@@ -122,14 +122,14 @@ const parts = [{ id: 'top', nav: 'Start' }, ...sections];
     border: 0;
     padding: 0.25rem 0;
     cursor: pointer;
-    transition: color var(--dur-micro) ease;
+    transition: color var(--dur-micro) var(--ease-out);
   }
   .strip__part:hover,
   .strip__part:focus-visible,
   .strip__part[aria-expanded='true'] { color: var(--fg); }
   .strip__caret {
     display: inline-block;
-    transition: transform var(--dur-micro) ease;
+    transition: transform var(--dur-micro) var(--ease-out);
   }
   .strip__part[aria-expanded='true'] .strip__caret { transform: rotate(180deg); }
 
@@ -167,7 +167,7 @@ const parts = [{ id: 'top', nav: 'Start' }, ...sections];
     line-height: 1.4;
     color: var(--fg-dim);
     text-decoration: none;
-    transition: color var(--dur-micro) ease;
+    transition: color var(--dur-micro) var(--ease-out);
   }
   .strip__menu a:hover,
   .strip__menu a:focus-visible,

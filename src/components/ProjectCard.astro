@@ -199,18 +199,28 @@ const ground = workPlay[href]?.ground;
     font-weight: var(--weight-mono);
     letter-spacing: var(--tracking-mono-label);
     text-transform: uppercase;
-    color: var(--fg);
-    text-decoration: underline dotted 1px;
-    text-underline-offset: 0.2em;
-    text-decoration-color: color-mix(in oklab, currentColor 38%, transparent);
+    /* The site's standalone link (.btn--link in global.css): the LINKS
+       underline at 45%, solid and 2px while the card is hovered or
+       focused, the arrow nudging right — it goes to a page on this site,
+       so it moves the way you're going, not up-and-out. */
+    color: var(--link);
+    text-decoration: underline;
+    text-decoration-color: var(--link-line);
+    text-decoration-thickness: var(--link-thick);
+    text-underline-offset: var(--link-offset);
     transition: text-decoration-color var(--dur-micro) var(--ease-out);
   }
-  .pc:hover .pc__cta { text-decoration-color: currentColor; }
-  .pc__arrow {
-    opacity: 0.7;
-    transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro-move) var(--ease-out);
+  .pc:hover .pc__cta,
+  .pc:has(.pc__link:focus-visible) .pc__cta {
+    text-decoration-color: var(--link-line-hover);
+    text-decoration-thickness: var(--link-thick-hover);
   }
-  .pc:hover .pc__arrow { opacity: 1; transform: translate(2px, -2px); }
+  .pc__arrow {
+    display: inline-block;
+    transition: transform var(--dur-micro-move) var(--ease-out);
+  }
+  .pc:hover .pc__arrow,
+  .pc:has(.pc__link:focus-visible) .pc__arrow { transform: translateX(3px); }
 
   /* The stage: the project hue, the work standing on it. */
   .pc__stage {

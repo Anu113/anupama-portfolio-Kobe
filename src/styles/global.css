@@ -241,7 +241,11 @@ h1, h2, h3, h4, h5, h6 {
 .btn--icon { padding: 0.6rem; aspect-ratio: 1; gap: 0; }
 
 /* Not a pill at all — the reference's "VIEW ALL WORK": a label-role
-   (mono caps) link with an underline that draws in on hover. */
+   (mono caps) link on the same underline as every other link on the site
+   (LINKS in tokens.css): 45% ink at rest, so it reads as a link before
+   the pointer arrives, solid and 2px on hover. An arrow after the label
+   (.btn__arrow) nudges right on hover. The project cards' "View case
+   study →" (ProjectCard.astro) wears the same look. */
 .btn--link {
   display: inline-flex;
   align-items: center;
@@ -256,29 +260,26 @@ h1, h2, h3, h4, h5, h6 {
   border: none;
   border-radius: 0;
   background: none;
-  color: var(--accent-text);
-  text-decoration: none;
-  position: relative;
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-color: var(--link-line);
+  text-decoration-thickness: var(--link-thick);
+  text-underline-offset: var(--link-offset);
+  transition: text-decoration-color var(--dur-micro) var(--ease-out);
 }
-.btn--link::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0; bottom: -2px;
-  height: 1px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform var(--dur-hover) var(--ease-out);
+.btn--link:hover,
+.btn--link:focus-visible {
+  text-decoration-color: var(--link-line-hover);
+  text-decoration-thickness: var(--link-thick-hover);
 }
-.btn--link:hover::after { transform: scaleX(1); }
-.btn--link .btn__arrow { transition: transform var(--dur-hover) var(--ease-out); }
-.btn--link:hover .btn__arrow { transform: translateX(3px); }
+.btn__arrow { display: inline-block; transition: transform var(--dur-micro-move) var(--ease-out); }
+.btn--link:hover .btn__arrow,
+.btn--link:focus-visible .btn__arrow { transform: translateX(3px); }
 @media (prefers-reduced-motion: reduce) {
   .btn { transition: none; }
   .btn--primary::before,
   .btn--secondary::before,
-  .btn--link::after,
-  .btn--link .btn__arrow { transition: none; }
+  .btn__arrow { transition: none; }
 }
 
 /* Inline text link — for a link sitting inside a sentence (the hero bio's
@@ -347,8 +348,20 @@ a {
   text-decoration-color: var(--link-line);
   text-decoration-thickness: var(--link-thick);
   text-underline-offset: var(--link-offset);
+  /* One timing for every underline answering the pointer: quick feedback
+     on a link you're already looking at (--dur-micro), not a reveal. */
+  transition: text-decoration-color var(--dur-micro) var(--ease-out);
 }
-a:hover {
+/* Tailwind's reset sets `a { text-decoration: inherit }`, which took the
+   underline off every link inside a sentence ("reach out to me" at the
+   end of a case, the locked page's "Email me"). A classless link in
+   running text gets it back; :where() keeps this at zero specificity so
+   any component that styles its own link still wins. */
+:where(p, dd, figcaption, blockquote) :where(a:not([class])) {
+  text-decoration-line: underline;
+}
+a:hover,
+a:focus-visible {
   text-decoration-color: var(--link-line-hover);
   text-decoration-thickness: var(--link-thick-hover);
 }

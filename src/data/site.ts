@@ -36,3 +36,11 @@ export const site = {
     text: "Right now I'm thinking about trust: specifically, how much of it AI tools have actually earned versus assumed. Watching how background agents and parallel workflows are reshaping what engineering work even needs to be real-time anymore.",
   },
 };
+
+/* Every "email me" on the site opens Gmail's compose window to
+   site.email in a new tab (there is no mailbox app to assume), with an
+   optional subject. One place, so the footer, About, the case pages and
+   the passcode gates all go the same way. */
+export const gmailCompose = (subject?: string) =>
+  `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}` +
+  (subject ? `&su=${encodeURIComponent(subject)}` : '');
