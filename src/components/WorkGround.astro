@@ -1,0 +1,35 @@
+---
+/* WorkGround.astro — what a case's device stands on: a photo under a
+   dark wash, the photo blurred to a soft texture, or the project hue as
+   a lit colour block (`ground` in data/workPlay.ts). Mixed across the
+   cases so a grid of them has a rhythm and the photos read as moments.
+   Used under the /work tiles (WorkStage.astro) and the home page's
+   project cards (ProjectCard.astro). Fills its positioned parent and
+   reads the parent's --hue. Decorative: hidden from assistive tech.
+   Values under WORK GROUND in tokens.css. */
+import type { Ground } from '../data/workPlay';
+
+// `cover`: ignore the tile's tighter crop where the stage is a different
+// shape (the home cards are taller than the /work tiles).
+interface Props { ground: Ground; cover?: boolean }
+const { ground, cover = false } = Astro.props;
+const style = ground.photo
+  ? `--wp-photo: url(${ground.photo}); --wp-pos: ${ground.pos ?? 'center'}; --wp-size: ${cover ? 'cover' : ground.size ?? 'cover'};`
+  : undefined;
+---
+<div class="wp-ground" data-kind={ground.kind} style={style} aria-hidden="true"></div>
+
+<style is:global>
+  /* ---- the ground under the device --------------------------------- */
+  .wp-ground { position: absolute; inset: 0; }
+  .wp-ground[data-kind='photo'], .wp-ground[data-kind='blur'] {
+    background: var(--work-wash-photo), var(--wp-photo) var(--wp-pos) / var(--wp-size) no-repeat, var(--hue); }
+  .wp-ground[data-kind='blur'] { background: var(--work-wash-blur), var(--wp-photo) center / cover no-repeat, var(--hue); }
+  .wp-ground[data-kind='colour'] {
+    --pale: color-mix(in oklab, var(--hue), var(--work-ground-pale));
+    --deep: color-mix(in oklab, var(--hue), var(--work-ground-deep));
+    background:
+      radial-gradient(42% 46% at 50% 46%, var(--work-ground-glow), transparent 72%),
+      radial-gradient(60% 55% at 12% 0%, var(--work-ground-glow-corner), transparent 70%),
+      linear-gradient(155deg, var(--pale) 0%, var(--hue) 50%, var(--deep) 100%); }
+</style>

@@ -849,7 +849,9 @@ walked back. Concretely, in the current implementation:
   dark wash (ID check, Ads consent, Chase Pay), the photo blurred to a
   soft texture (Privacy, Scan & Go) or the project hue as a lit colour
   block (Okta IAM, Debit Card); `ground` in `data/workPlay.ts`, WORK
-  GROUND in `tokens.css`. The photos are stand-ins from PayPal's and
+  GROUND in `tokens.css`. The home page's project cards stand on the
+  same grounds (`WorkGround.astro`, shared), photos filling the taller
+  stage. The photos are stand-ins from PayPal's and
   Walmart's sites until licensed or her own ones replace them.
 - **On case studies, a phone sits in a device box** (`DeviceBox.astro`,
   `styles/device-box.css`, on request, measured off danield.design's
