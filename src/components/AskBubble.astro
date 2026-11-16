@@ -27,7 +27,8 @@
      (static under reduced motion); the words are the "click me" signal. Moss has no
      idle motion; he only answers the pointer, in lockstep with the
      portrait: HeroIllustration dispatches `hero-scrub:frame` whenever it
-     draws a new frame and Moss shows the same frame of his own clip
+     draws a new frame and Moss shows the same frame of his own clip,
+     mixing its two neighbours by the same amount as hers
      (looking left, round, up, back),
      so the two share one timeline and can't drift. Over Moss himself he
      also perks up — grows a little from the feet. Fine pointers only (the
@@ -89,7 +90,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
 <div class="pixel-launch">
   <button class="pixel-launcher" type="button" aria-label="Psst… Want the short version? Ask Moss about Anupama’s work" aria-expanded="false" aria-controls="pixel-panel" aria-haspopup="dialog">
     <span class="pixel-launcher__contact"></span>
-    <span class="pixel-launcher__moss"><span class="pixel-launcher__lamp"></span><span class="pixel-launcher__rim"></span></span>
+    <span class="pixel-launcher__moss"><span class="pixel-launcher__pic" data-pic="a"></span><span class="pixel-launcher__pic" data-pic="b"></span><span class="pixel-launcher__lamp"></span><span class="pixel-launcher__rim"></span></span>
     <span class="pixel-launcher__card" aria-hidden="true">
       <span class="pixel-launcher__who">Moss</span>
       <span class="pixel-launcher__first">Psst<span class="pixel-launcher__dots"><i></i><i></i><i></i></span></span>
@@ -154,6 +155,30 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
     --moss-size: 800% 600%;
     --moss-pos: calc(var(--moss-col, 0) * 100% / 7) calc(var(--moss-row, 0) * 100% / 5);
     --moss-pos-shift: calc(var(--moss-col, 0) * 100% / 7 + var(--rim-dx, 0px)) calc(var(--moss-row, 0) * 100% / 5 + var(--rim-dy, 0px));
+    /* His picture is drawn by the two layers below, not this background. */
+    background: none;
+    isolation: isolate;
+  }
+  /* Between two pictures he is a mix of both, by the same amount as the
+     portrait (--moss-mix, 0-1): the picture he's leaving at 1 - mix and
+     the next at mix, added (plus-lighter), so his edges don't brighten.
+     z-index 0 keeps them under his night shade and lamp layers (1). */
+  .pixel-launcher__pic { display: none; }
+  .pixel-launcher__moss.has-sprite .pixel-launcher__pic {
+    display: block;
+    position: absolute; inset: 0; z-index: 0;
+    pointer-events: none;
+    background: var(--moss-img) no-repeat;
+    background-size: var(--moss-size);
+  }
+  .pixel-launcher__pic[data-pic='a'] {
+    background-position: calc(var(--moss-col-a, 0) * 100% / 7) calc(var(--moss-row-a, 0) * 100% / 5);
+    opacity: calc(1 - var(--moss-mix, 0));
+  }
+  .pixel-launcher__pic[data-pic='b'] {
+    background-position: calc(var(--moss-col-b, 0) * 100% / 7) calc(var(--moss-row-b, 0) * 100% / 5);
+    opacity: var(--moss-mix, 0);
+    mix-blend-mode: plus-lighter;
   }
   /* The cursor lamp on him (CURSOR LAMP in tokens.css). The script sets
      --lamp-x/--lamp-y (the lamp, in his box), --lamp-r (its reach),
@@ -217,6 +242,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
     pointer-events: none;
     -webkit-mask: var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat;
     mask: var(--moss-img) var(--moss-pos) / var(--moss-size) no-repeat;
+    z-index: 1;
     opacity: var(--hero-night);
     transition: opacity var(--dur-night) var(--ease-out);
   }
@@ -450,9 +476,16 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
     sprite.src = '/images/moss/moss-sprite.webp';
     sprite.decode().then(() => moss.classList.add('has-sprite')).catch(() => {});
     stage.addEventListener('hero-scrub:frame', (e) => {
-      const { frame } = (e as CustomEvent<{ frame: number }>).detail;
+      const { frame, from = frame, to = frame, mix = 0 } = (e as CustomEvent<{ frame: number; from?: number; to?: number; mix?: number }>).detail;
+      // The nearest picture cuts his night shade and lamp layers; the
+      // two neighbours and the mix draw him.
       moss.style.setProperty('--moss-col', String(frame % COLS));
       moss.style.setProperty('--moss-row', String(Math.floor(frame / COLS)));
+      moss.style.setProperty('--moss-col-a', String(from % COLS));
+      moss.style.setProperty('--moss-row-a', String(Math.floor(from / COLS)));
+      moss.style.setProperty('--moss-col-b', String(to % COLS));
+      moss.style.setProperty('--moss-row-b', String(Math.floor(to / COLS)));
+      moss.style.setProperty('--moss-mix', String(mix));
     });
 
     // The cursor lamp (CursorLamp.astro): where it is in his box, how far
