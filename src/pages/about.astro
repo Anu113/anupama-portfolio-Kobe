@@ -40,10 +40,10 @@
 import Base from '../layouts/Base.astro';
 import AskMoss from '../components/AskMoss.astro';
 import RecordPlayer from '../components/RecordPlayer.astro';
-import { site } from '../data/site';
+import { site, gmailCompose } from '../data/site';
 import { tabs, portrait, tiles, updated } from '../data/about';
 
-const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
+const gmail = gmailCompose();
 const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 
 ---

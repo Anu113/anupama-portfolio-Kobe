@@ -50,10 +50,10 @@
    the heading size (--step-signoff = --step-heading, 40px), the note
    in the copy role (12px), the base row in the mono label role (11px
    caps) — ONE TYPE SCALE in tokens.css. */
-import { site } from '../data/site';
+import { site, gmailCompose } from '../data/site';
 
 const year = new Date().getFullYear();
-const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
+const gmail = gmailCompose();
 ---
 
 <footer id="site-footer" data-theme="bone" data-themeband class="foot">
@@ -152,8 +152,8 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     text-decoration: underline;
     text-decoration-color: var(--link-line);
     text-decoration-thickness: var(--link-thick);
-    text-underline-offset: 0.14em;
-    transition: text-decoration-color var(--dur-hover) var(--ease-out);
+    text-underline-offset: 0.14em;   /* the 3px link offset, scaled for the 32px serif */
+    transition: text-decoration-color var(--dur-micro) var(--ease-out);
   }
   .foot__talk em { font-style: italic; }
   .foot__talk:hover,
@@ -247,7 +247,7 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     color: var(--fg-dim);
     text-decoration: none;
     padding-block: 0.5rem;
-    transition: color var(--dur-hover) var(--ease-out);
+    transition: color var(--dur-micro) var(--ease-out);
   }
   .foot__nav a:hover,
   .foot__nav a:focus-visible { color: var(--fg); }
@@ -261,7 +261,7 @@ const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
     margin: -0.5rem;
     margin-inline: 0;
     color: var(--fg-dim);
-    transition: color var(--dur-hover) var(--ease-out);
+    transition: color var(--dur-micro) var(--ease-out);
   }
   .foot__icons a:hover,
   .foot__icons a:focus-visible { color: var(--fg); }

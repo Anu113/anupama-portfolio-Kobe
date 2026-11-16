@@ -23,7 +23,7 @@
    with the `hidden` attribute until the password matches client-side. It
    deters a casual click, the same as both references; it does not protect
    anything a determined visitor couldn't read from view-source. */
-import { site } from '../data/site';
+import { gmailCompose } from '../data/site';
 import LockIcon from './LockIcon.astro';
 
 interface Props {
@@ -34,7 +34,7 @@ interface Props {
   targetId: string;
 }
 const { slug, caseTitle, password, targetId } = Astro.props;
-const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
+const mailHref = gmailCompose(`Password for "${caseTitle}"`);
 ---
 <div class="gate" data-gate data-slug={slug} data-password={password} data-target={targetId}>
   <p class="u-label gate__eyebrow">
@@ -73,8 +73,8 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
     </p>
     <div class="gate__actions">
       <button class="gate__submit btn btn--primary" type="submit">Unlock</button>
-      <a class="gate__reach u-label" href={`mailto:${site.email}?subject=${mailSubject}`}>
-        Reach out instead
+      <a class="btn--link" href={mailHref} target="_blank" rel="noopener">
+        Reach out instead<span class="u-sr-only"> (opens Gmail in a new tab)</span>
       </a>
     </div>
   </form>
@@ -138,8 +138,7 @@ const mailSubject = encodeURIComponent(`Password for "${caseTitle}"`);
   /* Visual style now comes from the shared .btn/.btn--primary system
      (global.css) — one control across the whole site, not a second one
      for this feature. */
-  .gate__reach { color: var(--accent-text); text-decoration: none; }
-  .gate__reach:hover { text-decoration: underline; text-underline-offset: 4px; }
+  /* "Reach out instead" is the site's standalone link (.btn--link). */
 
   /* A one-line, no-drama acknowledgement once unlocked — replaces the form,
      doesn't animate past what prefers-reduced-motion already governs

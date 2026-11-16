@@ -54,7 +54,7 @@ import LockedGate from '../../components/LockedGate.astro';
 import LockIcon from '../../components/LockIcon.astro';
 import { cases, caseBySlug } from '../../data/cases';
 import { hueFor, labelsFor, work } from '../../data/work';
-import { site } from '../../data/site';
+import { site, gmailCompose } from '../../data/site';
 
 export function getStaticPaths() {
   return cases.map((c) => ({ params: { slug: c.slug }, props: { study: c } }));
@@ -85,7 +85,7 @@ const answersOf = (s: { answers?: string[] }) =>
   study.thread && s.answers?.length
     ? s.answers.map((k) => study.thread![k]).filter(Boolean).join(' + ')
     : '';
-const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
+const gmail = gmailCompose();
 const pageId = `${study.slug}-page-content`;
 /* The rail's and the strip's contents: only the free sections, plus one
    entry for the gate when there is one — a link that scrolled to hidden
@@ -287,7 +287,7 @@ const headline = impactMetrics?.kind === 'metrics'
         <a class="next" href={`/work/${next.slug}`} data-follow-hover>
           {next.title}
           {next.locked && <LockIcon class="next__lock" size="0.55em" />}
-          <span class="next__peek u-label" aria-hidden="true" data-follow-pill>
+          <span class="next__peek" aria-hidden="true" data-follow-pill>
             View case study
           </span>
         </a>
@@ -523,11 +523,16 @@ const headline = impactMetrics?.kind === 'metrics'
     transform: translate(calc(var(--peek-x, 0px) - 50%), calc(var(--peek-y, 0px) - 50%));
     background: var(--fg);
     color: var(--bg);
-    font-size: var(--step-label);
-    font-weight: var(--weight-sans);
+    /* The label role, as every button on the site (.btn in global.css). */
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-fine);
+    line-height: var(--leading-label);
+    letter-spacing: var(--tracking-mono-label);
+    text-transform: uppercase;
     white-space: nowrap;
-    padding: 0.4rem 0.85rem;
-    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--radius-pill);
     opacity: 0;
     pointer-events: none;
     /* Direct manipulation, not ambient motion — the pill only moves because
