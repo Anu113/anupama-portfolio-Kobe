@@ -4,7 +4,8 @@
    (the sticky rows and settle effect live in index.astro). Text on the
    left — number, company and tags (mono labels), title (18px, the item role;
    see ONE TYPE SCALE in tokens.css), one 12px line, "View case study" — and on the right a stage on the company's project hue
-   holding the work itself:
+   holding the work itself, on the same ground as its /work tile
+   (a photo, a blurred photo or a colour block; WorkGround.astro):
 
    - a phone that runs the flow on its own (after daneden.me): a screen
      recording, her screens in sequence (each sliding over the last, like
@@ -36,6 +37,8 @@
 import EnrollPrototype from './EnrollPrototype.astro';
 import OffersPrototype from './OffersPrototype.astro';
 import { hueFor, type HomeMedia } from '../data/work';
+import { workPlay } from '../data/workPlay';
+import WorkGround from './WorkGround.astro';
 
 interface Props {
   index: number;
@@ -46,6 +49,7 @@ interface Props {
 }
 const { index, company, title, tagline, href, tags = [], media, video } = Astro.props;
 const num = String(index).padStart(2, '0');
+const ground = workPlay[href]?.ground;
 ---
 <article class="pc">
   <div class="pc__body">
@@ -69,6 +73,7 @@ const num = String(index).padStart(2, '0');
   </div>
 
   <div class="pc__stage" data-hue={hueFor(company) ?? ''} data-phone role="img" aria-label={media.alt}>
+    {ground && <WorkGround ground={ground} cover />}
 
     {media.type === 'desktop' ? (
       <img class="pc__desktop" src={media.image} alt="" loading="lazy" decoding="async" />
@@ -215,6 +220,8 @@ const num = String(index).padStart(2, '0');
     display: flex; justify-content: center; align-items: center;
     overflow: hidden;
   }
+  /* the work stands on the case's ground (WorkGround), as on /work */
+  .pc__stage > :not(.wp-ground) { position: relative; z-index: 1; }
 
   /* --- the phone ---------------------------------------------------
      Drawn at full size (the PayPal prototypes' own size) and scaled
