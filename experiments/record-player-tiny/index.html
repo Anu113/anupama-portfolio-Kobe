@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tiny players</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Azeret+Mono&family=VT323&display=swap" rel="stylesheet">
+<style>
+  /* Mock only (2026-11-14): smaller, rounder, cuter takes on the About
+     page's record player, each in a tile the size of the real ones.
+     Press play on any of them (no sound here, motion only). */
+  :root {
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070;
+    --shell: #f3f1ec; --shell-2: #e4e0d8; --shell-edge: #d3cec5;
+    --vinyl: #151515; --glass: #06140a; --neon: #4dff6a;
+    --ease: cubic-bezier(0.2, 0.715, 0.205, 0.99);
+  }
+  body[data-mode="dark"] { --bg: #1b1a19; --fg: #ecebe8; --dim: #a09d98; }
+  body { --card: color-mix(in srgb, var(--fg) 3%, var(--bg)); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 600 14px/1.5 Manrope, system-ui, sans-serif; transition: background 300ms; }
+  img { display: block; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 48px 40px 120px; }
+  header { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; }
+  header h1 { font: 300 italic 30px/1.15 'Crimson Pro', serif; margin: 0 0 8px; }
+  header p { margin: 0; color: var(--dim); font-size: 13px; max-width: 64ch; }
+  .modes button { font: 400 11px/1 'Azeret Mono', monospace; text-transform: uppercase; letter-spacing: .05em; border: 0; padding: 8px 12px; border-radius: 14px; background: transparent; color: var(--dim); cursor: pointer; }
+  .modes button[aria-pressed="true"] { background: color-mix(in srgb, var(--fg) 6%, var(--bg)); color: var(--fg); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 48px; }
+  .opt h2 { font: 400 11px/1.4 'Azeret Mono', monospace; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 4px; }
+  .opt > p { margin: 0 0 14px; color: var(--dim); font-size: 12px; min-height: 3.2em; }
+  .tile { position: relative; aspect-ratio: 1; border-radius: 28px; background: var(--card); container-type: inline-size;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5cqw; }
+  .cap { margin: 0; color: color-mix(in srgb, var(--fg) 51%, var(--bg)); font-size: 12px; text-align: center; }
+  .cap b { font-weight: inherit; color: var(--fg); }
+
+  /* shared: record with her cover as the label */
+  .rec { position: relative; border-radius: 50%; background:
+      radial-gradient(circle, transparent 0 31%, rgb(255 255 255 / .05) 31.5% 32%, transparent 32.5% 40%, rgb(255 255 255 / .04) 40.5% 41%, transparent 41.5%),
+      repeating-radial-gradient(circle, #1a1a1a 0 1px, var(--vinyl) 1px 3px);
+    box-shadow: 0 2px 6px rgb(0 0 0 / .3); }
+  .rec::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(transparent 20deg, rgb(255 255 255 / .14) 40deg, transparent 60deg, transparent 200deg, rgb(255 255 255 / .1) 220deg, transparent 240deg); }
+  .rec .lbl { position: absolute; inset: 32%; border-radius: 50%; overflow: hidden; }
+  .rec .lbl img { width: 100%; height: 100%; object-fit: cover; }
+  .rec .lbl::after { content: ''; position: absolute; inset: 44%; border-radius: 50%; background: #d9d4cc; }
+  .playing .rec .lbl, .playing .spin { animation: turn 1.8s linear infinite; }
+  @keyframes turn { to { rotate: 360deg; } }
+
+  .play { all: unset; cursor: pointer; display: grid; place-items: center; }
+  .play:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .play svg { width: 40%; height: 40%; fill: currentColor; }
+  .play .pause { display: none; } .playing .play .pause { display: block; } .playing .play .tri { display: none; }
+
+  /* ---------- 1 · The same, smaller and rounder ---------- */
+  .p1 { position: relative; width: 56cqw; padding-top: 14cqw; }
+  .p1 .rec { position: absolute; left: 50%; top: 0; width: 34cqw; aspect-ratio: 1; translate: -50% 26%; transition: translate 900ms var(--ease); }
+  .playing .p1 .rec { translate: -50% -8%; }
+  .p1 .box { position: relative; display: grid; grid-template-columns: 15cqw 1fr; gap: 3cqw; align-items: center; padding: 4cqw; border-radius: 6cqw; background: linear-gradient(170deg, var(--shell), var(--shell-2)); box-shadow: inset 0 1px 0 #fff, 0 1.4cqw 0 var(--shell-edge), 0 4cqw 6cqw -2cqw rgb(0 0 0 / .3); }
+  .p1 .box::before { content: ''; position: absolute; top: -0.6cqw; left: 12%; right: 12%; height: 1.4cqw; border-radius: 1cqw; background: #111; }
+  .p1 .spk { aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #6a665f 0.5px, transparent 1px) 0 0 / 4px 4px, #ebe8e2; box-shadow: inset 0 1px 3px rgb(0 0 0 / .18); }
+  .p1 .right { display: grid; gap: 2.4cqw; }
+  .p1 .lcd { height: 9cqw; border-radius: 2cqw; background: var(--glass); color: var(--neon); font: 400 3.6cqw/1 VT323, monospace; display: flex; align-items: center; padding: 0 2.4cqw; opacity: .9; overflow: hidden; white-space: nowrap; }
+  .p1 .play { height: 7cqw; border-radius: 4cqw; background: linear-gradient(#fbfaf7, #e9e6df); color: #6e6a62; box-shadow: 0 0.8cqw 0 #cfcbc2; }
+  .playing .p1 .play { box-shadow: 0 0.2cqw 0 #cfcbc2; translate: 0 0.6cqw; }
+
+  /* ---------- 2 · Pocket radio ---------- */
+  .p2 { position: relative; width: 44cqw; aspect-ratio: 1; border-radius: 30%; background: linear-gradient(160deg, var(--shell), var(--shell-2)); box-shadow: inset 0 1px 0 #fff, 0 1.2cqw 0 var(--shell-edge), 0 4cqw 6cqw -2cqw rgb(0 0 0 / .3); display: grid; grid-template-rows: 1fr auto; padding: 5cqw; gap: 3cqw; }
+  .p2 .spk { justify-self: center; width: 24cqw; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #6a665f 0.6px, transparent 1.1px) 0 0 / 4.5px 4.5px, #ebe8e2; box-shadow: inset 0 1px 3px rgb(0 0 0 / .2); display: grid; place-items: center; }
+  .p2 .spk i { width: 30%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #cfcac1 70%); box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+  .playing .p2 .spk i { animation: bump 320ms ease-out infinite alternate; }
+  @keyframes bump { to { scale: 1.12; } }
+  .p2 .row { display: flex; gap: 2cqw; align-items: center; }
+  .p2 .lcd { flex: 1; height: 6.4cqw; border-radius: 3.2cqw; background: var(--glass); display: flex; align-items: center; gap: .8cqw; padding: 0 2.4cqw; }
+  .p2 .lcd i { width: .9cqw; height: 30%; border-radius: 1px; background: var(--neon); opacity: .18; }
+  .playing .p2 .lcd i { opacity: 1; animation: lvl 600ms ease-in-out infinite alternate; }
+  .playing .p2 .lcd i:nth-child(2n) { animation-delay: -200ms; } .playing .p2 .lcd i:nth-child(3n) { animation-delay: -400ms; }
+  @keyframes lvl { from { height: 25%; } to { height: 70%; } }
+  .p2 .play { width: 6.4cqw; aspect-ratio: 1; border-radius: 50%; background: var(--fg-play, #262626); color: #fff; }
+  .p2 .ant { position: absolute; top: -12cqw; right: 16%; width: .8cqw; height: 14cqw; border-radius: 1cqw; background: #bdb8ae; rotate: 18deg; transform-origin: bottom; }
+  .p2 .ant::after { content: ''; position: absolute; top: -1cqw; left: 50%; translate: -50% 0; width: 2.2cqw; aspect-ratio: 1; border-radius: 50%; background: #bdb8ae; }
+
+  /* ---------- 3 · Little turntable ---------- */
+  .p3 { position: relative; width: 50cqw; aspect-ratio: 1.15; border-radius: 9cqw; background: linear-gradient(160deg, var(--shell), var(--shell-2)); box-shadow: inset 0 1px 0 #fff, 0 1.2cqw 0 var(--shell-edge), 0 4cqw 6cqw -2cqw rgb(0 0 0 / .3); }
+  .p3 .rec { position: absolute; left: 7cqw; top: 50%; translate: 0 -50%; width: 32cqw; aspect-ratio: 1; }
+  .p3 .arm { position: absolute; right: 7.5cqw; top: 6cqw; width: 1.4cqw; height: 20cqw; border-radius: 1cqw; background: #bdb8ae; transform-origin: 50% 1cqw; rotate: 8deg; transition: rotate 600ms var(--ease); }
+  .p3 .arm::before { content: ''; position: absolute; top: -1.2cqw; left: 50%; translate: -50% 0; width: 4cqw; aspect-ratio: 1; border-radius: 50%; background: #d3cec5; box-shadow: inset 0 1px 0 #fff; }
+  .p3 .arm::after { content: ''; position: absolute; bottom: -1cqw; left: -0.8cqw; width: 3cqw; height: 3.6cqw; border-radius: .8cqw; background: #8f8a80; }
+  .playing .p3 .arm { rotate: 30deg; }
+  .p3 .play { position: absolute; right: 4.5cqw; bottom: 4.5cqw; width: 7cqw; aspect-ratio: 1; border-radius: 50%; background: #262626; color: #fff; }
+  .p3 .dot { position: absolute; right: 13.5cqw; bottom: 7.4cqw; width: 1.4cqw; aspect-ratio: 1; border-radius: 50%; background: #c9c4ba; }
+  .playing .p3 .dot { background: var(--neon); box-shadow: 0 0 6px var(--neon); }
+
+  /* ---------- 4 · Cassette ---------- */
+  .p4 { position: relative; width: 54cqw; aspect-ratio: 1.58; border-radius: 6cqw; background: linear-gradient(160deg, var(--shell), var(--shell-2)); box-shadow: inset 0 1px 0 #fff, 0 1.2cqw 0 var(--shell-edge), 0 4cqw 6cqw -2cqw rgb(0 0 0 / .3); padding: 4cqw; }
+  .p4 .label { position: absolute; left: 4cqw; right: 4cqw; top: 4cqw; height: 58%; border-radius: 3cqw; background: #fff; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+  .p4 .label .t { font: 400 2.6cqw/1 'Azeret Mono', monospace; color: #6e6a62; padding: 2cqw 2.6cqw 0; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; }
+  .p4 .window { justify-self: center; align-self: center; width: 70%; height: 9cqw; border-radius: 5cqw; background: #262626; display: flex; justify-content: space-between; align-items: center; padding: 0 1.4cqw; }
+  .p4 .reel { width: 6.4cqw; aspect-ratio: 1; border-radius: 50%; background: repeating-conic-gradient(#f3f1ec 0 20deg, #262626 20deg 60deg); border: 1.2cqw solid #f3f1ec; }
+  .playing .p4 .reel { animation: turn 1.6s linear infinite; }
+  .p4 .tape { flex: 1; height: 60%; margin: 0 1cqw; border-radius: 1cqw; background: linear-gradient(90deg, #5a3a2a, #3a2a20); }
+  .p4 .bottom { position: absolute; left: 50%; bottom: 3.4cqw; translate: -50% 0; display: flex; gap: 2.4cqw; align-items: center; }
+  .p4 .bottom img { width: 7cqw; aspect-ratio: 1; border-radius: 1.6cqw; object-fit: cover; }
+  .p4 .play { width: 7cqw; aspect-ratio: 1; border-radius: 50%; background: #262626; color: #fff; }
+
+  /* ---------- 5 · Just the record ---------- */
+  .p5 { display: grid; justify-items: center; gap: 4cqw; }
+  .p5 .rec { width: 40cqw; aspect-ratio: 1; }
+  .p5 .pill { display: flex; align-items: center; gap: 2.4cqw; padding: 1.2cqw 3cqw 1.2cqw 1.2cqw; border-radius: 99px; background: color-mix(in srgb, var(--fg) 6%, var(--bg)); }
+  .p5 .play { width: 7cqw; aspect-ratio: 1; border-radius: 50%; background: var(--fg); color: var(--bg); }
+  .p5 .pill span { font-size: 12px; color: color-mix(in srgb, var(--fg) 60%, var(--bg)); white-space: nowrap; }
+  .p5 .pill b { font-weight: inherit; color: var(--fg); }
+
+  /* ---------- 6 · Mini boombox ---------- */
+  .p6 { position: relative; width: 52cqw; aspect-ratio: 1.7; border-radius: 7cqw; background: linear-gradient(160deg, var(--shell), var(--shell-2)); box-shadow: inset 0 1px 0 #fff, 0 1.2cqw 0 var(--shell-edge), 0 4cqw 6cqw -2cqw rgb(0 0 0 / .3); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 2cqw; padding: 0 4cqw; }
+  .p6::before { content: ''; position: absolute; top: -5cqw; left: 26%; right: 26%; height: 7cqw; border: 1.6cqw solid #d3cec5; border-bottom: 0; border-radius: 4cqw 4cqw 0 0; }
+  .p6 .spk { aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #6a665f 0.6px, transparent 1.1px) 0 0 / 4px 4px, #ebe8e2; box-shadow: inset 0 1px 3px rgb(0 0 0 / .2), 0 0 0 1cqw #f1efe9, 0 0 0 1.3cqw #d2cec5; display: grid; place-items: center; }
+  .p6 .spk i { width: 34%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #cfcac1 70%); }
+  .playing .p6 .spk i { animation: bump 320ms ease-out infinite alternate; }
+  .p6 .mid { display: grid; gap: 1.6cqw; justify-items: center; }
+  .p6 .lcd { width: 13cqw; height: 5cqw; border-radius: 1.4cqw; background: var(--glass); display: grid; place-items: center; font: 400 3.4cqw/1 VT323, monospace; color: var(--neon); }
+  .p6 .play { width: 6.4cqw; aspect-ratio: 1; border-radius: 50%; background: #262626; color: #fff; }
+
+
+  /* ---------- the playlist name: a little paper label, as on the cassette ---------- */
+  .sticker { display: block; padding: 1.1cqw 2cqw; border-radius: 1.4cqw; background: #fff; box-shadow: 0 0.2cqw 0.4cqw rgb(0 0 0 / .08);
+    font: 400 2.3cqw/1 'Azeret Mono', monospace; letter-spacing: .06em; text-transform: uppercase; color: #6e6a62; white-space: nowrap; text-align: center; }
+  /* a neon ticker: the song scrolls while it plays */
+  .tick { overflow: hidden; white-space: nowrap; font: 400 3.6cqw/1 VT323, monospace; color: var(--neon); }
+  .tick > span { display: inline-flex; gap: 6cqw; opacity: .2; }
+  .playing .tick > span { opacity: 1; animation: tick 6s linear infinite; }
+  @keyframes tick { to { translate: calc(-50% - 3cqw) 0; } }
+
+  .p1 .box { grid-template-columns: 15cqw 1fr; }
+  .p1 .box .sticker { grid-column: 1 / -1; justify-self: start; }
+  .p2 { grid-template-rows: auto 1fr auto; }
+  .p2 .sticker { justify-self: center; }
+  .p2 .spk { width: 19cqw; }
+  .p2 .lcd { overflow: hidden; min-width: 0; }
+  .p2 .row { min-width: 0; }
+  .p2 .play { flex: none; }
+  .p3 { aspect-ratio: 1; }
+  .p3 .rec { top: 5cqw; translate: 0 0; }
+  .p3 .sticker { position: absolute; left: 7cqw; bottom: 4.4cqw; }
+  .p3 .dot { right: 13.5cqw; bottom: 13cqw; }
+  .p5 { gap: 13cqw; }
+  .p5 .disc { position: relative; width: 40cqw; aspect-ratio: 1; }
+  .p5 .disc .rec { width: 100%; }
+  .p5 .ring { position: absolute; inset: -9cqw; width: calc(100% + 18cqw); height: calc(100% + 18cqw); color: color-mix(in srgb, var(--fg) 55%, var(--bg)); }
+  .playing .p5 .ring { animation: turn 24s linear infinite; }
+  .p6 { aspect-ratio: 1.45; padding-top: 7cqw; }
+  .p6 .lcd { min-width: 0; }
+  .p6 .sticker { position: absolute; top: 3.4cqw; left: 50%; translate: -50% 0; }
+  .p6 .lcd { width: 15cqw; overflow: hidden; padding: 0 1.2cqw; place-items: center start; }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .wrap { padding-inline: 16px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body data-mode="dark">
+<div class="wrap">
+  <header>
+    <div><h1>Tiny players</h1><p>Smaller, rounder takes on the record player, each in a tile the size of the real ones. Press play on any of them; motion only, no sound in the mock.</p></div>
+    <div class="modes" role="group" aria-label="Mode"><button data-m="light" aria-pressed="false">Light</button><button data-m="dark" aria-pressed="true">Dark</button></div>
+  </header>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const C = '../../public/images/about/covers/';
+const playSvg = '<svg class="tri" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg><svg class="pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+const btn = `<button class="play" type="button" aria-pressed="false" aria-label="Play My Playlist #2026">${playSvg}</button>`;
+const rec = `<div class="rec"><div class="lbl"><img src="${C}candy.jpg" alt=""></div></div>`;
+const cap = '<p class="cap">On repeat: <b>Candy</b> · Lifafa</p>';
+const lab = '<span class="sticker">My Playlist #2026</span>';
+const tick = '<div class="tick"><span><span>CANDY · LIFAFA</span><span>CANDY · LIFAFA</span></span></div>';
+const ring = `<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><defs><path id="rp" d="M50 50 m-44 0 a44 44 0 1 1 88 0 a44 44 0 1 1 -88 0"/></defs><text font-family="Azeret Mono, monospace" font-size="5.2" letter-spacing="1.6" fill="currentColor"><textPath href="#rp" textLength="274" lengthAdjust="spacing">MY PLAYLIST #2026 · MY PLAYLIST #2026 ·</textPath></text></svg>`;
+const opts = [
+  ['1 · Same, smaller', 'Today’s player at about half the size, rounder, with the playlist on a paper label and the song scrolling on its display.',
+   `<div class="p1">${rec}<div class="box">${lab}<span class="spk"></span><div class="right"><div class="lcd">${tick}</div>${btn}</div></div></div>`],
+  ['2 · Pocket radio', 'A rounded square: the playlist on a label, one round speaker that bumps, the song scrolling in green, a round play key, a little antenna.',
+   `<div class="p2"><span class="ant"></span>${lab}<span class="spk"><i></i></span><div class="row"><div class="lcd">${tick}</div>${btn}</div></div>`],
+  ['3 · Little turntable', 'Seen from above: the cover on the record, the playlist on a label at its foot, a tone arm that swings on as it plays.',
+   `<div class="p3">${rec}${lab}<span class="arm"></span><span class="dot"></span>${btn}</div>`],
+  ['4 · Cassette', 'A soft cassette with the playlist name on its label; the two reels turn while it plays.',
+   `<div class="p4"><div class="label"><span class="t">My Playlist #2026</span><div class="window"><span class="reel spin"></span><span class="tape"></span><span class="reel spin"></span></div></div><div class="bottom"><img src="${C}i-luv-u.jpg" alt="">${btn}</div></div>`],
+  ['5 · Just the record', 'No machine: the playlist name runs round the record and turns with it; a small pill with play and the song.',
+   `<div class="p5"><div class="disc">${ring}${rec}</div><div class="pill">${btn}<span><b>Candy</b> · Lifafa</span></div></div>`],
+  ['6 · Mini boombox', 'Two round speakers, the playlist on a label under the handle, the song scrolling on a tiny green display.',
+   `<div class="p6">${lab}<span class="spk"><i></i></span><div class="mid"><div class="lcd">${tick}</div>${btn}</div><span class="spk"><i></i></span></div>`],
+];
+document.getElementById('grid').innerHTML = opts.map(([t, d, html], i) =>
+  `<div class="opt"><h2>${t}</h2><p>${d}</p><div class="tile">${html}${i === 4 ? '' : cap}</div></div>`).join('');
+document.querySelectorAll('.play').forEach(b => b.onclick = () => {
+  const tile = b.closest('.tile'), on = !tile.classList.contains('playing');
+  tile.classList.toggle('playing', on); b.setAttribute('aria-pressed', on);
+});
+document.querySelectorAll('.modes button').forEach(b => b.onclick = () => {
+  document.body.dataset.mode = b.dataset.m;
+  document.querySelectorAll('.modes button').forEach(o => o.setAttribute('aria-pressed', o === b));
+});
+</script>
+</body>
+</html>

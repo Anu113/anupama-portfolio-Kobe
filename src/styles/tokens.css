@@ -164,12 +164,26 @@
   --rail-width: clamp(9rem, 13vw, 12rem);
   --rail-top-gap: 1.5rem;   /* rail's sticky top, under nav + strip */
 
+  /* --- CASE RAIL ----------------------------------------
+     The reading line in the case rail (CaseRail.astro), after
+     andreas.vision/work/schneider: one bar per section, as long
+     as the section, filling with ink as you read it. The track
+     is ink at low strength so it follows dark mode. */
+  --rail-h: min(56vh, 30rem);
+  --rail-bar-w: 3px;
+  --rail-bar-gap: 4px;
+  --rail-bar-label-gap: 0.75rem;
+  --rail-track: color-mix(in srgb, var(--fg) 14%, transparent);
+
   /* --- CASE STRIP ---------------------------------------
      The reading strip under the nav on a case study
      (CaseStrip.astro), after felixrieseberg.com: back link,
      title, "Part n/N", and a progress line along its edge. */
   --strip-h: 2.5rem;
   --progress-h: 2px;
+  /* Ink, not the accent (on request, 2026-11-14): it matches the rail's
+     ink reading line, so the strip and the rail tell one story. */
+  --progress-fill: var(--fg);
 
   /* --- CASE NUMBERS -------------------------------------
      The headline numbers on a case study (CaseNumbers.astro)
@@ -813,7 +827,8 @@
   --compare-handle-shadow: 0 3px 12px rgb(0 0 0 / 0.3);
   --compare-handle-size: 34px;
   --compare-pin-before: #262626;   /* what was wrong: ink */
-  --compare-pin-after: #b4482a;    /* the fix: the light-mode accent, 5.6:1 with the pin ink */
+  --compare-pin-after: #2456c9;    /* the fix: a plain blue, 6.3:1 with the pin ink. Not the
+                                      accent: no clay on case pages (on request, 2026-11-16) */
   --compare-pin-ink: #ffffff;
   --compare-pin-size: 22px;
   --compare-pin-size-sm: 16px;     /* on the short web strip, on phones */
@@ -825,6 +840,12 @@
   --compare-tag-after-ink: #ffffff;
   --dur-compare-flip: 360ms;       /* a note turning from Before to After, a pin moving */
   --dur-compare-ring: 700ms;       /* the ring that marks a pin as it appears */
+  --compare-fixed: #2456c9;        /* a note's dot once it's fixed, on the page ground */
+  /* No hairlines on case pages (on request, 2026-11-16): items in a list
+     are parted by space, blocks in a section by a clearly larger gap. */
+  --case-list-gap: 1.5rem;          /* between items of a list: notes, points, rows */
+  --case-list-gap-tight: 0.75rem;   /* between short lines */
+  --case-block-gap: clamp(2.75rem, 4.5vw, 4rem);
   --cmp-browser-dot: #d6d6d6;      /* the web pair's plain browser frame */
   /* The web account settings, redrawn from her screenshots: drawn at this
      size, scaled to the frame. PayPal's blues, read off them. */
@@ -836,6 +857,9 @@
   --pp-web-sub-old-ink: #d6e4f7;
   --pp-web-ground: #f5f7fa;
   --pp-web-skeleton: #e3e7ec;
+}
+:root[data-mode='dark'] {
+  --compare-fixed: #7ea2f2;        /* 6.9:1 on the dark ground */
 }
 
 /* PRIVACY COVER (PrivacyCover.astro) — the Privacy case's main image:
@@ -1281,46 +1305,46 @@
 }
 
 /* ============================================================
-   RECORD PLAYER (RecordPlayer.astro, the About page's fourth tile) —
-   a slot-loading record player with a speaker, "S5 · Speaker" from the
-   mocks in experiments/about-grid/slots.html, after andreas.vision's
-   CD player. Like project hues and the bookshelf's spines, these
-   colours belong to the object, so they stay the same in dark mode.
-   No orange, on request: the display's neon green is its only colour
-   (was lilac; neon green and the round "Button" speaker chosen on
-   request, 2026-11-14, from experiments/record-player-cute/).
-   Display ink on its glass: 14 : 1.
+   RECORD PLAYER (RecordPlayer.astro, the About page's sixth tile) —
+   a small cream record player with a handle and two little feet, "E ·
+   Little feet" from experiments/record-player-tiny/cute.html (chosen on
+   request 2026-11-14; it replaced the bulkier "S5 · Speaker" from
+   experiments/about-grid/slots.html). Sizes are in cqw of the tile.
+   Like project hues and the bookshelf's spines, these colours belong
+   to the object, so they stay the same in dark mode. No orange, on
+   request: the display's neon green is its only colour.
+   Display ink on its glass: 14 : 1. The playlist name is muted on
+   request (decorative, aria-hidden; the button carries the name).
    ============================================================ */
 :root {
   --dur-rp-rise: 900ms;            /* the record rising out of its slot */
   --dur-rp-turn: 1.8s;             /* one turn of the record */
-  --dur-rp-beat: 320ms;            /* the speaker dome's bump */
   --dur-rp-ticker: 8s;             /* one song across the display */
   --dur-rp-cover: 400ms;           /* the label cross-fading to the next cover */
-  --rp-off: 0.14;                  /* the display's unlit text */
+  --rp-off: 0.18;                  /* the display's unlit text */
   --rp-vinyl: #141414;
   --rp-groove: #222;
   --rp-rec-shadow: 0 0.6cqw 1.4cqw rgb(0 0 0 / 0.3);
   --rp-sheen: conic-gradient(transparent 20deg, rgb(255 255 255 / 0.14) 40deg, transparent 60deg, transparent 200deg, rgb(255 255 255 / 0.1) 220deg, transparent 240deg);
   --rp-spindle: #d9d4cc;
-  --rp-shell: linear-gradient(170deg, #f3f1ec, #e3e0d9);
-  --rp-shell-shadow: inset 0 0.3cqw 0 #fff, 0 0.8cqw 0 #d1cdc4, 0 2cqw 4cqw -1cqw rgb(0 0 0 / 0.25);
+  --rp-shell: linear-gradient(170deg, #f3f1ec, #e4e0d8);
+  --rp-shell-shadow: inset 0 1px 0 #fff, 0 1.4cqw 0 #d3cec5, 0 4cqw 6cqw -2cqw rgb(0 0 0 / 0.3);
+  --rp-handle: #d3cec5;
+  --rp-foot: #c9c4ba;
   --rp-slot: #111;
   --rp-slot-shadow: inset 0 0.3cqw 0.4cqw rgb(0 0 0 / 0.8), 0 0.15cqw 0 rgb(255 255 255 / 0.5);
+  --rp-name-ground: #ebe7e0;       /* pressed into the shell, not a white sticker */
+  --rp-name-shadow: inset 0 0.2cqw 0.4cqw rgb(0 0 0 / 0.06);
+  --rp-name-ink: #9a958c;
   --rp-grille-ground: #ebe8e2;
   --rp-grille-dot: #6a665f;
-  --rp-bezel: #d8d4cc;
-  --rp-bezel-shadow: inset 0 0.35cqw 0.6cqw rgb(0 0 0 / 0.16), inset 0 -0.15cqw 0.2cqw rgb(255 255 255 / 0.7);
-  --rp-spk-shadow: inset 0 0.35cqw 0.6cqw rgb(0 0 0 / 0.18), 0 0 0 0.7cqw #f1efe9, 0 0 0 0.85cqw #d2cec5;   /* the speaker's ring */
-  --rp-dome: radial-gradient(circle at 35% 30%, #fff, #cfcac1 70%);
-  --rp-dome-shadow: 0 0.2cqw 0.4cqw rgb(0 0 0 / 0.2);
   --rp-glass: #06140a;
   --rp-ink: #4dff6a;
   --rp-key: linear-gradient(#fbfaf7, #e9e6df);
   --rp-key-ink: #6e6a62;           /* 4.6 : 1 on the key */
   --rp-key-ink-on: #262626;
-  --rp-key-up: inset 0 0.25cqw 0 #fff, 0 0.55cqw 0 #cfcbc2, 0 0.8cqw 1.2cqw rgb(0 0 0 / 0.14);
-  --rp-key-down: inset 0 0.25cqw 0 #fff, 0 0.1cqw 0 #cfcbc2, 0 0.3cqw 0.6cqw rgb(0 0 0 / 0.14);
+  --rp-key-up: inset 0 0.25cqw 0 #fff, 0 0.8cqw 0 #cfcbc2, 0 1cqw 1.4cqw rgb(0 0 0 / 0.12);
+  --rp-key-down: inset 0 0.25cqw 0 #fff, 0 0.2cqw 0 #cfcbc2, 0 0.4cqw 0.6cqw rgb(0 0 0 / 0.12);
 }
 
 /* ============================================================
@@ -1427,6 +1451,19 @@
   --work-scan-frame: rgb(255 255 255 / 0.95);   /* the camera's corner brackets */
   --work-dot: rgb(0 0 0 / 0.2);           /* step dots on the (always light) project hue */
   --work-dot-on: rgb(0 0 0 / 0.72);
+  /* WORK GROUND — what the device stands on (data/workPlay.ts `ground`):
+     a photo under a dark wash, a blurred photo under a lighter one, or
+     the project hue as a lit gradient. The "Mix" of experiments/
+     work-phones, round 17, on request (2026-11-16). */
+  --work-wash-photo: linear-gradient(rgb(16 16 22 / 0.34), rgb(16 16 22 / 0.5));
+  --work-wash-blur: linear-gradient(rgb(16 16 22 / 0.22), rgb(16 16 22 / 0.38));
+  --work-ground-pale: #fff 55%;          /* the colour block's lit corner */
+  --work-ground-deep: #3d4f86 16%;       /* and its far corner */
+  --work-ground-glow: rgb(255 255 255 / 0.55);
+  --work-ground-glow-corner: rgb(255 255 255 / 0.6);
+  --work-dot-photo: rgb(255 255 255 / 0.4);   /* step dots on a photo */
+  --work-dot-photo-on: #fff;
+  --work-device-shadow-photo: rgb(0 0 0 / 0.4);
   /* Scan & Go's scan: Walmart's spark yellow line, the found-it green */
   --work-scan-line: #ffc220;
   --work-scan-glow: rgb(255 194 32 / 0.65);

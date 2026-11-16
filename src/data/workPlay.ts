@@ -16,8 +16,17 @@
 // experiment's render.html (window.measure()).
 //
 // Keyed by the case's href. A case without an entry keeps its picture.
+//
+// `ground` is what the device stands on (on request, 2026-11-16, the
+// "Mix" of experiments/work-phones, round 17): not a photo on every
+// tile, so the grid has a rhythm and the photos read as moments. Three
+// kinds: a photo under a dark wash, the same kind of photo blurred to a
+// soft texture, or a colour block (the project hue as a lit gradient).
+// The photos are stand-ins taken from the companies' own sites, to be
+// swapped for licensed or her own photos (live as stand-ins for now).
 
 const I = (n: string) => `/images/work-play/${n}.webp`;
+const G = (n: string) => `/images/work-play/ground/${n}.webp`;
 
 export type Enter = 'push' | 'sheet' | 'alert' | 'scroll' | 'fade';
 type Pt = { x: number; y: number };
@@ -37,13 +46,22 @@ export interface PlayStep {
   scan?: { frame: Box; hit: Box; sheet: string; bar: string };   // Scan & Go's scan
 }
 
+export interface Ground {
+  kind: 'photo' | 'blur' | 'colour';
+  photo?: string;              // photo and blur (the blur is baked into the image)
+  pos?: string;                // background-position
+  size?: string;               // background-size, when the crop is tighter than cover
+}
+
 export interface Play {
   label: string;               // what the flow shows, for screen readers
   steps: PlayStep[];
+  ground?: Ground;
 }
 
 export interface Desk {
   label: string;
+  ground?: Ground;
   desk: string;                // 16:10 laptop screen
   phone: string;               // phone screen, 393 × 852
 }
@@ -52,10 +70,12 @@ export const workPlay: Record<string, Play | Desk> = {
   '/work/okta-iam': {
     label: "Okta's My Apps dashboard on a laptop, and on a phone",
     desk: I('okta-desk'), phone: I('okta-phone'),
+    ground: { kind: 'colour' },
   },
 
   '/work/paypal-privacy': {
     label: 'The flow: Shopping, a reminder to review privacy settings, then the redesigned Data and privacy hub',
+    ground: { kind: 'blur', photo: G('privacy-blur') },
     steps: [
       { src: I('pv-shopping'), tap: { x: 40.08, y: 32.53 } },
       { src: I('pv-hub'), tall: 1224, bar: I('pv-hub-bar'), swipe: { x: 50, y: 74 }, dwell: 1100 },
@@ -65,6 +85,7 @@ export const workPlay: Record<string, Play | Desk> = {
 
   '/work/walmart-scan-go': {
     label: 'The flow: scanning a jar of mustard, the cart, then checking out at a self-checkout',
+    ground: { kind: 'blur', photo: G('scan-blur') },
     steps: [
       { src: I('sg-scan-base'), tap: { x: 86.47, y: 93.78 }, dwell: 3300,
         scan: { frame: { x: 49.75, y: 40.08, w: 54.2, h: 30.63 }, hit: { x: 25.19, y: 46.6, w: 20.36, h: 6.34 },
@@ -76,6 +97,7 @@ export const workPlay: Record<string, Play | Desk> = {
 
   '/work/walmart-chase-pay': {
     label: 'The flow: choosing Chase Pay in Walmart Pay set-up, its benefits, then Walmart Pay settings',
+    ground: { kind: 'photo', photo: G('chase'), pos: '74% 42%', size: '165% auto' },
     steps: [
       { src: I('ch-setup'), tap: { x: 50, y: 42.62 } },
       { src: I('ch-benefits'), tap: { x: 50, y: 85.45 } },
@@ -85,6 +107,7 @@ export const workPlay: Record<string, Play | Desk> = {
 
   '/work/paypal-debit-card': {
     label: 'The flow: setting up a PayPal Balance account, confirming identity, then the card being set up',
+    ground: { kind: 'colour' },
     steps: [
       { src: I('debit-intro'), tap: { x: 50, y: 92.02 } },
       { src: I('debit-confirm'), tap: { x: 50, y: 92.02 } },
@@ -94,6 +117,7 @@ export const workPlay: Record<string, Play | Desk> = {
 
   '/work/paypal-id-proofing': {
     label: 'The flow: verify your ID in two steps, scan your photo ID, then the camera permission',
+    ground: { kind: 'photo', photo: G('id-card'), pos: '50% 40%' },
     steps: [
       { src: I('id-steps'), tap: { x: 50, y: 85.45 } },
       { src: I('id-scan'), tap: { x: 50, y: 85.45 } },
@@ -103,6 +127,7 @@ export const workPlay: Record<string, Play | Desk> = {
 
   '/work/paypal-ads-consent': {
     label: 'The flow: Data and Privacy, the privacy checkup asking about ads, then Online ad preferences',
+    ground: { kind: 'photo', photo: G('ads'), pos: '60% 60%' },
     steps: [
       { src: I('ads-privacy'), tap: { x: 39.07, y: 30.01 } },
       { src: I('ads-checkup-under'), over: I('ads-checkup-sheet'), enter: 'sheet', tap: { x: 26.78, y: 92.02 } },

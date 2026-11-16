@@ -274,9 +274,11 @@ const claimNum = blocks.map((b) =>
 
   .group__label { margin: 0 0 1.25rem; }
 
-  /* --- points: a numbered list, one hairline per item ------------------ */
+  /* --- points: a numbered list, items parted by space ------------------ */
   .points {
     list-style: none;
+    display: grid;
+    row-gap: var(--case-list-gap);
     margin: 0;
     padding: 0;
     max-width: var(--measure);
@@ -286,10 +288,7 @@ const claimNum = blocks.map((b) =>
     grid-template-columns: 2rem minmax(0, 1fr);
     column-gap: 0.75rem;
     row-gap: 0.25rem;
-    padding-block: 0.9rem;
-    border-top: 1px solid var(--rule);
   }
-  .point:last-child { border-bottom: 1px solid var(--rule); }
   .point__num { grid-row: span 2; line-height: 1.25rem; letter-spacing: 0.04em; }
   .point__title {
     font-family: var(--font-sans);
@@ -308,15 +307,12 @@ const claimNum = blocks.map((b) =>
 
   /* --- rows: the scope table ------------------------------------------
      Read as a table on purpose. This is the block a recruiter stops on. */
-  .rows { margin: 0; }
+  .rows { margin: 0; display: grid; row-gap: var(--case-list-gap); }
   .row {
     display: grid;
     grid-template-columns: minmax(0, 10rem) minmax(0, 1fr);
     gap: 0.5rem var(--col-gap);
-    padding-block: 1rem;
-    border-top: 1px solid var(--rule);
   }
-  .row:last-child { border-bottom: 1px solid var(--rule); }
   .row__term { padding-top: 0.3em; }
   .row__detail { margin: 0; color: var(--fg-dim); text-wrap: pretty; }
 
@@ -349,11 +345,8 @@ const claimNum = blocks.map((b) =>
   }
 
   /* --- quote ------------------------------------------------------------ */
-  .quote {
-    margin: 0;
-    border-inline-start: 1px solid var(--fg);
-    padding-inline-start: 1.25rem;
-  }
+  /* No rule beside it (on request): the serif at title size sets it apart. */
+  .quote { margin: 0; }
   .quote p {
     font-family: var(--font-serif); font-weight: var(--weight-serif);
     font-size: var(--step-title);
@@ -386,8 +379,6 @@ const claimNum = blocks.map((b) =>
     column-gap: 0.75rem;
     align-items: baseline;
     margin: 0 0 1.25rem;
-    padding-top: 0.9rem;
-    border-top: 1px solid var(--rule);
     max-width: var(--measure);
   }
   .claim__num { color: var(--fg); letter-spacing: 0.04em; }

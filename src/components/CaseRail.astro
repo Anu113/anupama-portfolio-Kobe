@@ -3,20 +3,30 @@
    Structured after felixrieseberg.com's posts (on request): a "Contents"
    label in mono caps, then one plain mono line per section, "Start"
    first. Every line sits in the grey; the section you're reading turns
-   to ink. No dash, no numbers, no hover shimmer — the reference has
-   none, and the quiet list is what makes the one ink line read as "you
-   are here". The back link moved to the top strip (CaseStrip.astro),
-   where the reference keeps it.
+   to ink. The back link lives in the top strip (CaseStrip.astro).
+
+   The reading line (on request, 2026-11-14, option B of
+   experiments/case-rail-line/, measured off andreas.vision/work/schneider):
+   beside each line, a 3px bar as long as its section is on the page, so
+   the rail is also a map of the case — a long craft section reads long,
+   a short one is a stub. Each bar fills with ink, top down, as the
+   reading line (25% down the window, the same band the spy uses) passes
+   through its section: read sections are solid, the current one part
+   full, the rest grey. "Start" covers the head and cover. His labels
+   fade while scrolling; ours stay (chosen on request). The fill follows
+   the scroll directly, no transition, so it's the same under reduced
+   motion. Values under CASE RAIL in `tokens.css`.
 
    It sticks inside its band, not the viewport, so it scrolls away when
    the body ends. `top` clears the nav and the strip.
 
-   The spy lives here: an IntersectionObserver with a band across the
-   upper reading area (same approach as Reveal.astro), not a scroll
-   handler. It marks the current link with aria-current and announces
-   the index as a `case:section` event, which CaseStrip reads for its
-   "Part 2/7" counter and menu — one source for "where am I" on the page.
-   It degrades to a plain anchor list without JS.
+   The spy: an IntersectionObserver with a band across the upper reading
+   area (same approach as Reveal.astro). It marks the current link with
+   aria-current and announces the index as a `case:section` event, which
+   CaseStrip reads for its "Part 2/7" counter and menu — one source for
+   "where am I" on the page. The bars are sized and filled by a separate
+   rAF-throttled scroll pass. Without JS it's a plain anchor list with
+   equal, empty bars.
 
    Below 1080px the rail is hidden: the strip's Part menu carries the
    contents there, as on the reference. The spy still runs, so the strip
@@ -29,10 +39,16 @@ const { sections } = Astro.props;
 <nav class="rail" aria-label="Contents">
   <p class="rail__head u-label-mono" aria-hidden="true">Contents</p>
   <ol class="rail__list">
-    <li><a class="rail__link" href="#top" data-rail-link="" aria-current="true">Start</a></li>
+    <li class="rail__item" data-rail-item>
+      <a class="rail__link" href="#top" data-rail-link="" aria-current="true">
+        <span class="rail__bar" aria-hidden="true"></span><span class="rail__label">Start</span>
+      </a>
+    </li>
     {sections.map((s) => (
-      <li>
-        <a class="rail__link" href={`#${s.id}`} data-rail-link={s.id}>{s.nav}</a>
+      <li class="rail__item" data-rail-item>
+        <a class="rail__link" href={`#${s.id}`} data-rail-link={s.id}>
+          <span class="rail__bar" aria-hidden="true"></span><span class="rail__label">{s.nav}</span>
+        </a>
       </li>
     ))}
   </ol>
@@ -50,10 +66,21 @@ const { sections } = Astro.props;
     list-style: none;
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--rail-bar-gap);
+    /* min, not height: a wrapped label grows its row rather than spill
+       into the next one. */
+    min-height: var(--rail-h);
+  }
+  .rail__item {
+    display: flex;
+    flex: 1 1 0;   /* the script sets flex-grow to the section's length */
   }
   .rail__link {
-    display: block;
-    padding-block: 0.25rem;
+    display: flex;
+    flex: 1;
+    gap: var(--rail-bar-label-gap);
     font-family: var(--font-mono);
     font-weight: var(--weight-mono);
     font-size: var(--step-copy);
@@ -63,6 +90,23 @@ const { sections } = Astro.props;
     text-wrap: pretty;
     transition: color var(--dur-micro) ease;
   }
+  .rail__bar {
+    position: relative;
+    flex: 0 0 var(--rail-bar-w);
+    overflow: hidden;
+    border-radius: var(--rail-bar-w);
+    background: var(--rail-track);
+  }
+  .rail__bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--fg);
+    transform-origin: center top;
+    transform: scaleY(var(--fill, 0));
+  }
+  .rail__label { padding-block: 0 0.25rem; }
+
   .rail__link:hover,
   .rail__link:focus-visible,
   .rail__link[aria-current='true'] { color: var(--fg); }
@@ -110,5 +154,43 @@ const { sections } = Astro.props;
       { rootMargin: '-25% 0px -60% 0px', threshold: 0 }
     );
     targets.forEach((t) => io.observe(t));
+
+    // The reading line. "Start" spans the page top to the first section;
+    // each section spans its own box to the next one's top (so the gap
+    // between sections belongs to the one above, and bars meet end to end).
+    const items = [...document.querySelectorAll<HTMLElement>('[data-rail-item]')];
+    const spans = () => {
+      const tops = targets.map((t) => t.getBoundingClientRect().top + scrollY);
+      const last = targets.at(-1);
+      const end = last ? last.getBoundingClientRect().bottom + scrollY : 0;
+      const edges = [0, ...tops, end];
+      return links.map((_, i) => [edges[i], edges[i + 1]] as const);
+    };
+    let ranges = spans();
+    const size = () => {
+      ranges = spans();
+      ranges.forEach(([a, b], i) => (items[i].style.flexGrow = String(Math.max(1, b - a))));
+    };
+    const fill = () => {
+      const line = scrollY + innerHeight * 0.25;
+      ranges.forEach(([a, b], i) => {
+        const f = Math.min(1, Math.max(0, (line - a) / Math.max(1, b - a)));
+        links[i].style.setProperty('--fill', f.toFixed(4));
+      });
+    };
+    let queued = false;
+    const tick = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; fill(); });
+    };
+    // Sections change length as images load and on resize.
+    const ro = new ResizeObserver(() => { size(); fill(); });
+    targets.forEach((t) => ro.observe(t));
+    const body = document.querySelector('.rail')?.parentElement;
+    if (body) ro.observe(body);   // the head and cover move every section
+    addEventListener('scroll', tick, { passive: true });
+    size();
+    fill();
   }
 </script>

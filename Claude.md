@@ -513,10 +513,11 @@ walked back. Concretely, in the current implementation:
   label; `--liquid-*` under MOTION in `tokens.css`).
   Focus rings are ink (`--focus`). `--accent-text` now resolves to ink,
   so anything reading it follows. The accent stays only for marks: the
-  cursor trail, the hero shader, Moss's dot and his panel's caret, the
-  reading strip's progress line (the preloader is ink since 2026-11-16), the before/after pins
-  (kept on request). Don't put the accent back on text, links or other
-  buttons.
+  cursor trail, the hero shader, Moss's dot and his panel's caret (the
+  preloader is ink since 2026-11-16). None on case study pages (on request, 2026-11-16): the
+  before/after pins and fixed-note dots are a plain blue
+  (`--compare-pin-after`, `--compare-fixed`). Don't put the accent back
+  on text, links, other buttons or case pages.
 - **Dark mode** came back on request, as the same palette re-inked rather
   than a second one: `:root[data-mode='dark']` in `tokens.css` redefines
   only the palette tokens (ground `#1b1a19`, ink `#ecebe8`, grey
@@ -594,18 +595,27 @@ walked back. Concretely, in the current implementation:
 - **Case study type** (`work/[slug].astro`, `CaseBlocks.astro`), after
   carlthomasiv.com/work/ona-conversations, chosen on request from a mock:
   the title is the one large line (`--step-case-title`, 30→40px); section
-  heads drop to `--step-title`; each section opens on a hairline with
-  "01  THE SITUATION" in 11px mono caps; labels, row terms, captions and
+  heads drop to `--step-title`; each section opens on
+  "01  THE SITUATION" in 11px mono caps (no hairlines on case pages since
+  2026-11-16, on request: lists, notes, rows, facts and section openers
+  are parted by space — `--case-list-gap`, `--case-block-gap` under
+  BEFORE / AFTER in `tokens.css`; don't add hairlines back); labels, row terms, captions and
   citations are mono too. "What was broken"-style points are a numbered
-  13px list. The pull quote is roman serif on a 1px ink rule — no italic
+  13px list. The pull quote is roman serif with no rule beside it (2026-11-16) — no italic
   and no accent, on request. Body stays Manrope 600.
 - **Case study contents and reading strip**, after felixrieseberg.com's
   posts (on request): the left rail (`CaseRail.astro`) is a "Contents"
   label over one mono line per section, "Start" first, grey with the
-  current one in ink. A strip under the nav (`CaseStrip.astro`) carries
+  current one in ink. Beside each line, a 3px bar as long as its
+  section, filling with ink as you read it (after
+  andreas.vision/work/schneider; option B of
+  `experiments/case-rail-line/`, 2026-11-14, on request: his labels
+  fade while scrolling, ours stay). Values under CASE RAIL in
+  `tokens.css`. A strip under the nav (`CaseStrip.astro`) carries
   "◂ Work", the title once the real one scrolls away, "Part n/N ▾" (a
   contents menu, the only contents under 1080px where the rail hides),
-  and a 2px accent progress line along its edge. It rides with the nav
+  and a 2px ink progress line along its edge (the accent until
+  2026-11-14; ink on request, to match the rail's line). It rides with the nav
   as it hides and returns. Values under CASE STRIP in `tokens.css`.
 - **Every case study opens the same way** (on request, after
   gauravi.design; split head chosen 2026-11-14, option B of
@@ -624,7 +634,7 @@ walked back. Concretely, in the current implementation:
   (2026-11-14) — a requested exception to the square `--radius` rule,
   those blocks only. The old "Case snapshot" cards became the head's
   facts. Head spacing under CASE HEAD in `tokens.css`. Section openers
-  and the numbered lists keep their hairlines.
+  and the numbered lists are parted by space, no hairlines.
 - **Case tags are a crayon wash** (CASE TAGS in `tokens.css`, on
   request, 2026-11-14, from `experiments/case-spacing/`, over the lime
   and a cream chip): no chip, ink text on a highlighter stroke of her
@@ -734,28 +744,33 @@ walked back. Concretely, in the current implementation:
   captions and inactive tabs at 3.2 : 1, quotes and row lines at
   2.5 : 1 (`--about-copy`, `--about-faint` under ABOUT). A requested
   exception to rule 4, this page only; don't spread these greys.
-  A fourth tile, approved on request (2026-11-11, "S5 · Speaker" from
-  `experiments/about-grid/slots.html`, after his CD player): a
-  slot-loading record player with a speaker (`RecordPlayer.astro`,
-  RECORD PLAYER in `tokens.css`). On a press the record rises and spins,
-  the dome in its small round speaker bumps and a neon green pixel
-  display scrolls the song with a clock and level bars (speaker and
-  colour chosen on request, 2026-11-14, from
-  `experiments/record-player-cute/`), standing on the page with no
-  card behind it; no orange, on request. It plays her Spotify
+  A sixth tile, the record player (`RecordPlayer.astro`, RECORD
+  PLAYER in `tokens.css`): since 2026-11-14, on request, a small cream
+  player with a handle and two little feet ("E · Little feet" from
+  `experiments/record-player-tiny/cute.html`; the bulkier slot-loader,
+  "S5 · Speaker", read as too big). It sits on the tiles' soft card with
+  a caption ("On repeat: song · artist") like the photo tiles. A round
+  dotted speaker on the left; on the right one column of three pills,
+  one width: "My Playlist #2026" pressed into the shell (muted on
+  request), the neon green display, and the keys (round Spotify, round
+  next, long play). On a press the record rises and spins and the song scrolls
+  across the display; no orange, on request. It plays her Spotify
   playlist's real tracks, "My Playlist #2026" (`song` in
   `data/about.ts`), one after another, through Spotify's embedded
   player kept out of sight in the tile (on request, 2026-11-11: she
-  asked for her songs over the old made-up tune). The display, count
+  asked for her songs over the old made-up tune). The display, caption
   and the record's label (her covers, saved into
-  `public/images/about/covers/`) follow the track playing. Spotify's
+  `public/images/about/covers/`) follow the track playing. Since 2026-11-15, on
+  request: there is no visible caption under the player (title · artist stays for screen readers), the
+  playlist stops after its last song instead of starting over, and
+  the next key skips a song. Spotify's
   script and player load only on the first press, so nobody contacts
   Spotify or gets its cookies without pressing play; signed-in
-  listeners hear whole tracks, others 30-second previews. A round
-  Spotify key opens the playlist in a new tab. Sound only
-  after a press, one at a time, stops when the tab is hidden; nothing
-  moves under reduced motion. Its reason: one personal detail she can
-  share in a press, the way the paintings share hers.
+  listeners hear whole tracks, others 30-second previews. The Spotify
+  key opens the playlist in a new tab. Sound only after a press, one
+  at a time, stops when the tab is hidden; nothing moves under reduced
+  motion. Its reason: one personal detail she can share in a press,
+  the way the paintings share hers.
 - The home page is now: hero → "Selected *work*" head + project cards →
   "Beyond *work*" ring → one-line playground pointer → Small talk →
   Now → footer (which carries contact).
@@ -816,6 +831,13 @@ walked back. Concretely, in the current implementation:
   Re-render after changing a screen. Nothing plays under reduced motion
   or on touch. Its reason: the grid stays calm for a skimming recruiter;
   whoever pauses on a case sees the product working.
+  Under each device a ground, mixed across the grid so it has a rhythm
+  (on request, 2026-11-16, "Mix" in the experiment): a photo under a
+  dark wash (ID check, Ads consent, Chase Pay), the photo blurred to a
+  soft texture (Privacy, Scan & Go) or the project hue as a lit colour
+  block (Okta IAM, Debit Card); `ground` in `data/workPlay.ts`, WORK
+  GROUND in `tokens.css`. The photos are stand-ins from PayPal's and
+  Walmart's sites until licensed or her own ones replace them.
 - **On case studies, a phone sits in a device box** (`DeviceBox.astro`,
   `styles/device-box.css`, on request, measured off danield.design's
   phone tiles): a plain white box (no colour behind the phone), 1px
