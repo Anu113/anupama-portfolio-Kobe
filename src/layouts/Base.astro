@@ -70,6 +70,8 @@ const {
     <main id="main"><slot />{trail && <CursorLamp />}</main>
     <Footer />
     {trail && <CursorTrail />}
+    <!-- Wheel scrolls ease to a stop instead of halting (smooth-scroll.ts, Lenis). -->
+    <script>import '../scripts/smooth-scroll';</script>
     <style>
       .skip {
         position: absolute; left: -9999px;

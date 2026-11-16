@@ -19,8 +19,11 @@
    curved end clips it off the black footer, and is screen-blended over
    the content because <Section> bands paint their own ground, which
    would cover a layer placed behind them. Values live under CURSOR LAMP
-   in tokens.css; strength is --hero-night, so it is zero in light mode
-   and fades with the theme over --dur-night.
+   in tokens.css; strength is --hero-night, so it fades with the theme
+   over --dur-night. In light mode it is off the page (display: none,
+   after the fade) and its loop doesn't run: even at zero strength, a
+   screen-blended layer fixed over the page made the browser re-blend
+   everything scrolling under it.
 
    Text shadows from it are OFF (on request, 2026-11-13: --lamp-cast-alpha
    is 0). The code is kept: at a non-zero alpha, headings, paragraphs and
@@ -61,9 +64,18 @@
     transform: translate3d(-100vw, -100vh, 0);
     will-change: transform;
     opacity: 0;
-    transition: opacity var(--dur-night) var(--ease-out);
+    /* display rides the fade (allow-discrete), so the lamp is gone only
+       once it has faded out, and @starting-style fades it back in. */
+    transition:
+      opacity var(--dur-night) var(--ease-out),
+      display var(--dur-night) allow-discrete;
   }
   .lamp.is-on { opacity: var(--hero-night); }
+  /* Light mode: off the page entirely. At strength 0 it showed nothing,
+     but a screen-blended layer fixed over the page still made the
+     browser re-blend what scrolled under it, every scroll frame. */
+  :global(:root:not([data-mode='dark'])) .lamp { display: none; }
+  @starting-style { .lamp.is-on { opacity: 0; } }
   /* The text shadows are inherited from the caster; a filled button
      inside it (the hero's Resume pill) would smudge, so buttons opt out. */
   :global(.btn) { text-shadow: none; }
@@ -169,10 +181,17 @@
       return Math.hypot(target.x - pos.x, target.y - pos.y) > 0.3;
     };
 
+    const dark = () => document.documentElement.dataset.mode === 'dark';
+    let seen = false;   // has the pointer been over the page yet?
+
     addEventListener('pointermove', (e) => {
       if (e.pointerType !== 'mouse') return;
       target.x = e.clientX;
       target.y = e.clientY;
+      // Light mode: the lamp is off the page (display: none), so it
+      // doesn't run; it starts under the pointer when dark comes on.
+      seen = true;
+      if (!dark()) { seeded = false; return; }
       if (!seeded) {
         // Start under the pointer rather than gliding in from the corner.
         pos.x = target.x; pos.y = target.y;
@@ -189,7 +208,17 @@
     addEventListener('scroll', castShadows, { passive: true });
     addEventListener('theme:changed', () => {
       // --hero-night is read after the tokens re-ink this frame.
-      requestAnimationFrame(() => { readCast(); castShadows(); });
+      // Switching to dark under a still pointer: the lamp comes on where
+      // the pointer already is.
+      requestAnimationFrame(() => {
+        readCast();
+        if (dark() && seen && !seeded) {
+          pos.x = target.x; pos.y = target.y; seeded = true;
+          lamp.classList.add('is-on');
+          place();
+        }
+        castShadows();
+      });
     });
 
     document.documentElement.addEventListener('mouseleave', () => {
