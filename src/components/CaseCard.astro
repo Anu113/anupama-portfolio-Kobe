@@ -3,32 +3,20 @@
    any future grid of projects (another index, a "more work" rail) should
    reach for this rather than inlining a card again.
 
-   The hover affordance is HoverLabel.astro, wired through the single
-   `hoverState` prop — one of the five states in `data/hoverState.ts`. That
-   is the whole contract: a new project sets one prop, and the label,
-   positioning and reveal are already handled. `data-hover-trigger` is what
-   HoverLabel listens for; see its own header comment for why that has to
-   be a plain attribute rather than a scoped class.
+   No cursor-following "View case study" pill: it was removed on request
+   (2026-11-16) because it made the grid feel slow. The hover is the image
+   easing up 4% and the normal pointer. HoverLabel.astro stays, unmounted.
 
    The media carries the company's project hue (data-hue, from hueFor()
-   in data/work.ts) — the colour belongs to its thumbnail, the way
-   /work's staggered grid already used it, while the meta text underneath
-   stays in the page's own palette. HoverLabel itself renders as a sibling
-   of the media, not nested inside it, so its pill can track the cursor
-   across the *whole* card — including the meta text below the image —
-   rather than stopping dead at the media's own edge; it still gets the
-   project's own colour, just copied off the media element by its own
-   script instead of inherited through the cascade, since it no longer sits
-   inside that scope. See HoverLabel's header comment for why.
+   in data/work.ts) — the colour belongs to its thumbnail, while the meta
+   text underneath stays in the page's own palette.
 
    Laid out after carlthomasiv.com/work: the picture, then the company in
    mono, the title, one short line (the impact) and the label chips last.
    No role line and no paragraph, on request — every card is the same
    four lines so the grid reads evenly. The page passes labelsFor(w). */
-import HoverLabel from './HoverLabel.astro';
 import LockIcon from './LockIcon.astro';
 import { hueFor } from '../data/work';
-import type { HoverState } from '../data/hoverState';
 
 interface Props {
   title: string; href: string; image: string; alt?: string;
@@ -36,7 +24,6 @@ interface Props {
   labels?: string[];
   theme?: string; ratio?: string;
   locked?: boolean;
-  hoverState?: HoverState;
 }
 const {
   title, href, image, alt = '',
@@ -44,14 +31,12 @@ const {
   labels = [],
   theme, ratio = '4 / 3',
   locked = false,
-  hoverState = 'case-study',
 } = Astro.props;
 ---
-<a class="card" href={href} data-hover-trigger>
+<a class="card" href={href}>
   <div class="card__media" data-theme={theme} data-hue={hueFor(company) ?? ''} style={`--ratio: ${ratio};`}>
     <img src={image} alt={alt} loading="lazy" decoding="async" />
   </div>
-  <HoverLabel state={hoverState} />
   {company && <p class="card__co u-label-mono">{company}</p>}
   <h2 class="card__title">
     {title}
@@ -66,10 +51,7 @@ const {
 </a>
 
 <style>
-  /* cursor: none — HoverLabel's pill is the cursor here (see its header
-     comment); the browser's own hand/pointer icon underneath it would be
-     a second, redundant cursor. */
-  .card { display: block; text-decoration: none; color: var(--fg); position: relative; cursor: none; }
+  .card { display: block; text-decoration: none; color: var(--fg); position: relative; }
   .card__media {
     background: var(--hue);   /* the company's project hue (tokens.css, PROJECT HUES) */
     aspect-ratio: var(--ratio);
