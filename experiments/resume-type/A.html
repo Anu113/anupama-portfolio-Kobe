@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!--
+  Anupama's resume. Source for /resume.pdf (the hero's Resume button) and the
+  copy she sends out. Real text, one standard font, so ATS parsers and
+  screen readers read it (the old Figma export was Type 3 glyphs: "PayPal"
+  came out as "P yPa al").
+
+  Render both copies:  sh resume/render.sh
+  - resume/Anupama-Mishra-Resume.pdf  — with phone, for sending
+  - public/resume.pdf                 — no phone, served on the site
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Anupama Mishra — Staff Product Designer</title>
+<style>
+  /* Static DM Sans (Fontsource), so Chrome embeds real TrueType, not Type 3. */
+  @font-face { font-family: 'DM Sans'; font-weight: 400; src: url(../../resume/fonts/dm-sans-400.woff2) format('woff2'); }
+  @font-face { font-family: 'DM Sans'; font-weight: 600; src: url(../../resume/fonts/dm-sans-600.woff2) format('woff2'); }
+  @font-face { font-family: 'DM Sans'; font-weight: 700; src: url(../../resume/fonts/dm-sans-700.woff2) format('woff2'); }
+  @page { size: A4; margin: 0; }
+  :root {
+    --ink: #1a1a1a;
+    --body: #3d3d3d;
+    --muted: #5f5f5f;   /* section heads and dates: 6.4:1 on white, was ~2:1 */
+    --rule: #e4e4e4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #fff; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--body);
+    font-size: 9.4pt;
+    line-height: 1.42;
+    width: 210mm;
+    padding: 13mm 16mm 6mm;
+    -webkit-print-color-adjust: exact;
+  }
+  a { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 0.5px; }
+  strong { color: var(--ink); font-weight: 600; }
+
+  header h1 { font-size: 22pt; font-weight: 700; color: var(--ink); line-height: 1.1; letter-spacing: -0.01em; }
+  header .role { font-size: 12pt; font-weight: 600; color: var(--muted); margin-top: 3pt; }
+  header .contact { font-size: 8.6pt; color: var(--body); margin-top: 8pt; }
+  header .contact span { white-space: nowrap; display: inline-block; }
+  header .contact span:not(:last-child)::after { content: "·"; margin: 0 6pt; color: var(--muted); }
+
+  h2 {
+    font-size: 8.4pt; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--muted); margin: 13pt 0 6pt; padding-bottom: 4pt; border-bottom: 0.75pt solid var(--rule);
+  }
+  .summary { color: var(--body); }
+
+  .job { margin-top: 8pt; break-inside: avoid; }
+  h2 + .job { margin-top: 0; }
+  .job.edu { margin-top: 4pt; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; }
+  .job h3 { font-size: 10.8pt; font-weight: 400; color: var(--ink); }
+  .job h3 b { font-weight: 700; }
+  .job h3 .sep { color: var(--muted); margin: 0 5pt; }
+  .dates { font-size: 8.4pt; color: var(--muted); white-space: nowrap; letter-spacing: 0.02em; }
+  ul { list-style: none; margin-top: 4pt; }
+  li { position: relative; padding-left: 11pt; margin-top: 1.8pt; }
+  li::before { content: ""; position: absolute; left: 2pt; top: 0.62em; width: 3pt; height: 3pt; border-radius: 50%; background: var(--muted); }
+
+  .skills { color: var(--body); }
+  .skills span { white-space: nowrap; display: inline-block; }
+  .skills span:not(:last-child)::after { content: "·"; margin: 0 6pt; color: var(--muted); }
+
+  /* public copy: no phone */
+  body.public .phone { display: none; }
+</style>
+<style>
+  @font-face { font-family: 'Crimson Pro'; font-weight: 300; src: url(fonts/crimson-pro-300-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Crimson Pro'; font-weight: 300; font-style: italic; src: url(fonts/crimson-pro-300-italic.woff2) format('woff2'); }
+  @font-face { font-family: 'Azeret Mono'; font-weight: 400; src: url(fonts/azeret-mono-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'DM Sans'; font-weight: 500; src: url(fonts/dm-sans-500-normal.woff2) format('woff2'); }
+
+  strong { font-weight: inherit; color: inherit; }
+  .job h3 b { font-weight: 500; }
+  li::before { background: #b5b5b5; width: 2.5pt; height: 2.5pt; }
+  header .contact span:not(:last-child)::after { color: #b5b5b5; }
+  .skills span:not(:last-child)::after { color: #b5b5b5; }
+
+  body { font-size: 8.8pt; line-height: 1.55; padding: 16mm 19mm 8mm; color: #4a4a4a; }
+  header h1 { font-size: 15pt; font-weight: 500; letter-spacing: 0; }
+  header .role { font-size: 9.5pt; font-weight: 400; color: #6b6b6b; margin-top: 2pt; }
+  header .contact { font-size: 8pt; color: #6b6b6b; margin-top: 7pt; }
+  h2 { font-size: 7.4pt; font-weight: 500; letter-spacing: .14em; color: #767676; border: 0; padding: 0; margin: 17pt 0 7pt; }
+  .job { margin-top: 10pt; }
+  .job h3 { font-size: 9.4pt; }
+  .job h3 .sep { color: #b5b5b5; }
+  .dates { font-size: 8pt; color: #767676; }
+  li { margin-top: 1.5pt; }
+</style>
+</head>
+<body>
+<script>if (location.search.includes("public")) document.body.classList.add("public");</script>
+<header>
+  <h1>Anupama Mishra</h1>
+  <p class="role">Staff Product Designer · Fintech, Identity &amp; Privacy</p>
+  <p class="contact">
+    <span>Bangalore, India</span><span><a href="mailto:anupama.mishra113@gmail.com">anupama.mishra113@gmail.com</a></span><span class="phone">+91 99007 23909</span><span><a href="https://anupama.design">anupama.design</a></span><span><a href="https://www.linkedin.com/in/anupamamishra/">linkedin.com/in/anupamamishra</a></span>
+  </p>
+</header>
+
+<h2>Summary</h2>
+<p class="summary">
+  Staff Product Designer with <strong>10+ years</strong> designing fintech, identity and privacy products at
+  <strong>Okta</strong>, <strong>PayPal</strong>, <strong>Walmart Labs</strong> and <strong>Deloitte Digital</strong>.
+  Takes complex, regulated workflows from strategy to shipped UI, sets design-system standards, and
+  <strong>led a team of six designers</strong> at Okta.
+</p>
+
+<h2>Experience</h2>
+
+<div class="job">
+  <div class="job-head"><h3><b>Okta</b><span class="sep">/</span>Staff Product Designer</h3><span class="dates">Sep 2024 – Mar 2025</span></div>
+  <ul>
+    <li>Led design for <strong>identity and administration</strong> experiences, partnering with Product, Engineering and GTM on strategy and adoption.</li>
+    <li>Simplified Okta Integration Network onboarding, <strong>cutting ISV onboarding time by 40%</strong>.</li>
+    <li>Defined Entitlement Management workflows that increased enterprise adoption.</li>
+    <li><strong>Led a team of six designers</strong>: hiring, design reviews and coaching that raised the quality bar.</li>
+    <li>Shaped roadmap decisions by weighing customer needs, business priorities and platform scalability.</li>
+    <li>Improved design-system workflows, <strong>reducing design-to-development handoff effort</strong>.</li>
+  </ul>
+</div>
+
+<div class="job">
+  <div class="job-head"><h3><b>PayPal</b><span class="sep">/</span>Lead Product Designer, Global Data &amp; Privacy, Activity</h3><span class="dates">May 2021 – Apr 2024</span></div>
+  <ul>
+    <li>Led <strong>B2C privacy, data management and trust</strong> initiatives across PayPal, Venmo and Honey.</li>
+    <li>Defined data access and deletion experiences, <strong>reducing processing effort by 40%</strong>.</li>
+    <li>Simplified privacy workflows, improving task completion rates.</li>
+    <li>Partnered with <strong>Legal, Compliance</strong>, Product and Engineering to make regulatory requirements usable.</li>
+    <li>Used research to steer product direction and fix usability issues.</li>
+    <li>Mentored designers and contributed to design quality and team growth.</li>
+  </ul>
+</div>
+
+<div class="job">
+  <div class="job-head"><h3><b>Walmart Labs</b><span class="sep">/</span>UX Designer</h3><span class="dates">Jul 2019 – May 2021</span></div>
+  <ul>
+    <li>Led end-to-end design of <strong>consumer and enterprise products</strong> for merchant operations, employee workflows and internal platforms.</li>
+    <li>Built and evolved the <strong>Merchant Design System</strong>, so teams shipped faster with consistent quality.</li>
+    <li>Modernised legacy workflows with scalable patterns that improved consistency and usability.</li>
+    <li>Simplified complex operational processes with cross-functional partners, improving user productivity.</li>
+  </ul>
+</div>
+
+<div class="job">
+  <div class="job-head"><h3><b>Deloitte Digital</b><span class="sep">/</span>UX/UI Designer</h3><span class="dates">Oct 2017 – Jan 2019</span></div>
+  <ul>
+    <li>Designed workflow and task-management tools for <strong>Sun Pharma</strong> scientists, <strong>reducing task completion time by 35%</strong>.</li>
+    <li>Created <strong>VR experiences for Philips</strong> that increased engagement and showcased emerging technology.</li>
+    <li>Turned complex requirements into clear experiences for enterprise clients in healthcare and technology.</li>
+    <li>Established reusable design systems across client engagements, reducing implementation effort.</li>
+  </ul>
+</div>
+
+<div class="job">
+  <div class="job-head"><h3><b>Zomato</b><span class="sep">/</span>UX/UI Designer</h3><span class="dates">2015</span></div>
+  <ul>
+    <li>Designed product, web and marketing experiences for consumer-facing products.</li>
+  </ul>
+</div>
+
+<h2>Education</h2>
+<div class="job">
+  <div class="job-head"><h3><b>Suresh Gyan Vihar University</b><span class="sep">/</span>B.Tech, Computer Science</h3><span class="dates">2011 – 2015</span></div>
+</div>
+<div class="job edu">
+  <div class="job-head"><h3><b>St. Xavier&rsquo;s School</b><span class="sep">/</span>High School (CBSE)</h3></div>
+</div>
+
+<h2>Skills</h2>
+<p class="skills"><span>Product Strategy</span><span>Fintech &amp; Payments</span><span>Identity &amp; Access Management</span><span>Privacy &amp; Compliance UX</span><span>Enterprise SaaS</span><span>Design Systems</span><span>Accessibility</span><span>User Research</span><span>Design Leadership</span></p>
+</body>
+</html>
