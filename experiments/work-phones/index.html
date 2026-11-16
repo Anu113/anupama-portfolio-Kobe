@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/work tiles — one iPhone, clean ground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-16, round 9: N · Hover play, one phone that runs its flow on hover (hover.js). Round 8: click a tile (Redrawn screens) for its clickable prototype, proto.js. Round 7: Screens > Redrawn rebuilds every PayPal and Walmart screen in code (redraw.js, redraw.css) on one iOS grid, so nothing is cropped or cut by the bezel; Okta keeps her export to match the laptop. Defaults: G, white titanium, title first, Redrawn. Round 6: K, L, M without a device; better Privacy screens; desktop only where it's strong (Okta). The /work tiles for the six phone cases.
+  "Now" is the tile as it is. A and B put the same screens (screens/,
+  cut out of public/images/*) in ONE device: an iPhone 15 Pro drawn
+  to its real proportions, in black titanium —
+    · body 71.6 × 146.6 mm, so width : height = 0.488
+    · thin, even black border; a 1px titanium rim round the outside
+    · corners measured as a share of the phone's WIDTH (cqw), so they
+      stay round at every size — the round-1 frame used % of width and
+      height separately, which flattened the corners into near-squares
+    · the screen's own corner a little tighter than the body's, as on
+      the real phone; Dynamic Island; the four side buttons, barely there
+  Screens are anchored at the top and fill the width; baked-in notches
+  (Debit) and the Android status bar (the Chase recording) are trimmed
+  off so the island is the only one.
+    A  Row   — three upright phones, same size, even gaps
+    B  Lead  — the middle phone forward and larger, the sides lower
+    C  Solo  — one phone, centred (after danield.design)
+    D  Rise  — one large phone up from the bottom edge (gauravi.design)
+    E  Bleed — two large phones out of the corner (carlthomasiv.com)
+    F  Tilt  — three laid flat and turned (carlthomasiv.com, Learning Hub)
+    G  Laptop + phone — a MacBook (16:10 screen, notch, aluminium base)
+                        with the web screen, the iPhone in front
+    H  Window + phone — a plain browser window instead of the laptop
+    I  Stack   — three phones, the middle in front, the sides behind
+    J  Stagger — three the same size, the middle dropped
+  G falls back to I, and H to J, where a case has no desktop screen.
+  The iPhone's band comes in four finishes (bar under the designs); the
+  border round the glass stays black, as on the real phone.
+  ID check's web screen is the "Upload a photo ID" form from the old
+  flow (old-flow.webp), set on a desktop page.
+  Desktop screens exist only for Okta IAM (my-apps.webp, desktop and
+  phone) and Privacy (the PayPal web settings, right half of
+  subnav.webp, low-res). The Ads case's web image is Google's Privacy
+  Checkup, a competitor reference, so it isn't used.
+  A switcher at the top shows the whole /work grid in one design.
+  Serve from the repo root (case-v2-mockup in launch.json):
+  /experiments/work-phones/index.html
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070; --rule: rgb(0 0 0 / .1);
+    --hue-paypal: #e0d6ef; --hue-walmart: #f4dc9c; --hue-okta: #c9dcf2;
+
+    /* iPhone 15 Pro, black titanium */
+    --ip-ratio: 0.488;           /* body width / height */
+    --ip-body: #121214;          /* the black border around the glass */
+    --ip-rim: #4a4a4f;           /* titanium band, seen as a hairline */
+    --ip-rim-hi: #7a7a80;        /* its highlight on the left edge */
+    --ip-r-body: 17cqw;          /* body corner, share of phone width */
+    --ip-band: 1.2cqw;           /* the metal band, seen from the front */
+    --ip-border: 2.3cqw;         /* the black border round the glass */
+    --ip-r-glass: calc(var(--ip-r-body) - var(--ip-band));
+    --ip-r-screen: calc(var(--ip-r-glass) - var(--ip-border));
+    /* finish: white titanium by default (picked in the bar) */
+    --metal-1: #f1efeb; --metal-2: #d9d6d0; --metal-3: #bdb9b2;
+  }
+
+  /* iPhone 15 Pro finishes. Only the band changes: the border round the
+     glass is black on every real iPhone. */
+  [data-finish='white']   { --metal-1: #f1efeb; --metal-2: #d9d6d0; --metal-3: #bdb9b2; }
+  [data-finish='natural'] { --metal-1: #c9c2b8; --metal-2: #aba398; --metal-3: #8c857b; }
+  [data-finish='blue']    { --metal-1: #6b7486; --metal-2: #4c5466; --metal-3: #373d4b; }
+  [data-finish='black']   { --metal-1: #55555a; --metal-2: #3c3c40; --metal-3: #2a2a2d; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 600 12px/1.8 var(--font-sans); padding: 48px 40px 96px; }
+  h1 { font: 300 40px/1.1 var(--font-serif); margin: 0 0 8px; }
+  h1 em { font-style: italic; }
+  .intro { color: var(--dim); max-width: 60ch; margin: 0 0 40px; }
+  .mono { font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
+
+  .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; position: sticky; top: 0; background: var(--bg); padding: 12px 0; z-index: 2; border-bottom: 1px solid var(--rule); margin-bottom: 24px; }
+  .cols b { font-weight: 400; color: var(--fg); }
+  .cols span { color: var(--dim); }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-bottom: 56px; }
+
+  /* The tile, as CaseCard draws it: hue, 3:2 */
+  .media { aspect-ratio: 3 / 2; background: var(--hue); overflow: hidden; padding: 28px; position: relative; }
+  .media > img.slide { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .co { color: var(--dim); margin: 16px 0 6px; }
+  .title { margin: 0 0 4px; font: 400 12px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+  .impact { color: var(--dim); margin: 0; }
+
+  /* Outcome as the headline (andreas.vision, carlthomasiv.com): the
+     result in the item role (sans 18px, ink), the company and project in
+     one mono label. "Under" keeps the image first; "Above" puts the
+     result over the image, as Andreas does. */
+  .kicker { color: var(--dim); margin: 0 0 8px; }
+  .kicker b { color: var(--fg); font-weight: 400; }
+  .outcome { font: 600 18px/1.35 var(--font-sans); margin: 0; max-width: 30ch; text-wrap: balance; }
+  .tile--under .kicker { margin-top: 16px; }
+  .tile--above .outcome { margin-bottom: 16px; }
+  .tile--above .kicker { margin-top: 0; }
+
+  .stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+
+  /* ---- The phone ----------------------------------------------------
+     Sized by height; width follows the real ratio. It's a size container,
+     so every inner length is in cqw — a share of its own width. */
+  .iphone {
+    height: 78%;
+    aspect-ratio: var(--ip-ratio);
+    container-type: inline-size;
+    position: relative;
+    flex: none;
+  }
+  /* cqw on the container itself would read its parent, so the body is
+     an inner layer */
+  .iphone__body {
+    position: absolute; inset: 0;
+    border-radius: var(--ip-r-body);
+    padding: var(--ip-band);
+    /* the band: lit on the upper left, darker round the lower right */
+    background: linear-gradient(135deg, var(--metal-1), var(--metal-2) 45%, var(--metal-3));
+    box-shadow:
+      inset 0 0 0 0.25cqw rgb(0 0 0 / .10),
+      0 0.6cqw 1.2cqw rgb(0 0 0 / .08),
+      0 6cqw 12cqw -4cqw rgb(0 0 0 / .20);
+  }
+  .iphone__glass { height: 100%; border-radius: var(--ip-r-glass); background: #0a0a0b; padding: var(--ip-border); }
+  .iphone__screen {
+    position: relative; height: 100%;
+    border-radius: var(--ip-r-screen);
+    overflow: hidden;
+    background: #fff;
+  }
+  .iphone__screen img { width: 100%; height: auto; display: block; }
+  /* Dynamic Island */
+  .iphone__screen::after {
+    content: ''; position: absolute; left: 50%; top: 3cqw; transform: translateX(-50%);
+    width: 29cqw; height: 8.4cqw; border-radius: 99px; background: #000;
+  }
+  /* Screens exported without a status bar get one, in their own top
+     colour, so the island never sits on the content */
+  .iphone__bar { height: 12.5cqw; display: flex; align-items: center; justify-content: space-between; padding: 1.2cqw 8.5cqw 0 10cqw;
+    font: 600 4.3cqw/1 -apple-system, 'SF Pro Text', system-ui, sans-serif; color: #000; letter-spacing: -.01em; }
+  .iphone__bar b { width: 6.6cqw; height: 3.1cqw; border-radius: 1cqw; border: .45cqw solid color-mix(in srgb, var(--bar-ink, #000) 40%, transparent); position: relative; }
+  .iphone__bar b::after { content: ''; position: absolute; inset: .35cqw; border-radius: .5cqw; background: var(--bar-ink, #000); }
+  /* Side buttons: action + two volume on the left, power on the right */
+  .iphone i { position: absolute; width: 0.9cqw; background: var(--metal-3); border-radius: 0.5cqw; }
+  .iphone i:nth-of-type(1) { left: -0.6cqw; top: 22%; height: 6%; }
+  .iphone i:nth-of-type(2) { left: -0.6cqw; top: 32%; height: 10%; }
+  .iphone i:nth-of-type(3) { left: -0.6cqw; top: 44.5%; height: 10%; }
+  .iphone i:nth-of-type(4) { right: -0.6cqw; top: 33%; height: 15%; }
+
+  /* ---- The designs ------------------------------------------------- */
+  .tile[hidden] { display: none; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 48px 32px; }
+
+  /* A — Row: three, even */
+  [data-d='a'] .stage { gap: 6%; }
+  /* B — Lead: middle forward */
+  [data-d='b'] .stage { gap: 5%; align-items: flex-end; padding-bottom: 7%; }
+  [data-d='b'] .iphone { height: 68%; }
+  [data-d='b'] .iphone:nth-child(2) { height: 84%; }
+  /* C — Solo (danield.design): one phone, centred, room around it */
+  [data-d='c'] .iphone { height: 82%; }
+  /* D — Rise (gauravi.design): one large phone coming up from the
+     bottom edge, its lower half off the tile */
+  [data-d='d'] .stage { align-items: flex-start; padding-top: 9%; }
+  [data-d='d'] .iphone { height: 150%; }
+  /* E — Bleed (carlthomasiv.com): two large phones set off-centre,
+     running out of the bottom-right corner */
+  [data-d='e'] .stage { display: block; }
+  [data-d='e'] .iphone { position: absolute; height: 125%; }
+  [data-d='e'] .iphone:nth-child(1) { left: 22%; top: 14%; }
+  [data-d='e'] .iphone:nth-child(2) { left: 56%; top: 26%; }
+  /* F — Tilt (carlthomasiv.com's Learning Hub): the three phones laid
+     flat and turned, as if on the desk; same angle on every tile */
+  [data-d='f'] .stage { gap: 7%; transform: rotateX(52deg) rotateZ(-34deg) scale(1.25); transform-style: preserve-3d; top: 8%; }
+  [data-d='f'] .iphone { height: 92%; }
+  [data-d='f'] .iphone__body { box-shadow: inset 0 0 0 0.25cqw rgb(0 0 0 / .10), -3cqw 5cqw 6cqw rgb(0 0 0 / .16); }
+
+
+  /* ---- Desktop frames ------------------------------------------------
+     Both are size containers too, so their bezels and corners are a
+     share of their own width. */
+  .mac { position: relative; container-type: inline-size; flex: none; }
+  .mac__lid {
+    background: #0d0d0f; border-radius: 2.6cqw 2.6cqw 0 0;
+    padding: 1.8cqw 1.8cqw 2.4cqw;
+    box-shadow: 0 0 0 0.35cqw var(--metal-2);
+  }
+  .mac__screen { aspect-ratio: 16 / 10; overflow: hidden; border-radius: .6cqw .6cqw 0 0; position: relative; }
+  .mac__screen img { width: 100%; height: auto; display: block; }
+  /* the notch */
+  .mac__screen::after { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 11cqw; height: 2.1cqw; background: #0d0d0f; border-radius: 0 0 1cqw 1cqw; }
+  /* the base: an aluminium slab a little wider than the lid, with the finger lip */
+  .mac__base { position: relative; height: 2.6cqw; margin: 0 -6.5cqw; border-radius: 0 0 4cqw 4cqw / 0 0 2.6cqw 2.6cqw;
+    background: linear-gradient(#e4e4e6, #c9c9cd 70%, #a9a9ae); box-shadow: 0 2cqw 4cqw -1cqw rgb(0 0 0 / .25); }
+  .mac__base::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 15cqw; height: 1cqw; background: #b9b9bd; border-radius: 0 0 1.2cqw 1.2cqw; }
+
+  .win { position: relative; container-type: inline-size; flex: none; }
+  .win__frame { border-radius: 1.6cqw; overflow: hidden; background: #fff;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / .08), 0 1cqw 2cqw rgb(0 0 0 / .06), 0 5cqw 10cqw -3cqw rgb(0 0 0 / .22); }
+  .win__bar { height: 5cqw; display: flex; align-items: center; gap: 1.1cqw; padding: 0 2cqw; background: #f3f3f2; border-bottom: 1px solid rgb(0 0 0 / .07); }
+  .win__bar i { width: 1.6cqw; height: 1.6cqw; border-radius: 50%; background: #d6d5d2; }
+  .win__url { margin-left: auto; margin-right: auto; width: 40%; height: 2.8cqw; border-radius: 99px; background: #e7e6e3; transform: translateX(-3cqw); }
+  .win__screen { aspect-ratio: 16 / 9.4; overflow: hidden; }
+  .win__screen img { width: 100%; height: auto; display: block; }
+
+  /* G — Laptop + phone */
+  [data-d='g'] .stage.desk, [data-d='h'] .stage.desk, [data-d='n'] .stage.desk { display: block; }
+  [data-d='g'] .mac, [data-d='n'] .mac { position: absolute; width: 68%; left: 10%; top: 13%; }
+  [data-d='g'] .desk .iphone, [data-d='n'] .desk .iphone { position: absolute; height: 66%; right: 10%; bottom: 9%; }
+  /* H — Window + phone */
+  [data-d='h'] .win { position: absolute; width: 70%; left: 8%; top: 12%; }
+  [data-d='h'] .desk .iphone { position: absolute; height: 70%; right: 8%; bottom: 7%; }
+  /* I — Stack: three phones, the middle in front, the sides tucked
+     behind it, a little smaller */
+  [data-d='i'] .stage, .stage.stack { gap: 0; }
+  [data-d='i'] .iphone, .stage.stack .iphone { height: 70%; }
+  [data-d='i'] .iphone:nth-child(2), .stage.stack .iphone:nth-child(2) { height: 84%; z-index: 1; margin: 0 -7%; }
+  /* J — Stagger: three the same size, the middle one dropped, the row
+     running off the top and bottom edges */
+  [data-d='j'] .stage, .stage.stagger { gap: 4%; }
+  [data-d='j'] .iphone, .stage.stagger .iphone { height: 88%; transform: translateY(-10%); }
+  [data-d='j'] .iphone:nth-child(2), .stage.stagger .iphone:nth-child(2) { transform: translateY(12%); }
+
+  /* cases with no desktop work: one phone, and a note */
+  .nodesk { position: absolute; left: 14px; top: 14px; margin: 0; color: var(--dim); font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
+  [data-d='g'] .stage.solo, [data-d='h'] .stage.solo { display: flex; }
+  .stage.solo .iphone { position: relative !important; height: 74% !important; right: auto !important; bottom: auto !important; }
+
+
+  /* ---- No device ----------------------------------------------------
+     The screen alone: the iPhone's own screen corner, a hairline and a
+     soft shadow. Same size container trick as the phone. */
+  .shot { height: 74%; aspect-ratio: var(--ip-ratio); container-type: inline-size; position: relative; flex: none; }
+  .shot__screen { position: absolute; inset: 0; border-radius: 13cqw; overflow: hidden; background: #fff;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / .06), 0 1.5cqw 3cqw rgb(0 0 0 / .05), 0 14cqw 26cqw -10cqw rgb(0 0 0 / .24); }
+  .shot__screen img { width: 100%; height: auto; display: block; }
+  .dcard { position: absolute; container-type: inline-size; }
+  .dcard__screen { aspect-ratio: 16 / 10; border-radius: 1.4cqw; overflow: hidden;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / .07), 0 1cqw 2cqw rgb(0 0 0 / .05), 0 6cqw 12cqw -4cqw rgb(0 0 0 / .2); }
+  .dcard__screen img { width: 100%; height: auto; display: block; }
+
+  /* K — Float: three screens, even gaps */
+  [data-d='k'] .stage { gap: 6%; }
+  /* L — Cascade: three screens stepping down and right, each over the last */
+  [data-d='l'] .stage:not(.desk), .stage.cascade { display: block; }
+  [data-d='l'] .stage:not(.desk) .shot, .stage.cascade .shot { position: absolute; height: 70%; }
+  [data-d='l'] .stage:not(.desk) .shot:nth-child(1), .stage.cascade .shot:nth-child(1) { left: 18%; top: 8%; }
+  [data-d='l'] .stage:not(.desk) .shot:nth-child(2), .stage.cascade .shot:nth-child(2) { left: 39%; top: 15%; }
+  [data-d='l'] .stage:not(.desk) .shot:nth-child(3), .stage.cascade .shot:nth-child(3) { left: 60%; top: 22%; }
+  /* M — Screen + screen: the desktop screen as a card, the phone screen
+     over its corner. No desktop: falls back to L. */
+  .stage.desk:has(.dcard) { display: block; }
+  .dcard { width: 66%; left: 9%; top: 13%; }
+  .stage.desk .dcard ~ .shot { position: absolute; height: 68%; right: 11%; bottom: 10%; }
+
+  /* The switcher */
+  .switch { display: flex; flex-wrap: wrap; gap: 8px; position: sticky; top: 0; z-index: 3; background: var(--bg); padding: 12px 0 16px; margin-bottom: 8px; border-bottom: 1px solid var(--rule); }
+  .switch button { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); background: none; border: 1px solid var(--rule); border-radius: 99px; padding: 9px 14px; cursor: pointer; }
+  .switch button:hover { color: var(--fg); }
+  .switch button[aria-pressed='true'] { color: var(--bg); background: var(--fg); border-color: var(--fg); }
+  .switch button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .switch--finish { position: static; border-bottom: 0; padding-top: 0; }
+  .switch--finish::before { content: 'iPhone'; font: 400 11px/30px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin-right: 4px; }
+  .switch--text::before { content: 'Text'; }
+  .switch--source::before { content: 'Screens'; }
+  .why { color: var(--dim); margin: 0 0 32px; min-height: 1.8em; }
+  .why b { color: var(--fg); font-weight: 600; }
+</style>
+<link rel="stylesheet" href="redraw.css">
+</head>
+<body>
+  <p class="mono" style="color:var(--dim);margin:0 0 12px">Mock · /work tiles · round 9</p>
+  <h1>One <em>iPhone</em>, and the desktop beside it</h1>
+  <p class="intro">The /work grid as it would look, two across. Every option uses the same iPhone 15 Pro on the company colour; only the staging changes. C to F are taken from your reference sites. G and H add the desktop: a MacBook or a browser window with the iPhone in front. Arrow keys switch too.</p>
+
+  <div class="switch" role="toolbar" aria-label="Design" id="switch"></div>
+  <div class="switch switch--finish" role="toolbar" aria-label="iPhone finish" id="finish"></div>
+  <div class="switch switch--finish switch--text" role="toolbar" aria-label="Tile text" id="text"></div>
+  <div class="switch switch--finish switch--source" role="toolbar" aria-label="Screens" id="source"></div>
+  <p class="why" id="why"></p>
+
+  <div class="grid" id="grid"></div>
+
+<script src="redraw.js"></script>
+<script src="proto.js" defer></script>
+<script src="hover.js" defer></script>
+<script>
+const IMG = '/public/images/';
+const S = 'screens/';
+// `lead` is the screen a one- or two-phone design shows first
+const cases = [
+  { co: 'Okta', hue: 'okta', title: 'Rebuilding IAM for enterprise admins', impact: 'Admin task time down 32% across the four highest-volume flows',
+    now: IMG + 'okta/my-apps.webp', lead: 0,
+    desk: { src: S + 'okta-desk.webp', bg: '#f9fbfc' },
+    screens: [[S + 'okta-phone.webp', '#ffffff']] },
+  { co: 'PayPal', hue: 'paypal', title: 'Privacy settings people can read', impact: 'Privacy support calls down 60%',
+    now: IMG + 'paypal-privacy/hero.webp', lead: 1,
+    ui: ['pv-shopping','pv-hub','pv-hub-down'], screens: [S + 'pv-shopping.webp', [S + 'pv-cards.webp', '#ffffff'], S + 'pv-profile.webp'] },
+  { co: 'PayPal', hue: 'paypal', title: 'An ID check people get through the first time', impact: '90% captured their face on the first try, in pre-launch testing',
+    now: IMG + 'paypal-id-proofing/hero.webp', lead: 0,
+    ui: ['id-steps','id-scan','id-camera'], screens: [S + 'id-1.webp', S + 'id-2.webp', S + 'id-3.webp'] },
+  { co: 'PayPal', hue: 'paypal', title: 'Privacy-first ad personalization', impact: '41% opted in once PayPal asked first',
+    now: IMG + 'paypal-ads-consent/hero.webp', lead: 1,
+    ui: ['ads-privacy','ads-checkup','ads-prefs'], screens: [[S + 'ads-1.webp', '#f5f3ef'], [S + 'ads-2.webp', '#888f9c'], [S + 'ads-3.webp', '#fefefe']] },
+  { co: 'PayPal', hue: 'paypal', title: 'A debit card people finish signing up for', impact: 'Applications 20% faster, same-day activation up 18%',
+    now: IMG + 'paypal-debit/hero.webp', lead: 2,
+    ui: ['debit-intro','debit-confirm','debit-setup'], screens: [[S + 'debit-1.webp', '#ffffff'], [S + 'debit-2.webp', '#ffffff'], [S + 'debit-5.webp', '#ffffff']] },
+  { co: 'Walmart Labs', hue: 'walmart', title: 'Scan & Go, in-store', impact: 'Basket size up 25% in the first pilot',
+    now: IMG + 'scan-go/hero.webp', lead: 0,
+    ui: ['sg-scan','sg-cart','sg-finish'], screens: [IMG + 'scan-go/phone-1.webp', IMG + 'scan-go/phone-3.webp', IMG + 'scan-go/phone-4.webp'] },
+  { co: 'Walmart Labs', hue: 'walmart', title: 'Chase Pay inside Walmart Pay', impact: 'Shipped on iOS Feb 2020 and Android Jun 2020',
+    now: IMG + 'chase-pay/hero.png', lead: 1,
+    ui: ['ch-setup','ch-benefits','ch-settings'], screens: [[S + 'chase-1.webp', '#001839', '#fff'], [S + 'chase-2.webp', '#001839', '#fff'], [S + 'chase-3.webp', '#ffffff']] },
+];
+
+const designs = [
+  { id: 'now', label: 'Now', why: 'The tile today: a deck slide, with its own background and crop, on the colour.' },
+  { id: 'a', label: 'A · Row', why: '<b>Three, even.</b> Three steps of the flow, same size, even gaps. Reads as a sequence.' },
+  { id: 'b', label: 'B · Lead', why: '<b>Middle forward.</b> One screen leads, two support it. A little depth, still upright.' },
+  { id: 'c', label: 'C · Solo', why: '<b>After danield.design.</b> One phone, centred, lots of colour around it. The calmest; the screen has to carry the case alone.' },
+  { id: 'd', label: 'D · Rise', why: '<b>After gauravi.design.</b> One large phone coming up from the bottom edge. The top of the screen is big enough to read on the grid.' },
+  { id: 'e', label: 'E · Bleed', why: '<b>After carlthomasiv.com.</b> Two large phones off-centre, running out of the corner. Feels cropped from something bigger.' },
+  { id: 'f', label: 'F · Tilt', why: '<b>After carlthomasiv.com\'s Learning Hub.</b> The three phones laid flat and turned, as if on a desk. The most styled of the six.' },
+  { id: 'g', label: 'G · Laptop + phone', why: '<b>Across devices.</b> A MacBook with the web screen, the iPhone in front. Only Okta has a desktop screen good enough; the others use I · Stack.' },
+  { id: 'h', label: 'H · Window + phone', why: '<b>Across devices, lighter.</b> A plain browser window instead of the laptop. Only Okta has a desktop screen; the others use J · Stagger.' },
+  { id: 'i', label: 'I · Stack', why: '<b>Three, gathered.</b> The middle phone in front, the two beside it tucked behind. Reads as one object, not a row.' },
+  { id: 'j', label: 'J · Stagger', why: '<b>Three, offset.</b> Same size, the middle one dropped, running off the top and bottom. Feels like a strip from a longer flow.' },
+  { id: 'k', label: 'K · Float', why: '<b>No device.</b> Three screens with the iPhone\'s own corner, a hairline and a soft shadow, even gaps. The UI is all there is.' },
+  { id: 'l', label: 'L · Cascade', why: '<b>No device, layered.</b> Three screens stepping down and to the right, each over the last. Reads as a flow, in order.' },
+  { id: 'n', label: 'N · Hover play', why: '<b>One screen; the flow plays on hover.</b> At rest, one phone on its first screen. Hover (or focus) and it runs the steps itself — a tap lands on the real button, the next screen slides in — then loops. Leave and it settles back. Okta keeps laptop + phone.' },
+  { id: 'm', label: 'M · Desktop + screen', why: '<b>No device, across devices.</b> Okta\'s desktop screen as a card with the phone screen over its corner. Cases without desktop use L · Cascade.' },
+];
+
+let text = 'now';
+let source = 'redraw';
+const asUI = (sc) => sc && sc.ui;
+const uiBox = (sc) => `<div class="ui-host" style="position:absolute;inset:0">${ui[sc.ui]()}</div>`;
+const scr = (c) => source === 'redraw' && c.ui ? c.ui.map((k) => ({ ui: k })) : c.screens;
+const kicker = (c) => `<p class="kicker mono"><b>${c.co}</b> · ${c.title}</p>`;
+const outcome = (c) => `<p class="outcome">${c.impact}</p>`;
+const caption = (c) => `<p class="co mono">${c.co}</p><p class="title">${c.title}</p><p class="impact">${c.impact}</p>`;
+const iphone = (sc) => {
+  if (asUI(sc)) return `<div class="iphone"><i></i><i></i><i></i><i></i><div class="iphone__body"><div class="iphone__glass"><div class="iphone__screen">${uiBox(sc)}</div></div></div></div>`;
+  const [src, bar, ink] = Array.isArray(sc) ? sc : [sc, null];
+  const top = bar ? `<div class="iphone__bar" style="background:${bar};${ink ? `color:${ink};--bar-ink:${ink}` : ''}"><span>9:41</span><b></b></div>` : '';
+  return `<div class="iphone"><i></i><i></i><i></i><i></i><div class="iphone__body"><div class="iphone__glass"><div class="iphone__screen">${top}<img src="${src}" alt=""></div></div></div></div>`;
+};
+const mac = (k) => `<div class="mac"><div class="mac__lid"><div class="mac__screen" style="background:${k.bg}"><img src="${k.src}" alt=""></div></div><div class="mac__base"></div></div>`;
+const win = (k) => `<div class="win"><div class="win__frame"><div class="win__bar"><i></i><i></i><i></i><span class="win__url"></span></div><div class="win__screen" style="background:${k.bg}"><img src="${k.src}" alt=""></div></div></div>`;
+const shot = (sc) => {
+  if (asUI(sc)) return `<div class="shot"><div class="shot__screen" style="position:relative;height:100%">${uiBox(sc)}</div></div>`;
+  const [src, bar, ink] = Array.isArray(sc) ? sc : [sc, null];
+  const top = bar ? `<div class="iphone__bar" style="background:${bar};${ink ? `color:${ink};--bar-ink:${ink}` : ''}"><span>9:41</span><b></b></div>` : '';
+  return `<div class="shot"><div class="shot__screen">${top}<img src="${src}" alt=""></div></div>`;
+};
+const dcard = (k) => `<div class="dcard"><div class="dcard__screen" style="background:${k.bg}"><img src="${k.src}" alt=""></div></div>`;
+const pick = (c, d) => {
+  const sx = scr(c), L = sx[Math.min(c.lead, sx.length - 1)];
+  if (d === 'c' || d === 'd') return [L];
+  if (d === 'e') return [L, sx[(c.lead + 1) % sx.length]].filter((x, i, a) => a.indexOf(x) === i);
+  return sx;
+};
+const stage = (c, d) => {
+  const sx = scr(c), lead = sx[Math.min(c.lead, sx.length - 1)];
+  if (d === 'now') return `<img class="slide" src="${c.now}" alt="">`;
+  if (d === 'n') {
+    if (c.desk) return `<div class="stage desk">${mac(c.desk)}${iphone(lead)}</div>`;
+    if (!(source === 'redraw' && c.ui)) return `<div class="stage">${iphone(lead)}</div>`;
+    return `<div class="stage solo-play"><div class="iphone"><i></i><i></i><i></i><i></i><div class="iphone__body"><div class="iphone__glass"><div class="iphone__screen play"><div class="proto__layer">${ui[c.ui[0]]()}</div></div></div></div></div>
+      <div class="play__steps" aria-hidden="true">${c.ui.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div></div>`;
+  }
+  if (d === 'g' || d === 'h') {
+    const L = iphone(lead);
+    if (!c.desk) return `<div class="stage ${d === 'g' ? 'stack' : 'stagger'}">${sx.map(iphone).join('')}</div>`;
+    return `<div class="stage desk">${d === 'g' ? mac(c.desk) : win(c.desk)}${L}</div>`;
+  }
+  if ((d === 'k' || d === 'l') && !c.desk) return `<div class="stage">${sx.map(shot).join('')}</div>`;
+  if (d === 'k' || d === 'l' || d === 'm') return c.desk
+    ? `<div class="stage desk">${dcard(c.desk)}${shot(lead)}</div>`
+    : `<div class="stage cascade">${sx.map(shot).join('')}</div>`;
+  return `<div class="stage">${pick(c, d).filter(Boolean).map(iphone).join('')}</div>`;
+};
+
+const grid = document.getElementById('grid');
+const sw = document.getElementById('switch');
+const why = document.getElementById('why');
+function show(d) {
+  grid.dataset.d = d;
+  grid.innerHTML = cases.map((c) => {
+    const i = cases.indexOf(c);
+    const openBtn = source === 'redraw' && c.ui && d !== 'now' && d !== 'n' ? `<button type="button" class="media__open" onclick="openProto(${i}, this)" aria-label="Open the ${c.title} prototype" aria-haspopup="dialog"><span>Try the prototype</span></button>` : '';
+    const plays = d === 'n' && source === 'redraw' && c.ui && !c.desk;
+    const media = `<div class="media" style="--hue:var(--hue-${c.hue})"${plays ? ` data-play="${i}" tabindex="0" aria-label="${c.title}: the flow plays on hover or focus"` : ''}>${stage(c, d)}${openBtn}</div>`;
+    if (text === 'under') return `<div class="tile tile--under">${media}${kicker(c)}${outcome(c)}</div>`;
+    if (text === 'above') return `<div class="tile tile--above">${kicker(c)}${outcome(c)}${media}</div>`;
+    return `<div class="tile">${media}${caption(c)}</div>`;
+  }).join('');
+  fitUI(grid);
+  why.innerHTML = designs.find((x) => x.id === d).why;
+  sw.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.id === d));
+  history.replaceState(null, '', '#' + d);
+}
+sw.innerHTML = designs.map((x) => `<button type="button" data-id="${x.id}">${x.label}</button>`).join('');
+sw.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) show(b.dataset.id); });
+addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const i = designs.findIndex((x) => x.id === grid.dataset.d);
+  show(designs[(i + (e.key === 'ArrowRight' ? 1 : designs.length - 1)) % designs.length].id);
+});
+const fin = document.getElementById('finish');
+const finishes = [['white', 'White titanium'], ['natural', 'Natural titanium'], ['blue', 'Blue titanium'], ['black', 'Black titanium']];
+fin.innerHTML = finishes.map(([id, l]) => `<button type="button" data-f="${id}">${l}</button>`).join('');
+const setFinish = (f) => { document.body.dataset.finish = f; fin.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.f === f)); };
+fin.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setFinish(b.dataset.f); });
+setFinish('white');
+const tx = document.getElementById('text');
+const texts = [['now', 'Now: title first'], ['under', 'Outcome headline, under'], ['above', 'Outcome headline, above']];
+tx.innerHTML = texts.map(([id, l]) => `<button type="button" data-t="${id}">${l}</button>`).join('');
+const setText = (t) => { text = t; tx.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.t === t)); if (grid.dataset.d) show(grid.dataset.d); };
+tx.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setText(b.dataset.t); });
+setText('now');
+const src = document.getElementById('source');
+const sources = [['redraw', 'Redrawn'], ['export', 'Your exports']];
+src.innerHTML = sources.map(([id, l]) => `<button type="button" data-s="${id}">${l}</button>`).join('');
+const setSource = (v) => { source = v; src.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.s === v)); if (grid.dataset.d) show(grid.dataset.d); };
+src.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setSource(b.dataset.s); });
+setSource('redraw');
+show(designs.some((x) => x.id === location.hash.slice(1)) ? location.hash.slice(1) : 'n');
+</script>
+</body>
+</html>

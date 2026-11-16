@@ -777,6 +777,25 @@ walked back. Concretely, in the current implementation:
   five seconds) and no Screens/Prototype label on the stage. Its reason: a skimming
   recruiter sees the product working, not a thumbnail. Sizes and
   timing under PHONE CARDS in `tokens.css`.
+- **The /work tiles play their flow on hover** (`WorkStage.astro`,
+  `scripts/work-play.ts`, `data/workPlay.ts`, WORK PLAY in
+  `tokens.css`; on request, 2026-11-16, design N of
+  `experiments/work-phones/`): each phone case is one iPhone 15 Pro in
+  white titanium on its project hue, at rest on the flow's first
+  screen. Hover or focus the card and the flow plays: a grey touch mark
+  lands where a person would press, the next screen arrives as iOS
+  brings it (push, sheet, alert, scroll), then it holds and loops;
+  leave and it fades back. Scan & Go's first screen plays its own scan
+  (line, green catch, the item card rising). Okta IAM is a MacBook with
+  the phone in front, still; the Integration Platform keeps its
+  picture. Text under each tile stays title first. The screens are her
+  own, redrawn on one iOS grid in the experiment (`redraw.js`, in each
+  brand's type — PayPal Sans is licensed, installed only on her Mac) and
+  rendered to 2x images by `scripts/work-play-render.mjs`; illustrations
+  and photos in them are cut from her exports and boards, never drawn.
+  Re-render after changing a screen. Nothing plays under reduced motion
+  or on touch. Its reason: the grid stays calm for a skimming recruiter;
+  whoever pauses on a case sees the product working.
 - **On case studies, a phone sits in a device box** (`DeviceBox.astro`,
   `styles/device-box.css`, on request, measured off danield.design's
   phone tiles): a plain white box (no colour behind the phone), 1px

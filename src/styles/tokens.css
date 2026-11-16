@@ -1387,3 +1387,59 @@
   --pdepth-caption-leading: 1.3;
   --pdepth-focus-inset: 6px;
 }
+
+/* ============================================================
+   WORK PLAY (WorkStage.astro, scripts/work-play.ts) — the /work
+   tiles: one iPhone 15 Pro in white titanium on the project hue,
+   whose case flow plays on hover or focus; Okta IAM sits on a
+   MacBook with the phone in front. Chosen on request (2026-11-16)
+   from experiments/work-phones (design N, "Hover play").
+   The screens are images (public/images/work-play/, rendered by
+   scripts/work-play-render.mjs) so their colours and licensed type
+   belong to the work, not to this file. These are the device's own
+   materials and the scan's marks, the same in both themes, like
+   a photograph of the object would be.
+   ============================================================ */
+:root {
+  /* iPhone 15 Pro, white titanium: the band, lit on the upper left */
+  --work-metal-1: #f1efeb;
+  --work-metal-2: #d9d6d0;
+  --work-metal-3: #bdb9b2;
+  --work-glass: #0a0a0b;                 /* the black border round the screen, on every iPhone */
+  --work-island: #000;
+  --work-phone-ratio: 0.488;             /* body width / height */
+  --work-phone-h: 86%;                   /* of the tile, phone alone */
+  --work-phone-h-desk: 66%;              /* in front of the laptop */
+  /* MacBook */
+  --work-mac-lid: #0d0d0f;
+  --work-mac-base-1: #e4e4e6;
+  --work-mac-base-2: #c9c9cd;
+  --work-mac-base-3: #a9a9ae;
+  --work-mac-lip: #b9b9bd;
+  --work-device-shadow: rgb(0 0 0 / 0.20);
+  /* the touch mark, as screen recordings show a tap */
+  --work-tap: rgb(120 120 128 / 0.45);
+  --work-tap-ring: rgb(255 255 255 / 0.7);
+  --work-scrim-flash: #fff;
+  --work-scan-frame: rgb(255 255 255 / 0.95);   /* the camera's corner brackets */
+  --work-dot: rgb(0 0 0 / 0.2);           /* step dots on the (always light) project hue */
+  --work-dot-on: rgb(0 0 0 / 0.72);
+  /* Scan & Go's scan: Walmart's spark yellow line, the found-it green */
+  --work-scan-line: #ffc220;
+  --work-scan-glow: rgb(255 194 32 / 0.65);
+  --work-scan-hit: #2a8703;
+  --work-scan-hit-glow: rgb(42 135 3 / 0.28);
+  /* the Debit Card's spinner, PayPal's own blue on its grey track */
+  --work-spin-track: #e3e4e8;
+  --work-spin: #0070e0;
+  /* timing: iOS-like pushes, one shared fast-out curve */
+  --ease-work: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-work-push: 420ms;
+  --dur-work-sheet: 460ms;
+  --dur-work-scroll: 1100ms;
+  --dur-work-fade: 360ms;
+  --dur-work-tap: 900ms;
+  --work-read: 1300ms;                   /* a screen stays this long before the next tap */
+  --work-first: 600ms;                   /* hover → first tap */
+  --work-hold: 1800ms;                   /* the last screen, before it starts again */
+}

@@ -7,6 +7,12 @@
    (2026-11-16) because it made the grid feel slow. The hover is the image
    easing up 4% and the normal pointer. HoverLabel.astro stays, unmounted.
 
+   When the case has an entry in data/workPlay.ts the page passes it as
+   `stage`, and the picture is WorkStage.astro instead (on request,
+   2026-11-16): an iPhone whose flow plays while the card is hovered or
+   focused, or Okta's laptop + phone. Those don't ease up — the flow is
+   the hover.
+
    The media carries the company's project hue (data-hue, from hueFor()
    in data/work.ts) — the colour belongs to its thumbnail, while the meta
    text underneath stays in the page's own palette.
@@ -16,7 +22,9 @@
    No role line and no paragraph, on request — every card is the same
    four lines so the grid reads evenly. The page passes labelsFor(w). */
 import LockIcon from './LockIcon.astro';
+import WorkStage from './WorkStage.astro';
 import { hueFor } from '../data/work';
+import type { Play, Desk } from '../data/workPlay';
 
 interface Props {
   title: string; href: string; image: string; alt?: string;
@@ -24,6 +32,7 @@ interface Props {
   labels?: string[];
   theme?: string; ratio?: string;
   locked?: boolean;
+  stage?: Play | Desk;
 }
 const {
   title, href, image, alt = '',
@@ -31,11 +40,12 @@ const {
   labels = [],
   theme, ratio = '4 / 3',
   locked = false,
+  stage,
 } = Astro.props;
 ---
 <a class="card" href={href}>
-  <div class="card__media" data-theme={theme} data-hue={hueFor(company) ?? ''} style={`--ratio: ${ratio};`}>
-    <img src={image} alt={alt} loading="lazy" decoding="async" />
+  <div class={`card__media${stage ? ' card__media--stage' : ''}`} data-theme={theme} data-hue={hueFor(company) ?? ''} style={`--ratio: ${ratio};`}>
+    {stage ? <WorkStage stage={stage} /> : <img src={image} alt={alt} loading="lazy" decoding="async" />}
   </div>
   {company && <p class="card__co u-label-mono">{company}</p>}
   <h2 class="card__title">
@@ -61,13 +71,14 @@ const {
     padding: clamp(1rem, 2.5vw, 1.75rem);
     margin-bottom: 1rem;
   }
-  .card__media img {
+  .card__media--stage { position: relative; padding: 0; }
+  .card__media > img {
     width: 100%; height: 100%;
     object-fit: contain; display: block;
     transition: transform 600ms var(--ease-out);
   }
-  .card:hover .card__media img,
-  .card:focus-visible .card__media img { transform: scale(1.04); }
+  .card:hover .card__media > img,
+  .card:focus-visible .card__media > img { transform: scale(1.04); }
 
   .card__co { margin: 0 0 0.5rem; }
   /* 12px caps, as the reference's project titles (and the home cards). */
@@ -102,7 +113,7 @@ const {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .card:hover .card__media img,
-    .card:focus-visible .card__media img { transform: none; }
+    .card:hover .card__media > img,
+    .card:focus-visible .card__media > img { transform: none; }
   }
 </style>
