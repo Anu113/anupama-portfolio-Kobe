@@ -83,39 +83,36 @@ effect:
   that by being the very first thing a visitor sees — it sets the design-eng
   claim before a word of copy does.
 - **The preloader, on the home page, on first paint** (`Preloader.astro`,
-  chosen on request from rounds of mocks): a terracotta sheet (the
-  light-mode accent, in both modes) with a faint grain, everything on it
-  cream. A requested exception to rule 2 and to "one dark band": it's
-  on screen for a few seconds, home page only. The cursor line, in
-  cream, the same spring chain as `CursorTrail`, sits as a dot in the
-  middle and follows only the visitor's pointer (a still dot until they
-  move it; never moves on its own, on request). Under it, centred: a
-  mouse icon and "A line is a dot that went for a walk" (Paul Klee) in
-  16px mono caps, medium tracking, which starts as a row of dots, one
-  per letter, and turns into its letters as the page loads. That is the
-  progress: there is no number, on request. If it stalls (no new letter
-  for 0.7s), the next letter flicks through characters until the load
-  moves on, so a slow load reads as working, not frozen. At 100% the words fade and
-  the terracotta shrinks, as a slowly lumping blob, into the orange dot
-  beside "Moss" in his launcher card, ending at that dot's exact size
-  and place, so the loader becomes a piece of the page. Where his dot
-  isn't on screen, the sheet lifts instead. The words follow the page's
-  images but never run ahead of a paced ~4s schedule
-  (`--dur-preloader-min`), on request. Home page only, every time it's
-  opened or refreshed (on request); not when arriving from another page
-  of the site, nor on back/forward. It also waits for the hero
-  portrait's sprite (`hero-scrub:ready`, capped at 6s), and the portrait
-  shows its still frame until the sprite is in, so she appears with
-  Moss. A deliberate key, click, tap or real scroll skips it with the
-  same exit, faster (not in its first 1.2s, and never a shortcut such as
-  Cmd+R, so a refresh always shows it); a CSS failsafe hides it at 10s; it removes itself from the
-  DOM. Under reduced motion: no line, and a fade. Values under
-  PRELOADER in `tokens.css`. The walking loader (`Loader.astro`,
-  `data/loader.ts`, `scripts/walk-sprite.py`, LOADER tokens) is parked,
-  not deleted.
-  Its reason: the one screen with nothing else to show; it introduces
-  the line the visitor has on the rest of the site and hands them over
-  to the page, and to Moss.
+  on request, after huyml.co, chosen 2026-11-16 from the mocks in
+  `experiments/preloader-moss/`: take 2, page "B · soft focus", Moss
+  "2 · peeks up"). First the whole screen is a flat curtain in the ink
+  colour (no shadow, a hard edge; re-inked light in dark mode); then it
+  draws back to open a strip on the left (two steps, on request), over
+  the page's ground with only the hero sentence on it, centred. Moss,
+  from her clip of him pushing (`public/images/moss/moss-push.webp`, cut
+  by `scripts/moss-push-sprite.py`), strolls in with his cup and raises
+  his paw just as he reaches the curtain: while his paw is up the
+  curtain's edge is on it (paw positions measured per frame). He pushes
+  it across as the page loads (the progress; no number), with one pause
+  halfway; it leaves the screen just as his paw comes down, and he
+  strolls out, smiling, at his walking pace. Follow the clip's cues and
+  keep it calm, not rushed (on request). Then the sentence glides from
+  the middle to its place, the layer goes, the rest of the hero comes
+  into focus one piece after another (blur to sharp), and Moss peeks up
+  from behind his books, his card last. It only goes as far as the page
+  has loaded (images, and the hero sprite via `hero-scrub:ready`, capped
+  at 6s). It runs ~8–10s; it was ~4s before. Home page only, every time
+  it's opened or refreshed (on request); not when arriving from another
+  page of the site, nor on back/forward. A deliberate key, click, tap or
+  real scroll skips it (not in its first 1.2s, never a shortcut such as
+  Cmd+R): the layer fades and the hero shows. A CSS failsafe hides it at
+  20s; it removes itself from the DOM. Under reduced motion: no Moss, no
+  glide, the curtain fades. Values under PRELOADER in `tokens.css`. The
+  terracotta "dot that went for a walk" loader it replaced is in git
+  history; the walking loader (`Loader.astro`, `data/loader.ts`,
+  `scripts/walk-sprite.py`, LOADER tokens) is parked, not deleted.
+  Its reason: the one screen with nothing else to show; it puts her
+  sentence first, alone, and hands the visitor to the page, and to Moss.
 - **A consistent hover system on interactive surfaces**, not one bespoke
   effect per component. Work tiles, links, and cards get *the same* motion
   vocabulary reused everywhere: default state is quiet; hover reveals
@@ -510,8 +507,8 @@ walked back. Concretely, in the current implementation:
   label; `--liquid-*` under MOTION in `tokens.css`).
   Focus rings are ink (`--focus`). `--accent-text` now resolves to ink,
   so anything reading it follows. The accent stays only for marks: the
-  cursor trail, the hero shader, Moss's dot and his panel's caret, the
-  preloader. None on case study pages (on request, 2026-11-16): the
+  cursor trail, the hero shader, Moss's dot and his panel's caret (the
+  preloader is ink since 2026-11-16). None on case study pages (on request, 2026-11-16): the
   before/after pins and fixed-note dots are a plain blue
   (`--compare-pin-after`, `--compare-fixed`). Don't put the accent back
   on text, links, other buttons or case pages.

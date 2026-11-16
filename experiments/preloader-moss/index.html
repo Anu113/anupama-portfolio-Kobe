@@ -1,0 +1,560 @@
+<!doctype html>
+<!--
+  Preloader mocks: Moss as the loader. Two takes, from her references.
+    1  Moss on paper (after rachelatwork.com): the paper ground, Moss small
+       in the middle playing his own clip, one quiet line under him. At
+       100% the paper fades and he travels to his seat on the books, so
+       the loader hands over to the page.
+    2  Moss pushes the sheet (after huyml.co): a cream sheet covers the
+       page; Moss walks in from the left and pushes its edge across as the
+       page loads (how far he's got is the progress). At 100% he stops on
+       his books and gives it one last shove off the screen.
+       Stand-in pose: his sitting frame, leaned and bobbing. The real one
+       wants 3–4 painted frames of him pushing.
+  Uses her real art: public/images/hero-idle.webp, public/images/moss/.
+  Mock-only values; real ones would go under PRELOADER in tokens.css.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preloader · Moss</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #fcfcfc; --cream: #f5f1e8; --ink: #262626; --ink-dim: #707070;
+    --ease: cubic-bezier(.16,1,.3,1);
+    --ease-travel: cubic-bezier(.65,0,.35,1);
+  }
+  :root[data-mode='dark'] { --paper: #1b1a19; --cream: #242220; --ink: #ecebe8; --ink-dim: #a09d98; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #ececea; font: 600 12px/1.6 Manrope, sans-serif; color: #262626; }
+  header { padding: 24px 32px 12px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+  header h1 { font: 300 28px/1 'Crimson Pro', serif; margin: 0 16px 0 0; }
+  header h1 em { font-style: italic; }
+  .group { display: flex; gap: 4px; align-items: center; }
+  .group span { font: 400 11px 'Azeret Mono', monospace; text-transform: uppercase; color: #707070; margin-right: 6px; }
+  button { font: 400 11px 'Azeret Mono', monospace; text-transform: uppercase; letter-spacing: .03em;
+    border: 1px solid #c8c8c4; background: #fcfcfc; color: #262626; padding: 7px 12px; border-radius: 999px; cursor: pointer; }
+  button[aria-pressed='true'] { background: #262626; color: #fcfcfc; border-color: #262626; }
+  button:focus-visible { outline: 2px solid #262626; outline-offset: 2px; }
+  .note { padding: 0 32px 16px; max-width: 820px; color: #555; margin: 0; }
+
+  .stage-wrap { padding: 0 32px 40px; }
+  .stage { position: relative; width: 100%; max-width: 1200px; aspect-ratio: 16 / 10; margin: 0 auto; overflow: hidden;
+    background: var(--paper); box-shadow: 0 20px 60px rgb(0 0 0 / .08); }
+
+  /* the page underneath: the real hero, roughly */
+  .page .nav { position: absolute; left: 4%; right: 4%; top: 4%; display: flex; justify-content: space-between; font: 600 13px Manrope; color: var(--ink); }
+  .page .nav i { font-style: normal; font-size: 11px; color: var(--ink-dim); margin-left: 20px; }
+  .page .loc { position: absolute; left: 4%; top: 28%; font: 400 10px 'Azeret Mono'; color: var(--ink-dim); }
+  .page h2 { position: absolute; left: 4%; top: 33%; width: 44%; margin: 0; color: var(--ink); font: 300 clamp(20px, 3.4vw, 44px)/1.12 'Crimson Pro', serif; }
+  .page h2 em { font-style: italic; }
+  .page h2 em.px { display: inline-block; filter: url(#pixelate); }
+  .page h2 .line { display: block; width: max-content; white-space: nowrap; }
+  /* take 2: while the sheet is on, the page is only the headline, centred */
+  .page > * { transition: opacity 700ms var(--ease), transform 700ms var(--ease); }
+  .stage.intro .page > :not(h2) { opacity: 0; }
+  .stage.intro .page .hero { transform: translateY(14px); }
+  .page h2 .line { transition: transform 1000ms var(--ease-travel); }
+  .page .sub { position: absolute; left: 4%; top: 62%; width: 34%; color: var(--ink-dim); font-size: 12px; line-height: 1.8; }
+  .page .hero { position: absolute; left: 52%; top: 9%; height: 89%; }
+  .page .card { position: absolute; padding: 7px 11px 8px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.3;
+    border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: 10px; opacity: 0; transform: translateY(4px);
+    transition: opacity 500ms var(--ease), transform 500ms var(--ease); white-space: nowrap; }
+  .page .card b { display: block; font: 400 10px 'Azeret Mono'; color: var(--ink-dim); }
+  .page .card b::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #b4482a; margin-right: 5px; vertical-align: 1px; }
+  .page .card.in { opacity: 1; transform: none; }
+
+  /* the loader */
+  .sheet { position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: var(--paper); }
+  .sheet.cream { background: var(--cream); }
+  .caption { position: absolute; left: 0; right: 0; text-align: center; color: var(--ink-dim); white-space: nowrap;
+    font: 400 clamp(11px, 1.15vw, 14px) 'Azeret Mono', monospace; text-transform: uppercase; letter-spacing: .05em; transition: opacity 300ms; }
+  .dots i { font-style: normal; animation: breathe 1.6s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+
+  /* Moss: his 48-frame clip, 8 x 6 cells of 188 x 223 */
+  .moss { position: absolute; left: 0; top: 0; aspect-ratio: 188 / 223; z-index: 3; pointer-events: none;
+    background: url('../../public/images/moss/moss-sprite.webp') 0 0 / 800% 600% no-repeat; transform-origin: 53.3% 95.4%; }
+  .walker { position: absolute; left: 0; top: 0; z-index: 3; display: none; pointer-events: none;
+    background: url('moss-push.webp') 0 0 / 1100% 800% no-repeat; }
+  .shadow { position: absolute; z-index: 2; height: 6px; border-radius: 50%; background: var(--ink); opacity: .08; filter: blur(2px); pointer-events: none; }
+
+  /* take 2 (after huyml.co): a flat black sheet, no shadow, a hard edge.
+     In dark mode it re-inks to the light ink, so it still reads as a sheet. */
+  .push .sheet { left: 0; right: auto; width: 100%; background: var(--ink); box-shadow: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Preloader, <em>Moss</em></h1>
+  <div class="group" id="take"><span>Take</span>
+    <button data-v="paper" aria-pressed="true">1 · Moss on paper</button>
+    <button data-v="push" aria-pressed="false">2 · Moss pushes the sheet</button>
+  </div>
+  <div class="group" id="mode"><span>Mode</span>
+    <button data-v="light" aria-pressed="true">Light</button>
+    <button data-v="dark" aria-pressed="false">Dark</button>
+  </div>
+  <div class="group" id="speed"><span>Load</span>
+    <button data-v="normal" aria-pressed="true">~4s</button>
+    <button data-v="slow" aria-pressed="false">Slow, with a stall</button>
+  </div>
+  <button id="replay">Replay</button>
+  <div class="group" id="reveal"><span>Page</span>
+    <button data-v="pixel" aria-pressed="true">A · Pixels</button>
+    <button data-v="focus" aria-pressed="false">B · Soft focus</button>
+    <button data-v="wipe" aria-pressed="false">C · Wipe</button>
+    <button data-v="word" aria-pressed="false">D · "pixel" first</button>
+  </div>
+  <div class="group" id="arrive"><span>Moss</span>
+    <button data-v="walk" aria-pressed="true">1 · Walks back</button>
+    <button data-v="peek" aria-pressed="false">2 · Peeks up</button>
+    <button data-v="pixel" aria-pressed="false">3 · Pixels in</button>
+  </div>
+  <button id="ending">Ending only</button>
+</header>
+<p class="note" id="note"></p>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- pixelate: sample one dot per block, then grow each dot to fill its block -->
+  <filter id="pixelate" x="0" y="0" width="1" height="1">
+    <feFlood id="px-flood" x="2" y="2" width="1" height="1"/>
+    <feComposite id="px-cell" width="4" height="4"/>
+    <feTile result="grid"/>
+    <feComposite in="SourceGraphic" in2="grid" operator="in"/>
+    <feMorphology id="px-grow" operator="dilate" radius="2"/>
+  </filter>
+</svg>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <div class="page" aria-hidden="true">
+      <div class="nav"><span>Anupama Mishra</span><span><i>Work</i><i>About</i><i>Play</i></span></div>
+      <div class="loc">● BANGALORE,IN · 21:04:17</div>
+      <h2 id="headline"><span class="line">I design complex products,</span><span class="line">down to the last stubborn <em>pixel</em>.</span></h2>
+      <div class="sub">Staff product designer. Fintech first, then enterprise software and developer tools.</div>
+      <img class="hero" id="hero" src="../../public/images/hero-idle.webp" alt="">
+      <div class="card" id="card"><b>Moss</b>Psst…</div>
+    </div>
+    <div class="sheet" id="sheet"><div class="caption" id="caption"></div></div>
+    <div class="shadow" id="shadow"></div>
+    <div class="moss" id="moss"></div>
+    <div class="walker" id="walker"></div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const walker = $('#walker');
+const stage = $('#stage'), sheet = $('#sheet'), caption = $('#caption'), moss = $('#moss'), shadow = $('#shadow'), card = $('#card'), hero = $('#hero');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const state = { take: 'paper', mode: 'light', speed: 'normal', reveal: 'pixel', arrive: 'walk' };
+const NOTES = {
+  paper: 'After rachelatwork.com. Paper ground, Moss small in the middle playing his own clip, one quiet line under him. No number, no bar. At 100% the paper fades and he travels to his seat on the books, so the loader becomes a piece of the page (as the old blob did into his dot).',
+  push: 'After huyml.co. A flat black curtain over most of the screen, an empty strip on the left. Moss strolls in with his cup and raises his paw as he reaches the curtain, as in the clip; while his paw is up the curtain’s edge is on it. He pushes steadily with one pause halfway (never further than the page has loaded), uncovering the headline, centred. The last push takes it off the screen just as his paw comes down, and he strolls out, smiling; then the portrait comes in, the headline glides left and Moss appears on his books.',
+};
+
+// ---- his clip ----
+let frame = 0, clipTimer;
+function playClip(on) {
+  clearInterval(clipTimer);
+  if (!on || reduce) return;
+  clipTimer = setInterval(() => {
+    frame = (frame + 1) % 48;
+    moss.style.backgroundPosition = `${(frame % 8) * 100 / 7}% ${Math.floor(frame / 8) * 100 / 5}%`;
+  }, 140);
+}
+function setFrame(f) { frame = f; moss.style.backgroundPosition = `${(f % 8) * 100 / 7}% ${Math.floor(f / 8) * 100 / 5}%`; }
+
+// ---- where he sits on the page: feet at x 565, y 462 of the 700 x 980 portrait ----
+function home() {
+  const s = stage.getBoundingClientRect(), h = hero.getBoundingClientRect();
+  const w = Math.max(h.width * 0.21, 52), ht = w * 223 / 188;
+  const fx = h.left - s.left + h.width * 565 / 700, fy = h.top - s.top + h.height * 462 / 980;
+  return { w, h: ht, x: fx - w * 0.533, y: fy - ht * (1 - 0.046), feetX: fx, feetY: fy };
+}
+function place(x, y, w, rot = 0, bob = 0) {
+  moss.style.width = w + 'px';
+  moss.style.transform = `translate(${x}px, ${y - bob}px) rotate(${rot}deg)`;
+  shadow.style.width = w * 0.55 + 'px';
+  shadow.style.transform = `translate(${x + w * 0.26}px, ${y + w * 223 / 188 * 0.94}px) scale(${1 - bob / 20})`;
+}
+
+// ---- a pretend load: 0 → 1, optionally slow with a stall ----
+function fakeLoad(onProgress, onDone) {
+  const slow = state.speed === 'slow';
+  const total = slow ? 6500 : 4000, stallAt = .55, stall = slow ? 1400 : 0;
+  const t0 = performance.now();
+  let raf;
+  const tick = (now) => {
+    let t = now - t0, p;
+    const tStall = total * stallAt;
+    if (t < tStall) p = t / (total + 0) ;
+    else if (t < tStall + stall) p = stallAt;
+    else p = (t - stall) / total;
+    p = Math.min(1, p);
+    onProgress(p);
+    if (p < 1) raf = requestAnimationFrame(tick); else onDone();
+  };
+  raf = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(raf);
+}
+
+let stop = () => {}, timers = [], loop, runId = 0;
+function reset() {
+  runId++;
+  stop(); timers.forEach((t) => { clearTimeout(t); clearInterval(t); }); timers = []; cancelAnimationFrame(loop);
+  moss.getAnimations().forEach((a) => a.cancel());
+  walker.getAnimations().forEach((a) => a.cancel()); walker.style.display = 'none';
+  sheet.getAnimations().forEach((a) => a.cancel());
+  stage.classList.toggle('push', state.take === 'push');
+  sheet.className = 'sheet';
+  stage.classList.remove('intro'); document.querySelectorAll('#headline .line').forEach((l) => { l.style.transition = 'none'; l.style.transform = ''; });
+  moss.style.transition = '';
+  sheet.style.removeProperty('--edge'); sheet.style.opacity = 1;
+  stage.style.removeProperty('--edge');
+  caption.style.opacity = 1;
+  sheet.style.left = ''; caption.style.cssText = '';
+  card.style.transition = 'none'; card.classList.remove('in'); void card.offsetWidth; card.style.transition = '';
+  $('#headline em').classList.remove('px');
+  document.querySelectorAll('.page .nav, .page .loc, .page .sub, #hero').forEach((el) => {
+    el.getAnimations().forEach((a) => a.cancel());
+    el.style.opacity = ''; el.style.transition = ''; el.style.transform = ''; el.style.maskImage = el.style.webkitMaskImage = '';
+  });
+  stage.querySelectorAll(':scope > canvas').forEach((c) => c.remove());
+  moss.style.clipPath = '';
+  moss.style.opacity = 1; shadow.style.opacity = '';
+  $('#note').textContent = NOTES[state.take];
+}
+
+// ---- take 1: Moss on paper ----
+function runPaper() {
+  const S = stage.getBoundingClientRect();
+  const w = Math.max(S.width * 0.075, 56), hgt = w * 223 / 188;
+  const cx = S.width / 2 - w * 0.533, cy = S.height * 0.47 - hgt;
+  place(cx, cy, w); setFrame(0); playClip(true);
+  caption.innerHTML = 'Moss is tidying up<span class="dots"><i>…</i></span>';
+  caption.style.top = (S.height * 0.47 + 22) + 'px';
+  stop = fakeLoad(() => {}, () => {
+    timers.push(setTimeout(() => {
+      caption.style.opacity = 0;
+      const H = home();
+      // travel to his seat: a small arc, growing to his size on the page
+      const from = `translate(${cx}px, ${cy}px)`, to = `translate(${H.x}px, ${H.y}px)`;
+      const mid = `translate(${(cx + H.x) / 2}px, ${Math.min(cy, H.y) - S.height * 0.06}px)`;
+      moss.style.transform = to; moss.style.width = H.w + 'px';
+      shadow.style.opacity = 0;
+      if (!reduce) {
+        moss.animate([{ transform: from, width: w + 'px' }, { transform: mid, offset: .5 }, { transform: to, width: H.w + 'px' }],
+          { duration: 1100, easing: 'cubic-bezier(.65,0,.35,1)' });
+      }
+      sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: reduce ? 300 : 800, delay: reduce ? 0 : 250, easing: 'ease', fill: 'forwards' });
+      timers.push(setTimeout(() => { playClip(false); setFrame(0); placeCard(H); card.classList.add('in'); }, reduce ? 300 : 1150));
+    }, 250));
+  });
+}
+
+// ---- take 2: Moss pushes the sheet (after huyml.co) ----
+// moss-push.webp: 88 frames (every 2nd of her 24fps clip), 11 x 8 cells of 228 x 289.
+// Cues read off her clip (paw tip measured per frame, as a share of the cell):
+//   0-19  walks with his cup        20-27 paw rising       28 paw meets the curtain
+//   35-55 one full pushing stride (loops; 55 -> 35 is seamless)
+//   56-72 pushing on                73-82 paw comes down   then 15-21, 7-14: strolls on
+// Rule: while his paw is up the curtain’s edge is on it; when it comes down,
+// the curtain is gone.
+const PF = { start: 12, contact: 28, loopA: 35, loopB: 55, release: 72, down: [73, 82], walkOn: [15, 21], walkLoop: [7, 14], fps: 14, feetY: 0.975 };
+const PAW = [.763,.772,.781,.789,.798,.807,.816,.82,.829,.833,.842,.846,.851,.855,.86,.86,.86,.864,.873,.882,.89,.899,.908,.921,.943,.947,.952,.961,.965];
+const pawAt = (i) => (i < PAW.length ? PAW[i] : i <= PF.release ? 0.965 : 0.9);
+// pace: a calm stroll (his feet in the clip move ~0.45 of his width a second);
+// the push is quicker, with one pause halfway.
+const PUSH = { stroll: 0.6, speed: 0.17, pauseAt: 0.5, pause: 650, contactX: 0.1 };
+function walkFrame(i) {
+  walker.style.backgroundPosition = `${(i % 11) * 10}% ${Math.floor(i / 11) * 100 / 7}%`;
+}
+function hidePageNow() {
+  stage.classList.add('intro');
+  PAGE_ORDER.forEach((q) => { const el = $(q); el.style.transition = 'none'; });
+  void stage.offsetWidth;
+}
+function centreHeadline(on) {
+  // each line glides from the middle of the screen to its place on the left
+  const S = stage.getBoundingClientRect();
+  const lines = [...document.querySelectorAll('#headline .line')];
+  lines.forEach((l) => { l.style.transition = 'none'; l.style.transform = ''; });
+  if (!on) return;
+  const rs = lines.map((l) => l.getBoundingClientRect());
+  const top = rs[0].top, bottom = rs[rs.length - 1].bottom;
+  const dy = (S.top + S.height * 0.47) - (top + bottom) / 2;
+  lines.forEach((l, k) => {
+    const dx = (S.left + S.width / 2) - (rs[k].left + rs[k].width / 2);
+    l.style.transform = `translate(${dx}px, ${dy}px)`;
+  });
+}
+function runPush() {
+  const S = stage.getBoundingClientRect();
+  const H = home();
+  hidePageNow();
+  centreHeadline(true);
+  moss.style.opacity = 0; shadow.style.opacity = 0;
+  const wh = S.height * 0.27, ww = wh * 228 / 289;
+  const y = S.height * 0.86 - wh * PF.feetY;           // he walks along under the headline
+  walker.style.display = 'block'; walker.style.opacity = 1;
+  walker.style.width = ww + 'px'; walker.style.height = wh + 'px';
+  caption.innerHTML = '';
+  // the strip is sized from Moss: just room for him to stroll in, fully on screen,
+  // as his paw meets the curtain
+  const startEdge = ww * (PUSH.contactX + pawAt(PF.contact)), endEdge = S.width + 1;
+  const stroll = ww * PUSH.stroll / 1000;                  // px per ms
+  const frameMs = 1000 / PF.fps;
+  // start so that he arrives exactly as his paw meets the curtain
+  const walkIn = (PF.contact - PF.start) * frameMs;
+  let x = ww * PUSH.contactX - stroll * walkIn;
+  let i = PF.start, acc = 0, last = performance.now(), phase = 'in', exitStep = 0;
+  let edge = startEdge, target = startEdge, loaded = false, t = 0, paused = false, pauseUntil = 0;
+  let finalSpeed = 0;
+  const pushPx = S.width * PUSH.speed / 1000;
+  const finalMs = (PF.release - PF.loopB) * frameMs / 1.3;      // from the end of a stride to the release
+  sheet.style.left = startEdge + 'px';
+  const frameLoop = (now) => {
+    const dt = Math.min(250, now - last); last = now; t += dt;
+    // advance frames, and decide the ending only at the stride's seam
+    acc += dt;
+    const fMs = phase === 'push' || phase === 'final' ? frameMs / 1.3 : frameMs;
+    while (acc >= fMs) {
+      acc -= fMs;
+      if (phase === 'in') { i++; if (i >= PF.contact) phase = 'push'; }
+      else if (phase === 'push') {
+        if (i >= PF.loopB) {
+          const left = endEdge - edge;
+          if (loaded && left <= pushPx * 1.6 * finalMs) { phase = 'final'; finalSpeed = left / finalMs; i++; }
+          else i = PF.loopA;
+        } else i++;
+      } else if (phase === 'final') { i++; if (i > PF.release) { phase = 'exit'; edge = endEdge; revealPage(state.reveal); } }
+      else {
+        if (exitStep === 0) { if (i < PF.down[1]) i++; else { exitStep = 1; i = PF.walkOn[0]; } }
+        else if (exitStep === 1) { if (i < PF.walkOn[1]) i++; else { exitStep = 2; i = PF.walkLoop[0]; } }
+        else i = i >= PF.walkLoop[1] ? PF.walkLoop[0] : i + 1;
+      }
+    }
+    if (phase === 'in') {
+      x += stroll * dt;
+      edge = Math.max(startEdge, x + ww * pawAt(i));         // the paw never pokes into it
+    } else if (phase === 'push') {
+      if (!paused && edge >= S.width * PUSH.pauseAt) { paused = true; pauseUntil = t + PUSH.pause; }
+      const moving = !(paused && t < pauseUntil);
+      // never further than the page has loaded, and always leave a last stretch to push
+      const cap = Math.min(target, endEdge - pushPx * 0.5 * finalMs);
+      if (moving && edge < cap) x += Math.min(pushPx * dt, cap - edge);
+      edge = x + ww * pawAt(i);
+    } else if (phase === 'final') {
+      x += finalSpeed * dt;
+      edge = Math.min(endEdge, x + ww * pawAt(i));
+    } else {
+      x += stroll * dt;                                      // paw down, curtain gone: a calm stroll out
+    }
+    walkFrame(i);
+    walker.style.transform = `translate(${x}px, ${y}px)`;
+    sheet.style.left = Math.min(edge, endEdge) + 'px';
+    if (x < S.width + 10) loop = requestAnimationFrame(frameLoop);
+    else { walker.style.display = 'none'; timers.push(setTimeout(() => arrive(state.arrive, H), state.reveal === 'word' ? 2200 : 250)); }
+  };
+  loop = requestAnimationFrame(frameLoop);
+  stop = fakeLoad((p) => { target = startEdge + (endEdge - startEdge) * p; }, () => { loaded = true; });
+}
+
+// ================= after the curtain =================
+// Page: the headline glides left; the rest comes in one after another.
+const PAGE_ORDER = ['.page .nav', '.page .loc', '.page .sub', '#hero'];
+function revealPage(kind) {
+  if (kind === 'word') {
+    // D: "pixel" breaks into blocks, then loads back sharp; then the page comes in
+    pixelWord(() => revealPage('pixel'));
+    return;
+  }
+  const els = PAGE_ORDER.map((q) => $(q));
+  els.forEach((el) => { el.style.transition = 'none'; el.style.opacity = 0; });
+  hero.style.transform = 'none';
+  stage.classList.remove('intro');
+  timers.push(setTimeout(() => {
+    document.querySelectorAll('#headline .line').forEach((l) => { l.style.transition = ''; l.style.transform = ''; });
+  }, 300));
+  els.forEach((el, k) => timers.push(setTimeout(() => EFFECTS[kind](el), 650 + k * 180)));
+}
+const EFFECTS = {
+  // A: loads pixel by pixel. Text dissolves in as square pixels; the portrait
+  // resolves from big blocks to sharp, like a progressive image.
+  pixel(el) { el.tagName === 'IMG' ? mosaic(el, 900) : dissolve(el, 700); },
+  // B: comes into focus
+  focus(el) {
+    el.style.opacity = 1;
+    el.animate([{ opacity: 0, filter: 'blur(10px)' }, { opacity: 1, filter: 'blur(0px)' }], { duration: 900, easing: 'cubic-bezier(.16,1,.3,1)' });
+  },
+  // C: wiped in left to right, the way the curtain went
+  wipe(el) {
+    el.style.opacity = 1;
+    el.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)' }], { duration: 850, easing: 'cubic-bezier(.65,0,.35,1)' });
+  },
+};
+// the word "pixel": sharp -> blocks -> sharp, in steps, like a low-res image loading
+function pixelWord(then) {
+  const em = $('#headline em'), id = runId;
+  const size = (b) => {
+    $('#px-flood').setAttribute('x', Math.floor(b / 2)); $('#px-flood').setAttribute('y', Math.floor(b / 2));
+    $('#px-cell').setAttribute('width', b); $('#px-cell').setAttribute('height', b);
+    $('#px-grow').setAttribute('radius', Math.ceil(b / 2));
+  };
+  const out = [2, 3, 4, 6, 8], back = [8, 6, 5, 4, 3, 2];
+  const seq = [...out.map((b) => [b, 90]), [8, 380], ...back.map((b) => [b, 150])];
+  let t = 350;
+  seq.forEach(([b, d]) => { timers.push(setTimeout(() => { if (id !== runId) return; em.classList.add('px'); size(b); }, t)); t += d; });
+  timers.push(setTimeout(() => { if (id !== runId) return; em.classList.remove('px'); then(); }, t));
+}
+// square pixels switching on in a loose left-to-right order
+function dissolve(el, dur) {
+  const r = el.getBoundingClientRect(), cell = 3;
+  const cols = Math.ceil(r.width / cell), rows = Math.ceil(r.height / cell);
+  const c = document.createElement('canvas'); c.width = cols * cell; c.height = rows * cell;
+  const g = c.getContext('2d'); g.fillStyle = '#000';
+  const order = [];
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) order.push([x, y, Math.random() * 0.55 + (x / cols) * 0.45]);
+  order.sort((p, q) => p[2] - q[2]);
+  el.style.opacity = 1;
+  const setMask = () => { const u = `url(${c.toDataURL()})`; el.style.maskImage = el.style.webkitMaskImage = u; el.style.maskSize = el.style.webkitMaskSize = '100% 100%'; };
+  setMask();
+  const t0 = performance.now(), id = runId; let done = 0;
+  const tick = (now) => {
+    if (id !== runId) { el.style.maskImage = el.style.webkitMaskImage = ''; return; }
+    const k = Math.min(1, (now - t0) / dur), n = Math.floor(order.length * k);
+    for (; done < n; done++) g.fillRect(order[done][0] * cell, order[done][1] * cell, cell, cell);
+    if (k < 1) { setMask(); requestAnimationFrame(tick); }
+    else { el.style.maskImage = el.style.webkitMaskImage = ''; }
+  };
+  requestAnimationFrame(tick);
+}
+// an image resolving from coarse blocks to sharp
+function mosaic(img, dur, src) {
+  const S = stage.getBoundingClientRect(), r = img.getBoundingClientRect();
+  const c = document.createElement('canvas');
+  c.width = Math.round(r.width); c.height = Math.round(r.height);
+  Object.assign(c.style, { position: 'absolute', left: r.left - S.left + 'px', top: r.top - S.top + 'px', width: r.width + 'px', height: r.height + 'px', zIndex: 4, pointerEvents: 'none' });
+  stage.appendChild(c);
+  const g = c.getContext('2d');
+  const im = new Image(); im.src = src || img.currentSrc || img.src;
+  const blocks = [40, 26, 16, 10, 6, 3];
+  const step = dur / blocks.length;
+  const draw = (b) => {
+    const w = Math.max(1, Math.round(c.width / b)), h = Math.max(1, Math.round(c.height / b));
+    const t = document.createElement('canvas'); t.width = w; t.height = h;
+    t.getContext('2d').drawImage(im, 0, 0, w, h);
+    g.clearRect(0, 0, c.width, c.height); g.imageSmoothingEnabled = false;
+    g.drawImage(t, 0, 0, w, h, 0, 0, c.width, c.height);
+  };
+  const go = () => {
+    blocks.forEach((b, k) => timers.push(setTimeout(() => draw(b), k * step)));
+    timers.push(setTimeout(() => { img.style.opacity = 1; c.remove(); }, dur));
+  };
+  im.complete ? go() : im.addEventListener('load', go, { once: true });
+  return c;
+}
+
+// Moss onto his books
+function arrive(kind, H) {
+  const S = stage.getBoundingClientRect();
+  moss.style.opacity = 0; moss.style.clipPath = '';
+  place(H.x, H.y, H.w); setFrame(0);
+  const showCard = (ms) => timers.push(setTimeout(() => { placeCard(H); card.classList.add('in'); }, ms));
+  if (kind === 'walk') {
+    // 1: he strolls back in from the right at the height of the table, facing her,
+    //    stops on the books and sits down
+    const wh = H.h * 1.45, ww = wh * 228 / 289;
+    const y = H.feetY - wh * PF.feetY, stopX = H.feetX - ww * 0.5;
+    let x = S.width + 4, i = PF.walkLoop[0], acc = 0, last = performance.now();
+    walker.style.display = 'block'; walker.style.opacity = 1;
+    walker.style.width = ww + 'px'; walker.style.height = wh + 'px';
+    const speed = ww * PUSH.stroll / 1000;
+    const id = runId;
+    const tick = (now) => {
+      if (id !== runId) return;
+      const dt = Math.min(250, now - last); last = now; acc += dt;
+      while (acc >= 1000 / PF.fps) { acc -= 1000 / PF.fps; i = i >= PF.walkLoop[1] ? PF.walkLoop[0] : i + 1; }
+      x = Math.max(stopX, x - speed * dt);
+      walkFrame(i);
+      walker.style.transform = `translate(${x}px, ${y}px) scaleX(-1)`;
+      if (x > stopX) loop = requestAnimationFrame(tick);
+      else {
+        // settles: the walking Moss gives way to the sitting one
+        walker.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, easing: 'ease', fill: 'forwards' });
+        moss.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, easing: 'ease', fill: 'forwards' });
+        showCard(500);
+      }
+    };
+    loop = requestAnimationFrame(tick);
+  } else if (kind === 'peek') {
+    // 2: he pops up from behind the books, as if he'd been there all along
+    moss.style.opacity = 1;
+    const from = H.h * 0.95, t0 = performance.now(), dur = 900, id = runId;
+    const back = (k) => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+    const tick = (now) => {
+      if (id !== runId) return;
+      const k = Math.min(1, (now - t0) / dur), o = from * (1 - back(k));
+      moss.style.transform = `translate(${H.x}px, ${H.y + o}px)`;
+      moss.style.clipPath = `inset(0 0 ${Math.max(0, o + H.h * 0.046)}px 0)`;  // hidden below the top book
+      if (k < 1) requestAnimationFrame(tick); else { moss.style.clipPath = ''; showCard(150); }
+    };
+    requestAnimationFrame(tick);
+  } else {
+    // 3: he loads in like the page, from blocks to sharp
+    const c = mosaic(moss, 800, '../../public/images/moss/moss-idle.webp');
+    c.style.left = H.x + 'px'; c.style.top = H.y + 'px'; c.style.width = H.w + 'px'; c.style.height = H.h + 'px';
+    c.width = Math.round(H.w); c.height = Math.round(H.h);
+    showCard(900);
+  }
+}
+
+// replay just what happens after the curtain
+function runEnding() {
+  state.take = 'push';
+  document.querySelectorAll('#take button').forEach((o) => o.setAttribute('aria-pressed', o.dataset.v === 'push'));
+  reset();
+  const S = stage.getBoundingClientRect(), H = home();
+  hidePageNow(); centreHeadline(true);
+  moss.style.opacity = 0; shadow.style.opacity = 0;
+  sheet.style.left = S.width + 2 + 'px';
+  timers.push(setTimeout(() => revealPage(state.reveal), 400));
+  timers.push(setTimeout(() => arrive(state.arrive, H), { pixel: 2400, focus: 2000, wipe: 2000, word: 4300 }[state.reveal]));
+}
+
+function placeCard(H) {
+  card.style.left = (H.x + H.w * 0.92) + 'px';
+  card.style.top = (H.y + H.h * 0.2) + 'px';
+}
+
+function run() {
+  reset();
+  // hero must be laid out to know where his seat is
+  const go = () => (state.take === 'paper' ? runPaper() : runPush());
+  hero.complete ? go() : hero.addEventListener('load', go, { once: true });
+}
+
+function wire(id, key) {
+  document.querySelectorAll(`#${id} button`).forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll(`#${id} button`).forEach((o) => o.setAttribute('aria-pressed', o === b));
+    state[key] = b.dataset.v;
+    document.documentElement.dataset.mode = state.mode;
+    run();
+  }));
+}
+wire('take', 'take'); wire('mode', 'mode'); wire('speed', 'speed');
+$('#replay').addEventListener('click', run);
+addEventListener('resize', run);
+['reveal', 'arrive'].forEach((id) => document.querySelectorAll(`#${id} button`).forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll(`#${id} button`).forEach((o) => o.setAttribute('aria-pressed', o === b));
+  state[id] = b.dataset.v; runEnding();
+})));
+$('#ending').addEventListener('click', runEnding);
+run();
+</script>
+</body>
+</html>
