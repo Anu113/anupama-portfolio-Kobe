@@ -23,11 +23,11 @@
    (the clip's rest pose) the same way. The damping is time-based and
    runs on the shared pointer loop (scripts/frame-loop.ts) with the
    trail and the lamp; it sleeps once she has caught up and while she's
-   off screen. Between two of the 48 pictures she is drawn as a mix of
-   both (in 24 steps per picture), so every bit of pointer travel moves
-   her instead of holding a pose and jumping (option B of
-   experiments/hero-frames, chosen 2026-11-16 over today's steps and a
-   96-frame re-export that doubled the download).
+   off screen. She starts on 48 pictures (every 4th frame of the clip)
+   and, once the page is up, swaps quietly to 96 (every 2nd), so she
+   steps half as far per move; see `upgrade` in the script. A blend
+   between neighbouring pictures was tried and dropped: mid-turn it
+   showed two faces.
 
    public/images/hero-sprite.webp is a GRID of 48 frames (700x980 each,
    8 columns x 6 rows) — every 4th frame of the 8s, 24fps source clip
@@ -88,10 +88,10 @@
    snapping; instant under reduced motion. The canvas only repaints when
    the frame, the size or the theme changes, or during that fade.
 
-   Sync: every time the drawn blend changes, the figure dispatches a
-   bubbling `hero-scrub:frame` event ({ frame, count, from, to, mix }:
-   the nearest picture, the two being mixed and how far). AskBubble's
-   Moss listens and mixes the same two of his own 48-frame clip, so the two
+   Sync: every time the drawn frame changes, the figure dispatches a
+   bubbling `hero-scrub:frame` event ({ frame, count }). AskBubble's Moss
+   listens and shows the same frame of his own clip (48 or 96, matching
+   `count`; he maps to his 48 until his own 96 is in), so the two
    characters share one timeline and one damping loop and can't drift.
    The pointer is read over the whole band the figure sits in (the
    hero section, via its data-themeband), and its x/y across that band
@@ -203,6 +203,7 @@ const { alt, size = 480 } = Astro.props;
   const CROP_W = FRAME_W;
   const CROP_H = FRAME_H;
   const COLS = 8;
+  const COLS_96 = 12;   // hero-sprite-96.webp: 96 pictures, 12 x 8
   const SMOOTHING = 0.14; // share of the gap per 60fps frame; higher = snappier
   const Y_INFLUENCE = 0.28; // how much vertical pointer position nudges the frame vs x
 
@@ -333,6 +334,9 @@ const { alt, size = 480 } = Astro.props;
     const full = still ? null : fetch('/images/hero-sprite.webp').then((r) => r.blob()).then((b) => createImageBitmap(b));
 
     let ready = false;
+    // Pictures in the clip on screen: 48 at first, 96 once the finer
+    // sheet has loaded in the background (see `upgrade`, below).
+    let count = FRAME_COUNT;
     let targetIndex = 0;
     let currentIndex = 0;
     let lastFrame = -1;
@@ -402,8 +406,8 @@ const { alt, size = 480 } = Astro.props;
       ctx.globalCompositeOperation = 'source-over';
     };
 
-    // A per-picture table read at a fractional picture: the face light
-    // slides with her head through a blend instead of jumping.
+    // The face tables are measured on the 48 pictures; with 96 a picture
+    // can sit between two entries, so read them in between.
     const between = (table: number[], at: number) => {
       const i = Math.floor(at), t = at - i;
       const a = table[i] ?? 0, b = table[Math.min(table.length - 1, i + 1)] ?? a;
@@ -416,8 +420,9 @@ const { alt, size = 480 } = Astro.props;
       const k = night.screenK * lit;
       const glowK = night.glowK * lit;
       const shadeK = night.shadeK * lit;
-      const dx = between(FACE_DX, frame);
-      const dy = between(FACE_DY, frame);
+      const at = frame * (FRAME_COUNT - 1) / (count - 1);
+      const dx = between(FACE_DX, at);
+      const dy = between(FACE_DY, at);
       // Shade: dark everywhere but a clear core where the screen lands
       // (half-following her head, since the core also covers her chest).
       if (shadeK > 0) {
@@ -621,56 +626,28 @@ const { alt, size = 480 } = Astro.props;
       }
     };
 
-    // Between two pictures she is drawn as a mix of both (option B of
-    // experiments/hero-frames): the two neighbouring frames added in
-    // proportion on this canvas, premultiplied ('lighter'), so the edges
-    // don't brighten. Every drawing below then reads the mix as `sprite`,
-    // so the night light and the lamp follow the blend too.
-    const mixCanvas = document.createElement('canvas');
-    mixCanvas.width = CROP_W; mixCanvas.height = CROP_H;
-    const mix = mixCanvas.getContext('2d')!;
-    // Blend steps per picture: fine enough to read as continuous, coarse
-    // enough that a pointer nudge of a hair doesn't repaint everything.
-    const STEPS = 24;
-
     const draw = (index: number) => {
       if (!ready || canvas.width === 0) return;
-      const at = !live ? 0 : Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(index * STEPS) / STEPS));
-      const f0 = Math.floor(at), f1 = Math.min(FRAME_COUNT - 1, f0 + 1), t = at - f0;
-      const frame = Math.round(at);
-      if (at !== lastFrame) {
-        lastFrame = at;
-        // Moss mixes his own two pictures by the same amount.
-        figure.dispatchEvent(new CustomEvent('hero-scrub:frame', { detail: { frame, count: FRAME_COUNT, from: f0, to: f1, mix: t }, bubbles: true }));
+      const frame = !live ? 0 : Math.max(0, Math.min(count - 1, Math.round(index)));
+      if (frame !== lastFrame) {
+        lastFrame = frame;
+        figure.dispatchEvent(new CustomEvent('hero-scrub:frame', { detail: { frame, count }, bubbles: true }));
       }
-      // Only repaint when the picture changes: a new blend, a resize, a
+      // Only repaint when the picture changes: a new frame, a resize, a
       // theme switch (which resets drawnFrame) or the lamp moving.
-      if (at === drawnFrame && !lampDirty) return;
-      const frameChanged = at !== drawnFrame;
-      drawnFrame = at;
+      if (frame === drawnFrame && !lampDirty) return;
+      const frameChanged = frame !== drawnFrame;
+      drawnFrame = frame;
       lampDirty = false;
-      if (live) {
-        if (t === 0) sprite = frames[f0];
-        else {
-          mix.globalCompositeOperation = 'source-over';
-          mix.globalAlpha = 1;
-          mix.clearRect(0, 0, CROP_W, CROP_H);
-          mix.globalCompositeOperation = 'lighter';
-          mix.globalAlpha = 1 - t; mix.drawImage(frames[f0], 0, 0);
-          mix.globalAlpha = t; mix.drawImage(frames[f1], 0, 0);
-          mix.globalCompositeOperation = 'source-over';
-          mix.globalAlpha = 1;
-          sprite = mixCanvas;
-        }
-      }
       // Every drawing below reads `sprite` at src: with the frames cut,
       // that's the frame's own bitmap from its corner.
+      if (live) sprite = frames[frame];
       const src: [number, number] = [0, 0];
       // Box aspect matches the frame (5:7), so it maps straight onto the
       // canvas. Clear first so no previous frame shows through.
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(sprite, src[0], src[1], CROP_W, CROP_H, 0, 0, canvas.width, canvas.height);
-      light(at, src);
+      light(frame, src);
       lampLight(src);
       drawGround(src, frameChanged);
       lampWasNear = lampNear();
@@ -698,9 +675,11 @@ const { alt, size = 480 } = Astro.props;
     // budget, so the scrub, Moss and the cursor trail all dropped frames;
     // a pre-cut frame draws in ~1.5ms.
     let frames: ImageBitmap[] = [];
-    full?.then((sheet) => Promise.all(Array.from({ length: FRAME_COUNT }, (_, f) =>
-      createImageBitmap(sheet, (f % COLS) * FRAME_W + CROP_X, Math.floor(f / COLS) * FRAME_H + CROP_Y, CROP_W, CROP_H),
-    )).then((cut) => { sheet.close(); return cut; })).then((cut) => {   // the sheet itself is no longer needed
+    const cutSheet = (sheet: ImageBitmap, n: number, cols: number) =>
+      Promise.all(Array.from({ length: n }, (_, f) =>
+        createImageBitmap(sheet, (f % cols) * FRAME_W + CROP_X, Math.floor(f / cols) * FRAME_H + CROP_Y, CROP_W, CROP_H),
+      )).then((cut) => { sheet.close(); return cut; });   // the sheet itself is no longer needed
+    full?.then((sheet) => cutSheet(sheet, FRAME_COUNT, COLS)).then((cut) => {
       frames = cut;
       sprite = frames[0];
       live = true;
@@ -708,10 +687,46 @@ const { alt, size = 480 } = Astro.props;
       drawnFrame = -1;
       draw(currentIndex);
       announce();
+      upgrade();
     }).catch(() => {
       // Frame 0 stays; she just doesn't scrub.
       announce();
     });
+
+    // The finer clip: 96 pictures (every 2nd frame, hero-sprite-96.webp,
+    // 12x8) so she steps half as far per move (option C of
+    // experiments/hero-frames, chosen 2026-11-16 after a blend of the 48
+    // showed two faces mid-turn). It's twice the download, so the page
+    // never waits for it: it's fetched only after the page has loaded and
+    // the 48 are in, when the browser is idle, and skipped on Save-Data
+    // or a 2G/3G connection. When it's cut she swaps over at the same
+    // point of the clip, and `hero-scrub:frame` reports count 96, which
+    // tells Moss to use his 96 too.
+    const upgrade = () => {
+      const net = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+      if (net?.saveData || /(^|-)(2g|3g)$/.test(net?.effectiveType ?? '')) return;
+      const go = () => fetch('/images/hero-sprite-96.webp')
+        .then((r) => (r.ok ? r.blob() : Promise.reject()))
+        .then((b) => createImageBitmap(b))
+        .then((sheet) => cutSheet(sheet, FRAME_COUNT * 2, COLS_96))
+        .then((cut) => {
+          const old = frames;
+          const k = (cut.length - 1) / (count - 1);
+          frames = cut;
+          count = cut.length;
+          currentIndex *= k;
+          targetIndex *= k;
+          sprite = frames[Math.round(currentIndex)];
+          lastFrame = -1;
+          drawnFrame = -1;
+          draw(currentIndex);
+          old.forEach((b) => b.close());
+        })
+        .catch(() => {});   // the 48 stay
+      const whenIdle = () => ('requestIdleCallback' in window ? requestIdleCallback(go, { timeout: 4000 }) : setTimeout(go, 1500));
+      if (document.readyState === 'complete') whenIdle();
+      else addEventListener('load', whenIdle, { once: true });
+    };
 
     // The theme button flips data-mode on <html>; re-read the night
     // light's tokens and ease `lit` to the new mode over --dur-night, in
@@ -776,7 +791,7 @@ const { alt, size = 480 } = Astro.props;
       const nx = Math.max(0, Math.min(1, width > 0 ? x / width : 0));
       const ny = Math.max(0, Math.min(1, height > 0 ? y / height : 0));
       const blended = nx * (1 - Y_INFLUENCE) + ny * Y_INFLUENCE;
-      targetIndex = blended * (FRAME_COUNT - 1);
+      targetIndex = blended * (count - 1);
     };
 
     // The pointer is read over the whole band the figure sits in (the
@@ -794,7 +809,7 @@ const { alt, size = 480 } = Astro.props;
     area.addEventListener('pointerenter', onMove);
     area.addEventListener('pointermove', onMove);
     area.addEventListener('pointerleave', onLeave);
-    figure.addEventListener('focus', () => { targetIndex = (FRAME_COUNT - 1) * 0.72; wake(tick); });
+    figure.addEventListener('focus', () => { targetIndex = (count - 1) * 0.72; wake(tick); });
     figure.addEventListener('blur', onLeave);
 
   });

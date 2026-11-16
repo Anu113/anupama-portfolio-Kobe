@@ -5,6 +5,11 @@ her source clip, with the edge re-inked for the dark page.
 
 Usage:
   python3 scripts/hero-sprite.py ~/Downloads/Character_animation_instructions_1080p_20260929165344.mp4
+  python3 scripts/hero-sprite.py <same clip> 96
+
+With 96, every 2nd frame is kept instead, into hero-sprite-96.webp (a
+12x8 grid), which HeroIllustration swaps in once the page is up; the 48
+sheet and the still are left as they are.
 
 The source is a 1080x1920, 24fps watercolour clip on a near-white
 backdrop. Every 4th frame is kept, cropped to the figure's union bounds
@@ -100,21 +105,27 @@ def frame(path):
     return Image.fromarray(np.dstack([colour, alpha * 255]).round().astype(np.uint8), 'RGBA')
 
 
-def main(src):
+def main(src, count=48):
+    step, cols, rows = (2, 12, 8) if count == 96 else (4, COLS, ROWS)
     with tempfile.TemporaryDirectory() as tmp:
-        subprocess.run(['ffmpeg', '-v', 'error', '-i', src, '-vf', r"select='not(mod(n\,4))'",
+        subprocess.run(['ffmpeg', '-v', 'error', '-i', src, '-vf', f"select='not(mod(n\\,{step}))'",
                         '-vsync', 'vfr', os.path.join(tmp, 'f%03d.png')], check=True)
-        files = sorted(glob.glob(os.path.join(tmp, '*.png')))[:COLS * ROWS]
+        files = sorted(glob.glob(os.path.join(tmp, '*.png')))[:cols * rows]
         imgs = [frame(f) for f in files]
-    sprite = Image.new('RGBA', (W * COLS, H * ROWS), (255, 255, 255, 0))
+    sprite = Image.new('RGBA', (W * cols, H * rows), (255, 255, 255, 0))
     for i, im in enumerate(imgs):
-        sprite.paste(im, ((i % COLS) * W, (i // COLS) * H))
-    sprite.save(os.path.join(OUT, 'hero-sprite.webp'), 'WEBP', quality=80, alpha_quality=60, method=6)  # alpha 60 keeps it near the old 4.3MB
-    imgs[0].save(os.path.join(OUT, 'hero-idle.webp'), 'WEBP', quality=88, alpha_quality=90, method=6)
+        sprite.paste(im, ((i % cols) * W, (i // cols) * H))
+    if count == 96:
+        sprite.save(os.path.join(OUT, 'hero-sprite-96.webp'), 'WEBP', quality=QUALITY_96, alpha_quality=60, method=6)
+    else:
+        sprite.save(os.path.join(OUT, 'hero-sprite.webp'), 'WEBP', quality=80, alpha_quality=60, method=6)  # alpha 60 keeps it near the old 4.3MB
+        imgs[0].save(os.path.join(OUT, 'hero-idle.webp'), 'WEBP', quality=88, alpha_quality=90, method=6)
     print(f'{len(imgs)} frames written')
 
 
+QUALITY_96 = int(os.environ.get('QUALITY_96', 72))
+
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) not in (2, 3):
         sys.exit(__doc__)
-    main(sys.argv[1])
+    main(sys.argv[1], int(sys.argv[2]) if len(sys.argv) == 3 else 48)
