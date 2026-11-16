@@ -1080,19 +1080,19 @@
   --preloader-moss-h: min(27vh, 40vw);   /* how tall he stands */
   --preloader-floor: 0.86;               /* his feet, as a share of the window's height */
   --preloader-fps: 14;                   /* his clip, frames a second (the clip's own pace is 12) */
-  --preloader-push-fps: 1.3;             /* his steps run this much quicker while pushing */
+  --preloader-push-fps: 1.8;             /* his steps run this much quicker while pushing */
   --preloader-stroll: 0.6;               /* walking pace, in his own widths a second */
-  --preloader-push: 0.17;                /* pushing pace, in screen widths a second */
+  --preloader-push: 0.42;                /* pushing pace, in screen widths a second (huyml.co's is ~0.43) */
   --preloader-pause-at: 0.5;             /* the one pause, this far across */
-  --dur-preloader-pause: 650ms;
-  --dur-preloader-black: 600ms;          /* first, the whole screen is curtain this long */
-  --dur-preloader-open: 700ms;           /* ...then it draws back to open the strip */
+  --dur-preloader-pause: 300ms;
+  --dur-preloader-black: 400ms;          /* first, the whole screen is curtain this long */
+  --dur-preloader-open: 500ms;           /* ...then it draws back to open the strip */
   --ease-preloader-open: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-preloader-max: 6000ms;           /* images still out by now count as in */
-  --dur-preloader-glide: 1000ms;         /* the sentence gliding from the middle to its place */
+  --dur-preloader-max: 4000ms;           /* images still out by now count as in */
+  --dur-preloader-glide: 800ms;          /* the sentence gliding from the middle to its place */
   --ease-preloader-glide: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-preloader-focus: 900ms;          /* each piece of the hero coming into focus */
-  --dur-preloader-focus-step: 160ms;     /* ...one after another */
+  --dur-preloader-focus: 700ms;          /* each piece of the hero coming into focus */
+  --dur-preloader-focus-step: 100ms;     /* ...one after another */
   --preloader-focus-blur: 10px;
   --dur-preloader-peek: 900ms;           /* Moss popping up from behind his books */
   --dur-preloader-fade: 450ms;           /* reduced motion: the curtain fades instead */

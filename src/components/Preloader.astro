@@ -13,11 +13,16 @@
    the curtain's edge is on it. He pushes it across as the page loads
    (how far he's got is the progress; there's no number), with one
    pause halfway. It leaves the screen just as his paw comes down, and
-   he strolls out, smiling, at the pace he came in. Then the sentence
-   glides from the middle to its place in the hero, the layer goes,
-   the rest of the hero comes into focus one piece after another (nav,
-   location line, subtext, buttons, portrait, scroll cue), and Moss
+   he strolls out, smiling, at the pace he came in. As the curtain
+   leaves (not after he's gone: that wait made the text far too late,
+   2026-11-16) the ground clears, the sentence glides from the middle to
+   its place in the hero, the rest of the hero comes into focus one
+   piece after another (nav, location line, subtext, buttons, portrait,
+   scroll cue) while he strolls off, and once he's off screen Moss
    peeks up from behind his books, his "Psst…" card last.
+   Timing, at 1440 x 900 with the page loaded: the curtain is gone by
+   ~5s and the hero is all in by ~6.5s (huyml.co's: ~4s and ~6.5s). It
+   was ~9s and ~13.5s before.
    Its reason: the one screen with nothing else to show; it puts the
    sentence first, alone, and hands the visitor to the page, and to
    Moss.
@@ -108,9 +113,13 @@ const pages = ['/'];
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const inputs = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
     const t0 = window.__preloaderT0 ?? performance.now();
-    const maxDur = cssMs('--dur-preloader-max', 6000);
+    const maxDur = cssMs('--dur-preloader-max', 4000);
     let ended = false;
     let raf = 0;
+    // While Moss strolls out over the page (the hand-over has begun), the
+    // layer stays until he's off screen; `settle` removes it then.
+    let strolling = false;
+    let settle: (() => void) | null = null;
 
     const finish = () => {
       cancelAnimationFrame(raf);
@@ -183,12 +192,20 @@ const pages = ['/'];
 
     // ---- the hand-over: the sentence glides to its place, the layer goes,
     // the hero comes into focus, Moss peeks up.
-    const handOver = (fast: boolean) => {
+    // It starts as the curtain leaves the screen, while Moss is still
+    // strolling out (exitMs: how long he has left): the ground goes clear,
+    // the sentence glides over the page, and the hero's pieces wait hidden
+    // (fill: backwards) for their turn.
+    const handOver = (fast: boolean, exitMs = 0) => {
       const real = h1?.getBoundingClientRect();
       const inView = real && real.bottom > 0 && real.top < innerHeight;
       if (!fast && !reduce && inView) measureLines();
       const glide = !fast && !reduce && inView && lines.length > 0;
-      const glideMs = glide ? cssMs('--dur-preloader-glide', 1000) : 0;
+      const glideMs = glide ? cssMs('--dur-preloader-glide', 800) : 0;
+      if (glide && h1) {
+        root.classList.add('is-clear');
+        h1.style.visibility = 'hidden';   // the copy stands in for it until it lands
+      }
       if (glide && real) {
         const copyTop = words.firstElementChild!.getBoundingClientRect().top;
         lines.forEach((line) => {
@@ -197,11 +214,11 @@ const pages = ['/'];
           line.forEach((w) => { w.style.left = `${dx}px`; w.style.top = `${dy}px`; });
         });
       }
-      setTimeout(() => {
-        const focusMs = fast ? cssMs('--dur-preloader-skip', 600) : cssMs('--dur-preloader-focus', 900);
-        const stepMs = fast ? 0 : cssMs('--dur-preloader-focus-step', 160);
+      {
+        const focusMs = fast ? cssMs('--dur-preloader-skip', 600) : cssMs('--dur-preloader-focus', 700);
+        const stepMs = fast ? 0 : cssMs('--dur-preloader-focus-step', 100);
         const blur = getComputedStyle(html).getPropertyValue('--preloader-focus-blur').trim() || '10px';
-        let at = 0;
+        let at = glideMs;
         if (!reduce) {
           FOCUS.forEach((q) => {
             const el = document.querySelector<HTMLElement>(q);
@@ -216,7 +233,8 @@ const pages = ['/'];
           const card = document.querySelector<HTMLElement>('.pixel-launcher__card');
           if (moss) {
             const h = moss.offsetHeight, from = h * 0.95, feet = h * 0.046;
-            const peekAt = fast ? 0 : at + focusMs * 0.4;
+            // never while the pushing Moss is still on screen: one Moss at a time
+            const peekAt = fast ? 0 : Math.max(at + focusMs * 0.4, exitMs + 150);
             moss.animate([
               { translate: `0 ${from}px`, clipPath: `inset(0 0 ${from + feet}px 0)` },
               { translate: '0 0', clipPath: `inset(0 0 ${feet}px 0)` },
@@ -225,21 +243,27 @@ const pages = ['/'];
               { duration: 500, delay: peekAt + (fast ? 0 : 650), easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'backwards' });
           }
         }
-        if (fast || !glide) {
-          // skipped, or the hero isn't on screen: the layer fades
-          root.classList.add('is-fading');
-          setTimeout(finish, (reduce ? cssMs('--dur-preloader-fade', 450) : cssMs('--dur-preloader-skip', 600)) + 50);
-        } else finish();
+      }
+      if (fast || !glide) {
+        // skipped, or the hero isn't on screen: the layer fades
+        root.classList.add('is-fading');
+        setTimeout(finish, (reduce ? cssMs('--dur-preloader-fade', 450) : cssMs('--dur-preloader-skip', 600)) + 50);
+        return;
+      }
+      setTimeout(() => {
+        h1!.style.visibility = '';
+        words.remove();
+        if (strolling) settle = finish; else finish();
       }, glideMs);
     };
 
-    const end = (fast: boolean) => {
+    const end = (fast: boolean, exitMs = 0) => {
       if (ended) return;
       ended = true;
-      cancelAnimationFrame(raf);
+      if (!strolling) cancelAnimationFrame(raf);
       inputs.forEach((e) => removeEventListener(e, skip, true));
       if (fast) walker.style.visibility = 'hidden';
-      handOver(fast);
+      handOver(fast, exitMs);
     };
 
     // Only a deliberate input skips it (see the header).
@@ -261,11 +285,11 @@ const pages = ['/'];
 
     // ---- Moss: stroll in, push, stroll out
     const fps = num('--preloader-fps') || 14;
-    const pushFps = num('--preloader-push-fps') || 1.3;
+    const pushFps = num('--preloader-push-fps') || 1.8;
     const strollRate = num('--preloader-stroll') || 0.6;
-    const pushRate = num('--preloader-push') || 0.17;
+    const pushRate = num('--preloader-push') || 0.42;
     const pauseAt = num('--preloader-pause-at') || 0.5;
-    const pauseMs = cssMs('--dur-preloader-pause', 650);
+    const pauseMs = cssMs('--dur-preloader-pause', 300);
     const floor = num('--preloader-floor') || 0.86;
     const ww = walker.offsetWidth, wh = walker.offsetHeight;
     const frameMs = 1000 / fps;
@@ -281,7 +305,7 @@ const pages = ['/'];
       walker.style.backgroundPosition = `${(n % PF.cols) * 100 / (PF.cols - 1)}% ${Math.floor(n / PF.cols) * 100 / (PF.rows - 1)}%`;
     };
     const tick = (now: number) => {
-      if (ended) return;
+      if (ended && !strolling) return;
       const W = innerWidth, endEdge = W + 1, y = innerHeight * floor - wh * PF.feetY;
       const pushPx = (W * pushRate) / 1000;
       const finalMs = ((PF.release - PF.loopB) * frameMs) / pushFps;
@@ -301,7 +325,15 @@ const pages = ['/'];
             if (progress() >= 1 && left <= pushPx * 1.6 * finalMs) { phase = 'final'; finalSpeed = left / finalMs; i++; }
             else i = PF.loopA;
           } else i++;
-        } else if (phase === 'final') { i++; if (i > PF.release) { phase = 'exit'; edge = endEdge; } }
+        } else if (phase === 'final') {
+          i++;
+          if (i > PF.release) {
+            phase = 'exit'; edge = endEdge;
+            // the curtain is off: hand over now, while he strolls out
+            strolling = true;
+            end(false, Math.max(0, W + 10 - x) / stroll);
+          }
+        }
         else if (phase === 'exit') {
           if (exitStep === 0) { if (i < PF.down[1]) i++; else { exitStep = 1; i = PF.walkOn[0]; } }
           else if (exitStep === 1) { if (i < PF.walkOn[1]) i++; else { exitStep = 2; i = PF.walkLoop[0]; } }
@@ -327,7 +359,12 @@ const pages = ['/'];
       frame(i);
       walker.style.translate = `${x}px ${y}px`;
       curtain.style.translate = `${Math.min(edge, endEdge)}px 0`;
-      if (phase === 'exit' && x > W + 10) { end(false); return; }
+      if (phase === 'exit' && x > W + 10) {
+        strolling = false;
+        walker.style.visibility = 'hidden';
+        settle?.();
+        return;
+      }
       raf = requestAnimationFrame(tick);
     };
 
@@ -336,7 +373,7 @@ const pages = ['/'];
     sprite.src = SPRITE;
     // Two steps: the screen is all curtain for a beat, then it draws back
     // to open the strip, and only then does Moss walk in.
-    const holdMs = cssMs('--dur-preloader-black', 600), openMs = cssMs('--dur-preloader-open', 700);
+    const holdMs = cssMs('--dur-preloader-black', 400), openMs = cssMs('--dur-preloader-open', 500);
     const start = () => {
       if (ended) return;
       const wait = Math.max(0, holdMs - (performance.now() - t0));
@@ -428,6 +465,13 @@ const pages = ['/'];
     pointer-events: none;
   }
   .preloader__moss:global(.is-in) { visibility: visible; }
+
+  /* The hand-over: the curtain is gone, the ground clears so the page
+     comes into focus under the gliding sentence while Moss strolls out. */
+  .preloader:global(.is-clear) {
+    background: transparent;
+    pointer-events: none;
+  }
 
   /* Skipped, reduced motion, or the hero off screen: the layer fades. */
   .preloader:global(.is-fading) {
