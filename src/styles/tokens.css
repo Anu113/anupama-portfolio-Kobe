@@ -131,6 +131,11 @@
      the stack reads evenly. 672px = 420px + 60%. */
   --card-h: 672px;
   --stack-end-hold: 25vh;   /* how long the finished stack holds before it scrolls away */
+  /* A covered card dims toward black as the next one slides over it
+     (up to --stack-dim-max), the way brightness() used to, as an overlay
+     so scrolling never runs a filter. */
+  --stack-dim: #000;
+  --stack-dim-max: 0.08;
 
   --space-section: clamp(5rem, 10vw, 9rem);
   --space-band-tight: clamp(2rem, 4vw, 3.5rem);

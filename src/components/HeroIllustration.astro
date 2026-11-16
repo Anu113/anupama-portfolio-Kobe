@@ -20,7 +20,11 @@
    sprite each tick. The index is damped with a lerp rather than
    snapped straight to the target, so the motion reads as tracking
    rather than flipping; leaving the card eases the index back to 0
-   (the clip's rest pose) the same way.
+   (the clip's rest pose) the same way. The damping is time-based and
+   runs on the shared pointer loop (scripts/frame-loop.ts) with the
+   trail and the lamp; it sleeps once she has caught up and while she's
+   off screen. She still changes picture in 48 steps (every 4th frame of
+   the clip): smoother needs a re-export with more frames.
 
    public/images/hero-sprite.webp is a GRID of 48 frames (700x980 each,
    8 columns x 6 rows) — every 4th frame of the 8s, 24fps source clip
@@ -183,6 +187,8 @@ const { alt, size = 480 } = Astro.props;
 </style>
 
 <script>
+  import { wake, ease } from '../scripts/frame-loop';
+
   const FRAME_COUNT = 48;
   const FRAME_W = 700;
   const FRAME_H = 980;
@@ -193,7 +199,7 @@ const { alt, size = 480 } = Astro.props;
   const CROP_W = FRAME_W;
   const CROP_H = FRAME_H;
   const COLS = 8;
-  const SMOOTHING = 0.14; // higher = snappier, lower = more inertia
+  const SMOOTHING = 0.14; // share of the gap per 60fps frame; higher = snappier
   const Y_INFLUENCE = 0.28; // how much vertical pointer position nudges the frame vs x
 
   // Night light (dark mode). Where her face sits in each frame, as an
@@ -222,12 +228,27 @@ const { alt, size = 480 } = Astro.props;
       ms: num('--dur-night'),    // "900ms" → 900
     };
   };
+  // Any CSS colour as "r g b". The production build minifies colours
+  // (rgb(255 214 170) becomes #ffd6aa), so reading the digits out of the
+  // token's text gave "6" there, every lamp gradient threw, and the throw
+  // stopped her loop: in dark mode she froze. A canvas normalises the
+  // colour to #rrggbb, whatever form the token arrives in.
+  const swatch = document.createElement('canvas').getContext('2d');
+  const rgbTriplet = (v: string) => {
+    if (!swatch || !v) return null;
+    swatch.fillStyle = '#000';
+    swatch.fillStyle = v;
+    const hex = String(swatch.fillStyle).match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+    if (hex) return hex.slice(1).map((h) => parseInt(h, 16)).join(' ');
+    return String(swatch.fillStyle).match(/[\d.]+/g)?.slice(0, 3).join(' ') ?? null;
+  };
+
   // The lamp on her (CURSOR LAMP in tokens.css).
   type LampK = { gain: number; sat: number; lift: number; rimK: number; rimW: number; formK: number; glintK: number; floorK: number; castK: number; contactK: number; hue: string; reach: number };
   const readLampK = (): LampK => {
     const cs = getComputedStyle(document.documentElement);
     const num = (n: string) => parseFloat(cs.getPropertyValue(n)) || 0;
-    const hue = cs.getPropertyValue('--lamp-hue').trim().match(/[\d.]+/g)?.slice(0, 3).join(' ') ?? '255 214 170';
+    const hue = rgbTriplet(cs.getPropertyValue('--lamp-hue').trim()) ?? '255 214 170';
     return {
       gain: num('--hero-lamp-gain'), sat: num('--hero-lamp-sat'), lift: num('--hero-lamp-lift'), rimK: num('--hero-rim-k'), rimW: num('--hero-rim-w'),
       formK: num('--hero-form-k'), glintK: num('--hero-glint-k'),
@@ -310,7 +331,6 @@ const { alt, size = 480 } = Astro.props;
     let ready = false;
     let targetIndex = 0;
     let currentIndex = 0;
-    let raf = 0;
     let lastFrame = -1;
     let drawnFrame = -1;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -685,21 +705,32 @@ const { alt, size = 480 } = Astro.props;
       lamp = (e as CustomEvent<typeof lamp>).detail;
       if (lit <= 0 || (!lampNear() && !lampWasNear)) return;
       lampDirty = true;
-      if (still) draw(0);
+      if (still) draw(0); else wake(tick);
     });
     addEventListener('scroll', () => {
-      if (lit > 0 && (lampNear() || lampWasNear)) lampDirty = true;
+      if (lit > 0 && (lampNear() || lampWasNear)) { lampDirty = true; if (!still) wake(tick); }
     }, { passive: true });
 
     if (still) return;
 
-    const tick = () => {
-      currentIndex += (targetIndex - currentIndex) * SMOOTHING;
+    // On the shared frame loop (scripts/frame-loop.ts), in step with the
+    // trail and the lamp. Time-based, so she turns at the same pace at
+    // 60Hz and 120Hz; asleep once she has caught up with the pointer (and
+    // the lamp has nothing left to repaint) and while she's off screen,
+    // so the loop costs nothing once she's still or scrolled away.
+    let onScreen = true;
+    function tick(dt: number) {
+      if (!onScreen) return false;
+      currentIndex += (targetIndex - currentIndex) * ease(SMOOTHING, dt);
       if (Math.abs(targetIndex - currentIndex) < 0.01) currentIndex = targetIndex;
       draw(currentIndex);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
+      return currentIndex !== targetIndex || lampDirty;
+    }
+    new IntersectionObserver(([en]) => {
+      onScreen = en.isIntersecting;
+      if (onScreen) wake(tick);
+    }).observe(figure);
+    wake(tick);
 
     const setTargetFromPointer = (x: number, y: number, width: number, height: number) => {
       const nx = Math.max(0, Math.min(1, width > 0 ? x / width : 0));
@@ -716,15 +747,15 @@ const { alt, size = 480 } = Astro.props;
     const onMove = (e: PointerEvent) => {
       const r = area.getBoundingClientRect();
       setTargetFromPointer(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
+      wake(tick);
     };
-    const onLeave = () => { targetIndex = 0; };
+    const onLeave = () => { targetIndex = 0; wake(tick); };
 
     area.addEventListener('pointerenter', onMove);
     area.addEventListener('pointermove', onMove);
     area.addEventListener('pointerleave', onLeave);
-    figure.addEventListener('focus', () => { targetIndex = (FRAME_COUNT - 1) * 0.72; });
+    figure.addEventListener('focus', () => { targetIndex = (FRAME_COUNT - 1) * 0.72; wake(tick); });
     figure.addEventListener('blur', onLeave);
 
-    window.addEventListener('beforeunload', () => cancelAnimationFrame(raf));
   });
 </script>

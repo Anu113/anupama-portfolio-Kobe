@@ -96,6 +96,11 @@ const num = String(index).padStart(2, '0');
       </div>
     )}
   </div>
+  {/* The settle dim (index.astro): a plain overlay whose opacity the
+      stack script sets, instead of a brightness() filter on the whole
+      card, which re-rendered the card and its running phone through a
+      filter on every scroll frame. */}
+  <span class="pc__dim" aria-hidden="true"></span>
 </article>
 
 <style>
@@ -113,6 +118,15 @@ const num = String(index).padStart(2, '0');
     color: var(--fg);
     border-radius: var(--radius);
     overflow: hidden;
+  }
+
+  .pc__dim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: var(--stack-dim);
+    opacity: 0;
+    pointer-events: none;
   }
 
   .pc__body { display: flex; flex-direction: column; min-width: 0; min-height: 0; }

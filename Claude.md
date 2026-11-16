@@ -848,6 +848,17 @@ Fourth: the production build minifies CSS and rewrites times to seconds
 time token gets seconds and runs 1000x too fast — fine in dev, static on
 the live site. Read time tokens in scripts with `cssMs()` from
 `src/scripts/css-time.ts`, never a bare `parseFloat`.
+It also rewrites colours (`rgb(255 214 170)` → `#ffd6aa`), so never pull
+a colour token apart with a regex: that read `--lamp-hue` as "6" on the
+live site, the portrait's lamp light threw, and she froze in dark mode.
+Let a canvas normalise it (`rgbTriplet()` in `HeroIllustration.astro`).
+
+Fifth: everything that follows the pointer (`CursorTrail`, `CursorLamp`,
+`HeroIllustration`) runs on one shared loop, `src/scripts/frame-loop.ts`:
+one clock, time-based easing (`ease(k, dt)`, so 60Hz and 120Hz feel the
+same), and each subscriber sleeps when it's settled or off screen. Put a
+new pointer-follower on it rather than giving it its own
+`requestAnimationFrame` loop, and don't ease by a fixed share per frame.
 
 ## Commands
 

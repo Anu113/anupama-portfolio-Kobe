@@ -466,7 +466,8 @@ const cards = homeCards.map((c) => {
     // never settle (scale down and dim) while it holds.
     const stackItems = [...document.querySelectorAll<HTMLElement>('.worklist__item')].slice(0, -1);
     if (stackItems.length) {
-      type Rec = { item: HTMLElement; card: HTMLElement; startY: number; padBottom: number };
+      type Rec = { item: HTMLElement; card: HTMLElement; dim: HTMLElement | null; startY: number; padBottom: number; last: number };
+      const dimMax = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stack-dim-max')) || 0.08;
       let recs: Rec[] = [];
 
       // `item.offsetTop` looks like the right way to find where a sticky
@@ -488,7 +489,7 @@ const cards = homeCards.map((c) => {
           item.style.position = 'static';
           const staticTop = item.offsetTop;
           item.style.position = prevPosition;
-          return [{ item, card, startY: staticTop - stickyTop, padBottom }];
+          return [{ item, card, dim: card.querySelector<HTMLElement>('.pc__dim'), startY: staticTop - stickyTop, padBottom, last: -1 }];
         });
 
       // Two separate rAF handles, not one shared between scroll and
@@ -499,12 +500,18 @@ const cards = homeCards.map((c) => {
       let scrollRaf: number | null = null;
       let resizeRaf: number | null = null;
       const tick = () => {
-        for (const { card, startY, padBottom } of recs) {
-          const progress = Math.min(1, Math.max(0, (scrollY - startY) / padBottom));
-          const scale = 1 - progress * 0.04;
-          const brightness = 1 - progress * 0.08;
-          card.style.transform = `scale(${scale})`;
-          card.style.filter = `brightness(${brightness})`;
+        // Only touch a card when its progress has changed: most scroll
+        // frames move one card at most, and a write to the others would
+        // still make the browser re-check them. The dim is an overlay's
+        // opacity (.pc__dim), not a brightness() filter, so the card and
+        // its running phone are never re-rendered through a filter.
+        for (const rec of recs) {
+          const progress = Math.min(1, Math.max(0, (scrollY - rec.startY) / rec.padBottom));
+          const p = Math.round(progress * 1000) / 1000;
+          if (p === rec.last) continue;
+          rec.last = p;
+          rec.card.style.transform = p ? `scale(${1 - p * 0.04})` : '';
+          if (rec.dim) rec.dim.style.opacity = String(p * dimMax);
         }
         scrollRaf = null;
       };
