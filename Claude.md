@@ -101,7 +101,10 @@ effect:
   into focus one piece after another (blur to sharp), and Moss peeks up
   from behind his books, his card last. It only goes as far as the page
   has loaded (images, and the hero sprite via `hero-scrub:ready`, capped
-  at 6s). It runs ~8–10s; it was ~4s before. Home page only, every time
+  at 4s). The hero is all in by ~6.5s, as huyml.co's (2026-11-16: it
+  was ~13.5s, too slow, on request): the push runs at his pace, and the
+  sentence glides as the curtain leaves, while he strolls out over the
+  page; the walking loader before it ran ~4s. Home page only, every time
   it's opened or refreshed (on request); not when arriving from another
   page of the site, nor on back/forward. A deliberate key, click, tap or
   real scroll skips it (not in its first 1.2s, never a shortcut such as
