@@ -104,19 +104,19 @@ const { title, dek, action, photos } = beyond;
   /* The same body type as Small talk's dek (17px, soft grey, no
      tracking), which is also the reference's. */
   .beyond__dek {
-    width: min(calc(100vw - 2 * var(--gutter)), 30rem);
-    margin: 1rem 0 0;
+    width: min(calc(100vw - 2 * var(--gutter)), 25rem);
+    margin: var(--space-head-body) 0 0;
     color: var(--talk-soft);
-    font-size: var(--step-talk);
-    line-height: 1.42;
-    letter-spacing: 0;
+    font-size: var(--step-copy);
+    line-height: var(--leading-copy);
+    letter-spacing: var(--tracking-copy);
     text-wrap: balance;
   }
 
   /* The pill pair: an ink label pill and a round arrow pill. */
   .beyond__pills {
     display: inline-flex; gap: var(--ring-pill-gap);
-    margin-top: 1.5rem;
+    margin-top: var(--space-body-actions);
     color: inherit; text-decoration: none;
     pointer-events: auto;
     z-index: 1000;   /* the way out is never under a card */
@@ -128,11 +128,11 @@ const { title, dek, action, photos } = beyond;
     border-radius: var(--radius-pill);
     background: var(--fg);
     color: var(--bg);
-    font-family: var(--font-sans);
-    font-weight: var(--weight-sans);
-    font-size: var(--step-label);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-fine);
     line-height: var(--leading-label);
-    letter-spacing: var(--tracking-label);
+    letter-spacing: var(--tracking-mono-label);
     text-transform: uppercase;
     white-space: nowrap;
     transition: transform var(--dur-ring-press) ease-out;

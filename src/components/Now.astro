@@ -21,11 +21,11 @@ import { site } from '../data/site';
 
 <style>
   /* Small talk above already ends on --space-band */
-  .now { padding-block: 0 var(--space-band); }
+  .now { padding-block: var(--space-home); }
   .now__inner { border-top: 1px solid var(--rule); padding-top: var(--now-pad); }
   .now__label { margin: 0 0 var(--now-label-gap); }
   .now__text {
     margin: 0; max-width: var(--now-max); color: var(--talk-soft);
-    font-size: var(--step-body); line-height: 1.7; letter-spacing: 0; text-wrap: pretty;
+    font-size: var(--step-copy); line-height: var(--leading-copy); letter-spacing: var(--tracking-copy); text-wrap: pretty;
   }
 </style>

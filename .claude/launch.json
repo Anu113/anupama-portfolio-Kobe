@@ -194,6 +194,100 @@
       ],
       "port": 4358,
       "autoPort": true
+    },
+    {
+      "name": "nav-tracking-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/nav-name-tracking"
+      ],
+      "port": 4359,
+      "autoPort": true
+    },
+    {
+      "name": "home-cards-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\""
+      ],
+      "port": 4361,
+      "autoPort": true
+    },
+    {
+      "name": "privacy-real-life-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/privacy-real-life"
+      ],
+      "port": 4363,
+      "autoPort": true
+    },
+    {
+      "name": "player-e-dev",
+      "runtimeExecutable": "/Users/bhaveshupadhyay/.nvm/versions/node/v22.23.1/bin/node",
+      "runtimeArgs": [
+        "/Users/bhaveshupadhyay/Projects/anupama-portfolio/.claude/worktrees/player-e/node_modules/astro/bin/astro.mjs",
+        "dev",
+        "--force",
+        "--root",
+        "/Users/bhaveshupadhyay/Projects/anupama-portfolio/.claude/worktrees/player-e",
+        "--port",
+        "4371"
+      ],
+      "port": 4371
+    },
+    {
+      "name": "type-scale-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/type-scale"
+      ],
+      "port": 4365,
+      "autoPort": true
+    },
+    {
+      "name": "small-talk-stacked-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/small-talk-stacked"
+      ],
+      "port": 4367,
+      "autoPort": true
+    },
+    {
+      "name": "preloader-footprints-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\""
+      ],
+      "port": 4369,
+      "autoPort": true
+    },
+    {
+      "name": "snap-dist",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory /private/tmp/claude-501/-Users-bhaveshupadhyay--claude-spares-spare-Cp5aIR/14f14a01-9c7b-4300-9fba-2ff69ae516ef/scratchpad/snap/dist"
+      ],
+      "port": 4373,
+      "autoPort": true
+    },
+    {
+      "name": "hero-frames-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/hero-frames"
+      ],
+      "port": 4375,
+      "autoPort": true
     }
   ]
 }

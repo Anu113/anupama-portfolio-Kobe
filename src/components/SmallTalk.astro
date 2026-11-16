@@ -23,8 +23,9 @@
    Moss scrubs through his clip as the pointer crosses this band.
    Under reduced motion: no spring or grow.
 
-   Questions and answers: src/data/talk.ts. [X] means hers to write. */
-import { talk } from '../data/talk';
+   Questions and answers: src/data/talk.ts. [X] means hers to write;
+   a question whose answer still has one isn't shown (talkShown). */
+import { talkShown as talk } from '../data/talk';
 import AskMoss from './AskMoss.astro';
 
 const sign = '<svg class="talk__sign" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.75v10.5M1.75 7h10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
@@ -60,16 +61,17 @@ const sign = '<svg class="talk__sign" viewBox="0 0 14 14" aria-hidden="true"><pa
 
 <style>
   /* the playground line above already ends on --space-band */
-  .talk { padding-block: 0 var(--space-band); }
+  .talk { padding-block: var(--space-home) 0; }
   .talk__grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--col-gap); align-items: start; }
-  .talk__head { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--talk-pad); margin-bottom: var(--space-label); }
+  .talk__head { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--space-head-body); margin-bottom: var(--space-label); }
   .talk__body { grid-column: 1 / -1; }
   .talk__dek {
     margin: 0; max-width: var(--talk-head-max); color: var(--talk-soft);
-    font-size: var(--step-talk); line-height: 1.42; letter-spacing: 0;
+    font-size: var(--step-copy); line-height: var(--leading-copy); letter-spacing: var(--tracking-copy);
   }
   @media (min-width: 75rem) {
-    .talk__head { grid-column: 1 / 7; position: sticky; top: var(--space-band-tight); margin-bottom: 0; }
+    /* Not sticky: the head starts level with the first question and stays there. */
+    .talk__head { grid-column: 1 / 7; margin-bottom: 0; }
     .talk__body { grid-column: 8 / 13; }
   }
 
@@ -88,7 +90,7 @@ const sign = '<svg class="talk__sign" viewBox="0 0 14 14" aria-hidden="true"><pa
     width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
     margin: 0; padding: var(--talk-pad) var(--talk-pad-end) var(--talk-pad) var(--talk-pad);
     border: 0; border-radius: var(--radius-talk); background: none; color: var(--fg);
-    font: inherit; font-size: var(--step-talk); line-height: 1.4; letter-spacing: 0;
+    font: inherit; font-size: var(--step-item); line-height: var(--leading-item); letter-spacing: var(--tracking-item);
     text-align: left; text-wrap: pretty; cursor: pointer;
   }
   .talk__row:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
@@ -104,7 +106,7 @@ const sign = '<svg class="talk__sign" viewBox="0 0 14 14" aria-hidden="true"><pa
   :global(.talk__card.is-open) .talk__panel { height: auto; }
   .talk__answer {
     display: flow-root; max-width: var(--talk-answer-max); padding: 0 var(--talk-pad) var(--talk-pad);
-    color: var(--talk-soft); font-size: var(--step-talk); line-height: 1.5; letter-spacing: 0; text-wrap: pretty;
+    color: var(--talk-soft); font-size: var(--step-copy); line-height: var(--leading-copy); letter-spacing: var(--tracking-copy); text-wrap: pretty;
   }
   .talk__answer :global(p) { margin: 0; }
   .talk__answer :global(p + p) { margin-top: 0.75rem; }

@@ -173,15 +173,16 @@ const letters = (text: string) => {
     color: var(--fg-dim);
   }
 
-  /* Links and Menu: a step under the name, in the label role, so the
-     name leads and the menu reads as secondary. */
+  /* Links and Menu: a step under the name, in the label role (mono
+     11px caps, ONE TYPE SCALE in tokens.css), so the name leads and
+     the menu reads as secondary. */
   .nav__links a,
   .nav__menu {
-    font-family: var(--font-sans);
-    font-weight: var(--weight-sans);
-    font-size: var(--step-label);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-fine);
     line-height: 1;
-    letter-spacing: var(--tracking-label);
+    letter-spacing: var(--tracking-mono-label);
     text-transform: uppercase;
     text-decoration: none;
     white-space: nowrap;

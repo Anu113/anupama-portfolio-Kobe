@@ -2,8 +2,8 @@
 /* ProjectCard.astro — one row in the home page's "Selected work": a
    full-width card that stacks over the one before it as you scroll
    (the sticky rows and settle effect live in index.astro). Text on the
-   left — number, company and label chips, title (12px caps, after
-   allierho.com), one 12px line, "View case study" — and on the right a stage on the company's project hue
+   left — number, company and tags (mono labels), title (18px, the item role;
+   see ONE TYPE SCALE in tokens.css), one 12px line, "View case study" — and on the right a stage on the company's project hue
    holding the work itself:
 
    - a phone that runs the flow on its own (after daneden.me): a screen
@@ -53,10 +53,10 @@ const num = String(index).padStart(2, '0');
     {/* COMPANY · [domain] [discipline]… — after carlthomasiv.com; the
         chips come from labelsFor() in data/work.ts. */}
     <div class="pc__meta">
-      <p class="pc__co u-label">{company}</p>
+      <p class="pc__co u-label-mono">{company}</p>
       {tags.length > 0 && (
         <>
-          <span class="pc__dot u-label" aria-hidden="true">·</span>
+          <span class="pc__dot u-label-mono" aria-hidden="true">·</span>
           <ul class="pc__tags" aria-label="Domain and discipline">
             {tags.map((t) => <li>{t}</li>)}
           </ul>
@@ -130,38 +130,42 @@ const num = String(index).padStart(2, '0');
   }
 
   .pc__body { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  /* Number, company and tags are the label role (mono 11px caps);
+     the title is the item role (18px), so it reads first. */
   .pc__num {
-    font-size: var(--step-copy);
-    line-height: var(--leading-copy);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-fine);
+    line-height: 1.5;
+    letter-spacing: var(--tracking-mono-label);
     color: var(--fg-dim);
-    margin: 0 0 clamp(1rem, 2vw, 1.5rem);
+    margin: 0 0 var(--space-head-link);
   }
-  .pc__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0 0 0.9rem; }
+  .pc__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem 1rem; margin: 0 0 var(--space-head-body); }
   .pc__dot { color: var(--fg-dim); }
   .pc__co { color: var(--fg-dim); margin: 0; transition: color var(--dur-micro) var(--ease-out); }
   .pc:hover .pc__co { color: var(--fg); }
   /* Label chips: a hairline box, no fill, square. */
   .pc__tags { display: contents; list-style: none; margin: 0; padding: 0; }
   .pc__tags li {
-    font-family: var(--font-sans);
-    font-size: var(--step-label);
-    font-weight: var(--weight-sans);
-    letter-spacing: var(--tracking-label);
+    font-family: var(--font-mono);
+    font-size: var(--step-fine);
+    font-weight: var(--weight-mono);
+    line-height: 1.5;
+    letter-spacing: var(--tracking-mono-label);
     text-transform: uppercase;
     color: var(--fg-dim);
-    border-radius: var(--radius);
-    padding: 0.25rem 0.55rem;
+    white-space: nowrap;   /* a tag never breaks across lines */
   }
-  /* Title as a 12px caps caption, the reference's project titles
-     (allierho.com): the big serif is kept for the page's own heads. */
+  /* The title in the item role, sentence case, so it outranks the
+     labels above it (it used to be 12px caps, the same as them). */
   .pc__title {
     font-family: var(--font-sans);
-    font-size: var(--step-label);
-    line-height: var(--leading-label);
-    letter-spacing: var(--tracking-label);
+    font-size: var(--step-item);
+    line-height: var(--leading-item);
+    letter-spacing: var(--tracking-item);
     font-weight: var(--weight-sans);
-    text-transform: uppercase;
-    margin: 0 0 0.6rem;
+    margin: 0 0 0.5rem;
     text-wrap: balance;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -178,16 +182,18 @@ const num = String(index).padStart(2, '0');
     line-height: var(--leading-copy);
     letter-spacing: var(--tracking-copy);
     color: var(--fg-dim);
-    margin: 0 0 1.1rem;
+    margin: 0 0 var(--space-head-body);
     max-width: 40ch;
     text-wrap: pretty;
   }
   .pc__cta {
     margin-top: auto;
     display: inline-flex; align-items: center; gap: 0.4em;
-    font-family: var(--font-sans);
-    font-size: var(--step-label);
-    font-weight: var(--weight-sans);
+    font-family: var(--font-mono);
+    font-size: var(--step-fine);
+    font-weight: var(--weight-mono);
+    letter-spacing: var(--tracking-mono-label);
+    text-transform: uppercase;
     color: var(--fg);
     text-decoration: underline dotted 1px;
     text-underline-offset: 0.2em;
