@@ -18,7 +18,7 @@
    Every case opens the same way (on request, after gauravi.design, then
    option B of experiments/case-spacing, 2026-11-14): a split head with
    company and tags, title and snippet on the left and the case facts
-   (Role and the case's meta, 2 × 2 on hairlines) on the right → cover →
+   (Role and the case's meta, 2 × 2, parted by space) on the right → cover →
    the headline numbers, rolling (CaseNumbers), a card gap under the
    cover → the sections. The rail, the strip and the nav share one left
    edge (--gutter).
@@ -38,7 +38,7 @@
    from a mock): the title is the one large line (--step-case-title);
    section heads drop to --step-title; every label, caption and the
    section numbers are small mono caps (.u-label-mono), each section
-   opening on a hairline with "01  THE SITUATION". The page opens on the
+   opening on "01  THE SITUATION". The page opens on the
    company and its tags (a crayon-yellow wash, CASE TAGS in tokens.css), read from
    the case's /work entry via labelsFor() so the tags match its card. */
 import Base from '../../layouts/Base.astro';
@@ -195,7 +195,7 @@ const headline = impactMetrics?.kind === 'metrics'
         {openSections.map((s, i) => (
           <section class="cs" id={s.id} aria-labelledby={`${s.id}-h`}>
             <Reveal still>
-              {/* "01  THE SITUATION" on a hairline, in mono. The number is
+              {/* "01  THE SITUATION" in mono. The number is
                   decorative (aria-hidden); the label still reads as the
                   section name to a screen reader. Content order is the
                   untouched rule-3 order — this only dresses the heading. */}
@@ -373,8 +373,7 @@ const headline = impactMetrics?.kind === 'metrics'
   }
   .facts__cell {
     min-width: 0;
-    border-top: 1px solid var(--rule);
-    padding: 0.625rem 0 1rem;
+    padding: 0 0 1.25rem;
   }
   .facts__label { margin: 0 0 0.375rem; }
   .facts__value {
@@ -417,14 +416,13 @@ const headline = impactMetrics?.kind === 'metrics'
     scroll-margin-top: calc(var(--nav-h) + var(--strip-h) + 1rem);
   }
   .cs + .cs { margin-block-start: var(--space-case); }
-  /* Each section opens on a hairline, then "01  THE SITUATION" in mono —
+  /* Each section opens on "01  THE SITUATION" in mono (no hairline, on
+     request: the section gap parts them) —
      the number in ink, the name in grey. */
   .cs__label {
     display: flex;
     gap: 0.9rem;
     margin: 0 0 1.75rem;
-    padding-top: 0.9rem;
-    border-top: 1px solid var(--rule);
   }
   .cs__num { color: var(--fg); }
   /* Section heads sit under the title, not beside it in size: --step-title,
@@ -444,16 +442,14 @@ const headline = impactMetrics?.kind === 'metrics'
   .cs__blocks {
     display: flex;
     flex-direction: column;
-    gap: clamp(1.75rem, 3vw, 2.5rem);
+    gap: var(--case-block-gap);
     margin-block-start: 1.25rem;
   }
 
-  /* The closing line: a hairline like a section's, then one serif line at
+  /* The closing line: one serif line at
      the section-head size. The link is the site's ink link (global.css). */
   .cs-end {
     margin: var(--space-case) 0 0;
-    padding-top: 1.75rem;
-    border-top: 1px solid var(--rule);
     font-family: var(--font-serif);
     font-size: var(--step-title);
     line-height: 1.25;
