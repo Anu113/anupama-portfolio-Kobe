@@ -93,10 +93,10 @@ export const tabs = [
 export const updated = '2026-11-13';
 
 // ---- Portrait ------------------------------------------------------
-// Her photo as given (camera looks and a cutout were tried in the mocks
+// Her photo as given (WebP of her PNG, which stays beside it as the source; camera looks and a cutout were tried in the mocks
 // and turned down), with her porch painting as a stamp. No post-it.
 export const portrait = {
-  src: '/images/about/anupama-portrait.png', width: 1254, height: 1254,
+  src: '/images/about/anupama-portrait.webp', width: 1254, height: 1254,
   alt: 'Portrait of Anupama Mishra',
   stamp: b + 'art-porch.webp',
 };

@@ -4,7 +4,14 @@
 
    `still` renders the same wrapper div with no motion: case studies use
    it, on request, so the only thing moving there is the product (phones,
-   prototypes, the before/after line), never the page. */
+   prototypes, the before/after line), never the page.
+
+   Nothing is hidden until the script runs, and anything already on
+   screen when it runs stays as it is: only content further down the page
+   is hidden, and fades in as it's scrolled to. So a page's header and
+   first row never wait for a script or a fade (on request, 2026-11-17,
+   after a performance check found /work blank for ~1s on every visit).
+   Works without JS: the content simply shows. */
 interface Props { delay?: number; y?: number; class?: string; still?: boolean }
 const { delay = 0, y = 28, class: cls = '', still = false } = Astro.props;
 ---
@@ -13,13 +20,17 @@ const { delay = 0, y = 28, class: cls = '', still = false } = Astro.props;
   : <div data-reveal class={cls} style={`--d:${delay}ms; --y:${y}px;`}><slot /></div>}
 
 <style>
-  [data-reveal] {
+  /* Hidden only once the script has armed the page, and with no
+     transition, so arming never fades anything out. The transition lives
+     on .is-in, so only the way in is animated. */
+  :global(:root.reveal-armed) [data-reveal]:not(.is-in) {
     opacity: 0;
     transform: translateY(var(--y));
+  }
+  [data-reveal].is-in {
     transition: opacity var(--dur-reveal) var(--ease-out) var(--d),
                 transform var(--dur-reveal) var(--ease-out) var(--d);
   }
-  [data-reveal].is-in { opacity: 1; transform: none; }
 </style>
 
 <script>
@@ -29,5 +40,10 @@ const { delay = 0, y = 28, class: cls = '', still = false } = Astro.props;
     }),
     { rootMargin: '0px 0px -12% 0px', threshold: 0.1 }
   );
-  document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
+  // Already on screen: mark it in before arming, so it's never hidden.
+  document.querySelectorAll('[data-reveal]').forEach((el) => {
+    if (el.getBoundingClientRect().top < innerHeight) el.classList.add('is-in');
+    else io.observe(el);
+  });
+  document.documentElement.classList.add('reveal-armed');
 </script>
