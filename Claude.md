@@ -822,6 +822,18 @@ walked back. Concretely, in the current implementation:
   under-uses visual evidence relative to rule 3 above; new work on case
   studies should shift the balance toward screens/diagrams over paragraphs.
 - Images in `public/images/` are placeholder SVGs. Real imagery is pending an
+- **Case studies tell one story** (on request, 2026-11-14, after
+  andreas.vision/work/schneider; mocks in `experiments/case-storytelling/`,
+  first applied to PayPal Privacy): the outcome goes in the title; a
+  case's two sides (`thread`, e.g. People and GDPR and CCPA) are set out
+  once in the situation as a `sides` block, and each section's opener
+  names the side it answers (`answers`); the process shows as evidence
+  (`funnel`, `bars` against the bar to clear, `fixes` beside each
+  finding) rather than paragraphs; one gap is named mid-story (`aside`);
+  and scope carries one teamwork moment as rows (the pull, my call, what
+  it cost, what held). Ink on hairlines, no accent; values under CASE
+  STORY in `tokens.css`. Privacy's teamwork moment is a stand-in, on her
+  request, marked in `cases.ts`: replace it with her real account.
   NDA check on the Okta IAM console work — real screenshots are a priority
   once available, since the new direction depends on visual evidence more
   than the old one did.
@@ -851,6 +863,17 @@ Fourth: the production build minifies CSS and rewrites times to seconds
 time token gets seconds and runs 1000x too fast — fine in dev, static on
 the live site. Read time tokens in scripts with `cssMs()` from
 `src/scripts/css-time.ts`, never a bare `parseFloat`.
+It also rewrites colours (`rgb(255 214 170)` → `#ffd6aa`), so never pull
+a colour token apart with a regex: that read `--lamp-hue` as "6" on the
+live site, the portrait's lamp light threw, and she froze in dark mode.
+Let a canvas normalise it (`rgbTriplet()` in `HeroIllustration.astro`).
+
+Fifth: everything that follows the pointer (`CursorTrail`, `CursorLamp`,
+`HeroIllustration`) runs on one shared loop, `src/scripts/frame-loop.ts`:
+one clock, time-based easing (`ease(k, dt)`, so 60Hz and 120Hz feel the
+same), and each subscriber sleeps when it's settled or off screen. Put a
+new pointer-follower on it rather than giving it its own
+`requestAnimationFrame` loop, and don't ease by a fixed share per frame.
 
 ## Commands
 

@@ -12,8 +12,10 @@
    transform so the browser only re-composites it, never repaints the
    page (the first pass moved a full-screen gradient, which repainted the
    whole blended layer every move and stuttered). It glides after the
-   pointer, closing --lamp-follow of the gap each frame, and stops its
-   loop once it has caught up. It lives inside <main>, so the page's
+   pointer, closing --lamp-follow of the gap per 60fps frame (time-based,
+   on the shared loop in scripts/frame-loop.ts, so it keeps step with
+   the trail and the portrait at any refresh rate), and sleeps once it
+   has caught up. It lives inside <main>, so the page's
    curved end clips it off the black footer, and is screen-blended over
    the content because <Section> bands paint their own ground, which
    would cover a layer placed behind them. Values live under CURSOR LAMP
@@ -71,6 +73,8 @@
 </style>
 
 <script>
+  import { wake, ease } from '../scripts/frame-loop';
+
   (() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (matchMedia('(hover: none)').matches) return;
@@ -141,7 +145,6 @@
     const target = { x: 0, y: 0 };
     const pos = { x: 0, y: 0 };
     let seeded = false;
-    let looping = false;
 
     const announce = (on) => {
       dispatchEvent(new CustomEvent('cursor-lamp', {
@@ -154,16 +157,16 @@
       announce(true);
     };
 
-    const tick = () => {
-      pos.x += (target.x - pos.x) * k;
-      pos.y += (target.y - pos.y) * k;
+    // On the shared frame loop (scripts/frame-loop.ts), in step with the
+    // trail and the portrait; --lamp-follow is per 60fps frame and ease()
+    // scales it to the frame's real length.
+    const tick = (dt) => {
+      const e = ease(k, dt);
+      pos.x += (target.x - pos.x) * e;
+      pos.y += (target.y - pos.y) * e;
       place();
       castShadows();
-      if (Math.hypot(target.x - pos.x, target.y - pos.y) > 0.3) {
-        requestAnimationFrame(tick);
-      } else {
-        looping = false;
-      }
+      return Math.hypot(target.x - pos.x, target.y - pos.y) > 0.3;
     };
 
     addEventListener('pointermove', (e) => {
@@ -177,7 +180,7 @@
         seeded = true;
       }
       lamp.classList.add('is-on');
-      if (!looping) { looping = true; requestAnimationFrame(tick); }
+      wake(tick);
     }, { passive: true });
 
     addEventListener('resize', () => { k = follow(); });

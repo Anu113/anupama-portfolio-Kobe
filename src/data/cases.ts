@@ -62,7 +62,24 @@ export type CaseBlock =
       device box; `recording` is the study prototype's screen recording.
       `set` picks the row. Only for the Chase Pay case. */
   | { kind: 'chase'; set: 'recording' | 'entry' | 'benefits' | 'settings' | 'points' | 'redirect'; caption?: string; claim?: string }
-  | { kind: 'compare'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'subnav'; claim?: string; notes: CompareNote[] };
+  | { kind: 'compare'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'subnav'; claim?: string; notes: CompareNote[] }
+  /* Story blocks, after andreas.vision/work/schneider (on request,
+     2026-11-14; mocks in experiments/case-storytelling). */
+  /** The two sides a case has to satisfy, side by side: who, how long
+      they give it, their question, and what they need. Once, in the
+      situation; each section's `answers` then names which side it serves. */
+  | { kind: 'sides'; items: { key: string; who: string; span: string; question: string; needs: string[] }[] }
+  /** A narrowing process as numbers: e.g. 4 structures → 3 → 1. `count`
+      draws that many marks, with the earlier stages' extra ones ghosted. */
+  | { kind: 'funnel'; label?: string; stages: { value: string; count?: number; label: string }[] }
+  /** Scores as bars against a bar to clear. Values are percentages. The
+      winner (highest) is solid, the rest pale. */
+  | { kind: 'bars'; label?: string; threshold: number; thresholdLabel: string; items: { label: string; value: number }[]; note?: string }
+  /** What research found, next to what changed because of it. */
+  | { kind: 'fixes'; label?: string; items: { tag: string; found: string; changed: string }[] }
+  /** One honest line in the middle of the story: a gap, named where it
+      happened rather than saved for the reflection. */
+  | { kind: 'aside'; label: string; text: string };
 
 /** One note on a before/after phone. Boxes are [x, y, width, height] in %
     of the screen, measured off the drawn screens. `at` is where the pin
@@ -90,6 +107,9 @@ export interface CaseSection {
   /** A sentence, not a noun. "We shipped underneath live tenants" beats
       "Technical approach". */
   heading: string;
+  /** Which of the case's `thread` sides this section serves, shown on its
+      opener line. Only on cases with a `thread`. */
+  answers?: string[];
   blocks: CaseBlock[];
 }
 
@@ -149,6 +169,9 @@ export interface CaseStudy {
       shows on LockedGate, beside `role`: one line each, short enough for
       a recruiter to read at a glance. Only facts cleared to be public. */
   locked?: { password: string; preview: number; scope?: string; outcome?: string };
+  /** The case's two sides, by key, with the short names the section
+      openers show (see `answers` and the `sides` block). */
+  thread?: Record<string, string>;
   sections: CaseSection[];
   /** Slug of the next case study, for the footer link. */
   next: string;
@@ -434,7 +457,9 @@ export const cases: CaseStudy[] = [
     company: 'PayPal',
     theme: 'lilac',
     eyebrow: 'PayPal · Data & Privacy settings · 2021–2023',
-    title: 'Privacy settings people can read',
+    /* The outcome in the title (change 01 of experiments/case-storytelling,
+       on request, 2026-11-14): a recruiter reads titles. */
+    title: 'Privacy settings 80 million people can read, and 60% fewer calls about them',
     hero: {
       src: '/images/paypal-privacy/hero.webp',
       alt: 'The redesigned Data and privacy page in a phone, with three pieces of the redesign beside it: a switch for personalized offers, a Personal info data type with a tick, and Clean up your data, marked New',
@@ -445,19 +470,24 @@ export const cases: CaseStudy[] = [
        Staff product designer's voice throughout, on request: decisions
        and influence across teams, not running a team. */
     description:
-      '75% of settings traffic stopped on the first page. I owned the design of PayPal\'s privacy settings so that every setting is one tap away and says what it does. Launched in early 2023, now used by more than 80 million people.',
+      '75% of settings traffic stopped on the first page. I owned the design from the first card sort to launch in early 2023: every setting one tap away, saying what it does, and still meeting GDPR and CCPA.',
     meta: [
       { label: 'Team', value: '4 other designers, content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers' },
       { label: 'Platforms', value: 'PayPal app, mobile first, and web' },
       { label: 'Timeline', value: 'March 2021 – January 2023' },
     ],
+    /* The case's two sides (change 02): a person changing a setting, and
+       the regulation that decides what the screens must say and keep. Set
+       out once in the situation; each section names the side it answers. */
+    thread: { people: 'People', law: 'GDPR and CCPA' },
     role: 'Owned the design · Research through delivery',
     sections: [
       {
         id: 'situation',
+        answers: ['people', 'law'],
         nav: 'The situation',
         label: 'The situation',
-        heading: '75% of settings traffic stopped on the first page. The settings had grown one control at a time.',
+        heading: '75% of settings traffic stopped on the first page, and every new rule had nowhere to go.',
         blocks: [
           {
             kind: 'prose',
@@ -479,14 +509,33 @@ export const cases: CaseStudy[] = [
               { at: 78, before: [6, 82, 88, 8], after: [3, 49, 94, 38], was: 'Download, correct and delete share one row.', now: 'Your data rights: three rows. "Correct" became "Update".' },
             ],
           },
+          /* Replaces the "What was broken" list (its four points are the
+             two sides' needs, below). */
           {
-            kind: 'points',
-            label: 'What was broken',
+            kind: 'sides',
             items: [
-              { title: 'No structure', body: 'Controls added one at a time, in jargon, with no information architecture.' },
-              { title: 'No transparency', body: 'People couldn\'t tell how their data was used or which controls they had.' },
-              { title: 'No room to grow', body: 'New features and new GDPR and CCPA requirements had nowhere to go.' },
-              { title: 'Nothing explained', body: 'Nothing told people what their data rights were, or how to use them.' },
+              {
+                key: 'people',
+                who: 'A PayPal customer',
+                span: 'One tap',
+                question: 'What is PayPal doing with my data, and how do I change it?',
+                needs: [
+                  'Find any setting from the privacy page',
+                  'See what it\'s set to, and what it does',
+                  'Get a copy, or delete part, and keep the account',
+                ],
+              },
+              {
+                key: 'law',
+                who: 'GDPR and CCPA',
+                span: 'Every screen',
+                question: 'Is everything disclosed, and is what must be kept, kept?',
+                needs: [
+                  'Say what\'s collected, why, and whether it\'s shared',
+                  'Honour requests to see or delete data',
+                  'Name what PayPal must retain, not leave it silent',
+                ],
+              },
             ],
           },
           {
@@ -503,6 +552,7 @@ export const cases: CaseStudy[] = [
       },
       {
         id: 'scope',
+        answers: ['people', 'law'],
         nav: 'My scope',
         label: 'My scope',
         heading: 'I owned the design from the first card sort to delivery, across every team with a setting on these screens.',
@@ -545,10 +595,27 @@ export const cases: CaseStudy[] = [
               },
             ],
           },
+          /* One teamwork moment (change 04). STAND-IN, written on her
+             request (2026-11-14) from what this case records: the delete
+             screen's two paths and its line on what PayPal keeps. The
+             disagreement, who held each view and the cost are plausible,
+             not sourced. Replace with her real account before an
+             interview leans on it. */
+          {
+            kind: 'rows',
+            label: 'One call: what the delete screen says',
+            items: [
+              { term: 'The pull', detail: 'The privacy officers wanted the full retention terms on the delete screen. Product wanted "Delete and close" to stay the one way to delete.' },
+              { term: 'My call', detail: 'Put "Clean up your data" first, so people could delete part and keep the account, and say what PayPal must keep in one plain line, with the legal detail a link away.' },
+              { term: 'What it cost', detail: 'The full terms moved off the screen, and closing the account went second.' },
+              { term: 'What held', detail: 'Both paths shipped, and the line on what PayPal keeps is on the screen today.' },
+            ],
+          },
         ],
       },
       {
         id: 'hard-call',
+        answers: ['people'],
         nav: 'The hard call',
         label: 'The hard call',
         heading: 'The first structure tested well and cost a tap. I kept the groups and dropped the extra layer.',
@@ -567,22 +634,19 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'In rapid research the groups worked. The sheets didn\'t: one more tap before any real setting, on every task. Some labels failed too:',
+              'In rapid research the groups worked. The sheets didn\'t, and some labels failed too. So I kept the groups and dropped the sheets: every setting now sits on one page under three headings, Profile privacy, Permissions and shared data, and Your data rights, each with a line saying what it does.',
             ],
           },
+          /* Each finding beside what changed (change 03). The deals/ads fix
+             confirmed by her, 2026-11-14. */
           {
-            kind: 'rows',
-            label: 'What rapid research found',
+            kind: 'fixes',
+            label: 'What rapid research found, and what changed',
             items: [
-              { term: 'Critical', detail: 'People couldn\'t tell deals from ads.' },
-              { term: 'Medium', detail: 'To change marketing email, people looked under Notifications, not Data and Privacy.' },
-              { term: 'Medium', detail: 'People didn\'t understand the "Your data rights" section, and read "Correct your data" as something other than updating their details.' },
-            ],
-          },
-          {
-            kind: 'prose',
-            text: [
-              'So I kept the groups and dropped the sheets. Every setting now sits on one page under three headings: Profile privacy, Permissions and shared data, and Your data rights, each with a line saying what it does. "Correct your data" became "Update your data". Emails and notifications got their own link at the bottom, where people looked for them.',
+              { tag: 'Structure', found: 'The sheets cost one more tap before any setting, on every task.', changed: 'Sheets dropped: one page, three headings.' },
+              { tag: 'Critical', found: 'People couldn\'t tell deals from ads.', changed: 'Interest-based marketing became "Deals & ads" under Permissions and shared data, with "Learn how it works".' },
+              { tag: 'Medium', found: 'To change marketing email, people looked under Notifications, not Data and Privacy.', changed: 'Emails and notifications got their own link at the bottom, where people looked.' },
+              { tag: 'Medium', found: 'People read "Correct your data" as something other than updating their details.', changed: '"Correct your data" became "Update your data".' },
             ],
           },
           {
@@ -598,14 +662,44 @@ export const cases: CaseStudy[] = [
             set: 'evolution',
             caption: 'Before, the first version, and the revised page. The blue card at the top of the revised page is the yearly privacy reminder, a later proposal.',
           },
+          /* The gap, named where it happened (change 05). */
+          {
+            kind: 'aside',
+            label: 'What we missed',
+            text: 'The card sorts settled where every setting goes, not what it\'s called. Two of the four findings were words: deals against ads, and "Correct your data". We tested the labels after the structure.',
+          },
         ],
       },
       {
         id: 'team',
+        answers: ['people'],
         nav: 'How the work got made',
         label: 'How the work got made',
-        heading: 'Four card sorts, three prototypes, and only one cleared the 70% bar.',
+        heading: 'Four structures, three prototypes, and only one cleared the 70% bar.',
         blocks: [
+          /* The process as evidence (change 03): the funnel and the scores
+             drawn, the card-sort paragraph folded into them. */
+          {
+            kind: 'funnel',
+            stages: [
+              { value: '1 year', label: 'Of settings traffic set the order of tasks' },
+              { value: '4', count: 4, label: 'Structures in closed card sorts, 20 tasks' },
+              { value: '3', count: 3, label: 'Survived, built as high-fidelity prototypes' },
+              { value: '1', count: 1, label: 'Cleared 70% task success, unmoderated' },
+            ],
+          },
+          {
+            kind: 'bars',
+            label: 'Unmoderated test of the three prototypes · task success',
+            threshold: 70,
+            thresholdLabel: '70% bar',
+            items: [
+              { label: 'Prototype 3', value: 74 },
+              { label: 'Prototype 1', value: 68 },
+              { label: 'Prototype 2', value: 67 },
+            ],
+            note: 'Prototype 3 cleared the bar, with no one abandoning.',
+          },
           {
             kind: 'points',
             items: [
@@ -614,28 +708,16 @@ export const cases: CaseStudy[] = [
                 body: 'A year of settings traffic, a review with the product triad, and sessions with customer service and the teams whose features needed a setting. The most-used tasks set the order on each page, balanced against stakeholders and GDPR.',
               },
               {
-                title: 'Card sorts, then prototypes',
-                body: 'Four closed card sorts tested the current structure against three alternatives: 20 tasks, and people picked the tab each belonged in. Three options survived, and each became a high-fidelity prototype.',
-              },
-              {
                 title: 'Contextual privacy',
                 body: 'Most privacy questions start somewhere else: a first visit, a shopping integration, the middle of a payment. Each of those moments got a short explanation in place, with a link to the setting.',
               },
-            ],
-          },
-          {
-            kind: 'metrics',
-            label: 'Unmoderated test of the three prototypes · 70% success was the bar',
-            items: [
-              { value: '74%', label: 'Task success, prototype 3, with no one abandoning' },
-              { value: '68%', label: 'Task success, prototype 1' },
-              { value: '67%', label: 'Task success, prototype 2' },
             ],
           },
         ],
       },
       {
         id: 'craft',
+        answers: ['people', 'law'],
         nav: 'The craft',
         label: 'The craft',
         heading: 'Each setting says what it does, what it\'s set to, and what changes if you switch it.',
@@ -722,9 +804,10 @@ export const cases: CaseStudy[] = [
       // pasted chat output and aren't used.
       {
         id: 'data-rights',
-        nav: 'Your data rights',
-        label: 'Your data rights',
-        heading: 'Get a copy of your data, or delete part of it, without closing your account.',
+        answers: ['law'],
+        nav: 'What the law keeps',
+        label: 'What the law keeps',
+        heading: 'Get a copy of your data, or delete part of it and keep the account, and see plainly what PayPal can\'t delete.',
         blocks: [
           {
             kind: 'figure',
@@ -767,6 +850,7 @@ export const cases: CaseStudy[] = [
       },
       {
         id: 'impact',
+        answers: ['people', 'law'],
         nav: 'Impact',
         label: 'Impact',
         heading: '60% fewer support calls about privacy, on settings now used by more than 80 million people.',

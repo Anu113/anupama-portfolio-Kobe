@@ -32,6 +32,11 @@
       speed-varying width to me; reading the source showed that was wrong.
       The apparent thinning was the chain collapsing, plus camera blur.)
 
+   The easing constants are per 60fps frame and scaled to each frame's
+   real length, on the shared pointer loop (scripts/frame-loop.ts) with
+   the lamp and the portrait, so the line feels the same at 60Hz and
+   120Hz and a dropped frame doesn't jolt it.
+
    Show and hide is CSS, not canvas: an `is-visible` class toggles opacity
    over 350ms. The canvas starts at opacity 0 and fades out on mouseleave.
 
@@ -74,6 +79,8 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
 </style>
 
 <script>
+  import { wake, ease } from '../scripts/frame-loop';
+
   (() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (matchMedia('(hover: none)').matches) return;
@@ -97,7 +104,6 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
     let speed = 0;
     let visible = false;
     let seeded = false;
-    let looping = false;
     let catchUpTimer = 0;
     let colour = '#f4ece1';
 
@@ -192,18 +198,24 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
       ctx.stroke();
     };
 
-    const tick = () => {
-      speed *= 0.9;
+    // Runs on the shared frame loop (scripts/frame-loop.ts), in step with
+    // the lamp and the portrait. Every constant here is "per 60fps
+    // frame"; ease() scales it to the frame's real length, so the line
+    // feels the same at 60Hz and 120Hz and a dropped frame doesn't jolt it.
+    const tick = (dt) => {
+      const f = dt / (1000 / 60);
+      speed *= Math.pow(0.9, f);
 
       const target = headTarget();
-      points[0].x = lerp(points[0].x, target.x, HEAD_LERP);
-      points[0].y = lerp(points[0].y, target.y, HEAD_LERP);
+      const hk = ease(HEAD_LERP, dt);
+      points[0].x = lerp(points[0].x, target.x, hk);
+      points[0].y = lerp(points[0].y, target.y, hk);
 
       const moving = speed > IDLE_SPEED;
       const curl = moving ? CURL * Math.min(speed / 16, 1) ** 1.5 : 0;
 
       for (let i = 1; i < points.length; i++) {
-        const t = TAIL_LERP - (i / points.length) * 0.06;
+        const t = ease(TAIL_LERP - (i / points.length) * 0.06, dt);
         const prev = points[i - 1];
         let targetX = prev.x;
         let targetY = prev.y;
@@ -225,18 +237,10 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
 
       if (visible) draw();
 
-      if (visible && (moving || !isSettled())) {
-        requestAnimationFrame(tick);
-      } else {
-        looping = false;
-      }
+      return visible && (moving || !isSettled());
     };
 
-    const startLoop = () => {
-      if (looping) return;
-      looping = true;
-      requestAnimationFrame(tick);
-    };
+    const startLoop = () => wake(tick);
 
     const onMove = (e) => {
       const wasOverCard = overCard;

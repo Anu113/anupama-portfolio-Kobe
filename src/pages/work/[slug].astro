@@ -79,6 +79,12 @@ const gateId = `${study.slug}-gate-content`;
 const workEntry = work.find((w) => w.href === `/work/${study.slug}`);
 const tags = workEntry ? labelsFor(workEntry) : [];
 const num = (i: number) => String(i + 1).padStart(2, '0');
+/* The thread (see `thread` and `answers` in cases.ts): which of the case's
+   two sides a section serves, on its opener line. */
+const answersOf = (s: { answers?: string[] }) =>
+  study.thread && s.answers?.length
+    ? s.answers.map((k) => study.thread![k]).filter(Boolean).join(' + ')
+    : '';
 const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`;
 const pageId = `${study.slug}-page-content`;
 /* The rail's and the strip's contents: only the free sections, plus one
@@ -202,6 +208,9 @@ const headline = impactMetrics?.kind === 'metrics'
               <p class="u-label-mono cs__label">
                 <span class="cs__num" aria-hidden="true">{num(i)}</span>
                 {s.label}
+                {answersOf(s) && (
+                  <span class="cs__answers"><span class="u-sr-only">Answers: </span>{answersOf(s)}</span>
+                )}
               </p>
               <h2 class="cs__head" id={`${s.id}-h`}>{s.heading}</h2>
             </Reveal>
@@ -232,6 +241,9 @@ const headline = impactMetrics?.kind === 'metrics'
                     <p class="u-label-mono cs__label">
                       <span class="cs__num" aria-hidden="true">{num(previewCount + i)}</span>
                       {s.label}
+                      {answersOf(s) && (
+                        <span class="cs__answers"><span class="u-sr-only">Answers: </span>{answersOf(s)}</span>
+                      )}
                     </p>
                     <h2 class="cs__head" id={`${s.id}-h`}>{s.heading}</h2>
                   </Reveal>
@@ -425,6 +437,8 @@ const headline = impactMetrics?.kind === 'metrics'
     margin: 0 0 1.75rem;
   }
   .cs__num { color: var(--fg); }
+  /* Which side of the case's thread this section answers, pushed right. */
+  .cs__answers { margin-inline-start: auto; text-align: right; }
   /* Section heads sit under the title, not beside it in size: --step-title,
      so the one large line on the page stays the title. */
   .cs__head {
