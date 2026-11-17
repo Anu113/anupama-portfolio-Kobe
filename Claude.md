@@ -825,7 +825,7 @@ walked back. Concretely, in the current implementation:
   Now → footer (which carries contact). The hero is the screen minus
   `--hero-peek`, so the "Selected work" heading line shows at the
   bottom of the first screen on laptops and up (on request, 2026-11-17);
-  its link pill stays just below. On short screens `--hero-pad-top`
+  "View all work" sits after the cards (on request, 2026-11-17). On short screens `--hero-pad-top`
   gives way first (HOME HERO in `tokens.css`).
 - **Now** (`Now.astro`, `site.now` in `data/site.ts`; on request, after
   carlthomasiv.com's): a hairline, a mono "NOW" label and one grey
