@@ -40,6 +40,10 @@
    count as in. If the load runs ahead, he still walks and pushes at his
    own pace, so it always reads as him doing it.
 
+   It always lands on the hero (on request, 2026-11-17): the page is
+   put at the top and held there under the curtain (no scroll
+   restoration on a refresh, no scrolling until it ends).
+
    It never holds the page hostage: any deliberate key, click, tap or
    real scroll (after --dur-preloader-skip-grace, and never a shortcut
    like Cmd+R) ends it at once: the layer fades and the hero shows,
@@ -72,6 +76,17 @@ const pages = ['/'];
     }
     document.documentElement.dataset.preloader = '';
     window.__preloaderT0 = performance.now();
+    // It always hands over to the hero (on request, 2026-11-17): a refresh
+    // mid-page doesn't restore the old scroll under the curtain.
+    // Held there (data-preloader-hold) until it ends, or the failsafe's
+    // time is up even if the script below never runs.
+    const html = document.documentElement;
+    try { history.scrollRestoration = 'manual'; } catch (e) {}
+    html.dataset.preloaderHold = '';
+    const keep = () => { if ('preloaderHold' in html.dataset) { if (scrollY) scrollTo(0, 0); } else removeEventListener('scroll', keep); };
+    addEventListener('scroll', keep, { passive: true });
+    scrollTo(0, 0);
+    setTimeout(() => { delete html.dataset.preloaderHold; }, 20000);
   })();
 </script>
 <div class="preloader" aria-hidden="true" data-preloader-root>
@@ -104,7 +119,9 @@ const pages = ['/'];
   const CONTACT_X = 0.1;
 
   // What comes into focus after the sentence lands, in order.
-  const FOCUS = ['#site-nav', '.hero__eyebrow', '.hero__more', '.intro__links', '.hero__portrait-cell', '.hero__cue'];
+  // The portrait first: it's the biggest thing on the page, and it comes
+  // up beside the sentence while that is still gliding.
+  const FOCUS = ['.hero__portrait-cell', '#site-nav', '.hero__eyebrow', '.hero__more', '.intro__links', '.hero__cue'];
 
   function run(root: HTMLElement) {
     const words = root.querySelector<HTMLElement>('[data-preloader-words]')!;
@@ -126,6 +143,10 @@ const pages = ['/'];
       inputs.forEach((e) => removeEventListener(e, skip, true));
       root.remove();
       delete html.dataset.preloader;
+      delete html.dataset.preloaderHold;
+      try { history.scrollRestoration = 'auto'; } catch (e) {}
+      // Heavy work held back for the hand-over (the hero's 96 frames) may go now.
+      dispatchEvent(new CustomEvent('preloader:done'));
     };
 
     // ---- progress: the images the page asks for straight away, and the hero sprite
@@ -218,13 +239,15 @@ const pages = ['/'];
         const focusMs = fast ? cssMs('--dur-preloader-skip', 600) : cssMs('--dur-preloader-focus', 700);
         const stepMs = fast ? 0 : cssMs('--dur-preloader-focus-step', 100);
         const blur = getComputedStyle(html).getPropertyValue('--preloader-focus-blur').trim() || '10px';
-        let at = glideMs;
+        const focusEase = getComputedStyle(html).getPropertyValue('--ease-preloader-focus').trim() || 'ease-out';
+        // starts during the glide, not after it, so the page is never blank
+        let at = glideMs * Math.min(1, Math.max(0, num('--preloader-focus-overlap') || 0));
         if (!reduce) {
           FOCUS.forEach((q) => {
             const el = document.querySelector<HTMLElement>(q);
             if (!el) return;
             el.animate([{ opacity: 0, filter: `blur(${blur})` }, { opacity: 1, filter: 'blur(0px)' }],
-              { duration: focusMs, delay: at, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'backwards' });
+              { duration: focusMs, delay: at, easing: focusEase, fill: 'backwards' });
             at += stepMs;
           });
           // Moss peeks up from behind his books: he rises, clipped at the
@@ -234,7 +257,7 @@ const pages = ['/'];
           if (moss) {
             const h = moss.offsetHeight, from = h * 0.95, feet = h * 0.046;
             // never while the pushing Moss is still on screen: one Moss at a time
-            const peekAt = fast ? 0 : Math.max(at + focusMs * 0.4, exitMs + 150);
+            const peekAt = fast ? 0 : Math.max(at + focusMs * 0.4, Number.isFinite(exitMs) ? exitMs + 150 : 0);
             moss.animate([
               { translate: `0 ${from}px`, clipPath: `inset(0 0 ${from + feet}px 0)` },
               { translate: '0 0', clipPath: `inset(0 0 ${feet}px 0)` },
@@ -263,6 +286,8 @@ const pages = ['/'];
       if (!strolling) cancelAnimationFrame(raf);
       inputs.forEach((e) => removeEventListener(e, skip, true));
       if (fast) walker.style.visibility = 'hidden';
+      scrollTo(0, 0);   // whatever happened under the curtain, it lands on the hero
+      delete html.dataset.preloaderHold;
       handOver(fast, exitMs);
     };
 
@@ -291,14 +316,23 @@ const pages = ['/'];
     const pauseAt = num('--preloader-pause-at') || 0.5;
     const pauseMs = cssMs('--dur-preloader-pause', 300);
     const floor = num('--preloader-floor') || 0.86;
-    const ww = walker.offsetWidth, wh = walker.offsetHeight;
     const frameMs = 1000 / fps;
-    const stroll = (ww * strollRate) / 1000;                 // px per ms
-    const startEdge = ww * (CONTACT_X + pawAt(PF.contact));  // the strip: room to stroll in, fully on screen
     const walkIn = (PF.contact - PF.start) * frameMs;
-    let x = ww * CONTACT_X - stroll * walkIn;                // so he arrives as his paw meets the curtain
+    // His size, and everything that hangs off it, is measured when he
+    // starts (measure(), in start() below), not here: if the styles
+    // weren't applied yet he measured 0 wide, his pace came out 0 and his
+    // exit time infinite, and the hand-over threw half way (2026-11-17).
+    let ww = 0, wh = 0, stroll = 0, startEdge = 0, x = 0, edge = 0;
+    const measure = () => {
+      ww = walker.offsetWidth || innerHeight * 0.2;
+      wh = walker.offsetHeight || ww * 289 / 228;
+      stroll = (ww * strollRate) / 1000;                     // px per ms
+      startEdge = ww * (CONTACT_X + pawAt(PF.contact));      // the strip: room to stroll in, fully on screen
+      x = ww * CONTACT_X - stroll * walkIn;                  // so he arrives as his paw meets the curtain
+      edge = startEdge;
+    };
     let i = PF.start, acc = 0, last = 0, t = 0, phase: 'wait' | 'in' | 'push' | 'final' | 'exit' = 'wait', exitStep = 0;
-    let edge = startEdge, paused = false, pauseUntil = 0, finalSpeed = 0;
+    let paused = false, pauseUntil = 0, finalSpeed = 0;
     curtain.style.translate = '0px 0';   // first, the whole screen is the curtain
 
     const frame = (n: number) => {
@@ -376,6 +410,7 @@ const pages = ['/'];
     const holdMs = cssMs('--dur-preloader-black', 400), openMs = cssMs('--dur-preloader-open', 500);
     const start = () => {
       if (ended) return;
+      measure();
       const wait = Math.max(0, holdMs - (performance.now() - t0));
       setTimeout(() => {
         if (ended) return;
@@ -404,6 +439,10 @@ const pages = ['/'];
 
 <style>
   .preloader { display: none; }
+
+  /* The page holds still at the hero under the curtain, so a skip by
+     wheel or key never lands somewhere else. */
+  :global(:root[data-preloader-hold]) { overflow: hidden; }
 
   :global(:root[data-preloader]) .preloader {
     display: block;
@@ -468,20 +507,24 @@ const pages = ['/'];
 
   /* The hand-over: the curtain is gone, the ground clears so the page
      comes into focus under the gliding sentence while Moss strolls out. */
-  .preloader:global(.is-clear) {
+  /* Scoped under :root[data-preloader] like the rule that paints the
+     ground, or that rule wins on specificity: the layer stayed opaque,
+     the hero focused in unseen under it, and then appeared all at once
+     when the layer was removed (2026-11-17). */
+  :global(:root[data-preloader]) .preloader:global(.is-clear) {
     background: transparent;
     pointer-events: none;
   }
 
   /* Skipped, reduced motion, or the hero off screen: the layer fades. */
-  .preloader:global(.is-fading) {
+  :global(:root[data-preloader]) .preloader:global(.is-fading) {
     pointer-events: none;
     opacity: 0;
     transition: opacity var(--dur-preloader-skip) var(--ease-fade);
   }
   @media (prefers-reduced-motion: reduce) {
     .preloader__moss { display: none; }
-    .preloader:global(.is-fading) { transition-duration: var(--dur-preloader-fade); }
+    :global(:root[data-preloader]) .preloader:global(.is-fading) { transition-duration: var(--dur-preloader-fade); }
   }
 
   @keyframes preloader-failsafe {

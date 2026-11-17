@@ -150,10 +150,13 @@ const cards = homeCards.map((c) => {
      measured on hansonwu.com (nav→headline ≈26vh, ≈4x their headline's
      font-size, at 1440x900).
 
-     min-height: 100svh, content still top-aligned: the first screen is
-     the hero and only the hero, on every screen size. Sized to content
-     alone, a tall monitor (2560x1440) showed "Selected work" and most of
-     the first card under it — read as a landing page. Top-aligned, not
+     min-height: the screen minus --hero-peek, content still top-aligned:
+     the first screen is the hero with the "Selected work" heading just
+     showing under it (on request, 2026-11-17: on a laptop the work wasn't
+     evident from the first screen). Never more than that: sized to
+     content alone, a tall monitor (2560x1440) showed "Selected work" and
+     most of the first card under it — read as a landing page. On short
+     screens --hero-pad-top gives way so the peek still fits. Top-aligned, not
      centred, so the nav → headline distance above stays exactly as set
      by --hero-pad-top; any extra height goes below the CTAs, where the
      Scroll cue sits at the fold. (Before this it was 88svh plus a flex
@@ -162,7 +165,7 @@ const cards = homeCards.map((c) => {
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 100svh;
+    min-height: calc(100svh - var(--hero-peek));
     padding-top: var(--hero-pad-top);
     /* Holds the Scroll cue (.hero__cue) clear of the CTAs and the
        portrait's feet; the rest of the gap to "Selected work" is #work's

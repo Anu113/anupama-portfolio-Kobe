@@ -98,7 +98,9 @@ effect:
   strolls out, smiling, at his walking pace. Follow the clip's cues and
   keep it calm, not rushed (on request). Then the sentence glides from
   the middle to its place, the layer goes, the rest of the hero comes
-  into focus one piece after another (blur to sharp), and Moss peeks up
+  into focus one piece after another (blur to sharp; the portrait
+  first, starting while the sentence is still gliding so the page is
+  never blank, on an even ease so nothing pops; 2026-11-17), and Moss peeks up
   from behind his books, his card last. It only goes as far as the page
   has loaded (images, and the hero sprite via `hero-scrub:ready`, capped
   at 4s). The hero is all in by ~6.5s, as huyml.co's (2026-11-16: it
@@ -109,7 +111,10 @@ effect:
   page of the site, nor on back/forward. A deliberate key, click, tap or
   real scroll skips it (not in its first 1.2s, never a shortcut such as
   Cmd+R): the layer fades and the hero shows. A CSS failsafe hides it at
-  20s; it removes itself from the DOM. Under reduced motion: no Moss, no
+  20s; it removes itself from the DOM. It always hands over to the hero
+  (on request, 2026-11-17): no scroll restoration on a refresh, and the
+  page is held at the top under the curtain (`data-preloader-hold`,
+  released when it ends or at 20s). Under reduced motion: no Moss, no
   glide, the curtain fades. Values under PRELOADER in `tokens.css`. The
   terracotta "dot that went for a walk" loader it replaced is in git
   history; the walking loader (`Loader.astro`, `data/loader.ts`,
@@ -791,7 +796,11 @@ walked back. Concretely, in the current implementation:
   the way the paintings share hers.
 - The home page is now: hero → "Selected *work*" head + project cards →
   "Beyond *work*" ring → one-line playground pointer → Small talk →
-  Now → footer (which carries contact).
+  Now → footer (which carries contact). The hero is the screen minus
+  `--hero-peek`, so the "Selected work" heading line shows at the
+  bottom of the first screen on laptops and up (on request, 2026-11-17);
+  its link pill stays just below. On short screens `--hero-pad-top`
+  gives way first (HOME HERO in `tokens.css`).
 - **Now** (`Now.astro`, `site.now` in `data/site.ts`; on request, after
   carlthomasiv.com's): a hairline, a mono "NOW" label and one grey
   paragraph in her words on what she's thinking about. No heading, no
