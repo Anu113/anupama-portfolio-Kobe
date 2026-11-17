@@ -313,8 +313,19 @@
   --nav-sound-stagger: 60ms;                     /* sound button: far wave follows the near one */
   /* Home hero layout (index.astro, HeroIllustration.astro). */
   --hero-copy-w: clamp(22rem, 46vw, 50rem);
-  /* The band's top padding: the nav → headline gap (index.astro). */
-  --hero-pad-top: clamp(7rem, 26vh, 13rem);
+  /* How much of "Selected work" shows at the bottom of the first screen
+     (on request, 2026-11-17): its heading line and a little air, so the
+     work is evident without a scroll, stopping short of the link pill
+     under it (a sliver of pill read as a mistake). The hero is the
+     screen minus this. */
+  --hero-peek: 3.75rem;
+  /* The band's top padding: the nav → headline gap (index.astro). On a
+     short screen it gives way first, so the peek above still fits: the
+     hero's content (the row, ~31rem) and its bottom padding (~3rem) plus
+     the peek take --hero-fold-content, and the padding gets what's left,
+     never closer to the nav than 1.5rem. */
+  --hero-fold-content: calc(34rem + var(--hero-peek));
+  --hero-pad-top: clamp(calc(var(--nav-h) + 1.5rem), min(26vh, calc(100svh - var(--hero-fold-content))), 13rem);
   /* How far the figure rises into that padding (up to 3rem, stopping
      6rem under the nav). The figure grows by exactly this much, upward,
      so it gets bigger without moving the headline, the CTAs or the
@@ -1091,8 +1102,14 @@
   --dur-preloader-max: 4000ms;           /* images still out by now count as in */
   --dur-preloader-glide: 800ms;          /* the sentence gliding from the middle to its place */
   --ease-preloader-glide: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-preloader-focus: 700ms;          /* each piece of the hero coming into focus */
-  --dur-preloader-focus-step: 100ms;     /* ...one after another */
+  --dur-preloader-focus: 1100ms;         /* each piece of the hero coming into focus */
+  --dur-preloader-focus-step: 140ms;     /* ...one after another, the portrait first */
+  /* An even ease-out: the old expo curve did ~70% of the change in the
+     first 150ms, so the pieces read as popping in, not focusing. */
+  --ease-preloader-focus: cubic-bezier(0.33, 1, 0.68, 1);
+  /* The pieces start this far into the sentence's glide, so the page
+     never sits blank with only the sentence on it (2026-11-17). */
+  --preloader-focus-overlap: 0.35;
   --preloader-focus-blur: 10px;
   --dur-preloader-peek: 900ms;           /* Moss popping up from behind his books */
   --dur-preloader-fade: 450ms;           /* reduced motion: the curtain fades instead */
