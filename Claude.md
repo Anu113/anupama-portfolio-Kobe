@@ -601,6 +601,20 @@ walked back. Concretely, in the current implementation:
   `<dialog>` is open are left to the browser. `html.lenis` turns off the
   CSS `scroll-behavior: smooth` so the two don't fight; anchor links go
   through Lenis. Off under reduced motion.
+- **Page arrival rises** (on request, 2026-11-17, "B · Rise" of
+  `experiments/page-transitions/`, after andreas.vision, measured; a
+  dip after daneden.me, a card-to-cover carry and a curtain wipe after
+  huyml.co were mocked and passed over). Arriving from another page of
+  the site, the page swaps in at once and its opening parts rise 10px
+  into place, 480ms ease-out, 60ms apart: the hero's lines and portrait,
+  /work's head and first tiles, a case study's head and cover (marked
+  `data-rise` with `--rise-i`; About's own `.rise` already does this).
+  Not on a first visit, a refresh or back/forward; the home page's
+  preloader owns the first visit. Decided before paint in `Base.astro`,
+  drawn in `global.css`, values under PAGE ARRIVAL in `tokens.css`. Off
+  under reduced motion. Its reason: a felt step from one page to the
+  next, without holding the page back. Mark only what's on the first
+  screen; don't add a leave animation.
 - **The location line** (`LocalTime.astro`) sits above the hero
   headline, after abstract.systems: a green "available" light with a
   pinging ring, `BANGALORE,IN`, a live weather icon, and 24h time with

@@ -229,6 +229,15 @@
   --dur-hover: 320ms;
   --dur-micro: 150ms;
   --dur-micro-move: 180ms;
+  /* PAGE ARRIVAL: moving from one page of the site to another, the new
+     page swaps in at once and its opening parts ([data-rise]) rise into
+     place one after another — andreas.vision's, measured (480ms, 10px,
+     ease-out). Chosen 2026-11-17, "B · Rise" in
+     experiments/page-transitions/. Base.astro decides; global.css draws. */
+  --dur-rise: 480ms;
+  --ease-rise: ease-out;
+  --rise-y: 10px;
+  --rise-step: 60ms;             /* between one part and the next */
   /* SMOOTH SCROLL: a wheel scroll eases to a stop (Lenis, scripts/smooth-scroll.ts).
      Share of the remaining distance the page closes per 60fps frame:
      lower glides longer, higher stops sooner. Unitless, read by script. */

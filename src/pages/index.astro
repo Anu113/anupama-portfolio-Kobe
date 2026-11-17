@@ -37,27 +37,29 @@ const cards = homeCards.map((c) => {
   <Section theme="charcoal" class="hero">
     <div class="hero__row">
       <div class="hero__copy">
-        <!-- No entrance animation on the hero text: it is the first thing
-             read, so it is simply there on first paint. -->
+        <!-- No entrance animation on the hero text on a first visit: it
+             is the first thing read (the preloader hands it over). Only
+             arriving from another page of the site does it rise in
+             ([data-rise], PAGE ARRIVAL in tokens.css). -->
         <!-- Where she is and whether she's around, before the pitch:
              status light, city, weather, ticking time (LocalTime.astro). -->
-        <div class="hero__eyebrow"><LocalTime /></div>
-        <h1 class="u-display hero__line">
+        <div class="hero__eyebrow" data-rise style="--rise-i:0"><LocalTime /></div>
+        <h1 class="u-display hero__line" data-rise style="--rise-i:1">
           <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn <PixelBreak>pixel</PixelBreak>.
         </h1>
-        <p class="hero__more">
+        <p class="hero__more" data-rise style="--rise-i:2">
           10+ years in fintech, enterprise software and developer tools,
           most recently @&nbsp;<span class="hero__co">Okta</span>. Previously
           at <span class="hero__co">PayPal</span>, <span class="hero__co">Walmart Labs</span>,
           and <span class="hero__co">Deloitte</span>.
         </p>
-        <p class="intro__links">
+        <p class="intro__links" data-rise style="--rise-i:3">
           <a class="btn btn--primary" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
           <a class="btn btn--secondary" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
         </p>
       </div>
       <Reveal delay={180} class="hero__portrait-cell">
-        <div class="hero__portrait">
+        <div class="hero__portrait" data-rise style="--rise-i:1">
           <!-- .hero__stage: a positioned box exactly the portrait's size, so
                AskBubble can sit Moss on the books in the
                illustration. -->
