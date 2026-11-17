@@ -131,8 +131,11 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
           return;
         }
       }
-      const root = getComputedStyle(document.documentElement)
-        .getPropertyValue('--fg').trim();
+      // Outside any band, the root's --trail (the accent), never its --fg:
+      // the bare --fg is near-black ink in day mode, which is what turned
+      // the line black between bands on the About page.
+      const rs = getComputedStyle(document.documentElement);
+      const root = rs.getPropertyValue('--trail').trim() || rs.getPropertyValue('--fg').trim();
       if (root) colour = root;
     };
 
