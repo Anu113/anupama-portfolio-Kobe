@@ -4,8 +4,11 @@
    (the sticky rows and settle effect live in index.astro). Text on the
    left — number, company and tags (mono labels), title (18px, the item role;
    see ONE TYPE SCALE in tokens.css), one 12px line, "View case study" — and on the right a stage on the company's project hue
-   holding the work itself, on the same ground as its /work tile
-   (a photo, a blurred photo or a colour block; WorkGround.astro):
+   holding the work itself, on the Okta card's lit colour block
+   (WorkGround.astro, kind 'colour'; no photos, on request 2026-11-17,
+   home page only — /work keeps its photo grounds for now). The block is
+   the company's hue, or the card's own `hue` (GROUND HUES in
+   tokens.css) so no two home cards match:
 
    - a phone that runs the flow on its own (after daneden.me): a screen
      recording, her screens in sequence (each sliding over the last, like
@@ -46,10 +49,11 @@ interface Props {
   tags?: string[];
   media: HomeMedia;
   video?: { mp4: string; webm: string; poster: string };
+  hue?: string;
 }
-const { index, company, title, tagline, href, tags = [], media, video } = Astro.props;
+const { index, company, title, tagline, href, tags = [], media, video, hue } = Astro.props;
 const num = String(index).padStart(2, '0');
-const ground = workPlay[href]?.ground;
+const ground = workPlay[href] ? { kind: 'colour' as const } : undefined;
 ---
 <article class="pc">
   <div class="pc__body">
@@ -72,7 +76,7 @@ const ground = workPlay[href]?.ground;
     <span class="pc__cta" aria-hidden="true">View case study <span class="pc__arrow">→</span></span>
   </div>
 
-  <div class="pc__stage" data-hue={hueFor(company) ?? ''} data-phone role="img" aria-label={media.alt}>
+  <div class="pc__stage" data-hue={hueFor(company) ?? ''} style={hue ? `--hue: var(--ground-${hue});` : undefined} data-phone role="img" aria-label={media.alt}>
     {ground && <WorkGround ground={ground} cover />}
 
     {media.type === 'desktop' ? (
