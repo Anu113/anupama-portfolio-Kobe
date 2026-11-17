@@ -856,8 +856,9 @@ walked back. Concretely, in the current implementation:
   (sticky rows and the settle effect in `index.astro`), text on the
   left, and on the right a stage on the project hue where, after
   daneden.me, a phone runs the flow on its own — the Chase Pay
-  recording, Privacy screens in sequence (cut from her boards by
-  `scripts/phone-screens.py`), and the coded Debit Card sign-up
+  recording, Privacy's /work flow playing on its own (the same redrawn
+  screens, touch marks and arrivals as its /work tile, on request
+  2026-11-17: the old cuts from her boards were blurry and cropped), and the coded Debit Card sign-up
   prototype on autopilot (`autoplay` prop). The phone is daneden.me's
   device, an iPhone 17 Pro in silver, whole and centred (on request,
   2026-11-17, option C of `experiments/device-daneden/`; his crop off

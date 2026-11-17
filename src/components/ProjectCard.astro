@@ -12,8 +12,10 @@
 
    - a phone that runs the flow on its own (after daneden.me): a screen
      recording, her screens in sequence (each sliding over the last, like
-     an app pushing a new screen), or a coded PayPal prototype on
-     autopilot;
+     an app pushing a new screen), a /work flow playing on its own
+     (Privacy: the same screens, touch marks and iOS arrivals as its
+     /work tile, from data/workPlay.ts and scripts/work-play.ts), or a
+     coded PayPal prototype on autopilot;
    - for Okta's desktop work, the screenshot on its own (a placeholder,
      drawn as a browser window, until the NDA check).
 
@@ -40,7 +42,9 @@
 import EnrollPrototype from './EnrollPrototype.astro';
 import OffersPrototype from './OffersPrototype.astro';
 import { hueFor, type HomeMedia } from '../data/work';
-import { workPlay } from '../data/workPlay';
+import { workPlay, isPlay } from '../data/workPlay';
+import { layerHtml } from '../scripts/work-play-layer';
+import '../styles/work-play.css';
 import WorkGround from './WorkGround.astro';
 
 interface Props {
@@ -54,6 +58,8 @@ interface Props {
 const { index, company, title, tagline, href, tags = [], media, video, hue } = Astro.props;
 const num = String(index).padStart(2, '0');
 const ground = workPlay[href] ? { kind: 'colour' as const } : undefined;
+// A 'play' card runs its /work tile's flow (data/workPlay.ts).
+const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[media.play] : null;
 ---
 <article class="pc">
   <div class="pc__body">
@@ -100,6 +106,9 @@ const ground = workPlay[href] ? { kind: 'colour' as const } : undefined;
                 {media.type === 'screens' && media.screens.map((src, i) => (
                   <img class:list={['pc__shot', i === 0 && 'is-on']} src={src} alt="" loading="lazy" decoding="async" data-phone-shot />
                 ))}
+                {flow && isPlay(flow) && (
+                  <div class="pc__play" data-work-play={JSON.stringify(flow)} set:html={layerHtml(flow.steps[0])} />
+                )}
               </div>
             </div>
           )}
@@ -330,6 +339,9 @@ const ground = workPlay[href] ? { kind: 'colour' as const } : undefined;
     transition: transform var(--dur-phone-step) var(--ease-out);
   }
 
+  /* A /work flow: its layers fill the screen (styles/work-play.css). */
+  .pc__play { position: absolute; inset: 0; overflow: hidden; }
+
   /* --- desktop work ----------------------------------------------
      The screenshot as given: the Okta placeholders draw their own window
      on a transparent ground, so the hue shows round it. */
@@ -355,6 +367,7 @@ const ground = workPlay[href] ? { kind: 'colour' as const } : undefined;
 
 <script>
   import { phoneLoop } from '../scripts/phone-loop';
+  import { autoPlay } from '../scripts/work-play';
 
   // Which phones may move: on screen, tab visible, no reduced motion. Each stage hears phone:play / phone:pause.
   const stages = [...document.querySelectorAll<HTMLElement>('[data-phone]')];
@@ -395,6 +408,8 @@ const ground = workPlay[href] ? { kind: 'colour' as const } : undefined;
         };
         phoneLoop(s, shots.map(() => [2400, next]));
       }
+      const play = s.querySelector<HTMLElement>('[data-work-play]');
+      if (play) autoPlay(play, JSON.parse(play.dataset.workPlay!), s);
     }
   }
 </script>

@@ -16,7 +16,11 @@
    fire again each time a new screen slid in under a still pointer and
    restart the flow. Nothing plays under reduced motion; touch screens
    keep the still first screen (a tap there opens the case). Images are
-   fetched when the tile comes near the screen, not before. */
+   fetched when the tile comes near the screen, not before.
+
+   The home page's Privacy card plays the same flow in its own phone,
+   with no hover: `autoPlay` starts and stops it on the card's
+   phone:play / phone:pause (ProjectCard.astro), and it loops while on. */
 import { layerHtml } from './work-play-layer';
 import { cssMs } from './css-time';
 import type { Play, PlayStep } from '../data/workPlay';
@@ -24,12 +28,9 @@ import type { Play, PlayStep } from '../data/workPlay';
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-function setup(stage: HTMLElement) {
-  const play: Play = JSON.parse(stage.dataset.play!);
+// The flow inside `scr` (the element that holds the screen layers), with start and stop.
+function flow(scr: HTMLElement, play: Play, dots: HTMLElement[] = []) {
   const steps = play.steps;
-  const scr = stage.querySelector<HTMLElement>('.wp-screen')!;
-  const dots = [...stage.querySelectorAll<HTMLElement>('.wp-dots i')];
-  const card = (stage.closest('a') as HTMLElement) || stage;
   const T = {
     first: cssMs('--work-first', 600), read: cssMs('--work-read', 1300), hold: cssMs('--work-hold', 1800),
     push: cssMs('--dur-work-push', 420), sheet: cssMs('--dur-work-sheet', 460),
@@ -42,7 +43,7 @@ function setup(stage: HTMLElement) {
     if (!es.some((e) => e.isIntersecting)) return;
     io.disconnect();
     for (const s of steps) for (const u of [s.src, s.over, s.bar, s.scan?.sheet, s.scan?.bar]) if (u) new Image().src = u;
-  }, { rootMargin: '400px' }).observe(stage);
+  }, { rootMargin: '400px' }).observe(scr);
 
   const top = () => [...scr.querySelectorAll<HTMLElement>('.wp-layer')].pop()!;
   const setDot = (i: number) => dots.forEach((d, j) => d.classList.toggle('on', j === i));
@@ -100,6 +101,15 @@ function setup(stage: HTMLElement) {
     scr.classList.remove('is-live');
     if (at) { at = 0; lay(steps[0], 'fade'); setDot(0); }
   }
+  return { start, stop };
+}
+
+function setup(stage: HTMLElement) {
+  const play: Play = JSON.parse(stage.dataset.play!);
+  const scr = stage.querySelector<HTMLElement>('.wp-screen')!;
+  const dots = [...stage.querySelectorAll<HTMLElement>('.wp-dots i')];
+  const card = (stage.closest('a') as HTMLElement) || stage;
+  const { start, stop } = flow(scr, play, dots);
   const still = () => card.matches(':hover') || card.contains(document.activeElement);
   card.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') start(); });
   card.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') setTimeout(() => !still() && stop()); });
@@ -109,3 +119,10 @@ function setup(stage: HTMLElement) {
 }
 
 document.querySelectorAll<HTMLElement>('.wp-stage[data-play]').forEach(setup);
+
+// Home page: the flow plays whenever its card says it may (on screen, tab visible, motion allowed).
+export function autoPlay(scr: HTMLElement, play: Play, host: Element) {
+  const { start, stop } = flow(scr, play);
+  host.addEventListener('phone:play', start);
+  host.addEventListener('phone:pause', stop);
+}
