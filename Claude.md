@@ -744,7 +744,7 @@ walked back. Concretely, in the current implementation:
   2026-11-14, on request, they are his three in his order:
   Testimonials (her LinkedIn recommendations from the Wix site, one
   sentence each word for word, with their photos; Vijaya Das's left
-  out), Experience (company logos, as his; /work keeps letter tiles)
+  out), Experience (company logos, as his; /work shows the same since 2026-11-17)
   and Tools (his list minus his own Cheval and GatherOS, each app's own
   icon). Testimonials here are her request, an exception to the
   "Don't add without asking" line below. Under them, six tiles, three across: Talks

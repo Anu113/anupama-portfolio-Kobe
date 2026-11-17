@@ -1,12 +1,15 @@
 ---
 /* ExperienceList.astro — her roles on /work, the page's last block,
    under the Archive.
-   The same rows as the About page's Experience tab (letter tile,
+   The same rows as the About page's Experience tab (company logo, as
+   there since 2026-11-17 on request; letter tile only as a fallback;
    company / role, years in mono, a line or two ending on the company's
    site, after felixrieseberg.com), from the same data (`experience` in
    data/about.ts), so the two never drift. Here it's a plain list, not
    the About tab's self-scrolling reel: five rows fit on screen, and a
    recruiter scanning the work page wants the whole career at a glance.
+   Greys stay the site's AA ones (--fg-dim), not the About page's
+   lighter, sanctioned-there-only greys.
 
    Laid out on the case cards' two columns: the label in the left one,
    the rows in the right, so the list sits on the page's grid. The gap
@@ -20,7 +23,9 @@ import { experience } from '../data/about';
   <ul class="exp__list">
     {experience.map((r) => (
       <li class="row">
-        <span class="tile" aria-hidden="true">{r.tile.letter}</span>
+        {r.tile.src
+          ? <img class="tile" src={r.tile.src} alt="" width="44" height="44" loading="lazy" decoding="async" draggable="false" />
+          : <span class="tile tile--letter" aria-hidden="true">{r.tile.letter}</span>}
         <span class="text">
           <span class="rhead">
             <span class="name">{r.name}{r.tag && <span class="tag"> / {r.tag}</span>}</span>
@@ -51,13 +56,13 @@ import { experience } from '../data/about';
   }
   .row:hover { background: var(--about-row-hover); }
   .tile {
-    flex: none; display: grid; place-items: center;
-    width: var(--about-tile); height: var(--about-tile); border-radius: var(--radius-about-row);
-    background: var(--about-card); color: var(--about-soft); font-size: 0.9375rem;
+    flex: none; width: var(--about-tile); height: var(--about-tile); border-radius: var(--radius-about-row);
+    object-fit: cover; background: var(--about-card);
   }
+  .tile--letter { display: grid; place-items: center; color: var(--about-soft); font-size: 0.9375rem; }
   .text { flex: 1; min-width: 0; display: grid; gap: 2px; font-size: var(--step-copy); line-height: 1.3; }
   .rhead { display: flex; justify-content: space-between; gap: 0.5rem; }
-  .name { color: var(--fg); }
+  .name { color: var(--about-name); }
   .tag { color: var(--fg-dim); }
   .year { flex: none; color: var(--fg-dim); font-family: var(--font-mono); font-size: var(--step-fine); }
   .line { color: var(--fg-dim); text-wrap: pretty; }

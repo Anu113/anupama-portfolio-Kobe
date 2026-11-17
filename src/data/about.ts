@@ -32,8 +32,8 @@ export interface Row {
 // was, in one or two plain sentences, then the company's site. Facts from
 // her LinkedIn and cases.ts only. On the About page each row shows the
 // company's logo, as his do (on request, 2026-11-14; files in
-// public/images/logos/). /work's list keeps the letter tiles (on request,
-// 2026-11-13, when logos there read as five loud colours).
+// public/images/logos/). /work's list shows the same logos since
+// 2026-11-17, on request (it had letter tiles from 2026-11-13).
 export const experience: Row[] = [
   { tile: { letter: 'O', src: '/images/logos/okta.webp' }, name: 'Okta', tag: 'Staff Product Designer', year: '2024–now',
     line: 'Identity and access management for the admins who decide who gets in: entitlements, access reviews and policy, plus the integration flows developers build on. I lead a team of six.',
