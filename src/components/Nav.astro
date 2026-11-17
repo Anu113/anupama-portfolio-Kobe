@@ -173,14 +173,13 @@ const letters = (text: string) => {
     color: var(--fg-dim);
   }
 
-  /* Links and Menu: a step under the name, in the label role (mono
-     11px caps, ONE TYPE SCALE in tokens.css), so the name leads and
-     the menu reads as secondary. */
+  /* Links and Menu: mono caps at the name's size (--step-nav, 14px, on
+     request 2026-11-17); grey at rest, so the name still leads. */
   .nav__links a,
   .nav__menu {
     font-family: var(--font-mono);
     font-weight: var(--weight-mono);
-    font-size: var(--step-fine);
+    font-size: var(--step-nav);
     line-height: 1;
     letter-spacing: var(--tracking-mono-label);
     text-transform: uppercase;
