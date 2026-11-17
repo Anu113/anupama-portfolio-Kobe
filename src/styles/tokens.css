@@ -586,6 +586,15 @@
 [data-hue='paypal'] { --hue: var(--hue-paypal); }
 [data-hue='walmart'] { --hue: var(--hue-walmart); }
 
+/* GROUND HUES — a home card's own colour block where it would share
+   its company's hue with another home card (`hue` in homeCards,
+   data/work.ts). Same lightness and softness as the project hues, same
+   rules: behind the work only. On request, 2026-11-17 ("Company +
+   soft" in experiments/work-colour-blocks/okta-style.html). */
+:root {
+  --ground-mint: #cfe7d8;   /* PayPal Debit Card */
+}
+
 /* ============================================================
    CASE TAGS — the domain/discipline tags at the top of a case study
    ([slug].astro). "Crayon wash" (on request, 2026-11-14, from

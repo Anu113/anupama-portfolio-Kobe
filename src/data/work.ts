@@ -193,7 +193,13 @@ export type HomeMedia =
   | { type: 'prototype'; name: 'paypal-enroll' | 'paypal-offers'; alt: string }
   | { type: 'desktop'; image: string; alt: string };
 
-export const homeCards: { href: string; title?: string; tagline?: string; media: HomeMedia }[] = [
+// `hue`: the card's own colour block (GROUND HUES in tokens.css) where
+// it would otherwise share its company's hue with another home card.
+// Every home card stands on the Okta card's lit colour block, no photos
+// (on request, 2026-11-17, "Company + soft" from
+// experiments/work-colour-blocks/okta-style.html); /work keeps its mixed
+// grounds for now.
+export const homeCards: { href: string; title?: string; tagline?: string; hue?: 'mint'; media: HomeMedia }[] = [
   { href: '/work/okta-iam',
     media: { type: 'desktop', image: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" } },
   { href: '/work/paypal-privacy',
@@ -201,7 +207,7 @@ export const homeCards: { href: string; title?: string; tagline?: string; media:
       screens: [1, 2, 3, 4].map((n) => `/images/paypal-privacy/phone-${n}.webp`) } },
   { href: '/work/walmart-chase-pay',
     media: { type: 'video', alt: 'Screen recording of the Chase Pay prototype: setting up Walmart Pay, choosing Add Chase Pay from the payment types, and completing the handoff to Chase and back' } },
-  { href: '/work/paypal-debit-card',
+  { href: '/work/paypal-debit-card', hue: 'mint',
     media: { type: 'prototype', name: 'paypal-enroll', alt: 'The PayPal Debit Card sign-up prototype running by itself: value prop, Balance account, confirming identity, shipping address, and the card marked Ordered' } },
 ];
 
