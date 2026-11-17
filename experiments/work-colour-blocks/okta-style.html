@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Work cards — the Okta block, every case</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+/* Mock page, round 6 (2026-11-17, on request): no photos, no
+   watercolour, no drawn lines. Every case stands on the Okta card's
+   ground exactly as the site draws it (WorkGround.astro, kind
+   'colour': the hue as a lit gradient, a pale corner, a soft glow
+   behind the device, a slightly deeper far corner). Only the colours
+   change: pick a palette from the bar. One colour per case, in /work's
+   order; the home cards use the same case's colour. Values inline on
+   purpose; the pick moves into tokens.css. */
+:root{
+  --ground:#fcfcfc; --ink:#262626; --dim:#707070; --line:rgb(0 0 0/.08);
+  --bezel:#0e0e0f;
+  /* the site's WORK GROUND values, as they are today */
+  --pale-mix:#fff 55%; --deep-mix:#3d4f86 16%;
+  --glow:rgb(255 255 255/.55); --glow-corner:rgb(255 255 255/.6);
+  --ease:cubic-bezier(.16,1,.3,1); --dur:600ms;
+  --serif:'Crimson Pro',Georgia,serif; --sans:'Manrope',system-ui,sans-serif; --mono:'Azeret Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ground);color:var(--ink);font:600 12px/1.8 var(--sans);padding:0 clamp(24px,5vw,80px) 160px}
+em{font-style:italic}
+.intro{max-width:780px;padding-top:64px}
+.intro h1{font:300 44px/1.1 var(--serif)}
+.intro p{color:var(--dim);margin-top:16px;max-width:68ch}
+.bar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--ground) 92%,transparent);backdrop-filter:blur(8px);display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:16px 0;margin-top:32px;border-bottom:1px solid var(--line)}
+.pill{display:inline-flex;gap:8px;align-items:center;font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--ink);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer}
+.pill:hover{border-color:var(--ink)}
+.pill[aria-pressed=true]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.sw{display:inline-flex}.sw i{width:10px;height:10px;border-radius:50%;margin-left:-3px;box-shadow:0 0 0 1px var(--ground)}
+.note{color:var(--dim);margin-top:12px;min-height:1.8em}
+.sub{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin:48px 0 16px}
+
+/* ---------- the Okta ground, as WorkGround.astro draws it ---------- */
+.stage{position:relative;overflow:hidden;display:grid;place-items:center;
+  --pale:color-mix(in oklab,var(--hue),var(--pale-mix));
+  --deep:color-mix(in oklab,var(--hue),var(--deep-mix));
+  background:
+    radial-gradient(42% 46% at 50% 46%,var(--glow),transparent 72%),
+    radial-gradient(60% 55% at 12% 0%,var(--glow-corner),transparent 70%),
+    linear-gradient(155deg,var(--pale) 0%,var(--hue) 50%,var(--deep) 100%);
+  transition:--hue var(--dur) var(--ease)}
+.phone{position:relative;z-index:2;height:80%;aspect-ratio:786/1704;padding:1.6%;background:var(--bezel);border-radius:13% / 6%;
+  box-shadow:0 18px 40px -14px rgb(0 0 0/.35),0 1px 2px rgb(0 0 0/.2);transition:translate var(--dur) var(--ease)}
+.phone img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:11% / 5%}
+.card:hover .phone,.tile:hover .phone{translate:0 -6px}
+.card .phone{height:400px}
+
+/* home cards: text left, stage right */
+.cards{display:grid;gap:24px}
+.card{display:grid;grid-template-columns:1fr 1.25fr;height:480px;background:var(--ground);border:1px solid var(--line)}
+.card__body{padding:32px;display:flex;flex-direction:column;gap:8px}
+.num,.meta{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+.title{font-size:18px;line-height:1.3;margin-top:8px}
+.tag{color:var(--dim);max-width:44ch}
+/* /work tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:40px 24px}
+.tile .stage{aspect-ratio:16/10}
+.tile__m{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-top:12px}
+.tile__t{font-size:14px;line-height:1.35}
+@media (max-width:800px){.card{grid-template-columns:1fr;height:auto}.card .stage{order:-1;aspect-ratio:4/3}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="intro">
+  <h1>The Okta <em>block</em>, every case</h1>
+  <p>No photos, no watercolour, no lines. Every card stands on the same ground as the Okta card today: the colour as a lit block, pale at the top left, a soft glow behind the phone, a little deeper at the far corner. Only the colour changes. Pick a palette; each case keeps one colour, and its home card uses the same one.</p>
+</header>
+
+<nav class="bar" id="bar" aria-label="Palettes"></nav>
+<p class="note" id="note"></p>
+
+<p class="sub">Home cards</p>
+<div class="cards" id="cards"></div>
+
+<p class="sub">/work tiles</p>
+<div class="tiles" id="tiles"></div>
+
+<script>
+// The seven cases in /work's order. Home shows four of them.
+const cases = [
+  { k:'okta',    co:'Okta',         title:'Rebuilding IAM for enterprise admins', tag:'A ground-up rebuild of the admin console, shipped under live tenants.', img:'okta-phone', home:'01' },
+  { k:'privacy', co:'PayPal',       title:'Privacy settings people can read',     tag:'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.', img:'pv-hub', home:'02' },
+  { k:'scan',    co:'Walmart Labs', title:'Scan & Go, in-store',                  img:'sg-cart' },
+  { k:'chase',   co:'Walmart Labs', title:'Chase Pay inside Walmart Pay',         tag:'Brought Chase Pay into Walmart Pay, validated with real customers in-store.', img:'ch-setup', home:'03' },
+  { k:'debit',   co:'PayPal',       title:'A debit card people finish signing up for', tag:'Card enrollment and cash back rebuilt inside the PayPal app.', img:'debit-intro', home:'04' },
+  { k:'id',      co:'PayPal',       title:'An ID check people get through the first time',                          img:'id-steps' },
+  { k:'ads',     co:'PayPal',       title:'Privacy-first ad personalization',                          img:'ads-privacy' },
+];
+
+// Palettes: seven colours, one per case above. The first two are the
+// site's own; the rest are the ones tried earlier (colours.html).
+const palettes = [
+  { k:'company', name:'Company colours', note:'The site’s project hues: sky, lilac, butter. Cases from one company share a colour, so two PayPal cards match on the home page.',
+    c:['#c9dcf2','#e0d6ef','#f4dc9c','#f4dc9c','#e0d6ef','#e0d6ef','#e0d6ef'] },
+  { k:'soft', name:'Company + soft', note:'Company colours, plus mint, peach, rose and aqua so no two cases match. The set you turned down; here for comparison.',
+    c:['#c9dcf2','#e0d6ef','#f5d3bd','#f4dc9c','#cfe7d8','#efd2d8','#c7e4e3'] },
+  { k:'pastel', name:'Bright pastel', note:'Round 1 turned up.', c:['#7fb6ff','#b896ff','#ffcc3d','#ff8f7a','#6fdcaa','#ff9fd0','#8fd8ff'] },
+  { k:'brand', name:'Brand true', note:'Each company’s own colour.', c:['#1662dd','#003087','#ffc220','#0071dc','#0070e0','#142c8e','#009cde'] },
+  { k:'riso', name:'Riso inks', note:'Print-shop brights.', c:['#0078bf','#ff48b0','#ffe800','#00838a','#ff6c2f','#765ba7','#00a95c'] },
+  { k:'jewel', name:'Jewel', note:'Deep and saturated.', c:['#2b4bd6','#6c3fc4','#e5a00d','#138a5e','#b3223b','#0f7c86','#e8642c'] },
+  { k:'illo', name:'Her illustration', note:'Sweater, chair, table, hair.', c:['#b8432f','#d97a5f','#d6a04f','#7c5236','#e8b48f','#a3623f','#c9874f'] },
+  { k:'warm', name:'Sunset', note:'All warm, one family.', c:['#ff7a59','#e8507a','#ffb347','#d4447e','#f4c430','#ff5e3a','#f08a5d'] },
+  { k:'deep', name:'Night', note:'Dark blocks.', c:['#1d2b53','#3b1f4a','#4a3a12','#1f4a3a','#5a1f24','#123b4a','#3a2a1f'] },
+];
+
+const phone = (img) => `<div class="phone"><img src="img/${img}.webp" alt=""></div>`;
+document.getElementById('cards').innerHTML = cases.filter(c => c.home).sort((a,b) => a.home.localeCompare(b.home)).map(c => `
+  <article class="card">
+    <div class="card__body"><span class="num">${c.home}</span><p class="meta">${c.co}</p><h3 class="title">${c.title}</h3><p class="tag">${c.tag}</p></div>
+    <div class="stage" data-case="${c.k}">${phone(c.img)}</div>
+  </article>`).join('');
+document.getElementById('tiles').innerHTML = cases.map(c => `
+  <article class="tile"><div class="stage" data-case="${c.k}">${phone(c.img)}</div><p class="tile__m">${c.co}</p><h3 class="tile__t">${c.title}</h3></article>`).join('');
+
+const bar = document.getElementById('bar'), note = document.getElementById('note');
+bar.innerHTML = palettes.map(p => `<button class="pill" data-p="${p.k}" aria-pressed="false"><span class="sw">${[...new Set(p.c)].map(c => `<i style="background:${c}"></i>`).join('')}</span>${p.name}</button>`).join('');
+function pick(k){
+  const p = palettes.find(x => x.k === k) || palettes[0];
+  cases.forEach((c, i) => document.querySelectorAll(`[data-case=${c.k}]`).forEach(s => s.style.setProperty('--hue', p.c[i])));
+  bar.querySelectorAll('.pill').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === p.k));
+  note.textContent = p.note;
+  history.replaceState(null, '', '#' + p.k);
+}
+bar.addEventListener('click', e => { const b = e.target.closest('.pill'); if (b) pick(b.dataset.p); });
+pick(location.hash.slice(1) || 'company');
+</script>
+</body>
+</html>

@@ -288,6 +288,46 @@
       ],
       "port": 4375,
       "autoPort": true
+    },
+    {
+      "name": "work-colour-blocks-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/work-colour-blocks"
+      ],
+      "port": 4377,
+      "autoPort": true
+    },
+    {
+      "name": "page-transitions-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/page-transitions"
+      ],
+      "port": 4379,
+      "autoPort": true
+    },
+    {
+      "name": "sound-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\""
+      ],
+      "port": 4381,
+      "autoPort": true
+    },
+    {
+      "name": "device-daneden-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/device-daneden"
+      ],
+      "port": 4383,
+      "autoPort": true
     }
   ]
 }

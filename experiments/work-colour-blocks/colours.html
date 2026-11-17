@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Work cards — bolder colour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+/* Mock page, round 2 (2026-11-17, on request: round 1's hues "too
+   bland"). Seven bolder palettes for the work cards' colour blocks,
+   one colour per case (not per company, so two Walmart cards no longer
+   share one). Pick a palette and a treatment (A flat, B wash, C her line
+   as the border, D painted phone, from round 1 in index.html). The
+   strip at the top shows every palette at once. Values inline on
+   purpose; the pick moves into tokens.css. */
+:root{
+  --paper:#fcfcfc; --ink:#262626; --dim:#707070; --line:rgb(0 0 0/.1);
+  --sketch:#4a3428; --bezel:#0e0e0f;
+  --ease:cubic-bezier(.16,1,.3,1); --dur:600ms;
+  --serif:'Crimson Pro',Georgia,serif; --sans:'Manrope',system-ui,sans-serif; --mono:'Azeret Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font:600 12px/1.8 var(--sans);padding:0 clamp(24px,5vw,80px) 160px}
+em{font-style:italic}
+.intro{max-width:760px;padding-top:64px}
+.intro h1{font:300 44px/1.1 var(--serif)}
+.intro p{color:var(--dim);margin-top:16px;max-width:66ch}
+.back{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink);display:inline-block;margin-top:16px}
+
+/* switcher */
+.bar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);
+  display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center;padding:16px 0;margin-top:40px;border-bottom:1px solid var(--line)}
+.grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.grp__k{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-right:4px}
+.pill{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--ink);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.pill:hover{border-color:var(--ink)}
+.pill[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pill:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sw{display:inline-flex}.sw i{width:8px;height:8px;border-radius:50%;margin-left:-2px;box-shadow:0 0 0 1px var(--paper)}
+
+/* overview: every palette at a glance */
+.sub{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin:48px 0 16px}
+.ov{display:grid;gap:12px}
+.ov__row{display:grid;grid-template-columns:180px repeat(7,1fr);gap:8px;align-items:center;background:none;border:0;padding:6px;margin:-6px;text-align:left;cursor:pointer;border-radius:8px;color:inherit;font:inherit}
+.ov__row:hover{background:rgb(0 0 0/.03)}
+.ov__row[aria-pressed=true]{background:rgb(0 0 0/.05)}
+.ov__row:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.ov__name{font-size:14px;line-height:1.3}
+.ov__name small{display:block;font:400 10px/1.5 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-top:4px}
+.ov .stage{aspect-ratio:4/3}
+.ov .phone{height:80%}
+
+/* home card */
+.card{position:relative;display:grid;grid-template-columns:5fr 7fr;height:540px;background:#fff;border:1px solid var(--line)}
+.card__body{padding:32px;display:flex;flex-direction:column}
+.num{font:400 11px var(--mono);color:var(--dim)}
+.meta{margin-top:auto;font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+.title{font-size:18px;line-height:1.3;margin-top:12px}
+.tag{color:var(--dim);margin-top:8px;max-width:40ch}
+.cta{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-top:24px}
+.card .stage{margin:12px 12px 12px 0}
+
+/* /work tiles */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.tile{position:relative;display:flex;flex-direction:column;gap:12px}
+.tile .stage{aspect-ratio:4/3}
+.tile__t{font-size:14px;line-height:1.35}
+.tile__m{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+
+/* stage + phone */
+.stage{position:relative;overflow:hidden;display:grid;place-items:center;background:var(--c);transition:background var(--dur) var(--ease)}
+.phone{position:relative;z-index:2;contain:size;height:78%;aspect-ratio:786/1704;padding:1.6%;background:var(--bezel);border-radius:13% / 6%;
+  box-shadow:0 18px 40px -14px rgb(0 0 0/.4),0 1px 2px rgb(0 0 0/.2);transition:translate var(--dur) var(--ease)}
+.tile .phone{height:84%}
+.phone img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:11% / 5%}
+.card:hover .phone,.tile:hover .phone{translate:0 -6px}
+.paint{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;display:none}
+.paint rect{fill:var(--c)}
+.sketch{position:absolute;inset:-3px;width:calc(100% + 6px);height:calc(100% + 6px);z-index:3;pointer-events:none;overflow:visible;display:none}
+.sketch rect{fill:none;stroke:var(--sketch);vector-effect:non-scaling-stroke}
+.sketch .l1{stroke-width:1.4;opacity:.8}.sketch .l2{stroke-width:.8;opacity:.35}
+.pool{position:absolute;z-index:1;left:50%;bottom:6%;width:62%;height:12%;translate:-50% 0;pointer-events:none;display:none}
+
+/* treatments (on the main view only; the overview stays flat) */
+main[data-t=B] .stage,main[data-t=C] .stage{background:#fbfaf7}
+main[data-t=B] .paint,main[data-t=C] .paint{display:block}
+main[data-t=C] .card{border:0}
+main[data-t=C] .sketch{display:block}
+main[data-t=D] .pool{display:block}
+main[data-t=D] .phone{box-shadow:none;outline:1.4px solid var(--sketch);outline-offset:2px}
+main[data-t=D] .phone::after{content:"";position:absolute;inset:-3px;border-radius:14% / 6.5%;border:.8px solid var(--sketch);opacity:.35;translate:1.5px 1px}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="wash" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="3" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+    <feGaussianBlur in="shape" stdDeviation="1.1" result="soft"/>
+    <feMorphology in="soft" operator="erode" radius="7" result="inner"/>
+    <feComposite in="soft" in2="inner" operator="out" result="rim"/>
+    <feGaussianBlur in="rim" stdDeviation="3.5" result="rimSoft"/>
+    <feFlood flood-color="#1e1420" flood-opacity=".22"/>
+    <feComposite in2="rimSoft" operator="in" result="darkRim"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="3" seed="9" result="b"/>
+    <feColorMatrix in="b" type="matrix" values="0 0 0 0 .12  0 0 0 0 .08  0 0 0 0 .14  0 0 0 -1 .52" result="blots"/>
+    <feComposite in="blots" in2="soft" operator="in" result="blotsIn"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" seed="2" result="g"/>
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -.3 .16" result="grain"/>
+    <feComposite in="grain" in2="soft" operator="in" result="grainIn"/>
+    <feMerge><feMergeNode in="soft"/><feMergeNode in="blotsIn"/><feMergeNode in="darkRim"/><feMergeNode in="grainIn"/></feMerge>
+  </filter>
+  <filter id="hand" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="hand2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="2" seed="21" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="pool" x="-20%" y="-60%" width="140%" height="220%"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="5" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G" result="s"/><feGaussianBlur in="s" stdDeviation="5"/></filter>
+</defs></svg>
+
+<header class="intro">
+  <h1>Work cards, <em>bolder</em> colour</h1>
+  <p>Seven palettes, one colour per case so no two neighbours match. Click a row to put it on the home card and the /work grid below; switch the treatment from the bar. Round 1 (the softer hues) is <a href="index.html">here</a>.</p>
+</header>
+
+<div class="bar" role="group" aria-label="Mock controls">
+  <div class="grp" id="pals"><span class="grp__k">Palette</span></div>
+  <div class="grp" id="treats"><span class="grp__k">Treatment</span></div>
+</div>
+
+<p class="sub">Every palette, flat</p>
+<div class="ov" id="ov"></div>
+
+<main id="view" data-t="B"></main>
+
+<script>
+// cases in /work order: Okta IAM, Privacy, Scan & Go, Chase Pay, Debit card, ID check, Ads consent
+const cases = [
+  { co:'Okta', title:'Rebuilding IAM for enterprise admins', img:'okta-phone' },
+  { co:'PayPal', title:'Privacy settings people can read', img:'pv-hub' },
+  { co:'Walmart Labs', title:'Scan & Go, in-store', img:'sg-cart' },
+  { co:'Walmart Labs', title:'Chase Pay inside Walmart Pay', img:'ch-setup' },
+  { co:'PayPal', title:'A debit card people finish signing up for', img:'debit-intro' },
+  { co:'PayPal', title:'An ID check people get through the first time', img:'id-steps' },
+  { co:'PayPal', title:'Privacy-first ad personalization', img:'ads-prefs' },
+];
+const pals = [
+  { k:'illo', name:'Her illustration', note:'sweater, chair, table, hair', c:['#b8432f','#d97a5f','#d6a04f','#7c5236','#e8b48f','#a3623f','#c9874f'] },
+  { k:'brand', name:'Brand true', note:'each company’s own colour', c:['#1662dd','#003087','#ffc220','#0071dc','#0070e0','#142c8e','#009cde'] },
+  { k:'riso', name:'Riso inks', note:'print-shop brights', c:['#0078bf','#ff48b0','#ffe800','#00838a','#ff6c2f','#765ba7','#00a95c'] },
+  { k:'jewel', name:'Jewel', note:'deep and saturated', c:['#2b4bd6','#6c3fc4','#e5a00d','#138a5e','#b3223b','#0f7c86','#e8642c'] },
+  { k:'pastel', name:'Bright pastel', note:'round 1, turned up', c:['#7fb6ff','#b896ff','#ffcc3d','#ff8f7a','#6fdcaa','#ff9fd0','#8fd8ff'] },
+  { k:'warm', name:'Sunset', note:'all warm, one family', c:['#ff7a59','#e8507a','#ffb347','#d4447e','#f4c430','#ff5e3a','#f08a5d'] },
+  { k:'deep', name:'Night', note:'dark blocks, the screen lights up', c:['#1d2b53','#3b1f4a','#4a3a12','#1f4a3a','#5a1f24','#123b4a','#3a2a1f'] },
+];
+const treats = [['A','Flat'],['B','Wash'],['C','Her line border'],['D','Painted phone']];
+const state = { p: 'riso', t: 'B' };
+
+const phone = (img) => `<div class="phone"><img src="img/${img}.webp" alt=""></div>`;
+const paint = `<svg class="paint" preserveAspectRatio="none" aria-hidden="true"><rect x="5%" y="6%" width="90%" height="88%" filter="url(#wash)"/></svg>`;
+const sketch = `<svg class="sketch" aria-hidden="true"><rect class="l1" style="x:3px;y:3px;width:calc(100% - 6px);height:calc(100% - 6px)" filter="url(#hand)"/><rect class="l2" style="x:5px;y:4px;width:calc(100% - 9px);height:calc(100% - 7px)" filter="url(#hand2)"/></svg>`;
+const pool = `<svg class="pool" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><ellipse cx="50" cy="10" rx="44" ry="6" fill="#1a1420" opacity=".28" filter="url(#pool)"/></svg>`;
+const stage = (c, img, withSketch) => `<div class="stage" style="--c:${c}">${paint}${pool}${phone(img)}${withSketch?sketch:''}</div>`;
+
+// controls
+const palsEl = document.getElementById('pals'), treatsEl = document.getElementById('treats');
+pals.forEach(p => palsEl.insertAdjacentHTML('beforeend',
+  `<button class="pill" data-p="${p.k}"><span class="sw">${p.c.slice(0,4).map(c=>`<i style="background:${c}"></i>`).join('')}</span>${p.name}</button>`));
+treats.forEach(([k,n]) => treatsEl.insertAdjacentHTML('beforeend', `<button class="pill" data-t="${k}">${k} · ${n}</button>`));
+
+// overview
+document.getElementById('ov').innerHTML = pals.map(p => `
+  <button class="ov__row" data-p="${p.k}" aria-label="Use ${p.name}">
+    <span class="ov__name">${p.name}<small>${p.note}</small></span>
+    ${cases.map((cs,i) => stage(p.c[i], cs.img, false)).join('')}
+  </button>`).join('');
+
+function render(){
+  const p = pals.find(x => x.k === state.p);
+  const view = document.getElementById('view');
+  view.dataset.t = state.t;
+  const home = cases[1];
+  view.innerHTML = `
+    <p class="sub">Home card · ${p.name} · ${treats.find(t=>t[0]===state.t)[1]}</p>
+    <article class="card">
+      ${sketch}
+      <div class="card__body">
+        <span class="num">02</span>
+        <p class="meta">PayPal · Fintech · Trust</p>
+        <h3 class="title">${home.title}</h3>
+        <p class="tag">Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.</p>
+        <span class="cta">View case study →</span>
+      </div>
+      ${stage(p.c[1], home.img, false)}
+    </article>
+    <p class="sub">/work grid</p>
+    <div class="tiles">${cases.map((cs,i) => `<article class="tile">${stage(p.c[i], cs.img, true)}<p class="tile__m">${cs.co}</p><h3 class="tile__t">${cs.title}</h3></article>`).join('')}</div>`;
+  document.querySelectorAll('[data-p]').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === state.p));
+  document.querySelectorAll('.bar [data-t]').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === state.t));
+  history.replaceState(null, '', `#${state.p}-${state.t}`);
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-p],.bar [data-t]'); if (!b) return;
+  if (b.dataset.p) state.p = b.dataset.p; else state.t = b.dataset.t;
+  render();
+  if (b.classList.contains('ov__row')) document.getElementById('view').scrollIntoView({ behavior:'smooth' });
+});
+const [hp, ht] = location.hash.slice(1).split('-');
+if (pals.some(p => p.k === hp)) state.p = hp;
+if (treats.some(t => t[0] === ht)) state.t = ht;
+render();
+</script>
+</body>
+</html>

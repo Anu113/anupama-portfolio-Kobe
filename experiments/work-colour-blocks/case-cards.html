@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Case cards — andreas's structure, our hues</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+/* Mock page, round 5 (2026-11-17, on request: no pixel cloud; keep
+   andreas.vision's way of showing case studies, in the colours we used
+   before). His card, measured off his home page today: a rounded image
+   (2:1, 28px corners) with the product set into it from the top-left
+   and running off the far edges, a round ink arrow at its top-right;
+   under it the tags, the outcome as the title, one grey line. Here the
+   image is the project hue as a flat block (Okta sky, PayPal lilac,
+   Walmart butter) with her real screens. Two layouts: his home (big
+   cases left, small ones right) and a reduced /work grid. Our type,
+   our ground. Values inline on purpose. */
+:root{
+  --ground:#fcfcfc; --ink:#262626; --dim:#707070; --line:rgb(0 0 0/.08);
+  --okta:#c9dcf2; --paypal:#e0d6ef; --walmart:#f4dc9c;
+  --bezel:#0e0e0f; --r:28px;
+  --ease:cubic-bezier(.16,1,.3,1); --dur:600ms;
+  --serif:'Crimson Pro',Georgia,serif; --sans:'Manrope',system-ui,sans-serif; --mono:'Azeret Mono',ui-monospace,monospace;
+}
+:root[data-corners=square]{--r:0px}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ground);color:var(--ink);font:600 12px/1.8 var(--sans);padding:0 clamp(24px,5vw,80px) 160px}
+em{font-style:italic}
+a{color:inherit;text-decoration:none}
+.intro{max-width:780px;padding-top:64px}
+.intro h1{font:300 44px/1.1 var(--serif)}
+.intro p{color:var(--dim);margin-top:16px;max-width:68ch}
+.bar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--ground) 90%,transparent);backdrop-filter:blur(8px);display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center;padding:16px 0;margin-top:32px;border-bottom:1px solid var(--line)}
+.grp{display:flex;gap:6px;align-items:center}
+.grp__k{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-right:4px}
+.pill{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--ink);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer}
+.pill:hover{border-color:var(--ink)}
+.pill[aria-pressed=true]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.pill:focus-visible,.case:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+
+.opt{margin-top:112px;scroll-margin-top:72px}
+.opt__head{display:grid;grid-template-columns:40px 1fr;gap:0 16px;margin-bottom:32px}
+.opt__k{font:400 11px var(--mono);color:var(--dim);padding-top:12px}
+.opt h2{font:300 40px/1.1 var(--serif)}
+.opt__why{color:var(--dim);margin-top:8px;max-width:66ch}
+.sechead{font:300 40px/1.1 var(--serif);margin-bottom:32px}
+
+/* ---------- the case card ---------- */
+.case{display:flex;flex-direction:column;gap:16px}
+.shot{position:relative;aspect-ratio:2/1;border-radius:var(--r);overflow:hidden;background:var(--hue);box-shadow:0 0 0 1px rgb(0 0 0/.03)}
+[data-hue=okta]{--hue:var(--okta)} [data-hue=paypal]{--hue:var(--paypal)} [data-hue=walmart]{--hue:var(--walmart)}
+.arrow{position:absolute;top:16px;right:16px;z-index:5;width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--ground);display:grid;place-items:center;transition:scale var(--dur) var(--ease)}
+.arrow svg{width:14px;height:14px;transition:translate var(--dur) var(--ease)}
+.case:hover .arrow svg{translate:1px -1px}
+.case:hover .arrow{scale:1.08}
+/* the product, set in from the top-left and running off the far edges */
+.win{position:absolute;left:7%;top:13%;width:105%;border-radius:12px 0 0 0;overflow:hidden;box-shadow:0 1px 2px rgb(0 0 0/.08),0 20px 50px -20px rgb(0 0 0/.25);transition:translate var(--dur) var(--ease)}
+.win img{display:block;width:100%}
+.case:hover .win{translate:-6px -6px}
+/* phones: two, rising from the bottom edge and cropped by it */
+.ph{position:absolute;bottom:-34%;height:112%;aspect-ratio:786/1704;padding:1.4%;background:var(--bezel);border-radius:13% / 6%;contain:size;
+  box-shadow:0 20px 50px -18px rgb(0 0 0/.35);transition:translate var(--dur) var(--ease)}
+.ph img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:11% / 5%}
+.ph.a{left:22%}
+.ph.b{left:52%;bottom:-48%}
+.case:hover .ph.a{translate:0 -8px}
+.case:hover .ph.b{translate:0 -14px}
+
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tags span{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim);background:rgb(0 0 0/.04);border-radius:6px;padding:2px 8px}
+.t{font:300 32px/1.12 var(--serif);max-width:22ch;margin-top:-4px}
+.t em{font-style:italic}
+.s{color:var(--dim);margin-top:-8px}
+
+/* ---------- 1: his home layout ---------- */
+.home{display:grid;grid-template-columns:7fr 5fr;gap:24px;align-items:start}
+.home__big{display:grid;gap:72px}
+.home__small{position:sticky;top:96px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.home__small .shot{aspect-ratio:4/3;border-radius:calc(var(--r) * .6)}
+.home__small .t{font:600 14px/1.35 var(--sans);max-width:none;margin-top:-6px}
+.home__small .s,.home__small .tags{display:none}
+.home__small .arrow{width:28px;height:28px;top:10px;right:10px;opacity:0;transition:opacity var(--dur) var(--ease),scale var(--dur) var(--ease)}
+.home__small .case:hover .arrow,.home__small .case:focus-visible .arrow{opacity:1}
+.home__small .ph{height:120%;bottom:-48%}
+.home__small .ph.a{left:16%} .home__small .ph.b{left:50%;bottom:-62%}
+.home__small .case{gap:10px}
+
+/* ---------- 2: reduced /work grid ---------- */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:64px 24px}
+.grid .t{font:600 18px/1.35 var(--sans);max-width:34ch}
+.grid .case:first-child{grid-column:1 / -1}
+.grid .case:first-child .shot{aspect-ratio:2.6/1}
+.grid .case:first-child .t{font:300 32px/1.12 var(--serif)}
+</style>
+</head>
+<body>
+<header class="intro">
+  <h1>Case cards, <em>his</em> way</h1>
+  <p>Andreas’s way of showing a case study, in the colours we used before: the project hue as a flat block, her screens set into it and running off the edge, a round arrow, then the tags, the outcome as the title and one grey line. Hover a card. Two layouts: his home page, and a reduced /work grid.</p>
+</header>
+<div class="bar">
+  <div class="grp"><span class="grp__k">Corners</span><button class="pill" data-corners="round">Round · his</button><button class="pill" data-corners="square">Square · ours</button></div>
+  <div class="grp"><span class="grp__k">Jump</span><a class="pill" href="#home">1 · Home</a><a class="pill" href="#work">2 · /work</a></div>
+</div>
+
+<section class="opt" id="home">
+  <div class="opt__head"><span class="opt__k">1</span><div><h2>Home, as <em>his</em></h2><p class="opt__why">The four home cases large on the left, one under another; the other four small on the right, two across, holding still while the big ones scroll past. Small ones show only the title; the arrow appears on hover.</p></div></div>
+  <h3 class="sechead">Selected <em>work</em></h3>
+  <div class="home"><div class="home__big" id="big"></div><div class="home__small" id="small"></div></div>
+</section>
+
+<section class="opt" id="work">
+  <div class="opt__head"><span class="opt__k">2</span><div><h2>/work, <em>reduced</em></h2><p class="opt__why">The same card, two across, with the flagship full width on top. The title drops to our 18px item role under the first row, so the grid scans fast.</p></div></div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<script>
+// Outcomes are the `impact` lines in data/work.ts.
+const cases = {
+  iam:   { hue:'okta', win:'okta-desk', tags:['Identity','Product Strategy','Design Systems'], t:'Admin task time down <em>32%</em> across the four busiest flows', s:'Okta · Rebuilding IAM for enterprise admins' },
+  pv:    { hue:'paypal', ph:['pv-hub','pv-shopping'], tags:['Fintech','Privacy & Data','IA'], t:'Privacy support calls down <em>60%</em>, launched to 80M+ people', s:'PayPal · Privacy settings people can read' },
+  chase: { hue:'walmart', ph:['ch-setup','ch-benefits'], tags:['Fintech','Research'], t:'Chase Pay inside Walmart Pay, <em>shipped</em> on iOS and Android', s:'Walmart Labs · Validated with real customers in-store' },
+  debit: { hue:'paypal', ph:['debit-intro','debit-setup'], tags:['Fintech','Product Strategy'], t:'Card sign-up <em>20% faster</em>, same-day activation up 18%', s:'PayPal · A debit card people finish signing up for' },
+  sg:    { hue:'walmart', ph:['sg-cart','sg-finish'], tags:['Retail','0→1','Research'], t:'Basket size up <em>25%</em> in the first store pilot', s:'Walmart Labs · Scan & Go, in-store' },
+  id:    { hue:'paypal', ph:['id-steps','id-scan'], tags:['Identity','Research'], t:'<em>90%</em> captured their face on the first try', s:'PayPal · An ID check people get through the first time' },
+  ads:   { hue:'paypal', ph:['ads-prefs','ads-privacy'], tags:['Fintech','Privacy & Data'], t:'<em>41%</em> opted in once PayPal asked first', s:'PayPal · Privacy-first ad personalization' },
+  oin:   { hue:'okta', win:'okta-integrations', tags:['Devtools','Platform'], t:'Submission time down <em>48%</em>, on one framework instead of four', s:'Okta · The Integration Platform' },
+};
+const arrow = `<span class="arrow" aria-hidden="true"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10L10 4M5 4h5v5"/></svg></span>`;
+const media = (c) => c.win
+  ? `<div class="win"><img src="img/${c.win}.webp" alt=""></div>`
+  : `<div class="ph a"><img src="img/${c.ph[0]}.webp" alt=""></div><div class="ph b"><img src="img/${c.ph[1]}.webp" alt=""></div>`;
+const card = (c) => `<a class="case" href="#" onclick="return false">
+  <div class="shot" data-hue="${c.hue}">${arrow}${media(c)}</div>
+  <div class="tags">${c.tags.map(t=>`<span>${t}</span>`).join('')}</div>
+  <h3 class="t">${c.t}</h3><p class="s">${c.s}</p></a>`;
+
+document.getElementById('big').innerHTML = ['iam','pv','chase','debit'].map(k => card(cases[k])).join('');
+document.getElementById('small').innerHTML = ['sg','id','ads','oin'].map(k => card(cases[k])).join('');
+document.getElementById('grid').innerHTML = ['iam','pv','chase','debit','sg','id','ads','oin'].map(k => card(cases[k])).join('');
+
+const set = (v) => { document.documentElement.dataset.corners = v; document.querySelectorAll('[data-corners]').forEach(b => b.tagName==='BUTTON' && b.setAttribute('aria-pressed', b.dataset.corners === v)); };
+document.addEventListener('click', e => { const b = e.target.closest('button[data-corners]'); if (b) set(b.dataset.corners); });
+set('round');
+</script>
+</body>
+</html>

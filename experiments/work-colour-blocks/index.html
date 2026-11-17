@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Work cards — colour blocks, in the illustration's hand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+/* Mock page (2026-11-17, on request): the home cards and /work tiles
+   without photo grounds — colour blocks only — with the hero
+   illustration's watercolour hand carried onto them somewhere.
+   Four takes, A–D. Values are inlined on purpose (it's a mock);
+   whichever is picked moves into tokens.css. Screens are her real
+   renders from public/images/work-play/. */
+:root{
+  --paper:#fcfcfc; --ink:#262626; --dim:#707070; --line:rgb(0 0 0/.1);
+  --okta:#c9dcf2; --paypal:#e0d6ef; --walmart:#f4dc9c;
+  /* the illustration's line: a warm sepia, read off her drawing */
+  --sketch:#4a3428;
+  --bezel:#0e0e0f;
+  --ease:cubic-bezier(.16,1,.3,1); --dur:600ms;
+  --serif:'Crimson Pro',Georgia,serif; --sans:'Manrope',system-ui,sans-serif; --mono:'Azeret Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font:600 12px/1.8 var(--sans);padding:64px clamp(24px,5vw,80px) 160px}
+.intro{max-width:760px;margin-bottom:56px}
+.intro h1{font:300 44px/1.1 var(--serif)}
+em{font-style:italic}
+.intro p{color:var(--dim);margin-top:16px;max-width:64ch}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.toc a{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:6px 12px;text-decoration:none}
+.toc a:hover{border-color:var(--ink)}
+
+.opt{margin-top:128px;scroll-margin-top:24px}
+.opt__head{display:grid;grid-template-columns:48px 1fr;gap:0 16px;margin-bottom:32px;max-width:900px}
+.opt__k{font:400 11px var(--mono);color:var(--dim);padding-top:12px}
+.opt h2{font:300 40px/1.1 var(--serif)}
+.opt__why{color:var(--dim);margin-top:8px;max-width:68ch}
+.sub{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin:40px 0 16px}
+
+/* ---------- home card: text left, stage right ---------- */
+.card{position:relative;display:grid;grid-template-columns:5fr 7fr;height:540px;background:#fff}
+.opt:not([data-k=C]) .card{border:1px solid var(--line)}
+.card__body{padding:32px;display:flex;flex-direction:column}
+.num{font:400 11px var(--mono);color:var(--dim)}
+.meta{margin-top:auto;font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+.title{font-size:18px;line-height:1.3;margin-top:12px}
+.tag{color:var(--dim);margin-top:8px;max-width:40ch}
+.cta{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-top:24px}
+.card .stage{margin:12px 12px 12px 0}
+
+/* ---------- /work tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.tile{position:relative;display:flex;flex-direction:column;gap:12px}
+.tile .stage{aspect-ratio:4/3}
+.tile__t{font-size:14px;line-height:1.35}
+.tile__m{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+
+/* ---------- the stage and the phone ---------- */
+.stage{position:relative;overflow:hidden;display:grid;place-items:center;background:var(--hue)}
+[data-hue=okta]{--hue:var(--okta)} [data-hue=paypal]{--hue:var(--paypal)} [data-hue=walmart]{--hue:var(--walmart)}
+.phone{position:relative;z-index:2;contain:size;height:78%;aspect-ratio:786/1704;padding:1.6%;background:var(--bezel);border-radius:13% / 6%;
+  box-shadow:0 18px 40px -14px rgb(0 0 0/.35),0 1px 2px rgb(0 0 0/.2);transition:translate var(--dur) var(--ease)}
+.tile .phone{height:84%}
+.phone img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:11% / 5%}
+.card:hover .phone,.tile:hover .phone{translate:0 -6px}
+.paint{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+
+/* A — flat colour block. The hue, nothing else. */
+[data-k=A] .stage{background:var(--hue)}
+
+/* B — a watercolour wash. The block is painted, not filled: soft
+   pooled rim, a few blooms, paper grain. Paper shows round it. */
+[data-k=B] .stage{background:#fbfaf7}
+
+/* C — the ink line. The card's own border drawn in her line (sepia,
+   a little wobble, a second faint pass), the stage a painted wash. */
+[data-k=C] .card,[data-k=C] .tile .stage{border:0}
+[data-k=C] .stage{background:#fbfaf7}
+.sketch{position:absolute;inset:-3px;width:calc(100% + 6px);height:calc(100% + 6px);z-index:3;pointer-events:none;overflow:visible}
+.sketch rect{fill:none;stroke:var(--sketch);vector-effect:non-scaling-stroke}
+.sketch .l1{stroke-width:1.4;opacity:.8}
+.sketch .l2{stroke-width:.8;opacity:.35}
+
+/* D — flat block, the phone painted. Her line round the phone (as
+   round the laptop in the illustration) and a watercolour shadow
+   pooled under it instead of a drop shadow. */
+[data-k=D] .phone{box-shadow:none;outline:1.4px solid var(--sketch);outline-offset:2px}
+[data-k=D] .phone::after{content:"";position:absolute;inset:-3px;border-radius:14% / 6.5%;border:.8px solid var(--sketch);opacity:.35;translate:1.5px 1px;pointer-events:none}
+.pool{position:absolute;z-index:1;left:50%;bottom:6%;width:62%;height:12%;translate:-50% 0;pointer-events:none}
+
+.note{margin-top:20px;color:var(--dim);max-width:72ch}
+.note b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- Shared watercolour filters, after the hero illustration's hand. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- a painted wash: wobbly edge, pigment pooled at the rim, blooms, grain -->
+    <filter id="wash" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feGaussianBlur in="shape" stdDeviation="1.1" result="soft"/>
+      <feMorphology in="soft" operator="erode" radius="7" result="inner"/>
+      <feComposite in="soft" in2="inner" operator="out" result="rim"/>
+      <feGaussianBlur in="rim" stdDeviation="3.5" result="rimSoft"/>
+      <feFlood flood-color="#3b2a40" flood-opacity=".22"/>
+      <feComposite in2="rimSoft" operator="in" result="darkRim"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="3" seed="9" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="0 0 0 0 .2  0 0 0 0 .15  0 0 0 0 .22  0 0 0 -1 .52" result="blots"/>
+      <feComposite in="blots" in2="soft" operator="in" result="blotsIn"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" seed="2" result="g"/>
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -.3 .16" result="grain"/>
+      <feComposite in="grain" in2="soft" operator="in" result="grainIn"/>
+      <feMerge><feMergeNode in="soft"/><feMergeNode in="blotsIn"/><feMergeNode in="darkRim"/><feMergeNode in="grainIn"/></feMerge>
+    </filter>
+    <!-- her line: a small hand wobble -->
+    <filter id="hand" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="hand2" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="2" seed="21" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- a soft pooled shadow, as under her cup and laptop -->
+    <filter id="pool" x="-20%" y="-60%" width="140%" height="220%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="5" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G" result="s"/>
+      <feGaussianBlur in="s" stdDeviation="5"/>
+    </filter>
+  </defs>
+</svg>
+
+<header class="intro">
+  <h1>Work cards as <em>colour blocks</em></h1>
+  <p>No photos under the work. Each takes the project hue as a block; B to D bring in the hero illustration’s hand — her watercolour wash, her sepia line. C draws the card’s border the way she draws an outline. Each is shown as a home card, then as a row of /work tiles. Hover moves the phone, as now.</p>
+  <nav class="toc">
+    <a href="#A">A · Flat block</a><a href="#B">B · Watercolour wash</a><a href="#C">C · Her line as the border</a><a href="#D">D · Painted phone</a>
+  </nav>
+</header>
+
+<main id="opts"></main>
+
+<script>
+const home = { num:'02', co:'PayPal', tags:'Fintech · Trust', title:'Privacy settings people can read',
+  tagline:'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.', hue:'paypal', img:'pv-hub' };
+const tiles = [
+  { co:'Okta', title:'Rebuilding IAM for enterprise admins', hue:'okta', img:'okta-phone' },
+  { co:'Walmart Labs', title:'Scan & Go, in-store', hue:'walmart', img:'sg-cart' },
+  { co:'Walmart Labs', title:'Chase Pay inside Walmart Pay', hue:'walmart', img:'ch-setup' },
+];
+const opts = [
+  { k:'A', h:'Flat <em>block</em>', why:'The project hue as a plain block, no gradient, no glow. The calmest: the screen is the only thing with detail. No illustration here — the baseline the others are measured against.' },
+  { k:'B', h:'Watercolour <em>wash</em>', why:'The block is painted in the hue: a wobbly edge, pigment pooled at the rim, faint blooms and paper grain, on paper. The illustration’s medium carried onto the work, while the phone stays crisp — her hand, then the product.' },
+  { k:'C', h:'Her line as the <em>border</em>', why:'As B, and the card’s border is drawn in her line: the sepia of her outlines, a slight wobble, a second faint pass beside it, as a pencil goes round twice. Home card and /work tiles both.' },
+  { k:'D', h:'Painted <em>phone</em>', why:'A flat block, and the illustration lives on the device: her line round the phone, as round the laptop in the hero, and a watercolour shadow pooled under it in place of a drop shadow. Least change to the cards themselves.' },
+];
+
+const phone = (img) => `<div class="phone"><img src="img/${img}.webp" alt=""></div>`;
+const washSvg = () => `<svg class="paint" preserveAspectRatio="none" aria-hidden="true"><rect x="5%" y="6%" width="90%" height="88%" style="fill:var(--hue)" filter="url(#wash)"/></svg>`;
+const sketchSvg = () => `<svg class="sketch" aria-hidden="true"><rect class="l1" style="x:3px;y:3px;width:calc(100% - 6px);height:calc(100% - 6px)" filter="url(#hand)"/><rect class="l2" style="x:5px;y:4px;width:calc(100% - 9px);height:calc(100% - 7px)" filter="url(#hand2)"/></svg>`;
+const poolSvg = () => `<svg class="pool" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><ellipse cx="50" cy="10" rx="44" ry="6" fill="#2a1f30" opacity=".22" filter="url(#pool)"/></svg>`;
+
+function stage(k, d, sketch){
+  const paint = (k==='B'||k==='C') ? washSvg() : '';
+  const pool = k==='D' ? poolSvg() : '';
+  return `<div class="stage" data-hue="${d.hue}">${paint}${pool}${phone(d.img)}${sketch?sketchSvg():''}</div>`;
+}
+
+document.getElementById('opts').innerHTML = opts.map(o => `
+<section class="opt" id="${o.k}" data-k="${o.k}">
+  <div class="opt__head"><span class="opt__k">${o.k}</span><div><h2>${o.h}</h2><p class="opt__why">${o.why}</p></div></div>
+  <p class="sub">Home card</p>
+  <article class="card">
+    ${o.k==='C'?sketchSvg():''}
+    <div class="card__body">
+      <span class="num">${home.num}</span>
+      <p class="meta">${home.co} · ${home.tags}</p>
+      <h3 class="title">${home.title}</h3>
+      <p class="tag">${home.tagline}</p>
+      <span class="cta">View case study →</span>
+    </div>
+    ${stage(o.k, home, false)}
+  </article>
+  <p class="sub">/work tiles</p>
+  <div class="tiles">
+    ${tiles.map(t => `<article class="tile">${stage(o.k, t, o.k==='C')}<p class="tile__m">${t.co}</p><h3 class="tile__t">${t.title}</h3></article>`).join('')}
+  </div>
+</section>`).join('');
+</script>
+</body>
+</html>

@@ -98,7 +98,9 @@ effect:
   strolls out, smiling, at his walking pace. Follow the clip's cues and
   keep it calm, not rushed (on request). Then the sentence glides from
   the middle to its place, the layer goes, the rest of the hero comes
-  into focus one piece after another (blur to sharp), and Moss peeks up
+  into focus one piece after another (blur to sharp; the portrait
+  first, starting while the sentence is still gliding so the page is
+  never blank, on an even ease so nothing pops; 2026-11-17), and Moss peeks up
   from behind his books, his card last. It only goes as far as the page
   has loaded (images, and the hero sprite via `hero-scrub:ready`, capped
   at 4s). The hero is all in by ~6.5s, as huyml.co's (2026-11-16: it
@@ -109,7 +111,10 @@ effect:
   page of the site, nor on back/forward. A deliberate key, click, tap or
   real scroll skips it (not in its first 1.2s, never a shortcut such as
   Cmd+R): the layer fades and the hero shows. A CSS failsafe hides it at
-  20s; it removes itself from the DOM. Under reduced motion: no Moss, no
+  20s; it removes itself from the DOM. It always hands over to the hero
+  (on request, 2026-11-17): no scroll restoration on a refresh, and the
+  page is held at the top under the curtain (`data-preloader-hold`,
+  released when it ends or at 20s). Under reduced motion: no Moss, no
   glide, the curtain fades. Values under PRELOADER in `tokens.css`. The
   terracotta "dot that went for a walk" loader it replaced is in git
   history; the walking loader (`Loader.astro`, `data/loader.ts`,
@@ -503,10 +508,13 @@ walked back. Concretely, in the current implementation:
   titles and Small talk questions), copy (sans 12px / 1.8, every
   paragraph — the hero subtext's style, kept on request) and label
   (Azeret Mono 11px caps: labels, tags, numbers, `.btn`, `.btn--link`,
-  nav links, the location line, the footer's base row). Home spacing is
+  the location line, the footer's base row). The nav links are the one
+  exception: the label's mono caps at the name's 14px (`--step-nav`),
+  on request (2026-11-17); keep them there. Home spacing is
   one gap between sections (`--space-home`, 128px at 1440) and three
   steps inside them (16 / 24 / 32); section heads sit on the left edge,
-  except Beyond's, which the ring is built round. Values under ONE TYPE
+  except Beyond's, which the ring is built round, and Selected work's and
+  the playground line's, centred again on request (2026-11-17). Values under ONE TYPE
   SCALE and HOME SPACING in `tokens.css`. Other pages still carry the
   older roles (`.u-label` sans caps, 14px body) until they're moved
   over; don't add a new size outside the five. One palette: `#fcfcfc` ground, `#262626` ink, one terracotta accent
@@ -559,7 +567,7 @@ walked back. Concretely, in the current implementation:
   `scripts/hero-sprite.py`; re-run it from her source clip rather than
   editing the webp.
 - **The nav is one line** (`Nav.astro`): the name on the left (14px,
-  ink); on the right, Work · About · Play (12px, grey, current page in
+  ink); on the right, Work · About · Play (14px mono, the name's size, grey, current page in
   ink), a hairline, the sound button and the Light/Dark theme toggle.
   Links fold into Menu below 900px. "Play" is the label only; the page
   stays at /playground. On hover the name steps ink → grey (no
@@ -593,6 +601,20 @@ walked back. Concretely, in the current implementation:
   `<dialog>` is open are left to the browser. `html.lenis` turns off the
   CSS `scroll-behavior: smooth` so the two don't fight; anchor links go
   through Lenis. Off under reduced motion.
+- **Page arrival rises** (on request, 2026-11-17, "B · Rise" of
+  `experiments/page-transitions/`, after andreas.vision, measured; a
+  dip after daneden.me, a card-to-cover carry and a curtain wipe after
+  huyml.co were mocked and passed over). Arriving from another page of
+  the site, the page swaps in at once and its opening parts rise 10px
+  into place, 480ms ease-out, 60ms apart: the hero's lines and portrait,
+  /work's head and first tiles, a case study's head and cover (marked
+  `data-rise` with `--rise-i`; About's own `.rise` already does this).
+  Not on a first visit, a refresh or back/forward; the home page's
+  preloader owns the first visit. Decided before paint in `Base.astro`,
+  drawn in `global.css`, values under PAGE ARRIVAL in `tokens.css`. Off
+  under reduced motion. Its reason: a felt step from one page to the
+  next, without holding the page back. Mark only what's on the first
+  screen; don't add a leave animation.
 - **The location line** (`LocalTime.astro`) sits above the hero
   headline, after abstract.systems: a green "available" light with a
   pinging ring, `BANGALORE,IN`, a live weather icon, and 24h time with
@@ -736,7 +758,7 @@ walked back. Concretely, in the current implementation:
   2026-11-14, on request, they are his three in his order:
   Testimonials (her LinkedIn recommendations from the Wix site, one
   sentence each word for word, with their photos; Vijaya Das's left
-  out), Experience (company logos, as his; /work keeps letter tiles)
+  out), Experience (company logos, as his; /work shows the same since 2026-11-17)
   and Tools (his list minus his own Cheval and GatherOS, each app's own
   icon). Testimonials here are her request, an exception to the
   "Don't add without asking" line below. Under them, six tiles, three across: Talks
@@ -788,7 +810,11 @@ walked back. Concretely, in the current implementation:
   the way the paintings share hers.
 - The home page is now: hero → "Selected *work*" head + project cards →
   "Beyond *work*" ring → one-line playground pointer → Small talk →
-  Now → footer (which carries contact).
+  Now → footer (which carries contact). The hero is the screen minus
+  `--hero-peek`, so the "Selected work" heading line shows at the
+  bottom of the first screen on laptops and up (on request, 2026-11-17);
+  its link pill stays just below. On short screens `--hero-pad-top`
+  gives way first (HOME HERO in `tokens.css`).
 - **Now** (`Now.astro`, `site.now` in `data/site.ts`; on request, after
   carlthomasiv.com's): a hairline, a mono "NOW" label and one grey
   paragraph in her words on what she's thinking about. No heading, no
@@ -820,7 +846,11 @@ walked back. Concretely, in the current implementation:
   daneden.me, a phone runs the flow on its own — the Chase Pay
   recording, Privacy screens in sequence (cut from her boards by
   `scripts/phone-screens.py`), and the coded Debit Card sign-up
-  prototype on autopilot (`autoplay` prop). Okta IAM shows its
+  prototype on autopilot (`autoplay` prop). The phone is daneden.me's
+  device, an iPhone 17 Pro in silver, whole and centred (on request,
+  2026-11-17, option C of `experiments/device-daneden/`; his crop off
+  the card's bottom edge was passed over): a CSS aluminium band, its
+  buttons and the Dynamic Island round the black glass. Okta IAM shows its
   screenshot instead. Four cards only, on request: the list is
   `homeCards` in `data/work.ts`; the rest live on /work. Phones move
   only on screen and with motion allowed. There is no pause control

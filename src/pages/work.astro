@@ -27,7 +27,7 @@ const RATIO = '3 / 2';
   description="Selected work: Okta IAM and the Integration Platform, PayPal ID verification, the PayPal Debit Card, PayPal privacy and ad consent, Walmart Scan & Go and Chase Pay. Scope, the hard calls and outcomes for each."
 >
   <Section theme="bone" class="workindex">
-    <div class="workindex__head">
+    <div class="workindex__head" data-rise style="--rise-i:0">
       <PageHeader label="Work">
         Curated <em>case studies</em>
         <Fragment slot="intro">
@@ -39,7 +39,7 @@ const RATIO = '3 / 2';
     <div class="grid" data-worklist>
       {work.map((w, i) => {
         return (
-          <div class="cell">
+          <div class="cell" data-rise style={`--rise-i:${Math.min(i, 3) + 1}`}>
           <Reveal delay={(i % 2) * 90}>
             <CaseCard
               title={w.title} href={w.href} image={w.image} alt={w.alt}

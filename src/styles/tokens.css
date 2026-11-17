@@ -229,6 +229,15 @@
   --dur-hover: 320ms;
   --dur-micro: 150ms;
   --dur-micro-move: 180ms;
+  /* PAGE ARRIVAL: moving from one page of the site to another, the new
+     page swaps in at once and its opening parts ([data-rise]) rise into
+     place one after another — andreas.vision's, measured (480ms, 10px,
+     ease-out). Chosen 2026-11-17, "B · Rise" in
+     experiments/page-transitions/. Base.astro decides; global.css draws. */
+  --dur-rise: 480ms;
+  --ease-rise: ease-out;
+  --rise-y: 10px;
+  --rise-step: 60ms;             /* between one part and the next */
   /* SMOOTH SCROLL: a wheel scroll eases to a stop (Lenis, scripts/smooth-scroll.ts).
      Share of the remaining distance the page closes per 60fps frame:
      lower glides longer, higher stops sooner. Unitless, read by script. */
@@ -313,8 +322,19 @@
   --nav-sound-stagger: 60ms;                     /* sound button: far wave follows the near one */
   /* Home hero layout (index.astro, HeroIllustration.astro). */
   --hero-copy-w: clamp(22rem, 46vw, 50rem);
-  /* The band's top padding: the nav → headline gap (index.astro). */
-  --hero-pad-top: clamp(7rem, 26vh, 13rem);
+  /* How much of "Selected work" shows at the bottom of the first screen
+     (on request, 2026-11-17): its heading line and a little air, so the
+     work is evident without a scroll, stopping short of the link pill
+     under it (a sliver of pill read as a mistake). The hero is the
+     screen minus this. */
+  --hero-peek: 3.75rem;
+  /* The band's top padding: the nav → headline gap (index.astro). On a
+     short screen it gives way first, so the peek above still fits: the
+     hero's content (the row, ~31rem) and its bottom padding (~3rem) plus
+     the peek take --hero-fold-content, and the padding gets what's left,
+     never closer to the nav than 1.5rem. */
+  --hero-fold-content: calc(34rem + var(--hero-peek));
+  --hero-pad-top: clamp(calc(var(--nav-h) + 1.5rem), min(26vh, calc(100svh - var(--hero-fold-content))), 13rem);
   /* How far the figure rises into that padding (up to 3rem, stopping
      6rem under the nav). The figure grows by exactly this much, upward,
      so it gets bigger without moving the headline, the CTAs or the
@@ -691,15 +711,31 @@
    prototypes and the screen phones are the same object. Like the
    project hues, the device belongs to the work, so its rounded corners
    are the phone's, not the site's (--radius stays square).
+   The device is daneden.me's: an iPhone 17 Pro in silver, whole and
+   centred (on request, 2026-11-17, option C of
+   experiments/device-daneden). The aluminium is the object's own
+   material, the same in both themes, like a photo of it would be.
    ============================================================ */
 :root {
-  --phone-w: 300px;
+  --phone-w: 300px;             /* the black glass; the band goes round it */
   --phone-h: 620px;
-  --phone-bezel: #0e0e0f;
-  --phone-bezel-w: 10px;
+  --phone-bezel: #050506;       /* the black border round the screen */
+  --phone-bezel-w: 8px;
   --phone-screen: #ffffff;      /* the screen behind a recording or screens: the apps' own white */
-  --radius-phone: 44px;
-  --radius-phone-screen: 34px;
+  --radius-phone: 46px;
+  --radius-phone-screen: 38px;
+  /* the silver aluminium band, lit on the upper left */
+  --phone-band-w: 4px;
+  --phone-metal-1: #f4f4f2;
+  --phone-metal-2: #dcdcd9;
+  --phone-metal-3: #b9b9b6;
+  --phone-metal-4: #8f8f8c;
+  --phone-metal-hi: rgb(255 255 255 / 0.55);
+  --phone-btn-w: 4px;
+  --phone-island: #000;
+  --phone-island-w: 30%;
+  --phone-island-h: 26px;
+  --phone-island-top: 9px;
   --phone-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.35);
   --phone-scale: 0.8;          /* the phone as drawn in a card: 240 x 496 */
   --phone-scale-narrow: 0.62;  /* stacked cards on narrow screens: 186 x 384 */
@@ -1100,8 +1136,14 @@
   --dur-preloader-max: 4000ms;           /* images still out by now count as in */
   --dur-preloader-glide: 800ms;          /* the sentence gliding from the middle to its place */
   --ease-preloader-glide: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-preloader-focus: 700ms;          /* each piece of the hero coming into focus */
-  --dur-preloader-focus-step: 100ms;     /* ...one after another */
+  --dur-preloader-focus: 1100ms;         /* each piece of the hero coming into focus */
+  --dur-preloader-focus-step: 140ms;     /* ...one after another, the portrait first */
+  /* An even ease-out: the old expo curve did ~70% of the change in the
+     first 150ms, so the pieces read as popping in, not focusing. */
+  --ease-preloader-focus: cubic-bezier(0.33, 1, 0.68, 1);
+  /* The pieces start this far into the sentence's glide, so the page
+     never sits blank with only the sentence on it (2026-11-17). */
+  --preloader-focus-overlap: 0.35;
   --preloader-focus-blur: 10px;
   --dur-preloader-peek: 900ms;           /* Moss popping up from behind his books */
   --dur-preloader-fade: 450ms;           /* reduced motion: the curtain fades instead */

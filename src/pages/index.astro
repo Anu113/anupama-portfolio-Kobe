@@ -37,27 +37,29 @@ const cards = homeCards.map((c) => {
   <Section theme="charcoal" class="hero">
     <div class="hero__row">
       <div class="hero__copy">
-        <!-- No entrance animation on the hero text: it is the first thing
-             read, so it is simply there on first paint. -->
+        <!-- No entrance animation on the hero text on a first visit: it
+             is the first thing read (the preloader hands it over). Only
+             arriving from another page of the site does it rise in
+             ([data-rise], PAGE ARRIVAL in tokens.css). -->
         <!-- Where she is and whether she's around, before the pitch:
              status light, city, weather, ticking time (LocalTime.astro). -->
-        <div class="hero__eyebrow"><LocalTime /></div>
-        <h1 class="u-display hero__line">
+        <div class="hero__eyebrow" data-rise style="--rise-i:0"><LocalTime /></div>
+        <h1 class="u-display hero__line" data-rise style="--rise-i:1">
           <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn <PixelBreak>pixel</PixelBreak>.
         </h1>
-        <p class="hero__more">
+        <p class="hero__more" data-rise style="--rise-i:2">
           10+ years in fintech, enterprise software and developer tools,
           most recently @&nbsp;<span class="hero__co">Okta</span>. Previously
           at <span class="hero__co">PayPal</span>, <span class="hero__co">Walmart Labs</span>,
           and <span class="hero__co">Deloitte</span>.
         </p>
-        <p class="intro__links">
+        <p class="intro__links" data-rise style="--rise-i:3">
           <a class="btn btn--primary" href="/resume.pdf" target="_blank" rel="noopener">Resume</a>
           <a class="btn btn--secondary" href={site.linkedin} target="_blank" rel="noopener">LinkedIn</a>
         </p>
       </div>
       <Reveal delay={180} class="hero__portrait-cell">
-        <div class="hero__portrait">
+        <div class="hero__portrait" data-rise style="--rise-i:1">
           <!-- .hero__stage: a positioned box exactly the portrait's size, so
                AskBubble can sit Moss on the books in the
                illustration. -->
@@ -85,7 +87,7 @@ const cards = homeCards.map((c) => {
   </script>
 
   <!-- Selected work. Section head: a serif line with its key phrase in
-       italic, a label link under it, on the page's left edge. -->
+       italic, a label link under it, centred. -->
 <Section theme="bone" full id="work" class="workhead-section">
   <div class="u-shell workhead">
     <h2 class="u-heading">Selected <em>work</em></h2>
@@ -151,10 +153,13 @@ const cards = homeCards.map((c) => {
      measured on hansonwu.com (nav→headline ≈26vh, ≈4x their headline's
      font-size, at 1440x900).
 
-     min-height: 100svh, content still top-aligned: the first screen is
-     the hero and only the hero, on every screen size. Sized to content
-     alone, a tall monitor (2560x1440) showed "Selected work" and most of
-     the first card under it — read as a landing page. Top-aligned, not
+     min-height: the screen minus --hero-peek, content still top-aligned:
+     the first screen is the hero with the "Selected work" heading just
+     showing under it (on request, 2026-11-17: on a laptop the work wasn't
+     evident from the first screen). Never more than that: sized to
+     content alone, a tall monitor (2560x1440) showed "Selected work" and
+     most of the first card under it — read as a landing page. On short
+     screens --hero-pad-top gives way so the peek still fits. Top-aligned, not
      centred, so the nav → headline distance above stays exactly as set
      by --hero-pad-top; any extra height goes below the CTAs, where the
      Scroll cue sits at the fold. (Before this it was 88svh plus a flex
@@ -163,7 +168,7 @@ const cards = homeCards.map((c) => {
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 100svh;
+    min-height: calc(100svh - var(--hero-peek));
     padding-top: var(--hero-pad-top);
     /* Holds the Scroll cue (.hero__cue) clear of the CTAs and the
        portrait's feet; the rest of the gap to "Selected work" is #work's
@@ -374,12 +379,13 @@ const cards = homeCards.map((c) => {
   :global(#work + .worklist) { padding-block: 0 var(--space-home); }
   :global(.playline) { padding-block: var(--space-home) 0; }
 
-  /* Section head: serif line, label link a step under it. Left on the
-     page's edge like Small talk and Now (they used to be centred; only
-     Beyond, built round its ring, stays centred). */
+  /* Section head: serif line, label link a step under it. Centred, as
+     they first were (on request, 2026-11-17): Selected work and the
+     playground line, like Beyond's. Small talk and Now stay on the
+     page's left edge. */
   .workhead {
-    display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-head-link);
-    text-align: left; padding-bottom: var(--space-head-cards);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-head-link);
+    text-align: center; padding-bottom: var(--space-head-cards);
   }
   .workhead .u-heading { max-width: 20ch; }
   :global(.playline) .workhead { padding-bottom: 0; }

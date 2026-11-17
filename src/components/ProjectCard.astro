@@ -83,7 +83,9 @@ const ground = workPlay[href] ? { kind: 'colour' as const } : undefined;
       <img class="pc__desktop" src={media.image} alt="" loading="lazy" decoding="async" />
     ) : (
       <div class="pc__device" aria-hidden="true">
+        <i class="pc__btn"></i><i class="pc__btn"></i><i class="pc__btn"></i><i class="pc__btn"></i><i class="pc__btn"></i>
         <div class="pc__device-inner">
+          <span class="pc__island"></span>
           {media.type === 'prototype' && media.name === 'paypal-enroll' && <EnrollPrototype autoplay />}
           {media.type === 'prototype' && media.name === 'paypal-offers' && <OffersPrototype autoplay />}
           {media.type !== 'prototype' && (
@@ -238,21 +240,57 @@ const ground = workPlay[href] ? { kind: 'colour' as const } : undefined;
   .pc__stage > :not(.wp-ground) { position: relative; z-index: 1; }
 
   /* --- the phone ---------------------------------------------------
-     Drawn at full size (the PayPal prototypes' own size) and scaled
-     down as a whole, so the coded prototypes and the screen phones are
-     the same object at the same size. */
+     An iPhone 17 Pro in silver, after daneden.me (option C of
+     experiments/device-daneden: his phone, whole and centred). The
+     black glass and screen are drawn at full size (the PayPal
+     prototypes' own size) and scaled down as a whole, so the coded
+     prototypes and the screen phones are the same object at the same
+     size; the aluminium band, its buttons and the Dynamic Island are
+     drawn round them here, at the same scale. */
   .pc__device {
+    --s: var(--phone-scale);
+    position: relative;
     flex: none;
-    width: calc(var(--phone-w) * var(--phone-scale));
-    height: calc(var(--phone-h) * var(--phone-scale));
-    border-radius: calc(var(--radius-phone) * var(--phone-scale));
-    box-shadow: var(--phone-shadow);
+    width: calc((var(--phone-w) + 2 * var(--phone-band-w)) * var(--s));
+    height: calc((var(--phone-h) + 2 * var(--phone-band-w)) * var(--s));
+    padding: calc(var(--phone-band-w) * var(--s));
+    border-radius: calc((var(--radius-phone) + var(--phone-band-w)) * var(--s));
+    /* the band: lit edge, brushed face, a darker lip */
+    background: linear-gradient(100deg, var(--phone-metal-1) 0%, var(--phone-metal-2) 18%, var(--phone-metal-3) 52%, var(--phone-metal-2) 82%, var(--phone-metal-1) 100%);
+    box-shadow:
+      inset 0 0 0 calc(0.75px * var(--s)) var(--phone-metal-4),
+      inset calc(1.5px * var(--s)) calc(1.5px * var(--s)) calc(2px * var(--s)) var(--phone-metal-hi),
+      var(--phone-shadow);
     transition: transform var(--dur-hover) var(--ease-out);
   }
+  /* Buttons: Action and volume on the left, the side button and Camera
+     Control on the right. */
+  .pc__btn {
+    position: absolute;
+    width: calc(var(--phone-btn-w) * var(--s));
+    border-radius: calc(var(--phone-btn-w) * var(--s));
+    left: calc(var(--phone-btn-w) * -0.7 * var(--s));
+    background: linear-gradient(90deg, var(--phone-metal-4), var(--phone-metal-3));
+  }
+  .pc__btn:nth-child(1) { top: 18.5%; height: 5.2%; }
+  .pc__btn:nth-child(2) { top: 27%; height: 8.6%; }
+  .pc__btn:nth-child(3) { top: 37.5%; height: 8.6%; }
+  .pc__btn:nth-child(n + 4) { left: auto; right: calc(var(--phone-btn-w) * -0.7 * var(--s)); background: linear-gradient(270deg, var(--phone-metal-4), var(--phone-metal-3)); }
+  .pc__btn:nth-child(4) { top: 30%; height: 13%; }
+  .pc__btn:nth-child(5) { top: 56%; height: 7.5%; }
   .pc__device-inner {
+    position: relative;
     width: var(--phone-w); height: var(--phone-h);
-    transform: scale(var(--phone-scale));
+    transform: scale(var(--s));
     transform-origin: 0 0;
+  }
+  .pc__island {
+    position: absolute; z-index: 5; left: 50%; translate: -50% 0;
+    top: calc(var(--phone-bezel-w) + var(--phone-island-top));
+    width: var(--phone-island-w); height: var(--phone-island-h);
+    border-radius: 999px;
+    background: var(--phone-island);
+    pointer-events: none;
   }
   .pc__phone {
     width: 100%; height: 100%;

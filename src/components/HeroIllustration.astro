@@ -57,12 +57,14 @@
    and coarse-pointer visitors see. Everyone else sees it first too: it
    is drawn as soon as it decodes, and the canvas swaps to the full
    sprite when that has loaded, so she never waits on 4.6MB to appear.
-   The sprite is fetched, decoded once into a bitmap, then cut into its
-   48 frames (createImageBitmap) and every draw reads a frame's own
-   bitmap: drawing out of the whole sheet cost ~27ms a frame and made the
-   scrub, Moss and the trail stutter; cutting from an <img> rather than a
-   decoded bitmap froze the page for ~24s while it re-decoded the sheet
-   per cut.
+   The sprite is fetched, decoded and cut into its 48 frames in a worker
+   (scripts/sprite-frames.ts; on the main thread the 96's decode froze the
+   page ~1.5s, and it used to land in the preloader's hand-over), and
+   every draw reads a frame's own bitmap: drawing out of the whole sheet
+   cost ~27ms a frame and made the scrub, Moss and the trail stutter;
+   cutting from an <img> rather than a decoded bitmap froze the page for
+   ~24s while it re-decoded the sheet per cut. The 96 is fetched only
+   after the preloader has finished.
    When the hero is complete it sets html[data-hero-ready] and fires
    `hero-scrub:ready` on window, which the first-paint loader waits for.
 
@@ -192,6 +194,7 @@ const { alt, size = 480 } = Astro.props;
 
 <script>
   import { wake, ease } from '../scripts/frame-loop';
+  import { spriteFrames } from '../scripts/sprite-frames';
 
   const FRAME_COUNT = 48;
   const FRAME_W = 700;
@@ -326,12 +329,11 @@ const { alt, size = 480 } = Astro.props;
     idle.src = '/images/hero-idle.webp';
     let sprite: CanvasImageSource = idle;
     let live = false;                    // drawing from the full sprite yet?
-    // The full sheet is fetched as a file and decoded once into a bitmap
-    // (off the main thread). Cutting frames from an <img> instead
-    // re-decoded the whole 4.6MB sheet for every cut, ~0.5s x 48: a 24s
-    // freeze during the first-paint loader. From the decoded bitmap all
-    // 48 cuts take ~75ms.
-    const full = still ? null : fetch('/images/hero-sprite.webp').then((r) => r.blob()).then((b) => createImageBitmap(b));
+    // The full sheet is fetched, decoded and cut into its frames in a
+    // worker (spriteFrames), so the page never stalls on it. Cutting
+    // frames from an <img> instead re-decoded the whole 4.6MB sheet for
+    // every cut, ~0.5s x 48: a 24s freeze during the first-paint loader.
+    const full = still ? null : spriteFrames('/images/hero-sprite.webp', { n: FRAME_COUNT, cols: COLS, w: CROP_W, h: CROP_H, x: CROP_X, y: CROP_Y });
 
     let ready = false;
     // Pictures in the clip on screen: 48 at first, 96 once the finer
@@ -675,11 +677,7 @@ const { alt, size = 480 } = Astro.props;
     // budget, so the scrub, Moss and the cursor trail all dropped frames;
     // a pre-cut frame draws in ~1.5ms.
     let frames: ImageBitmap[] = [];
-    const cutSheet = (sheet: ImageBitmap, n: number, cols: number) =>
-      Promise.all(Array.from({ length: n }, (_, f) =>
-        createImageBitmap(sheet, (f % cols) * FRAME_W + CROP_X, Math.floor(f / cols) * FRAME_H + CROP_Y, CROP_W, CROP_H),
-      )).then((cut) => { sheet.close(); return cut; });   // the sheet itself is no longer needed
-    full?.then((sheet) => cutSheet(sheet, FRAME_COUNT, COLS)).then((cut) => {
+    full?.then((cut) => {
       frames = cut;
       sprite = frames[0];
       live = true;
@@ -705,10 +703,7 @@ const { alt, size = 480 } = Astro.props;
     const upgrade = () => {
       const net = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
       if (net?.saveData || /(^|-)(2g|3g)$/.test(net?.effectiveType ?? '')) return;
-      const go = () => fetch('/images/hero-sprite-96.webp')
-        .then((r) => (r.ok ? r.blob() : Promise.reject()))
-        .then((b) => createImageBitmap(b))
-        .then((sheet) => cutSheet(sheet, FRAME_COUNT * 2, COLS_96))
+      const go = () => spriteFrames('/images/hero-sprite-96.webp', { n: FRAME_COUNT * 2, cols: COLS_96, w: CROP_W, h: CROP_H, x: CROP_X, y: CROP_Y })
         .then((cut) => {
           const old = frames;
           const k = (cut.length - 1) / (count - 1);
@@ -724,8 +719,18 @@ const { alt, size = 480 } = Astro.props;
         })
         .catch(() => {});   // the 48 stay
       const whenIdle = () => ('requestIdleCallback' in window ? requestIdleCallback(go, { timeout: 4000 }) : setTimeout(go, 1500));
-      if (document.readyState === 'complete') whenIdle();
-      else addEventListener('load', whenIdle, { once: true });
+      // Never during the first-paint loader's hand-over: wait for it to
+      // finish (`preloader:done`), so the swap can't land mid-intro.
+      // (Its failsafe is 20s, so give up waiting then.)
+      let asked = false;
+      const once = () => { if (!asked) { asked = true; whenIdle(); } };
+      const afterLoader = () => {
+        if (!('preloader' in document.documentElement.dataset)) return once();
+        addEventListener('preloader:done', once, { once: true });
+        setTimeout(once, 20000);
+      };
+      if (document.readyState === 'complete') afterLoader();
+      else addEventListener('load', afterLoader, { once: true });
     };
 
     // The theme button flips data-mode on <html>; re-read the night

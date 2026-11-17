@@ -14,7 +14,8 @@
      wall's sideways drag, the pan canvas);
    - inner boxes that scroll (Moss's panel, the About tabs, phone
      screens): allowNestedScroll, plus [data-lenis-prevent] by hand;
-   - anything while a modal <dialog> is open (the About lightbox).
+   - anything while a modal <dialog> is open (the About lightbox), or
+     while the preloader is up (it holds the page at the hero).
    Off entirely under prefers-reduced-motion. In-page anchor links go
    through Lenis so they glide the same way. */
 
@@ -37,7 +38,8 @@ const start = () => {
     anchors: true,
     autoRaf: true,
     virtualScroll: ({ event }) =>
-      !event.defaultPrevented && !document.querySelector('dialog:modal'),
+      !event.defaultPrevented && !document.querySelector('dialog:modal') &&
+      !('preloaderHold' in document.documentElement.dataset),
   });
 };
 
