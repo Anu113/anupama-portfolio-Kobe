@@ -54,17 +54,27 @@ const {
          experiments/page-transitions/, "B · Rise"): arriving from another
          page of the site, the new page's opening parts ([data-rise]) rise
          10px into place one after another (PAGE ARRIVAL in tokens.css,
-         `[data-rise]` in global.css). Not on a first visit, a refresh or
-         back/forward — the home page's preloader owns the first visit.
-         Decided before first paint, so nothing shows and then hides. -->
+         `[data-rise]` in global.css). Back and forward rise too (on
+         request, 2026-11-17), including a page the browser restores whole
+         from memory (pageshow, persisted), where no load script runs. Not
+         on a first visit or a refresh — the home page's preloader owns the
+         first visit. Decided before first paint, so nothing shows and
+         then hides. -->
     <script is:inline>
       (() => {
+        const root = document.documentElement;
         try {
           const nav = performance.getEntriesByType('navigation')[0];
-          if (nav && nav.type !== 'navigate') return;
-          if (!document.referrer || new URL(document.referrer).origin !== location.origin) return;
-          document.documentElement.dataset.arrive = '';
+          const type = nav ? nav.type : 'navigate';
+          const internal = !!document.referrer && new URL(document.referrer).origin === location.origin;
+          if (type === 'back_forward' || (type === 'navigate' && internal)) root.dataset.arrive = '';
         } catch (e) {}
+        addEventListener('pageshow', (e) => {
+          if (!e.persisted) return;
+          delete root.dataset.arrive;
+          void root.offsetWidth; // let the old run go, so the rise plays again
+          root.dataset.arrive = '';
+        });
       })();
     </script>
     <!-- The type system (tokens.css): Crimson Pro 300 roman + italic for

@@ -15,7 +15,9 @@
    That <em> is styled by the global `.u-display em` role in global.css, not
    by this file — slotted content carries the calling page's scope hash, not
    this component's, so a scoped rule here would never match it. Same reason
-   the intro's <p> rules below are wrapped in :global(). */
+   the intro's <p> rules below are wrapped in :global(). 
+   Arriving from another page of the site, the label, heading and intro
+   rise in one after another ([data-rise], PAGE ARRIVAL in tokens.css). */
 import Reveal from './Reveal.astro';
 
 interface Props { label: string; class?: string; }
@@ -23,14 +25,14 @@ const { label, class: cls = '' } = Astro.props;
 ---
 <header class:list={['phead', cls]}>
   <Reveal>
-    <p class="u-label phead__label">{label}</p>
+    <p class="u-label phead__label" data-rise style="--rise-i:0">{label}</p>
   </Reveal>
   <Reveal delay={120}>
-    <h1 class="u-display phead__title"><slot /></h1>
+    <h1 class="u-display phead__title" data-rise style="--rise-i:1"><slot /></h1>
   </Reveal>
   {Astro.slots.has('intro') && (
     <Reveal delay={240}>
-      <div class="phead__intro"><slot name="intro" /></div>
+      <div class="phead__intro" data-rise style="--rise-i:2"><slot name="intro" /></div>
     </Reveal>
   )}
 </header>
