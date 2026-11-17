@@ -503,7 +503,9 @@ walked back. Concretely, in the current implementation:
   titles and Small talk questions), copy (sans 12px / 1.8, every
   paragraph — the hero subtext's style, kept on request) and label
   (Azeret Mono 11px caps: labels, tags, numbers, `.btn`, `.btn--link`,
-  nav links, the location line, the footer's base row). Home spacing is
+  the location line, the footer's base row). The nav links are the one
+  exception: the label's mono caps at the name's 14px (`--step-nav`),
+  on request (2026-11-17); keep them there. Home spacing is
   one gap between sections (`--space-home`, 128px at 1440) and three
   steps inside them (16 / 24 / 32); section heads sit on the left edge,
   except Beyond's, which the ring is built round, and Selected work's and
@@ -560,7 +562,7 @@ walked back. Concretely, in the current implementation:
   `scripts/hero-sprite.py`; re-run it from her source clip rather than
   editing the webp.
 - **The nav is one line** (`Nav.astro`): the name on the left (14px,
-  ink); on the right, Work · About · Play (12px, grey, current page in
+  ink); on the right, Work · About · Play (14px mono, the name's size, grey, current page in
   ink), a hairline, the sound button and the Light/Dark theme toggle.
   Links fold into Menu below 900px. "Play" is the label only; the page
   stays at /playground. On hover the name steps ink → grey (no
