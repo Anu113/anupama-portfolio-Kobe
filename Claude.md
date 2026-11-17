@@ -506,7 +506,8 @@ walked back. Concretely, in the current implementation:
   nav links, the location line, the footer's base row). Home spacing is
   one gap between sections (`--space-home`, 128px at 1440) and three
   steps inside them (16 / 24 / 32); section heads sit on the left edge,
-  except Beyond's, which the ring is built round. Values under ONE TYPE
+  except Beyond's, which the ring is built round, and Selected work's and
+  the playground line's, centred again on request (2026-11-17). Values under ONE TYPE
   SCALE and HOME SPACING in `tokens.css`. Other pages still carry the
   older roles (`.u-label` sans caps, 14px body) until they're moved
   over; don't add a new size outside the five. One palette: `#fcfcfc` ground, `#262626` ink, one terracotta accent
