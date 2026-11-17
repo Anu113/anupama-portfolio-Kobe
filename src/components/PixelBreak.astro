@@ -35,7 +35,10 @@
    and the fade live in tokens.css (PIXEL BREAK); the spring constants
    are below, tuned per 60fps frame.
 
-   Usage: <PixelBreak>pixel</PixelBreak> — the slot must be plain text. */
+   Usage: <PixelBreak>pixel</PixelBreak> — the slot must be plain text.
+
+   Sound (page sound on only, sound.ts): a sand scatter as it breaks, a
+   soft settle as it lands. */
 ---
 
 <span class="pb" data-pixel-break><slot /></span>
@@ -49,6 +52,7 @@
 </style>
 
 <script>
+  import { playSand, playSettle } from '../scripts/sound';
   const fine = matchMedia('(hover: hover) and (pointer: fine)');
   const still = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -76,6 +80,7 @@
       if (!fine.matches || still.matches) return;
       if (running) { reenter?.(ev); return; }
       running = true;
+      playSand();
 
       const root = getComputedStyle(document.documentElement);
       const cell = num(root.getPropertyValue('--pb-cell'), 4);
@@ -200,7 +205,7 @@
           spread += Math.hypot(d.x - d.hx, d.y - d.hy);
         }
         if (on) landing = false;
-        else if (spread / Math.max(1, dots.length) < SETTLED) landing = true;
+        else if (!landing && spread / Math.max(1, dots.length) < SETTLED) { landing = true; playSettle(); }
 
         // One value, two sides. Overlapped: the text is fully in by
         // mix 0.3 and the dots are fully out only at mix 0 — so as the

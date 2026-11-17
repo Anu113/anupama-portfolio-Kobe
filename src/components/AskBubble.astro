@@ -78,7 +78,10 @@
 
    Styles are global but namespaced (.pixel-*) because most of the thread
    is built by the script at runtime and the panel is re-parented to
-   <body>, so Astro's scope hash wouldn't reach it. */
+   <body>, so Astro's scope hash wouldn't reach it.
+
+   Sound (page sound on only, sound.ts): a soft key click every second
+   letter while he types. */
 import { pixelTree, pixelStatus, pixelWake } from '../data/ask';
 const data = JSON.stringify({ tree: pixelTree, status: pixelStatus, wakeLines: pixelWake });
 
@@ -438,6 +441,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
 </style>
 
 <script>
+  import { playKey } from '../scripts/sound';
   interface Card { label: string; title: string; sub: string; href: string }
   interface Exit { label: string; href: string; external?: boolean }
   interface Node { q: string; say: string[]; cards?: Card[]; exits?: Exit[]; next?: string[] }
@@ -578,6 +582,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
           p.textContent = text.slice(0, i);
           if (i % 4 === 0) scrollEnd();
           const ch = text[i - 1];
+          if (i % 2 === 0 && /[a-z0-9]/i.test(ch)) playKey();
           await wait(/[.?!…]/.test(ch) ? TYPE_STOP : ch === ',' ? TYPE_COMMA : TYPE_CHAR);
         }
         p.classList.remove('pixel-cursor');

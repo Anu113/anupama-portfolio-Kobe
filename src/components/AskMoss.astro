@@ -24,7 +24,10 @@
    [data-ask-scope] (the band around the field), like he does with the
    hero, sways while thinking, and perks up when hovered. Fine pointers
    and full motion only; frame 0 otherwise. Under reduced motion: no
-   spring, sway, typing or pill arrival. */
+   spring, sway, typing or pill arrival.
+
+   Sound (page sound on only, sound.ts): a soft key click per typed step,
+   as in his panel. */
 import { talkMoss } from '../data/talk';
 import { pixelTree, pixelKeys, pixelUnknown, pixelThinking } from '../data/ask';
 
@@ -152,6 +155,7 @@ const data = JSON.stringify({ tree: pixelTree, keys: pixelKeys, unknown: pixelUn
 
 <script>
   import { cssMs } from '../scripts/css-time';
+  import { playKey } from '../scripts/sound';
   interface Link { label: string; title?: string; href: string; external?: boolean }
   interface Node { q: string; say: string[]; cards?: Link[]; exits?: Link[]; next?: string[] }
 
@@ -257,6 +261,7 @@ const data = JSON.stringify({ tree: pixelTree, keys: pixelKeys, unknown: pixelUn
         for (let i = 1; i <= text.length; i += 2) {
           if (id !== run) return;
           p.textContent = text.slice(0, i);
+          if (/[a-z0-9]/i.test(text[i - 1])) playKey();
           await wait(/[.?!…]/.test(text[i - 1]) ? 180 : 18);
         }
       }
