@@ -584,11 +584,21 @@ walked back. Concretely, in the current implementation:
   sun/moon's 15px grid. The rules and sounds are the old dock's, in
   `scripts/sound.ts`: off by default, on for the tab once pressed (a
   reload starts off), synthesised in the browser (no files): a tap as
-  sound turns on and a short tone on Light/Dark, nothing else. The name
+  sound turns on and a short tone on Light/Dark. The name
   and links make no sound on hover or click (removed on request,
-  2026-11-13); don't add one back. Its reason: a felt response, only for a visitor who
-  asks for it. Don't wire sounds beyond the nav without asking; the
-  About page's record player plays on its own press, apart from this.
+  2026-11-13); don't add one back. Since 2026-11-17, on request, six
+  more, picked from `experiments/sound/`, all in `sound.ts`: a harp
+  string per /work archive row on hover or focus (the one hover sound),
+  soft key clicks as Moss types (panel and field), a click as the
+  Privacy before/after line crosses a pin under the visitor's hand (its
+  sway is silent), a sand scatter and settle on "pixel", a metal detent
+  as the Beyond ring is thrown or turned (not on its drift), and counter
+  ticks on a case's numbers (first count only). Footsteps on the
+  playground wall were mocked and left out, on request. Nothing else has
+  sound: more would be overdoing it, her words. Its reason: a felt
+  response, only for a visitor who asks for it. Don't add sounds without
+  asking; the About page's record player plays on its own press, apart
+  from this.
 - **Wheel scrolls glide, with Lenis** (on request, 2026-11-16: the page
   "stopped dead" when the wheel stopped; Lenis itself also on request).
   `scripts/smooth-scroll.ts`, loaded in `Base.astro`. Lenis moves the

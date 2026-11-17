@@ -28,7 +28,10 @@
    says how many fixes are showing. The notes list carries both lines of
    every note for screen readers whatever the line's position; the
    swapping text is visual only. Values under BEFORE / AFTER in
-   tokens.css. */
+   tokens.css.
+
+   Sound (page sound on only, sound.ts): a click when a drag or arrow key
+   carries the line across a pin, brighter toward After; the sway is silent. */
 import DeviceBox from './DeviceBox.astro';
 import PrivacyScreen from './PrivacyScreen.astro';
 import type { CompareNote } from '../data/cases';
@@ -299,6 +302,7 @@ const newSub = ['Personal info', 'Financial settings', 'Privacy and security', '
 </style>
 
 <script>
+  import { playPin } from '../scripts/sound';
   // How the line moves on its own, and how long it waits after a visitor
   // has moved it.
   const SWAY = 40;            // % either side of the middle, so every pin gets crossed
@@ -326,7 +330,9 @@ const newSub = ['Personal info', 'Financial settings', 'Privacy and security', '
     });
 
     let pos = 50, t = Math.PI / 2, drag = false, wait = 0, seen = false;
-    const set = (p: number) => {
+    // byHand: a drag or key moved the line. Only those crossings click;
+    // the line's own sway is silent.
+    const set = (p: number, byHand = false) => {
       pos = Math.max(0, Math.min(100, p));
       screen.style.setProperty('--pos', `${pos}%`);
       screen.setAttribute('aria-valuenow', String(Math.round(pos)));
@@ -340,6 +346,7 @@ const newSub = ['Personal info', 'Financial settings', 'Privacy and security', '
         pinB[i].classList.toggle('is-off', f);
         pinA[i].classList.toggle('is-off', !f);
         notes[i].classList.toggle('is-fixed', f);
+        if (!first && byHand) playPin(f);
         if (!first && !reduce) {
           const on = f ? pinA[i] : pinB[i];
           on.classList.remove('is-pop'); void on.offsetWidth; on.classList.add('is-pop');
@@ -349,8 +356,8 @@ const newSub = ['Personal info', 'Financial settings', 'Privacy and security', '
     };
 
     const fromX = (x: number) => { const r = screen.getBoundingClientRect(); return ((x - r.left) / r.width) * 100; };
-    screen.addEventListener('pointerdown', (e) => { drag = true; screen.setPointerCapture(e.pointerId); set(fromX(e.clientX)); });
-    screen.addEventListener('pointermove', (e) => { if (drag) set(fromX(e.clientX)); });
+    screen.addEventListener('pointerdown', (e) => { drag = true; screen.setPointerCapture(e.pointerId); set(fromX(e.clientX), true); });
+    screen.addEventListener('pointermove', (e) => { if (drag) set(fromX(e.clientX), true); });
     const end = () => { if (drag) { drag = false; wait = performance.now() + WAIT_DRAG; } };
     screen.addEventListener('pointerup', end);
     screen.addEventListener('pointercancel', end);
@@ -358,7 +365,7 @@ const newSub = ['Personal info', 'Financial settings', 'Privacy and security', '
       const step = ({ ArrowLeft: -5, ArrowDown: -5, ArrowRight: 5, ArrowUp: 5, Home: -100, End: 100 } as Record<string, number>)[e.key];
       if (step === undefined) return;
       e.preventDefault();
-      set(pos + step);
+      set(pos + step, true);
       wait = performance.now() + WAIT_KEY;
     });
 

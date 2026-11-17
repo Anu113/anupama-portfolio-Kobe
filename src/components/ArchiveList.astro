@@ -36,7 +36,10 @@
 
    Keyboard gets the reveal via :focus-visible; with no pointer to follow it
    parks over the focused row. Hover-capable pointers only
-   (@media (hover: hover)), and only above 900px where there is room. */
+   (@media (hover: hover)), and only above 900px where there is room.
+
+   Sound (page sound on only, sound.ts): each row plucks a harp string as
+   the pointer enters it or focus lands on it, newest highest. */
 interface ArchiveItem {
   name: string; tag: string; year: string;
   href?: string; image?: string;
@@ -214,6 +217,7 @@ const { items } = Astro.props;
 </style>
 
 <script>
+  import { playPluck } from '../scripts/sound';
   /* Eases the preview toward the pointer. See the header comment for why this
      is hand-rolled rather than a library, and why it seeds on entry. */
   document.querySelectorAll<HTMLElement>('[data-arch]').forEach((list) => {
@@ -263,6 +267,14 @@ const { items } = Astro.props;
     }, { passive: true });
 
     list.addEventListener('pointerleave', () => { seeded = false; inside = false; });
+
+    // A harp string per row, plucked as the pointer enters it or focus lands
+    // on it (sound.ts; only with page sound on).
+    const rows = [...list.querySelectorAll<HTMLElement>('.arch__row')];
+    rows.forEach((row, i) => {
+      row.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') playPluck(i, rows.length); });
+      row.addEventListener('focus', () => playPluck(i, rows.length));
+    });
 
     // Scrolling with the pointer parked moves the list under a stationary
     // cursor, so the local offset changes even though nothing was moved.

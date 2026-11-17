@@ -30,7 +30,11 @@
    column as the rest of the page; on phones it runs past the edges.
 
    Reduced motion: no drift and no coasting; drag and arrow keys still
-   turn it, directly. Values under BEYOND WORK in tokens.css. */
+   turn it, directly. Values under BEYOND WORK in tokens.css.
+
+   Sound (page sound on only, sound.ts): a metal detent as a photo passes
+   the front while the ring is dragged, thrown or turned by key; never on
+   its drift. */
 import { beyond, ring } from '../data/beyond';
 const { title, dek, action, photos } = beyond;
 ---
@@ -204,6 +208,7 @@ const { title, dek, action, photos } = beyond;
 </style>
 
 <script>
+  import { playDetent } from '../scripts/sound';
   type Ring = { drift: number; easeRate: number; spreadX: number; spreadY: number; offset: number; amp: number; blur: number; fade: number; dragStart: number; keyKick: number };
 
   function mount(stage: HTMLElement) {
@@ -220,6 +225,10 @@ const { title, dek, action, photos } = beyond;
     let W = stage.offsetWidth, H = stage.offsetHeight;
     let drag: { id: number; x: number; t: number; travel: number } | null = null, dragging = false;
     const memo = cards.map(() => ({ o: '', s: '', z: '' }));
+    // Which photo is at the front; a metal detent ticks as it changes, but
+    // only while the visitor moves the ring (dragged, thrown, or turned by
+    // key) — never on its idle drift.
+    let front = 0;
 
     function paint() {
       const ax = (W / 2) * cfg.spreadX, ay = (H / 2) * cfg.spreadY;
@@ -228,6 +237,11 @@ const { title, dek, action, photos } = beyond;
         return { x: Math.sin(t), y: cfg.offset + cfg.amp * Math.cos(t), depth, scale: 0.55 + 0.45 * depth };
       });
       const order = ps.map((_, i) => i).sort((a, b) => ps[a].depth - ps[b].depth);
+      const f = order[n - 1];
+      if (f !== front) {
+        front = f;
+        if (dragging || Math.abs(speed) > cfg.drift * 2.5) playDetent(Math.abs(speed) / 6);
+      }
       order.forEach((i, rank) => {
         const p = ps[i], el = cards[i], m = memo[i];
         const far = clamp((0.6 - p.depth) / 0.6);   // 0 on the near half, 1 at the very back

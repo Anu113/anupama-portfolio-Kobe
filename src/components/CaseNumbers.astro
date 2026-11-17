@@ -23,7 +23,10 @@
    DOM for screen readers and stays in place (only its ink is hidden
    while the count runs on top of it), so nothing shifts. Static under
    reduced motion and without JS. Values under CASE NUMBERS in
-   tokens.css. */
+   tokens.css.
+
+   Sound (page sound on only, sound.ts): counter ticks under the first
+   number and a landed note, on the row's first count only. */
 interface Props {
   items: { value: string; label: string }[];
   note?: string;
@@ -98,6 +101,10 @@ const { items, note, attached = false } = Astro.props;
 
 <script>
   import { cssMs } from '../scripts/css-time';
+  import { playCountTick, playCountLand } from '../scripts/sound';
+  // Counter ticks, 24 over the count so they slow with its ease-out; only
+  // the first number of a row ticks, and only on the row's first count.
+  const TICKS = 24;
   // Prefix, the first number (commas and decimals kept), the rest.
   const PARTS = /^([^\d]*)(\d[\d,]*(?:\.\d+)?)([\s\S]*)$/;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
@@ -107,6 +114,7 @@ const { items, note, attached = false } = Astro.props;
     const dur = cssMs('--dur-count', 1000);
     const stagger = cssMs('--count-stagger', 180);
     const runs = new Map<HTMLElement, number>();
+    let heard = false;
 
     const roll = (el: HTMLElement, i: number) => {
       const m = el.dataset.roll!.match(PARTS);
@@ -124,16 +132,19 @@ const { items, note, attached = false } = Astro.props;
       runs.set(el, id);
       el.classList.add('is-rolling');
       live.textContent = pre + fmt(0) + post;
+      const audible = i === 0 && !heard;
+      if (audible) heard = true;
       setTimeout(() => {
-        let t0 = 0;
+        let t0 = 0, tick = 0;
         const step = (now: number) => {
           if (runs.get(el) !== id) return;
           t0 ||= now;
           const p = Math.min(1, (now - t0) / dur);
           const e = 1 - Math.pow(1 - p, 3);
           live.textContent = pre + fmt(target * e) + post;
+          if (audible && Math.floor(e * TICKS) > tick) { tick = Math.floor(e * TICKS); if (p < 1) playCountTick(); }
           if (p < 1) requestAnimationFrame(step);
-          else { el.classList.remove('is-rolling'); live.textContent = ''; }
+          else { el.classList.remove('is-rolling'); live.textContent = ''; if (audible) playCountLand(); }
         };
         requestAnimationFrame(step);
       }, i * stagger);
