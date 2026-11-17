@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Work cards — in the references' colours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+/* Mock page, round 3 (2026-11-17, on request: rounds 1 and 2's colours
+   turned down; "what colour are the portfolios we follow using?").
+   The colours behind the work on nine reference portfolios, read off
+   their live pages (computed styles, 1440 wide) on 2026-11-17, and her
+   cards mocked in each one's way. Her screens, our type; only the
+   ground, card and frame follow the reference. Values inline on
+   purpose; the pick moves into tokens.css. */
+:root{
+  --ink:#262626; --dim:#707070; --line:rgb(0 0 0/.1); --bezel:#0e0e0f;
+  --ease:cubic-bezier(.16,1,.3,1); --dur:600ms;
+  --serif:'Crimson Pro',Georgia,serif; --sans:'Manrope',system-ui,sans-serif; --mono:'Azeret Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:#fcfcfc;color:var(--ink);font:600 12px/1.8 var(--sans)}
+em{font-style:italic}
+.intro{max-width:780px;padding:64px clamp(24px,5vw,80px) 0}
+.intro h1{font:300 44px/1.1 var(--serif)}
+.intro p{color:var(--dim);margin-top:16px;max-width:68ch}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.toc a{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:6px 12px;text-decoration:none}
+.toc a:hover{border-color:var(--ink)}
+
+/* each reference is a full-width band in that site's page colour */
+.ref{margin-top:96px;padding:56px clamp(24px,5vw,80px) 72px;background:var(--page);color:var(--txt,var(--ink));scroll-margin-top:0}
+.ref__head{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;margin-bottom:32px}
+.ref__site{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+.ref h2{font:300 40px/1.1 var(--serif);margin-top:4px}
+.ref__why{max-width:66ch;margin-top:8px;opacity:.75}
+.sw{display:flex;gap:6px}
+.sw span{display:flex;flex-direction:column;align-items:center;gap:6px;font:400 10px var(--mono);opacity:.85}
+.sw i{width:40px;height:40px;border-radius:8px;box-shadow:inset 0 0 0 1px rgb(0 0 0/.08)}
+
+/* card + tiles */
+.card{position:relative;display:grid;grid-template-columns:5fr 7fr;height:520px;overflow:hidden;background:var(--card);border:var(--card-bd,0);border-radius:var(--r,0);box-shadow:var(--card-sh,none)}
+.card__body{padding:32px;display:flex;flex-direction:column}
+.num{font:400 11px var(--mono);opacity:.6}
+.meta{margin-top:auto;font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;opacity:.6}
+.title{font-size:18px;line-height:1.3;margin-top:12px}
+.tag{opacity:.7;margin-top:8px;max-width:40ch}
+.cta{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-top:24px}
+.card .stage{margin:var(--inset,12px);margin-left:0;border-radius:var(--sr,0)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px}
+.tile{display:flex;flex-direction:column;gap:12px}
+.tile .stage{aspect-ratio:4/3;border-radius:var(--r,0);border:var(--tile-bd,0);box-shadow:var(--card-sh,none)}
+.tile__m{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;opacity:.6}
+.tile__t{font-size:14px;line-height:1.35;margin-top:-6px}
+
+.stage{position:relative;overflow:hidden;display:grid;place-items:center;background:var(--g)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%}
+.phone{position:relative;z-index:2;contain:size;height:80%;aspect-ratio:786/1704;padding:1.6%;background:var(--bezel);border-radius:13% / 6%;
+  box-shadow:var(--ph-sh,0 18px 40px -14px rgb(0 0 0/.35));transition:translate var(--dur) var(--ease)}
+.tile .phone{height:84%}
+.phone img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:11% / 5%}
+.card:hover .phone,.tile:hover .phone{translate:0 -6px}
+
+/* ---------- 1 andreas.vision ---------- */
+[data-s=andreas]{--page:#f8f8fa;--card:#fff;--r:28px;--sr:16px;--card-sh:0 0 0 1px rgb(0 0 0/.03)}
+[data-s=andreas] .stage{--g:#fff}
+[data-s=andreas] .stage.dark{--g:radial-gradient(110% 150% at 27% 0%,#1d4a7a 0%,#050505 60%)}
+/* ---------- 2 gauravi.design ---------- */
+[data-s=gauravi]{--page:radial-gradient(60% 50% at 10% 0%,#e8f3fb,transparent),#b9dcf4;--card:rgb(255 255 255/.12);--card-bd:1px solid rgb(255 255 255/.28);--r:20px;--sr:13px;--ph-sh:0 28px 46px -20px rgb(8 24 52/.62);--tile-bd:1px solid rgb(255 255 255/.28)}
+[data-s=gauravi] .card{backdrop-filter:blur(12px)}
+[data-s=gauravi] .stage{--g:linear-gradient(165deg,#d8e5f7 0%,#aecbef 56%,#8eb4e6 100%)}
+[data-s=gauravi] .stage.alt{--g:linear-gradient(142deg,#dcebf8 0%,#e7ede1 50%,#f7e9d2 100%)}
+/* ---------- 3 danield.design ---------- */
+[data-s=danield]{--page:#fff;--card:#fff;--card-bd:1px solid #e9e9e9;--r:48px;--sr:40px;--tile-bd:1px solid #e9e9e9;--ph-sh:0 1px 2px rgb(0 0 0/.12),0 12px 32px -8px rgb(0 0 0/.18)}
+[data-s=danield] .stage{--g:#fff}
+[data-s=danield] .stage.teal{--g:#004c63}
+/* ---------- 4 daneden.me ---------- */
+[data-s=daneden]{--page:#fff;--card:#fff;--r:36px;--sr:30px}
+[data-s=daneden] .stage{--g:#f3f2f3}
+/* ---------- 5 allierho.com ---------- */
+[data-s=allie]{--page:#fcfcfc;--card:#fff;--card-bd:1px solid var(--line)}
+[data-s=allie] .stage{--g:#f3f3f5}
+[data-s=allie] .stage.plum{--g:#6c5f7d}
+[data-s=allie] .stage.sage{--g:#8a9a86}
+[data-s=allie] .stage.clay{--g:#b88a74}
+/* ---------- 6 ozgur.design ---------- */
+[data-s=ozgur]{--page:#0a0a0a;--txt:#ececec;--card:#111;--card-bd:1px solid rgb(255 255 255/.18);--tile-bd:1px solid rgb(255 255 255/.18);--ph-sh:0 20px 50px -10px rgb(0 0 0/.8)}
+[data-s=ozgur] .stage{--g:radial-gradient(120% 90% at 100% 0%,rgb(255 255 255/.07),transparent 60%),#191919}
+/* ---------- 7 huyml.co ---------- */
+[data-s=huy]{--page:#ececec;--card:#fff}
+[data-s=huy] .stage{--g:#d4d4d4}
+[data-s=huy] .stage.blk{--g:#171717}
+/* ---------- 8 carlthomasiv.com ---------- */
+[data-s=carl]{--page:#fafafa;--card:#fafafa;--card-bd:1px solid rgb(0 0 0/.08);--tile-bd:1px solid rgb(0 0 0/.08)}
+[data-s=carl] .stage{--g:#141414}
+/* ---------- 9 rachelatwork.com ---------- */
+[data-s=rachel]{--page:#f5a623;--card:#f5a623;--card-bd:1.5px solid #262626;--tile-bd:1.5px solid #262626;--ph-sh:6px 6px 0 #262626}
+[data-s=rachel] .stage{--g:#f7b54a}
+[data-s=rachel] .stage.cream{--g:#fbe3b8}
+</style>
+</head>
+<body>
+<header class="intro">
+  <h1>The references’ <em>colours</em></h1>
+  <p>What the portfolios we’ve borrowed from put behind their work, read off their live pages today, with your home card and three /work tiles mocked in each one’s way. Your screens and our type; only the ground, card and frame follow theirs. Each band is that site’s own page colour.</p>
+  <nav class="toc" id="toc"></nav>
+</header>
+<main id="refs"></main>
+
+<script>
+const home = { title:'Privacy settings people can read', tag:'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.', img:'pv-hub' };
+const tiles = [
+  { co:'Okta', title:'Rebuilding IAM for enterprise admins', img:'okta-phone' },
+  { co:'Walmart Labs', title:'Scan & Go, in-store', img:'sg-cart' },
+  { co:'PayPal', title:'An ID check people get through the first time', img:'id-steps' },
+];
+// s: style key; h: heading; why: what they do; sw: swatches read off the site;
+// st: stage classes for [home, tile1, tile2, tile3]
+const refs = [
+  { s:'andreas', site:'andreas.vision', h:'White, with a <em>pixel cloud</em>', why:'White cards on a cool off-white page, 28px corners, a hairline ring. Colour comes from his pixel-cloud texture in sky blue round the edge of the stage, and one near-black card with a blue glow.', sw:[['#f8f8fa','page'],['#ffffff','card'],['#00aaff','cloud'],['#050505','dark']], st:['cloud','cloud','dark','cloud'] },
+  { s:'gauravi', site:'gauravi.design', h:'Sky page, <em>glass</em> cards', why:'The whole page is a pale sky blue; cards are frosted glass on it. Stages are soft gradients: blue to deeper blue, or sky to sage to sand. Phones cast a deep navy shadow.', sw:[['#b9dcf4','page'],['#aecbef','stage'],['#e7ede1','sage'],['#f7e9d2','sand']], st:['','alt','','alt'] },
+  { s:'danield', site:'danield.design', h:'White boxes, one <em>deep teal</em>', why:'Plain white tiles with a 1px grey line and 48px corners; the phone carries all the colour. One tile in deep teal breaks the rhythm.', sw:[['#ffffff','tile'],['#e9e9e9','line'],['#004c63','teal']], st:['','','teal',''] },
+  { s:'daneden', site:'daneden.me', h:'One <em>soft grey</em>', why:'A single warm light grey behind every phone, big round corners, white page. Nothing else.', sw:[['#ffffff','page'],['#f3f2f3','stage']], st:['','','',''] },
+  { s:'allie', site:'allierho.com', h:'Dusty, <em>muted</em> blocks', why:'The reference our type came from. A near-white collage ground, and where a block has colour it is dusty and greyed: a plum. Sage and clay added in the same key for her other cases.', sw:[['#f3f3f5','ground'],['#6c5f7d','plum'],['#8a9a86','sage'],['#b88a74','clay']], st:['plum','sage','','clay'] },
+  { s:'ozgur', site:'ozgur.design', h:'All <em>dark</em>', why:'Near-black page, charcoal tiles with a faint white hairline and a light falling from the top right. The screens are the only colour.', sw:[['#0a0a0a','page'],['#191919','tile'],['#ffffff2e','line']], st:['','','',''] },
+  { s:'huy', site:'huyml.co', h:'Greys and <em>black</em>', why:'A light grey page, mid-grey blocks, one black. Monochrome; the work is the colour.', sw:[['#ececec','page'],['#d4d4d4','block'],['#171717','black']], st:['','','blk',''] },
+  { s:'carl', site:'carlthomasiv.com', h:'Off-white, <em>dark</em> thumbnails', why:'An off-white page with the work shown as dark screens in a thin frame. No coloured grounds at all.', sw:[['#fafafa','page'],['#141414','thumb']], st:['','','',''] },
+  { s:'rachel', site:'rachelatwork.com', h:'One bold <em>marigold</em>', why:'The whole page is one warm marigold, with her own illustration on it. Here: ink lines and a hard offset shadow, the closest of these to an illustrated hand.', sw:[['#f5a623','page'],['#f7b54a','stage'],['#fbe3b8','cream'],['#262626','line']], st:['','cream','','cream'] },
+];
+
+const phone = (img) => `<div class="phone"><img src="img/${img}.webp" alt=""></div>`;
+const stage = (cls, img) => `<div class="stage ${cls}">${cls==='cloud'?'<canvas></canvas>':''}${phone(img)}</div>`;
+
+document.getElementById('toc').innerHTML = refs.map(r => `<a href="#${r.s}">${r.site}</a>`).join('');
+document.getElementById('refs').innerHTML = refs.map(r => `
+<section class="ref" id="${r.s}" data-s="${r.s}">
+  <div class="ref__head">
+    <div><p class="ref__site">${r.site}</p><h2>${r.h}</h2><p class="ref__why">${r.why}</p></div>
+    <div class="sw">${r.sw.map(([c,n]) => `<span><i style="background:${c}"></i>${n}</span>`).join('')}</div>
+  </div>
+  <article class="card">
+    <div class="card__body">
+      <span class="num">02</span>
+      <p class="meta">PayPal · Fintech · Trust</p>
+      <h3 class="title">${home.title}</h3>
+      <p class="tag">${home.tag}</p>
+      <span class="cta">View case study →</span>
+    </div>
+    ${stage(r.st[0], home.img)}
+  </article>
+  <div class="tiles">${tiles.map((t,i) => `<article class="tile">${stage(r.st[i+1], t.img)}<p class="tile__m">${t.co}</p><h3 class="tile__t">${t.title}</h3></article>`).join('')}</div>
+</section>`).join('');
+
+// andreas's pixel cloud: square cells, denser toward the top-left edge, in three blues
+document.querySelectorAll('.stage.cloud canvas').forEach((cv, n) => {
+  const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  cv.width = r.width * dpr; cv.height = r.height * dpr;
+  const x = cv.getContext('2d'); x.scale(dpr, dpr);
+  const cell = 10, cols = Math.ceil(r.width / cell), rows = Math.ceil(r.height / cell);
+  let seed = 7 + n * 13; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const blues = ['#00aaff', '#66ccff', '#b3e6ff'];
+  for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
+    const u = i / cols, v = j / rows;
+    const d = Math.min(u * 1.3, v * 1.8);
+    const blob = Math.sin(i * .35 + n) * Math.cos(j * .3) * .18;
+    const p = 1.05 - d * 4.2 + blob;
+    if (rnd() < p) { x.fillStyle = blues[(rnd() * 3) | 0]; x.fillRect(i * cell, j * cell, cell, cell); }
+  }
+});
+</script>
+</body>
+</html>

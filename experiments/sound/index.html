@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound — where it goes, round 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Values copied from src/styles/tokens.css so things read at real size.
+     Served from the repo root (launch config "sound-mockup") so the archive
+     previews and Moss come straight from public/images. */
+  :root {
+    --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --tile: rgb(0 0 0 / 0.03); --pin-after: #2f6fd6;
+    --font-sans: 'Manrope', system-ui, sans-serif; --font-serif: 'Crimson Pro', serif; --font-mono: 'Azeret Mono', monospace;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --dur-hover: 320ms; --gutter: 2.5rem;
+  }
+  :root[data-mode='dark'] { --paper: #1b1a19; --ink: #ecebe8; --ink-dim: #a09d98; --line: rgb(255 255 255 / 0.12); --tile: rgb(255 255 255 / 0.04); --pin-after: #7aa7f0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 600; transition: background .3s, color .3s; }
+  .mono { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  /* Top bar: master switch, volume, theme */
+  .bar { position: sticky; top: 0; z-index: 10; display: flex; gap: 1.5rem; align-items: center; padding: .9rem var(--gutter); background: var(--paper); border-bottom: 1px solid var(--line); }
+  .bar .name { font-size: .875rem; margin-right: auto; }
+  .pill { border: 1px solid var(--ink); background: none; border-radius: 999px; padding: .45rem .9rem; cursor: pointer; font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; }
+  .pill[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+  .bar label { display: flex; gap: .6rem; align-items: center; }
+  input[type=range] { accent-color: var(--ink); }
+
+  .intro { padding: 3rem var(--gutter) 1rem; max-width: 64rem; }
+  h1, h2 { font-family: var(--font-serif); font-weight: 300; letter-spacing: -0.03em; margin: 0; line-height: 1.05; }
+  h1 { font-size: 2.75rem; margin-bottom: .75rem; }
+  h2 { font-size: 1.75rem; margin: .4rem 0 .5rem; }
+  h1 em, h2 em { font-style: italic; }
+  p { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); margin: 0 0 .5rem; max-width: 46rem; }
+  p b { color: var(--ink); }
+
+  section { padding: 3rem var(--gutter); border-top: 1px solid var(--line); }
+  .head { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: end; margin-bottom: 1.75rem; }
+  .variants { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .stage { background: var(--tile); border-radius: 20px; padding: 2rem; min-height: 12rem; }
+  .why { margin-top: 1rem; }
+
+  /* 0 · Archive list (copy of the /work rows) */
+  .arch { list-style: none; margin: 0; padding: 0; }
+  .arch a { display: grid; grid-template-columns: 1fr 14rem 5rem; gap: 1rem; padding: 1rem 0; text-decoration: none; color: var(--ink); border-bottom: 1px solid var(--line); font-size: .875rem; }
+  .arch a span { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-dim); align-self: center; }
+  .arch a:hover .n, .arch a:focus-visible .n { opacity: .55; }
+  .arch .n { transition: opacity var(--dur-hover) var(--ease-out); }
+  .arch-prev { position: fixed; width: 15rem; aspect-ratio: 4/3; pointer-events: none; opacity: 0; transition: opacity .25s; background: center/cover no-repeat; z-index: 20; }
+  .string { height: 2px; background: var(--ink); opacity: .12; transform-origin: left; }
+
+  /* 1 · Moss */
+  .moss { background: #1f1f1f; color: #e8e6e1; border-radius: 18px; padding: 1.25rem 1.5rem; font-family: 'Azeret Mono', monospace; font-weight: 400; font-size: .8125rem; line-height: 1.7; max-width: 34rem; min-height: 8rem; }
+  .moss .who { color: #9a978f; font-size: .6875rem; text-transform: uppercase; letter-spacing: .08em; display: flex; gap: .5rem; align-items: center; }
+  .moss .who img { width: 28px; height: 28px; object-fit: contain; }
+  .moss .caret { display: inline-block; width: .5em; height: 1em; background: #e0714f; vertical-align: -2px; margin-left: 2px; }
+
+  /* 2 · Before/after */
+  .cmp { position: relative; height: 9rem; max-width: 40rem; border-radius: 12px; overflow: hidden; background: linear-gradient(90deg, var(--tile), var(--tile)); border: 1px solid var(--line); touch-action: none; cursor: ew-resize; }
+  .cmp .after { position: absolute; inset: 0; background: color-mix(in srgb, var(--pin-after) 8%, transparent); clip-path: inset(0 0 0 var(--x, 50%)); }
+  .cmp .line { position: absolute; top: 0; bottom: 0; left: var(--x, 50%); width: 2px; background: var(--ink); }
+  .cmp .line::after { content: ''; position: absolute; top: 50%; left: 50%; width: 22px; height: 22px; border-radius: 50%; background: var(--paper); border: 2px solid var(--ink); transform: translate(-50%, -50%); }
+  .pin { position: absolute; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-mono); font-weight: 400; font-size: .625rem; background: var(--ink); color: var(--paper); transition: background .2s; }
+  .pin.fixed { background: var(--pin-after); color: #fff; }
+
+  /* 3 · PixelBreak */
+  .pb { font-family: var(--font-serif); font-weight: 300; font-size: 3.125rem; letter-spacing: -0.03em; line-height: 1.1; }
+  .pb .w { position: relative; display: inline-block; cursor: default; }
+  .pb .w .t { transition: opacity .25s; }
+  .pb .w.broken .t { opacity: 0; }
+  .pb canvas { position: absolute; inset: -40px; pointer-events: none; }
+
+  /* 4 · Ring */
+  .ring { position: relative; overflow: hidden; height: 9rem; cursor: grab; touch-action: none; user-select: none; }
+  .ring:active { cursor: grabbing; }
+  .ring .track { position: absolute; top: 1rem; left: 0; display: flex; gap: 1rem; will-change: transform; }
+  .ring .card { width: 6rem; height: 7rem; border-radius: 14px; background: center/cover no-repeat var(--line); flex: none; }
+  .ring .mark { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--ink); opacity: .3; }
+
+  /* 5 · Numbers */
+  .nums { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .num { background: var(--tile); border-radius: 28px; padding: 1.5rem 1.75rem; min-width: 11rem; }
+  .num b { display: block; font-family: var(--font-serif); font-weight: 300; font-size: 2.5rem; letter-spacing: -0.03em; }
+
+  /* 6 · Gate */
+  .gate { display: flex; gap: .75rem; align-items: center; }
+  .gate input { font: 400 .875rem var(--font-mono); padding: .6rem .9rem; border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 999px; width: 12rem; }
+  .gate .msg { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-dim); }
+  .shake { animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+  /* 7 · Small */
+  .q { background: var(--tile); border-radius: 12px; padding: 1rem 1.25rem; max-width: 34rem; margin-bottom: .5rem; cursor: pointer; border: 0; display: block; width: 100%; text-align: left; font-size: 1.125rem; }
+  .q small { display: none; font-size: .75rem; color: var(--ink-dim); margin-top: .5rem; line-height: 1.8; }
+  .q[aria-expanded='true'] small { display: block; }
+  .thumbs { display: flex; gap: .75rem; }
+  .thumbs button { width: 6rem; height: 6rem; border-radius: 16px; border: 0; background: center/cover no-repeat var(--line); cursor: zoom-in; }
+  dialog { border: 0; padding: 0; border-radius: 20px; background: none; }
+  dialog::backdrop { background: rgb(0 0 0 / .6); }
+  dialog img { display: block; max-width: 70vw; max-height: 70vh; border-radius: 20px; }
+
+  /* 7 · Playground wall */
+  .wall { position: relative; overflow: hidden; height: 20rem; cursor: grab; touch-action: none; user-select: none; background: var(--paper); border-radius: 12px; }
+  .wall:active { cursor: grabbing; }
+  .wall .strip { position: absolute; top: 2rem; left: 0; display: flex; align-items: flex-start; gap: 2.5rem; will-change: transform; }
+  .wall .piece { flex: none; height: 13rem; background: center/cover no-repeat var(--line); box-shadow: 0 1px 2px rgb(0 0 0 / .08), 0 8px 24px rgb(0 0 0 / .06); }
+  .wall .piece:nth-child(3n+2) { margin-top: 2.5rem; height: 11rem; }
+  .wall .piece:nth-child(3n) { margin-top: 1rem; height: 14rem; }
+  .steps { display: flex; gap: .4rem; margin-top: 1rem; height: 10px; align-items: center; }
+  .steps i { width: 6px; height: 10px; border-radius: 3px 3px 2px 2px; background: var(--ink); opacity: .12; transition: opacity .6s; }
+  .steps i.on { opacity: .8; transition: none; }
+
+  .note { margin-top: 1.25rem; padding: 1rem 1.25rem; border-left: 2px solid var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span class="name">Sound mocks</span>
+  <button class="pill" id="master" aria-pressed="false">Sound off</button>
+  <label class="mono">Volume <input type="range" id="vol" min="0" max="1.5" step="0.05" value="1"></label>
+  <button class="pill" id="mode" aria-pressed="false">Dark</button>
+</div>
+
+<div class="intro">
+  <h1>Where the <em>sound</em> goes</h1>
+  <p>Turn sound on (top right), then try each one. Every sound is made in the browser — no files — and sits under the theme tone in loudness. Each section has variants to compare; the one marked <b>★</b> is my pick.</p>
+  <p>On the site all of this stays behind the nav's speaker button: off by default, off again after a reload.</p>
+</div>
+
+<!-- 0 · ARCHIVE ---------------------------------------------------------->
+<section id="s-arch">
+  <div class="head">
+    <div><span class="mono">00 · /work archive · hover</span><h2>A string for <em>each row</em></h2></div>
+    <div class="variants" data-group="arch">
+      <button class="pill" aria-pressed="true" data-v="harp">A · Harp ★</button>
+      <button class="pill" aria-pressed="false" data-v="nylon">B · Nylon guitar</button>
+      <button class="pill" aria-pressed="false" data-v="sitar">C · Sitar</button>
+      <button class="pill" aria-pressed="false" data-v="kalimba">D · Kalimba</button>
+    </div>
+  </div>
+  <div class="stage">
+    <ul class="arch" id="arch"></ul>
+  </div>
+  <p class="why">Each row is one string, tuned to a pentatonic scale running down the list (newest highest, oldest lowest), so sweeping the pointer down plays a run that always sounds right, never a clash. A row only plucks when the pointer enters it, and no faster than every 45ms, so a fast sweep is a glissando, not a buzz. Keyboard focus plucks too. The line under each row shivers when it's played. <b>Why:</b> the archive is the one list on the site you browse by sweeping; the strings make that sweep feel like running a hand along it.</p>
+</section>
+
+<!-- 1 · MOSS ------------------------------------------------------------->
+<section id="s-moss">
+  <div class="head">
+    <div><span class="mono">01 · Moss's panel · his replies</span><h2>Moss gets a <em>voice</em></h2></div>
+    <div class="variants" data-group="moss">
+      <button class="pill" aria-pressed="true" data-v="babble">A · Babble ★</button>
+      <button class="pill" aria-pressed="false" data-v="bubble">B · Bubbles</button>
+      <button class="pill" aria-pressed="false" data-v="keys">C · Soft keys</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="moss" aria-live="polite"><div class="who"><img src="../../public/images/moss/moss-head.webp" alt="">Moss</div><div id="mossText"></div></div>
+    <div class="variants" style="margin-top:1rem">
+      <button class="pill" data-say="0">Who are you?</button>
+      <button class="pill" data-say="1">What level is she?</button>
+      <button class="pill" data-say="2">Show me fintech</button>
+    </div>
+  </div>
+  <p class="why">A: a soft voiced blip every second letter, pitch wandering around his note and lifting at a question mark — speech without words. B: rounded rising bubbles, cuter. C: muted key clicks, the "machine talking" reading. A chirp plays as his panel opens (first button press here). <b>Why:</b> he's the one character on the site; a voice gives him personality without adding motion.</p>
+</section>
+
+<!-- 2 · BEFORE/AFTER ----------------------------------------------------->
+<section id="s-cmp">
+  <div class="head">
+    <div><span class="mono">02 · Privacy case · before/after line</span><h2>A click as each <em>fix lands</em></h2></div>
+    <div class="variants" data-group="cmp">
+      <button class="pill" aria-pressed="true" data-v="click">A · Click ★</button>
+      <button class="pill" aria-pressed="false" data-v="chime">B · Two-note chime</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="cmp" id="cmp" tabindex="0" role="slider" aria-label="Before and after" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+      <div class="after"></div><div class="line"></div>
+    </div>
+  </div>
+  <p class="why">Drag the line (or arrow keys). A pin clicks as the line crosses it — a brighter tone going to After, a duller one going back. <b>Why:</b> each click marks the moment a problem becomes its fix; you hear the point being made.</p>
+</section>
+
+<!-- 3 · PIXELBREAK ------------------------------------------------------->
+<section id="s-pb">
+  <div class="head">
+    <div><span class="mono">03 · Hero · the word "pixel"</span><h2>The word <em>scatters</em></h2></div>
+    <div class="variants" data-group="pb">
+      <button class="pill" aria-pressed="true" data-v="sparkle">A · Sparkle ★</button>
+      <button class="pill" aria-pressed="false" data-v="sand">B · Sand</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="pb">…down to the last stubborn <span class="w" id="pbw"><span class="t">pixel</span><canvas></canvas></span>.</div>
+  </div>
+  <p class="why">A: a quick scatter of tiny high notes as it breaks, a soft rising settle as it comes back. B: a dry grain of sand instead of notes. <b>Why:</b> the line claims care for the last pixel; the word answering the pointer now answers the ear too.</p>
+</section>
+
+<!-- 4 · RING ------------------------------------------------------------->
+<section id="s-ring">
+  <div class="head">
+    <div><span class="mono">04 · Home · Beyond work ring</span><h2>A dial that <em>ticks</em></h2></div>
+    <div class="variants" data-group="ring">
+      <button class="pill" aria-pressed="true" data-v="wood">A · Wood ★</button>
+      <button class="pill" aria-pressed="false" data-v="detent">B · Metal detent</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="ring" id="ring" tabindex="0" aria-label="Photos, drag or use arrow keys"><div class="track"></div><div class="mark"></div></div>
+  </div>
+  <p class="why">Drag and throw (or arrow keys). A tick as each photo crosses the middle, getting quieter and lower as the ring slows. Ticks cap at ~25 a second on a hard throw. <b>Why:</b> you feel the speed of your own throw, and keyboard steps get a confirmation.</p>
+</section>
+
+<!-- 5 · NUMBERS ---------------------------------------------------------->
+<section id="s-num">
+  <div class="head">
+    <div><span class="mono">05 · Case study · headline numbers</span><h2>Numbers that <em>count</em></h2></div>
+    <div class="variants" data-group="num">
+      <button class="pill" aria-pressed="true" data-v="counter">A · Counter ★</button>
+      <button class="pill" aria-pressed="false" data-v="rise">B · Rising tone</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="nums"><div class="num"><b data-to="38" data-suf="%">0%</b><span class="mono">Fewer drop-offs</span></div><div class="num"><b data-to="4" data-suf="x">0x</b><span class="mono">Faster sign-up</span></div></div>
+    <button class="pill" id="count" style="margin-top:1rem">Count up</button>
+  </div>
+  <p class="why">A: quiet mechanical ticks that slow with the count and stop on a soft "landed" note. B: one tone that rises with the count. Numbers here are stand-ins. <b>Why:</b> draws the eye — and ear — to the outcome, the thing a recruiter scans for.</p>
+</section>
+
+<!-- 6 · GATE ------------------------------------------------------------->
+<section id="s-gate">
+  <div class="head">
+    <div><span class="mono">06 · Okta case · passcode</span><h2>Right or <em>wrong</em>, heard</h2></div>
+  </div>
+  <div class="stage">
+    <form class="gate" id="gate"><input id="code" placeholder="Passcode (try: moss)" autocomplete="off"><button class="pill">Unlock</button><span class="msg" id="gmsg"></span></form>
+  </div>
+  <p class="why">A latch click when it's right; a low two-note "nope" when it's wrong. <b>Why:</b> the result is clear even when your eyes are still on the keyboard.</p>
+</section>
+
+<!-- 7 · PLAYGROUND ------------------------------------------------------>
+<section id="s-wall">
+  <div class="head">
+    <div><span class="mono">07 · /playground · the wall</span><h2>Footsteps along <em>the wall</em></h2></div>
+    <div class="variants" data-group="wall">
+      <button class="pill" aria-pressed="true" data-v="wood">A · Wood floor ★</button>
+      <button class="pill" aria-pressed="false" data-v="stone">B · Gallery stone</button>
+      <button class="pill" aria-pressed="false" data-v="soft">C · Soft soles</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="wall" id="wall" tabindex="0" aria-label="Her work, drag or use arrow keys"><div class="strip"></div></div>
+    <div class="steps" aria-hidden="true" id="stepsViz"></div>
+  </div>
+  <p class="why">Drag the wall (or arrow keys). One step for every ~220px the wall moves past you, left and right feet alternating, so a slow drag is a stroll and a fast one a brisk walk. Never faster than ~5 steps a second — a hard throw walks quickly, it doesn't run. A throw keeps walking while it coasts, the steps getting softer, and stops when the wall stops. Nothing on hover, nothing on scroll. A: wooden floorboards, a low heel–toe thud, now and then a faint creak. B: a stone gallery floor, a soft heel click with a little room around it. C: soft soles, barely there. <b>Why:</b> the wall is meant to be walked along; the steps turn a drag into walking past the paintings.</p>
+</section>
+
+<!-- 7 · SMALL ------------------------------------------------------------>
+<section id="s-small">
+  <div class="head">
+    <div><span class="mono">08 · Smaller ones (not picked)</span><h2>Small talk and <em>photos</em></h2></div>
+  </div>
+  <div class="stage">
+    <button class="q" aria-expanded="false">Where are you based?<small>Bangalore. Open to roles wherever the work is.</small></button>
+    <button class="q" aria-expanded="false">What are you looking for?<small>A Staff or Lead Product Designer role.</small></button>
+    <div class="thumbs" style="margin-top:1.5rem" id="thumbs"></div>
+  </div>
+  <p class="why">A soft paper pop as an answer opens, a lower one as it closes. A quiet whoosh as a photo opens large, and back as it closes. <b>Why:</b> confirms the thing you pressed opened, a small felt reply.</p>
+  <div class="note"><p><b>Kept silent on purpose:</b> other hovers (removed 2026-11-13 — the archive is the one exception you asked for), the preloader (sound is always off on first load), the clock's seconds, scrolling and the playground wall.</p></div>
+</section>
+
+<dialog id="lb"><img alt=""></dialog>
+
+<script>
+/* ---------------------------------------------------------------- audio */
+let ac = null, master = null, on = false;
+function ctx() {
+  if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.gain.value = +vol.value; master.connect(ac.destination); }
+  return ac;
+}
+const ready = () => (on && ac && ac.state === 'running') ? ac : null;
+const vol = document.getElementById('vol');
+vol.oninput = () => { if (master) master.gain.value = +vol.value; };
+
+function env(a, peak, attack, release, t = a.currentTime, dest = master) {
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(peak, t + attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + attack + release);
+  g.connect(dest); return g;
+}
+function tone(type, f0, f1, peak, attack, release, delay = 0) {
+  const a = ready(); if (!a) return;
+  const t = a.currentTime + delay, o = a.createOscillator();
+  o.type = type; o.frequency.setValueAtTime(f0, t);
+  if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + attack + release * 0.8);
+  o.connect(env(a, peak, attack, release, t)); o.start(t); o.stop(t + attack + release + 0.02);
+}
+function noiseBurst(freq, q, peak, attack, release, type = 'bandpass', delay = 0) {
+  const a = ready(); if (!a) return;
+  const t = a.currentTime + delay, len = attack + release + 0.03;
+  const buf = a.createBuffer(1, Math.ceil(a.sampleRate * len), a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const s = a.createBufferSource(); s.buffer = buf;
+  const f = a.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+  s.connect(f); f.connect(env(a, peak, attack, release, t)); s.start(t); s.stop(t + len);
+}
+function tap() { noiseBurst(1800, 1.2, 0.12, 0.004, 0.11); }
+
+/* Karplus–Strong pluck, rendered into a buffer once per note and cached.
+   `bright` is the damping (lower = darker), `buzz` adds a sitar-ish jawari. */
+const cache = new Map();
+function pluckBuf(a, freq, seconds, bright, buzz) {
+  const key = [freq.toFixed(2), seconds, bright, buzz].join();
+  if (cache.has(key)) return cache.get(key);
+  const sr = a.sampleRate, n = Math.ceil(sr * seconds), N = Math.round(sr / freq);
+  const buf = a.createBuffer(1, n, sr), out = buf.getChannelData(0), ring = new Float32Array(N);
+  for (let i = 0; i < N; i++) ring[i] = Math.random() * 2 - 1;
+  // soften the attack: smooth the initial noise a little
+  for (let k = 0; k < 2; k++) for (let i = 1; i < N; i++) ring[i] = (ring[i] + ring[i - 1]) * 0.5;
+  let p = 0;
+  for (let i = 0; i < n; i++) {
+    const cur = ring[p], next = ring[(p + 1) % N];
+    let v = (cur * bright + next * (1 - bright)) * 0.996;
+    if (buzz) v = v > buzz ? buzz + (v - buzz) * 0.3 : v;   // one-sided clip = bridge buzz
+    ring[p] = v; out[i] = cur; p = (p + 1) % N;
+  }
+  cache.set(key, buf); return buf;
+}
+function pluck(freq, { peak = 0.22, seconds = 1.6, bright = 0.5, buzz = 0, pan = 0, lp = 6000 } = {}) {
+  const a = ready(); if (!a) return;
+  const s = a.createBufferSource(); s.buffer = pluckBuf(a, freq, seconds, bright, buzz);
+  const f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp;
+  const g = a.createGain(); g.gain.value = peak;
+  const pn = a.createStereoPanner ? a.createStereoPanner() : null;
+  s.connect(f); f.connect(g);
+  if (pn) { pn.pan.value = pan; g.connect(pn); pn.connect(master); } else g.connect(master);
+  s.start();
+}
+
+/* ------------------------------------------------------------- top bar */
+const mBtn = document.getElementById('master');
+mBtn.onclick = () => {
+  on = !on; mBtn.setAttribute('aria-pressed', on); mBtn.textContent = on ? 'Sound on' : 'Sound off';
+  if (on) ctx().resume().then(tap);
+};
+document.getElementById('mode').onclick = (e) => {
+  const dark = document.documentElement.dataset.mode !== 'dark';
+  document.documentElement.dataset.mode = dark ? 'dark' : 'light';
+  e.currentTarget.setAttribute('aria-pressed', dark); e.currentTarget.textContent = dark ? 'Light' : 'Dark';
+  tone('sine', dark ? 1046 : 659, dark ? 523 : 1318, 0.05, 0.006, 0.085);
+};
+
+const variant = {};
+document.querySelectorAll('[data-group]').forEach((g) => {
+  const btns = g.querySelectorAll('button');
+  variant[g.dataset.group] = [...btns].find((b) => b.getAttribute('aria-pressed') === 'true').dataset.v;
+  btns.forEach((b) => b.onclick = () => {
+    btns.forEach((x) => x.setAttribute('aria-pressed', x === b));
+    variant[g.dataset.group] = b.dataset.v;
+    tap();
+  });
+});
+
+/* ------------------------------------------------------------- 0 archive */
+const archive = [
+  ['Wal-E Design System', 'Design system', '2019–21', 'wal-e-design-system.jpg'],
+  ['Agreement Management Application', 'Enterprise application', '2020', 'agreement-management.jpg'],
+  ['Bot Spark', 'Internal tool', '2019–21', 'bot-spark-banner.jpg'],
+  ['Mint app', 'Credit score experience', '2018', 'mint-app.jpg'],
+  ["Lender's App", 'Mobile app', '2018', 'lenders-app.jpg'],
+  ['Dialog quick loan', 'Mobile app', '2018', 'dialog-quick-loan.jpg'],
+  ['Investment Portfolio onboarding', 'Mobile app', '2017', 'investment-onboarding.jpg'],
+  ['DreamGains finance', 'Website design', '2016', 'dream-gains.jpg'],
+  ['Mera Data', 'Web app', '2014', 'mera-data.jpg'],
+];
+// Major pentatonic, descending from A5: newest row highest.
+const PENTA = [0, 2, 4, 7, 9];
+const noteFor = (i, top = 81) => {           // MIDI
+  const steps = archive.length - 1 - i;     // 0 at the bottom
+  return top - 24 + Math.floor(steps / 5) * 12 + PENTA[steps % 5];
+};
+const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+const arch = document.getElementById('arch');
+const prev = document.createElement('div'); prev.className = 'arch-prev'; document.body.append(prev);
+let lastPluck = 0;
+archive.forEach(([name, tag, year, img], i) => {
+  const li = document.createElement('li');
+  li.innerHTML = `<a href="#" ><b class="n">${name}</b><span>${tag}</span><span>${year}</span></a><div class="string"></div>`;
+  const a = li.querySelector('a'), str = li.querySelector('.string');
+  const play = () => {
+    const now = performance.now(); if (now - lastPluck < 45) return; lastPluck = now;
+    playString(i);
+    str.animate([{ transform: 'scaleY(1)', opacity: .5 }, { transform: 'scaleY(2.5) translateY(.5px)', opacity: .45 }, { transform: 'scaleY(.6) translateY(-.5px)', opacity: .3 }, { transform: 'scaleY(1)', opacity: .12 }], { duration: 420, easing: 'ease-out' });
+  };
+  a.addEventListener('pointerenter', () => { play(); prev.style.backgroundImage = `url(../../public/images/archive/${img})`; prev.style.opacity = 1; });
+  a.addEventListener('pointerleave', () => prev.style.opacity = 0);
+  a.addEventListener('focus', play);
+  a.addEventListener('click', (e) => e.preventDefault());
+  arch.append(li);
+});
+addEventListener('pointermove', (e) => { prev.style.left = e.clientX + 16 + 'px'; prev.style.top = e.clientY + 16 + 'px'; });
+
+function playString(i) {
+  const v = variant.arch, pan = (i / (archive.length - 1) - 0.5) * -0.4;
+  if (v === 'harp') pluck(hz(noteFor(i)), { peak: 0.2, bright: 0.5, seconds: 2.2, pan, lp: 5000 });
+  if (v === 'nylon') pluck(hz(noteFor(i) - 12), { peak: 0.3, bright: 0.62, seconds: 1.6, pan, lp: 2600 });
+  if (v === 'sitar') {
+    // Bhairav-ish flavour: drop to a scale with a flat 2nd and 6th
+    const BH = [0, 1, 4, 5, 7, 8, 11], steps = archive.length - 1 - i;
+    const m = 57 + Math.floor(steps / 7) * 12 + BH[steps % 7];
+    pluck(hz(m), { peak: 0.22, bright: 0.42, seconds: 2.4, buzz: 0.18, pan, lp: 4200 });
+  }
+  if (v === 'kalimba') {
+    const f = hz(noteFor(i)), a = ready(); if (!a) return;
+    tone('sine', f, null, 0.12, 0.002, 0.9); tone('sine', f * 4.02, null, 0.025, 0.001, 0.12);
+  }
+}
+
+/* ------------------------------------------------------------- 1 moss */
+const lines = [
+  "I'm Moss. I look after this portfolio. Totoro's younger brother — the one who talks.",
+  'Staff level. Most recently Staff Product Designer at Okta, where she also led a team of six.',
+  'Fintech is her home turf: PayPal, Walmart, Okta. Want the PayPal Privacy case?',
+];
+const mossText = document.getElementById('mossText');
+let typing = 0, mossOpened = false;
+function mossVoice(ch, idx) {
+  const v = variant.moss, base = 330;
+  if (!/[a-z0-9]/i.test(ch)) return;
+  if (v === 'babble') {
+    if (idx % 2) return;
+    const lift = /\?/.test(mossText.dataset.full.slice(idx, idx + 12)) ? 1.18 : 1;
+    const f = base * lift * Math.pow(2, ((ch.charCodeAt(0) * 7) % 7 - 3) / 12);
+    tone('triangle', f, f * 0.94, 0.07, 0.005, 0.05);
+  }
+  if (v === 'bubble') { if (idx % 3) return; const f = 520 + ((ch.charCodeAt(0) * 13) % 6) * 40; tone('sine', f, f * 1.6, 0.06, 0.004, 0.06); }
+  if (v === 'keys') { if (idx % 2) return; noiseBurst(3200 + Math.random() * 800, 4, 0.05, 0.001, 0.025, 'bandpass'); }
+}
+document.querySelectorAll('[data-say]').forEach((b) => b.addEventListener('click', () => {
+  if (!mossOpened) { mossOpened = true; tone('sine', 520, 880, 0.06, 0.01, 0.12); tone('sine', 880, 1180, 0.04, 0.01, 0.1, 0.09); }
+  const s = lines[+b.dataset.say], id = ++typing; mossText.dataset.full = s;
+  let i = 0;
+  (function step() {
+    if (id !== typing) return;
+    mossText.innerHTML = s.slice(0, i) + '<span class="caret"></span>';
+    if (i < s.length) { mossVoice(s[i], i); i++; setTimeout(step, 28); }
+  })();
+}));
+
+/* ------------------------------------------------------------- 2 compare */
+const cmp = document.getElementById('cmp'), PINS = [18, 41, 63, 84];
+PINS.forEach((x, i) => { const p = document.createElement('span'); p.className = 'pin'; p.style.left = x + '%'; p.textContent = i + 1; cmp.append(p); });
+let cx = 50;
+function setX(x) {
+  x = Math.max(0, Math.min(100, x));
+  PINS.forEach((p, i) => {
+    const crossedToAfter = cx > p && x <= p, crossedBack = cx < p && x >= p;
+    if (crossedToAfter || crossedBack) pinSound(crossedToAfter);
+    cmp.querySelectorAll('.pin')[i].classList.toggle('fixed', x <= p);
+  });
+  cx = x; cmp.style.setProperty('--x', x + '%'); cmp.setAttribute('aria-valuenow', Math.round(x));
+}
+function pinSound(toAfter) {
+  if (variant.cmp === 'click') { noiseBurst(toAfter ? 2600 : 1400, 3, 0.1, 0.002, 0.04); tone('sine', toAfter ? 1320 : 880, null, 0.03, 0.002, 0.05); }
+  else { tone('sine', toAfter ? 784 : 988, null, 0.05, 0.004, 0.18); tone('sine', toAfter ? 988 : 784, null, 0.05, 0.004, 0.22, 0.07); }
+}
+setX(50);
+cmp.addEventListener('pointerdown', (e) => { cmp.setPointerCapture(e.pointerId); move(e); });
+cmp.addEventListener('pointermove', (e) => { if (cmp.hasPointerCapture(e.pointerId)) move(e); });
+function move(e) { const r = cmp.getBoundingClientRect(); setX((e.clientX - r.left) / r.width * 100); }
+cmp.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') setX(cx - 4); if (e.key === 'ArrowRight') setX(cx + 4); });
+
+/* ------------------------------------------------------------- 3 pixel */
+const pbw = document.getElementById('pbw'), pc = pbw.querySelector('canvas');
+let dots = [], broken = false, raf = 0;
+function sizeCanvas() { const r = pbw.getBoundingClientRect(); pc.width = (r.width + 80) * devicePixelRatio; pc.height = (r.height + 80) * devicePixelRatio; pc.style.width = r.width + 80 + 'px'; pc.style.height = r.height + 80 + 'px'; }
+function buildDots() {
+  sizeCanvas();
+  const c = document.createElement('canvas'), r = pbw.getBoundingClientRect(); c.width = r.width; c.height = r.height;
+  const g = c.getContext('2d'); g.font = getComputedStyle(pbw).fontWeight + ' ' + getComputedStyle(pbw).fontSize + ' "Crimson Pro"'; g.textBaseline = 'alphabetic';
+  g.fillText('pixel', 0, r.height * 0.78);
+  const d = g.getImageData(0, 0, c.width, c.height).data; dots = [];
+  const cols = ['#e5484d', '#f76b15', '#f5d90a', '#46a758', '#0090ff', '#6e56cf', '#d6409f'];
+  for (let y = 0; y < c.height; y += 4) for (let x = 0; x < c.width; x += 4) if (d[(y * c.width + x) * 4 + 3] > 128) dots.push({ hx: x + 40, hy: y + 40, x: x + 40, y: y + 40, vx: 0, vy: 0, c: cols[(x + y) % 7] });
+}
+function draw() {
+  const g = pc.getContext('2d'); g.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0); g.clearRect(0, 0, pc.width, pc.height);
+  let moving = false;
+  for (const p of dots) {
+    if (!broken) { p.vx += (p.hx - p.x) * 0.08; p.vy += (p.hy - p.y) * 0.08; }
+    p.vx *= 0.82; p.vy *= 0.82; p.x += p.vx; p.y += p.vy;
+    if (Math.abs(p.x - p.hx) + Math.abs(p.y - p.hy) > 0.5) moving = true;
+    g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, 1.5, 0, 7); g.fill();
+  }
+  if (moving || broken) raf = requestAnimationFrame(draw); else { g.clearRect(0, 0, pc.width, pc.height); pbw.classList.remove('broken'); }
+}
+pbw.addEventListener('pointerenter', () => {
+  if (!dots.length) buildDots();
+  broken = true; pbw.classList.add('broken');
+  for (const p of dots) { const a = Math.random() * 7, s = 2 + Math.random() * 6; p.vx = Math.cos(a) * s; p.vy = Math.sin(a) * s; }
+  cancelAnimationFrame(raf); draw(); breakSound();
+});
+pbw.addEventListener('pointerleave', () => { broken = false; settleSound(); });
+function breakSound() {
+  if (variant.pb === 'sparkle') { const sc = [72, 76, 79, 84, 88, 91, 96]; for (let i = 0; i < 9; i++) tone('sine', hz(sc[(Math.random() * 7) | 0]), null, 0.025, 0.002, 0.12, i * 0.018 + Math.random() * 0.01); }
+  else for (let i = 0; i < 14; i++) noiseBurst(5000 + Math.random() * 3000, 6, 0.04, 0.001, 0.015, 'bandpass', i * 0.012 + Math.random() * 0.01);
+}
+function settleSound() {
+  if (variant.pb === 'sparkle') { [84, 88, 91, 96].forEach((m, i) => tone('sine', hz(m), null, 0.02, 0.004, 0.14, 0.12 + i * 0.045)); }
+  else noiseBurst(2500, 0.8, 0.04, 0.08, 0.15, 'lowpass');
+}
+
+/* ------------------------------------------------------------- 4 ring */
+const ring = document.getElementById('ring'), track = ring.querySelector('.track');
+const CARD = 112; // 6rem + 1rem gap
+for (let i = 0; i < 40; i++) { const c = document.createElement('div'); c.className = 'card'; c.style.opacity = 0.5 + (i % 3) * 0.2; track.append(c); }
+let rx = 0, rv = 0, dragging = false, lastX = 0, lastIdx = 0, lastTick = 0, rraf = 0;
+function ringLoop() {
+  if (!dragging) { rv *= 0.95; rx += rv; }
+  rx = Math.max(-CARD * 34, Math.min(0, rx));
+  track.style.transform = `translateX(${rx + ring.clientWidth / 2}px)`;
+  const idx = Math.floor(-rx / CARD);
+  if (idx !== lastIdx) { lastIdx = idx; ringTick(Math.abs(rv)); }
+  if (dragging || Math.abs(rv) > 0.05) rraf = requestAnimationFrame(ringLoop); else rraf = 0;
+}
+function kick() { if (!rraf) rraf = requestAnimationFrame(ringLoop); }
+function ringTick(speed) {
+  const now = performance.now(); if (now - lastTick < 40) return; lastTick = now;
+  const k = Math.min(1, 0.35 + speed / 30);
+  if (variant.ring === 'wood') { tone('sine', 900 + k * 700, 450, 0.09 * k, 0.002, 0.05); }
+  else { noiseBurst(4200, 8, 0.07 * k, 0.001, 0.03); tone('square', 2400, null, 0.008 * k, 0.001, 0.02); }
+}
+ring.addEventListener('pointerdown', (e) => { dragging = true; lastX = e.clientX; rv = 0; ring.setPointerCapture(e.pointerId); kick(); });
+ring.addEventListener('pointermove', (e) => { if (!dragging) return; const dx = e.clientX - lastX; lastX = e.clientX; rx += dx; rv = dx; });
+ring.addEventListener('pointerup', () => { dragging = false; kick(); });
+ring.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); rx += e.key === 'ArrowRight' ? -CARD : CARD; rv = 0; kick(); } });
+ringLoop();
+// her photos on the cards (a fixed list, so it also works opened as a file)
+const PHOTOS = ['travel-fuji','art-porch','baking-cookie','travel-lake','art-reading','food-noodles','travel-pagoda','art-sage','talk-poster','travel-octopus','art-earrings','food-fruit'].map((f) => `../../public/images/beyond/${f}.webp`);
+track.querySelectorAll('.card').forEach((c, i) => { c.style.backgroundImage = `url(${PHOTOS[i % PHOTOS.length]})`; c.style.opacity = 1; });
+const th = document.getElementById('thumbs');
+PHOTOS.slice(0, 4).forEach((f) => { const b = document.createElement('button'); b.style.backgroundImage = `url(${f})`; b.setAttribute('aria-label', 'Open photo'); b.onclick = () => openLb(f); th.append(b); });
+
+/* ------------------------------------------------------------- 5 numbers */
+document.getElementById('count').onclick = () => {
+  const els = document.querySelectorAll('.num b'), dur = 1400, t0 = performance.now();
+  let lastShown = -1;
+  const riseOsc = (() => {
+    if (variant.num !== 'rise') return null; const a = ready(); if (!a) return null;
+    const o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.value = 300; g.gain.value = 0.0001; g.gain.exponentialRampToValueAtTime(0.03, a.currentTime + 0.05);
+    o.connect(g); g.connect(master); o.start(); return { o, g, a };
+  })();
+  (function step(now) {
+    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    els.forEach((el) => el.textContent = Math.round(e * +el.dataset.to) + el.dataset.suf);
+    const shown = Math.round(e * 38);
+    if (variant.num === 'counter' && shown !== lastShown) { lastShown = shown; noiseBurst(2400, 5, 0.035, 0.001, 0.02); }
+    if (riseOsc) riseOsc.o.frequency.setTargetAtTime(300 + e * 500, riseOsc.a.currentTime, 0.02);
+    if (k < 1) requestAnimationFrame(step);
+    else {
+      if (riseOsc) { riseOsc.g.gain.setTargetAtTime(0.0001, riseOsc.a.currentTime, 0.05); riseOsc.o.stop(riseOsc.a.currentTime + 0.4); }
+      tone('sine', 880, null, 0.05, 0.004, 0.3); tone('sine', 1320, null, 0.025, 0.004, 0.25, 0.02);
+    }
+  })(t0);
+};
+
+/* ------------------------------------------------------------- 6 gate */
+document.getElementById('gate').onsubmit = (e) => {
+  e.preventDefault();
+  const ok = document.getElementById('code').value.trim().toLowerCase() === 'moss', msg = document.getElementById('gmsg');
+  if (ok) { noiseBurst(1200, 2, 0.12, 0.002, 0.04); noiseBurst(3000, 3, 0.08, 0.001, 0.03, 'bandpass', 0.06); tone('sine', 660, 990, 0.04, 0.005, 0.2, 0.06); msg.textContent = 'Unlocked'; }
+  else { tone('triangle', 220, null, 0.07, 0.005, 0.12); tone('triangle', 185, null, 0.07, 0.005, 0.18, 0.12); msg.textContent = 'Not quite'; e.target.classList.remove('shake'); void e.target.offsetWidth; e.target.classList.add('shake'); }
+};
+
+/* ------------------------------------------------------------- 7 wall */
+const wall = document.getElementById('wall'), strip = wall.querySelector('.strip');
+const WALLART = [['art-porch', 1], ['travel-fuji', .75], ['art-reading', .85], ['art-earrings', 1.33], ['travel-lake', 1.33], ['art-hermione', .73], ['art-sage', .63], ['travel-pagoda', .75], ['art-green-eyes', 1.33], ['travel-otagi', 1]];
+for (let r = 0; r < 3; r++) WALLART.forEach(([f, asp]) => { const d = document.createElement('div'); d.className = 'piece'; d.style.aspectRatio = asp; d.style.backgroundImage = `url(../../public/images/beyond/${f}.webp)`; strip.append(d); });
+const stepsViz = document.getElementById('stepsViz');
+for (let i = 0; i < 16; i++) stepsViz.append(document.createElement('i'));
+const STRIDE = 220, MIN_GAP = 200;   // px per step, ms between steps
+let wx = 0, wv = 0, wDrag = false, wLast = 0, travelled = 0, lastStep = 0, foot = 0, vizI = 0, wraf = 0;
+function wallLoop() {
+  if (!wDrag) { wv *= 0.95; wx += wv; travelled += Math.abs(wv); }  // coasting walks too
+  const span = strip.scrollWidth / 3;            // endless: wrap by one set
+  if (wx < -span) wx += span; if (wx > 0) wx -= span;
+  strip.style.transform = `translateX(${wx}px)`;
+  if (travelled >= STRIDE) {
+    const now = performance.now();
+    if (now - lastStep >= MIN_GAP) { travelled -= STRIDE; lastStep = now; step(Math.min(1, Math.abs(wv) / 14)); }
+    else travelled = Math.min(travelled, STRIDE * 1.5); // don't bank steps
+  }
+  if (wDrag || Math.abs(wv) > 0.3) wraf = requestAnimationFrame(wallLoop); else { wraf = 0; travelled = 0; }
+}
+const wKick = () => { if (!wraf) wraf = requestAnimationFrame(wallLoop); };
+function wallMove(dx) { wx += dx; travelled += Math.abs(dx); }
+wall.addEventListener('pointerdown', (e) => { wDrag = true; wLast = e.clientX; wv = 0; wall.setPointerCapture(e.pointerId); wKick(); });
+wall.addEventListener('pointermove', (e) => { if (!wDrag) return; const dx = e.clientX - wLast; wLast = e.clientX; wallMove(dx); wv = dx; });
+wall.addEventListener('pointerup', () => { wDrag = false; wKick(); });
+wall.addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  e.preventDefault(); wv = 0; wx += e.key === 'ArrowRight' ? -STRIDE : STRIDE;
+  lastStep = performance.now(); step(0.5); wKick();
+});
+wallLoop();
+
+function step(speed) {
+  const viz = stepsViz.children[vizI++ % 16]; viz.classList.add('on'); requestAnimationFrame(() => viz.classList.remove('on'));
+  const a = ready(); if (!a) return;
+  foot ^= 1;
+  const v = variant.wall, k = 0.55 + speed * 0.45, pan = foot ? -0.15 : 0.15, j = 1 + (Math.random() - 0.5) * 0.08;
+  const t = a.currentTime;
+  const out = a.createStereoPanner ? a.createStereoPanner() : null;
+  if (out) { out.pan.value = pan; out.connect(master); }
+  const dest = out || master;
+  // one filtered noise hit + optional body tone, written inline so each can be panned
+  const hit = (freq, q, type, peak, attack, release, delay) => {
+    const len = attack + release + 0.03, buf = a.createBuffer(1, Math.ceil(a.sampleRate * len), a.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = a.createBufferSource(); s.buffer = buf; const f = a.createBiquadFilter(); f.type = type; f.frequency.value = freq * j; f.Q.value = q;
+    s.connect(f); f.connect(env(a, peak * k, attack, release, t + delay, dest)); s.start(t + delay); s.stop(t + delay + len);
+  };
+  const body = (f0, f1, peak, release, delay) => {
+    const o = a.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(f0 * j, t + delay); o.frequency.exponentialRampToValueAtTime(f1, t + delay + release);
+    o.connect(env(a, peak * k, 0.004, release, t + delay, dest)); o.start(t + delay); o.stop(t + delay + release + 0.02);
+  };
+  if (v === 'wood') {
+    hit(320, 0.9, 'lowpass', 0.32, 0.003, 0.07, 0);      // heel
+    body(110, 70, 0.14, 0.08, 0);
+    hit(600, 0.8, 'lowpass', 0.14, 0.004, 0.06, 0.075);  // toe
+    if (Math.random() < 0.18) {                            // the odd floorboard creak
+      const o = a.createOscillator(), f = a.createBiquadFilter(); o.type = 'sawtooth';
+      o.frequency.setValueAtTime(190, t + 0.1); o.frequency.linearRampToValueAtTime(240, t + 0.32);
+      f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 6; o.connect(f);
+      f.connect(env(a, 0.012 * k, 0.06, 0.18, t + 0.1, dest)); o.start(t + 0.1); o.stop(t + 0.4);
+    }
+  }
+  if (v === 'stone') {
+    hit(2400, 2.2, 'bandpass', 0.16, 0.001, 0.035, 0);   // heel click
+    body(180, 120, 0.06, 0.05, 0);
+    hit(1600, 1.5, 'bandpass', 0.05, 0.001, 0.03, 0.07); // toe
+    hit(2000, 1, 'bandpass', 0.02, 0.02, 0.35, 0.02);     // the room
+  }
+  if (v === 'soft') {
+    hit(450, 0.7, 'lowpass', 0.16, 0.012, 0.09, 0);
+    hit(900, 0.7, 'lowpass', 0.06, 0.01, 0.07, 0.08);
+  }
+}
+
+/* ------------------------------------------------------------- 8 small */
+document.querySelectorAll('.q').forEach((q) => q.onclick = () => {
+  const open = q.getAttribute('aria-expanded') !== 'true';
+  document.querySelectorAll('.q').forEach((x) => x.setAttribute('aria-expanded', 'false'));
+  q.setAttribute('aria-expanded', open);
+  tone('sine', open ? 420 : 300, open ? 700 : 220, 0.07, 0.003, 0.07);
+});
+const lb = document.getElementById('lb');
+function openLb(src) { lb.querySelector('img').src = src; lb.showModal(); whoosh(true); }
+lb.addEventListener('click', () => lb.close());
+lb.addEventListener('close', () => whoosh(false));
+function whoosh(open) {
+  const a = ready(); if (!a) return;
+  const t = a.currentTime, len = 0.35, buf = a.createBuffer(1, a.sampleRate * len, a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const s = a.createBufferSource(); s.buffer = buf; const f = a.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 0.9;
+  f.frequency.setValueAtTime(open ? 500 : 2200, t); f.frequency.exponentialRampToValueAtTime(open ? 2200 : 500, t + 0.28);
+  s.connect(f); f.connect(env(a, 0.06, 0.12, 0.2, t)); s.start(t); s.stop(t + len);
+}
+</script>
+</body>
+</html>

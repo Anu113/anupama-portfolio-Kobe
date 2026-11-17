@@ -711,15 +711,31 @@
    prototypes and the screen phones are the same object. Like the
    project hues, the device belongs to the work, so its rounded corners
    are the phone's, not the site's (--radius stays square).
+   The device is daneden.me's: an iPhone 17 Pro in silver, whole and
+   centred (on request, 2026-11-17, option C of
+   experiments/device-daneden). The aluminium is the object's own
+   material, the same in both themes, like a photo of it would be.
    ============================================================ */
 :root {
-  --phone-w: 300px;
+  --phone-w: 300px;             /* the black glass; the band goes round it */
   --phone-h: 620px;
-  --phone-bezel: #0e0e0f;
-  --phone-bezel-w: 10px;
+  --phone-bezel: #050506;       /* the black border round the screen */
+  --phone-bezel-w: 8px;
   --phone-screen: #ffffff;      /* the screen behind a recording or screens: the apps' own white */
-  --radius-phone: 44px;
-  --radius-phone-screen: 34px;
+  --radius-phone: 46px;
+  --radius-phone-screen: 38px;
+  /* the silver aluminium band, lit on the upper left */
+  --phone-band-w: 4px;
+  --phone-metal-1: #f4f4f2;
+  --phone-metal-2: #dcdcd9;
+  --phone-metal-3: #b9b9b6;
+  --phone-metal-4: #8f8f8c;
+  --phone-metal-hi: rgb(255 255 255 / 0.55);
+  --phone-btn-w: 4px;
+  --phone-island: #000;
+  --phone-island-w: 30%;
+  --phone-island-h: 26px;
+  --phone-island-top: 9px;
   --phone-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.35);
   --phone-scale: 0.8;          /* the phone as drawn in a card: 240 x 496 */
   --phone-scale-narrow: 0.62;  /* stacked cards on narrow screens: 186 x 384 */

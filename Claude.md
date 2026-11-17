@@ -848,7 +848,11 @@ walked back. Concretely, in the current implementation:
   daneden.me, a phone runs the flow on its own — the Chase Pay
   recording, Privacy screens in sequence (cut from her boards by
   `scripts/phone-screens.py`), and the coded Debit Card sign-up
-  prototype on autopilot (`autoplay` prop). Okta IAM shows its
+  prototype on autopilot (`autoplay` prop). The phone is daneden.me's
+  device, an iPhone 17 Pro in silver, whole and centred (on request,
+  2026-11-17, option C of `experiments/device-daneden/`; his crop off
+  the card's bottom edge was passed over): a CSS aluminium band, its
+  buttons and the Dynamic Island round the black glass. Okta IAM shows its
   screenshot instead. Four cards only, on request: the list is
   `homeCards` in `data/work.ts`; the rest live on /work. Phones move
   only on screen and with motion allowed. There is no pause control
