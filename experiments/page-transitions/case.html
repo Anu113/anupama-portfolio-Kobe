@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page transitions · Case</title>
+<link rel="stylesheet" href="pt.css">
+<script src="pt.js"></script>
+</head>
+<body>
+<nav class="nav"><a class="name" href="index.html">Anupama Mishra</a>
+  <ul><li><a href="work.html" aria-current="page">Work</a></li><li><a href="about.html">About</a></li><li><a href="#">Play</a></li></ul></nav>
+<main>
+  <div class="case-head">
+    <div><p class="label" data-rise id="co"></p><h1 data-rise id="title"></h1></div>
+    <div class="facts" data-rise><div><p class="label">Role</p><p>Staff Product Designer</p></div><div><p class="label">Team</p><p>2 designers, 9 engineers</p></div>
+      <div><p class="label">Timeline</p><p>9 months</p></div><div><p class="label">Platform</p><p>Web</p></div></div>
+  </div>
+  <div class="block cover" id="cover" data-rise></div>
+  <div class="copy">
+    <p class="label" data-rise>01&nbsp;&nbsp;The situation</p>
+    <p data-rise style="color:var(--fg-dim)">Stand-in copy for the mock. The point here is the moment of arriving: does the page feel like the next step from the card you pressed, or like a new document loading?</p>
+  </div>
+</main>
+<script>
+  const P = {
+    okta: ['Okta · 2023', 'Policy setup admins could finish without a support call', 'var(--hue-okta)'],
+    paypal: ['PayPal · 2021', 'Privacy settings people understood, for GDPR and CCPA', 'var(--hue-paypal)'],
+    walmart: ['Walmart · 2018', 'Scan & Go: checkout without the line', 'var(--hue-walmart)'],
+  };
+  const id = new URLSearchParams(location.search).get('p') || 'okta';
+  const [co, title, h] = P[id];
+  document.getElementById('co').textContent = co;
+  document.getElementById('title').textContent = title;
+  const cover = document.getElementById('cover');
+  cover.style.setProperty('--h', h);
+  cover.dataset.p = id;
+  if (id !== 'okta') cover.innerHTML = '<span class="phone" style="width:12%"></span>';
+</script>
+</body>
+</html>

@@ -326,6 +326,20 @@ h1, h2, h3, h4, h5, h6 {
   .link-ext__mark { transition: none; }
 }
 
+/* Page arrival (PAGE ARRIVAL in tokens.css): only when Base.astro has
+   set data-arrive. `translate`, not `transform`, so it never fights a
+   component's own transform; `backwards`, so once risen the part lets
+   go of opacity and translate for its own hover states. Order comes
+   from --rise-i on each part. */
+:root[data-arrive] [data-rise] {
+  animation: page-rise var(--dur-rise) var(--ease-rise) backwards;
+  animation-delay: calc(var(--rise-i, 0) * var(--rise-step));
+}
+@keyframes page-rise { from { opacity: 0; translate: 0 var(--rise-y); } }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-arrive] [data-rise] { animation: none; }
+}
+
 /* --- Focus + reduced motion (do not remove) --------------- */
 :focus-visible {
   outline: 2px solid var(--focus);

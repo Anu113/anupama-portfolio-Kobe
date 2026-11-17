@@ -50,6 +50,23 @@ const {
         root.dataset.mode = pref === 'system' ? 'light' : pref;
       })();
     </script>
+    <!-- Page arrival, after andreas.vision (chosen 2026-11-17 from
+         experiments/page-transitions/, "B · Rise"): arriving from another
+         page of the site, the new page's opening parts ([data-rise]) rise
+         10px into place one after another (PAGE ARRIVAL in tokens.css,
+         `[data-rise]` in global.css). Not on a first visit, a refresh or
+         back/forward — the home page's preloader owns the first visit.
+         Decided before first paint, so nothing shows and then hides. -->
+    <script is:inline>
+      (() => {
+        try {
+          const nav = performance.getEntriesByType('navigation')[0];
+          if (nav && nav.type !== 'navigate') return;
+          if (!document.referrer || new URL(document.referrer).origin !== location.origin) return;
+          document.documentElement.dataset.arrive = '';
+        } catch (e) {}
+      })();
+    </script>
     <!-- The type system (tokens.css): Crimson Pro 300 roman + italic for
          headlines, Manrope 600 for everything else, Azeret Mono 400 for
          numbers. One weight per face on purpose — add a weight here only

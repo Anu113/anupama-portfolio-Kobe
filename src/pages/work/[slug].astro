@@ -152,7 +152,7 @@ const headline = impactMetrics?.kind === 'metrics'
         <Reveal still>
           <div class="head">
             <div class="head__main">
-              <div class="hero__eyebrow">
+              <div class="hero__eyebrow" data-rise style="--rise-i:0">
                 <p class="u-label-mono hero__company">{study.company}</p>
                 {tags.length > 0 && (
                   <ul class="tags" aria-label="Tags">
@@ -160,14 +160,14 @@ const headline = impactMetrics?.kind === 'metrics'
                   </ul>
                 )}
               </div>
-              <h1 class="hero__title">{study.title}</h1>
-              <p class="lede__text">{study.description}</p>
+              <h1 class="hero__title" data-rise style="--rise-i:1">{study.title}</h1>
+              <p class="lede__text" data-rise style="--rise-i:2">{study.description}</p>
               {study.live && (
                 <a class="lede__cta btn btn--secondary" href={study.live.href}
                    target="_blank" rel="noopener noreferrer">{study.live.label}</a>
               )}
             </div>
-            <dl class="facts" aria-label="Case snapshot">
+            <dl class="facts" aria-label="Case snapshot" data-rise style="--rise-i:2">
               <div class="facts__cell">
                 <dt class="u-label-mono facts__label">Role</dt>
                 <dd class="facts__value">{study.role}</dd>
@@ -182,7 +182,7 @@ const headline = impactMetrics?.kind === 'metrics'
           </div>
         </Reveal>
         <Reveal still delay={240}>
-          <div class="hero__frame" data-hue={hueFor(study.company) ?? ''}>
+          <div class="hero__frame" data-rise style="--rise-i:3" data-hue={hueFor(study.company) ?? ''}>
             {study.hero.mockup === 'privacy'
               ? <PrivacyCover alt={study.hero.alt} />
               : <img src={study.hero.src} alt={study.hero.alt} decoding="async" />}
