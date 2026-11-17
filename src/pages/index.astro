@@ -85,7 +85,7 @@ const cards = homeCards.map((c) => {
   </script>
 
   <!-- Selected work. Section head: a serif line with its key phrase in
-       italic, a label link under it, on the page's left edge. -->
+       italic, a label link under it, centred. -->
 <Section theme="bone" full id="work" class="workhead-section">
   <div class="u-shell workhead">
     <h2 class="u-heading">Selected <em>work</em></h2>
@@ -373,12 +373,13 @@ const cards = homeCards.map((c) => {
   :global(#work + .worklist) { padding-block: 0 var(--space-home); }
   :global(.playline) { padding-block: var(--space-home) 0; }
 
-  /* Section head: serif line, label link a step under it. Left on the
-     page's edge like Small talk and Now (they used to be centred; only
-     Beyond, built round its ring, stays centred). */
+  /* Section head: serif line, label link a step under it. Centred, as
+     they first were (on request, 2026-11-17): Selected work and the
+     playground line, like Beyond's. Small talk and Now stay on the
+     page's left edge. */
   .workhead {
-    display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-head-link);
-    text-align: left; padding-bottom: var(--space-head-cards);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-head-link);
+    text-align: center; padding-bottom: var(--space-head-cards);
   }
   .workhead .u-heading { max-width: 20ch; }
   :global(.playline) .workhead { padding-bottom: 0; }
