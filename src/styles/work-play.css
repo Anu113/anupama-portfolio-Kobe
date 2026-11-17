@@ -1,0 +1,69 @@
+/* work-play.css — one screen of a /work play and how the next one
+   arrives: the layers, iOS-like arrivals, the touch mark, Scan & Go's
+   scan and the loading ring. Shared by WorkStage.astro (/work tiles)
+   and ProjectCard.astro (the home page's Privacy card, which plays the
+   same flow on its own). Global, prefixed .wp-: work-play.ts adds
+   screens after load. Timing and colours under WORK PLAY in tokens.css. */
+/* ---- a screen ---------------------------------------------------- */
+.wp-layer { position: absolute; inset: 0; overflow: hidden; background: var(--work-glass); }
+.wp-img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.wp-tall { position: absolute; left: 0; right: 0; top: 0; }
+.wp-tall .wp-img { height: auto; }
+.wp-tall.is-down { transform: translateY(var(--wp-shift)); }
+.wp-bar, .wp-over, .wp-scan-sheet, .wp-scan-bar { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; pointer-events: none; }
+
+/* arrivals, iOS-like */
+.wp-layer[data-in='push'] { animation: wp-in var(--dur-work-push) var(--ease-work) both; }
+.wp-layer[data-out='push'] { animation: wp-out var(--dur-work-push) var(--ease-work) both; }
+.wp-layer[data-in='fade'], .wp-layer[data-in='sheet'], .wp-layer[data-in='alert'] { animation: wp-fade var(--dur-work-fade) ease-out both; }
+.wp-layer[data-in='sheet'] .wp-over { animation: wp-rise var(--dur-work-sheet) var(--ease-work) both; }
+.wp-layer[data-in='alert'] .wp-over { animation: wp-pop 300ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+.wp-layer[data-in='scroll'] .wp-tall { animation: wp-scroll var(--dur-work-scroll) var(--ease-work) both; }
+@keyframes wp-in { from { transform: translateX(100%); } }
+@keyframes wp-out { to { transform: translateX(-30%); filter: brightness(0.85); } }
+@keyframes wp-fade { from { opacity: 0; } }
+@keyframes wp-rise { from { transform: translateY(60%); opacity: 0; } 40% { opacity: 1; } }
+@keyframes wp-pop { from { opacity: 0; transform: scale(1.12); } }
+@keyframes wp-scroll { from { transform: none; } }
+
+/* the touch mark */
+.wp-tap {
+  position: absolute; z-index: 21; width: 11%; aspect-ratio: 1; translate: -50% -50%;
+  border-radius: 50%; background: var(--work-tap); box-shadow: 0 0 0 1.5px var(--work-tap-ring);
+  pointer-events: none; animation: wp-tap var(--dur-work-tap) var(--ease-out) both;
+}
+.wp-tap--swipe { animation-name: wp-swipe; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+@keyframes wp-tap { 0% { opacity: 0; transform: scale(1.5); } 25% { opacity: 1; transform: scale(1); } 45% { transform: scale(0.82); } 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }
+@keyframes wp-swipe { 0% { opacity: 0; transform: translateY(0) scale(1.3); } 15% { opacity: 1; transform: translateY(0) scale(1); } 75% { opacity: 1; transform: translateY(-260%); } 100% { opacity: 0; transform: translateY(-260%); } }
+
+/* ---- Scan & Go's scan (end state at rest; plays while live) ------ */
+.wp-band { position: absolute; overflow: hidden; border-radius: 1.5cqw; pointer-events: none;
+  --c: var(--work-scan-frame);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 7.6cqw 0.8cqw no-repeat, linear-gradient(var(--c), var(--c)) top left / 0.8cqw 7.6cqw no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 7.6cqw 0.8cqw no-repeat, linear-gradient(var(--c), var(--c)) top right / 0.8cqw 7.6cqw no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 7.6cqw 0.8cqw no-repeat, linear-gradient(var(--c), var(--c)) bottom left / 0.8cqw 7.6cqw no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 7.6cqw 0.8cqw no-repeat, linear-gradient(var(--c), var(--c)) bottom right / 0.8cqw 7.6cqw no-repeat; }
+.wp-band::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 0.8cqw; border-radius: 1cqw;
+  background: var(--work-scan-line); box-shadow: 0 0 4cqw 1.3cqw var(--work-scan-glow); opacity: 0; }
+.wp-hit { position: absolute; border: 0.8cqw solid var(--work-scan-hit); border-radius: 1.5cqw; box-shadow: 0 0 0 1cqw var(--work-scan-hit-glow); pointer-events: none; }
+.wp-flash { position: absolute; inset: 0; background: var(--work-scrim-flash); opacity: 0; pointer-events: none; }
+.is-live .wp-band::after { animation: wp-sweep 1500ms ease-in-out 200ms both; }
+.is-live .wp-hit { animation: wp-hit 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) 1650ms both; }
+.is-live .wp-flash { animation: wp-flash 380ms ease-out 1650ms both; }
+.is-live .wp-scan-sheet { animation: wp-rise-full 560ms var(--ease-work) 2050ms both; }
+.is-live .wp-scan-bar { animation: wp-fade 300ms ease-out 2400ms both; }
+@keyframes wp-sweep { 0% { top: 0; opacity: 0; } 8% { opacity: 1; } 55% { top: calc(100% - 0.8cqw); } 92% { top: 62%; opacity: 1; } 100% { top: 62%; opacity: 0; } }
+@keyframes wp-hit { from { opacity: 0; transform: scale(1.35); } }
+@keyframes wp-flash { 0% { opacity: 0; } 30% { opacity: 0.5; } 100% { opacity: 0; } }
+@keyframes wp-rise-full { from { transform: translateY(40%); opacity: 0; } 30% { opacity: 1; } }
+
+/* the Debit Card's loading ring */
+.wp-spin { position: absolute; border-radius: 50%; border: 1.1cqw solid var(--work-spin-track); border-top-color: var(--work-spin);
+  animation: wp-turn 900ms linear infinite; }
+@keyframes wp-turn { to { transform: rotate(360deg); } }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .wp-layer, .wp-layer *, .wp-layer *::after, .wp-tap { animation: none !important; transition: none !important; }
+}

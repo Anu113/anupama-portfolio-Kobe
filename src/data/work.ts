@@ -190,6 +190,8 @@ export const work = [
 export type HomeMedia =
   | { type: 'video'; alt: string }
   | { type: 'screens'; screens: string[]; alt: string }
+  // A /work tile's flow (data/workPlay.ts, keyed by its case's href), playing on its own.
+  | { type: 'play'; play: string; alt: string }
   | { type: 'prototype'; name: 'paypal-enroll' | 'paypal-offers'; alt: string }
   | { type: 'desktop'; image: string; alt: string };
 
@@ -203,8 +205,9 @@ export const homeCards: { href: string; title?: string; tagline?: string; hue?: 
   { href: '/work/okta-iam',
     media: { type: 'desktop', image: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" } },
   { href: '/work/paypal-privacy',
-    media: { type: 'screens', alt: 'PayPal app screens, one after another: Data and privacy, Deals and ads, Personalized deals and offers, and How it works',
-      screens: [1, 2, 3, 4].map((n) => `/images/paypal-privacy/phone-${n}.webp`) } },
+    // The same flow as its /work tile: Shopping, a tap on the reminder, the Data and privacy hub, a swipe down it.
+    media: { type: 'play', play: '/work/paypal-privacy',
+      alt: 'The PayPal app: Shopping, a tap on the reminder to review privacy settings, then the redesigned Data and privacy screen, scrolled down' } },
   { href: '/work/walmart-chase-pay',
     media: { type: 'video', alt: 'Screen recording of the Chase Pay prototype: setting up Walmart Pay, choosing Add Chase Pay from the payment types, and completing the handoff to Chase and back' } },
   { href: '/work/paypal-debit-card', hue: 'mint',

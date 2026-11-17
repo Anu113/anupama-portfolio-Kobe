@@ -825,7 +825,7 @@ walked back. Concretely, in the current implementation:
   Now → footer (which carries contact). The hero is the screen minus
   `--hero-peek`, so the "Selected work" heading line shows at the
   bottom of the first screen on laptops and up (on request, 2026-11-17);
-  its link pill stays just below. On short screens `--hero-pad-top`
+  "View all work" sits after the cards (on request, 2026-11-17). On short screens `--hero-pad-top`
   gives way first (HOME HERO in `tokens.css`).
 - **Now** (`Now.astro`, `site.now` in `data/site.ts`; on request, after
   carlthomasiv.com's): a hairline, a mono "NOW" label and one grey
@@ -856,8 +856,9 @@ walked back. Concretely, in the current implementation:
   (sticky rows and the settle effect in `index.astro`), text on the
   left, and on the right a stage on the project hue where, after
   daneden.me, a phone runs the flow on its own — the Chase Pay
-  recording, Privacy screens in sequence (cut from her boards by
-  `scripts/phone-screens.py`), and the coded Debit Card sign-up
+  recording, Privacy's /work flow playing on its own (the same redrawn
+  screens, touch marks and arrivals as its /work tile, on request
+  2026-11-17: the old cuts from her boards were blurry and cropped), and the coded Debit Card sign-up
   prototype on autopilot (`autoplay` prop). The phone is daneden.me's
   device, an iPhone 17 Pro in silver, whole and centred (on request,
   2026-11-17, option C of `experiments/device-daneden/`; his crop off

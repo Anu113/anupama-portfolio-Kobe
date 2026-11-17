@@ -87,11 +87,11 @@ const cards = homeCards.map((c) => {
   </script>
 
   <!-- Selected work. Section head: a serif line with its key phrase in
-       italic, a label link under it, centred. -->
+       italic, centred. "View all work" sits after the cards (on request,
+       2026-11-17), once the visitor has seen the four. -->
 <Section theme="bone" full id="work" class="workhead-section">
   <div class="u-shell workhead">
     <h2 class="u-heading">Selected <em>work</em></h2>
-    <a class="btn--link" href="/work">View all work <span class="btn__arrow" aria-hidden="true">→</span></a>
   </div>
 </Section>
 <Section theme="bone" class="worklist">
@@ -111,6 +111,9 @@ const cards = homeCards.map((c) => {
         />
       </div>
     ))}
+  </div>
+  <div class="worklist__more">
+    <a class="btn--link" href="/work">View all work <span class="btn__arrow" aria-hidden="true">→</span></a>
   </div>
 </Section>
 
@@ -438,6 +441,13 @@ const cards = homeCards.map((c) => {
      card 4 until it lands) plus the hold. */
   .worklist__item:last-child { padding-bottom: 0; }
   .worklist__grid::after { content: ''; flex: none; height: calc(40vh + var(--stack-end-hold)); }
+
+  /* "View all work", after the last card, centred under the stack like
+     the section head above it. */
+  .worklist__more {
+    display: flex; justify-content: center;
+    padding-top: var(--space-head-cards);
+  }
 
   /* The settle effect (a card scales/dims slightly as the next one
      covers it) used to run on the browser's own scroll-driven
