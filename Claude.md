@@ -607,10 +607,12 @@ walked back. Concretely, in the current implementation:
   huyml.co were mocked and passed over). Arriving from another page of
   the site, the page swaps in at once and its opening parts rise 10px
   into place, 480ms ease-out, 60ms apart: the hero's lines and portrait,
-  /work's head and first tiles, a case study's head and cover (marked
+  every `PageHeader` (/work's and the playground's), /work's first tiles,
+  the playground's wall, a case study's head and cover (marked
   `data-rise` with `--rise-i`; About's own `.rise` already does this).
-  Not on a first visit, a refresh or back/forward; the home page's
-  preloader owns the first visit. Decided before paint in `Base.astro`,
+  Back and forward rise too (on request, 2026-11-17), including pages
+  the browser restores from memory (`pageshow`). Not on a first visit or
+  a refresh; the home page's preloader owns the first visit. Decided before paint in `Base.astro`,
   drawn in `global.css`, values under PAGE ARRIVAL in `tokens.css`. Off
   under reduced motion. Its reason: a felt step from one page to the
   next, without holding the page back. Mark only what's on the first

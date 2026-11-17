@@ -21,6 +21,8 @@
      scroll, eased, so it glides to where you scrolled rather than jumping.
      Each column moves at its own speed (0.88-1.12x), so the wall shifts
      gently against itself; columns never share space, so nothing piles up.
+   - Arriving from another page of the site, the heading's lines and then
+     the wall rise into place ([data-rise], PAGE ARRIVAL in tokens.css).
    - The heading drifts up slowly for the first ~0.6 screen while pieces
      rise over it, then leaves. Scroll back to the top for it again.
    - Sideways is endless: drag, a sideways trackpad swipe or the arrow keys
@@ -62,7 +64,7 @@ import { depthPieces, wall } from '../data/playDepth';
         </PageHeader>
       </div>
     </div>
-    <div class="pdepth__wall" data-wall aria-hidden="true"></div>
+    <div class="pdepth__wall" data-wall data-rise style="--rise-i:2" aria-hidden="true"></div>
   </div>
   <ul class="u-sr-only">
     {depthPieces.map((p) => <li>{p.medium ? `${p.title}, ${p.medium}` : p.title}</li>)}
