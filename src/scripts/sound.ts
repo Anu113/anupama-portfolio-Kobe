@@ -26,12 +26,20 @@
 //             visitor's hand, brighter toward After ("A · Click"); its own
 //             sway is silent
 //   sand    — the word "pixel" breaking (PixelBreak), and a soft settle as it
-//             lands back into type ("B · Sand")
+//             lands back into type ("B · Sand"). Silent since 2026-11-17:
+//             PixelBreak is parked, on request
 //   detent  — the Beyond work ring passing a photo through the front while
 //             thrown, dragged or turned by key, never on its idle drift
 //             ("B · Metal detent")
 //   count   — case-study numbers counting up (CaseNumbers): ticks that slow
 //             with the count, then a soft landed note ("A · Counter")
+//
+// One more, chosen on request (2026-11-17, "A · Detent" of
+// experiments/sound-scroll/, after rounds of wall sounds she turned down):
+//   wall    — the playground wall (PlayDepth): a soft wooden click as each
+//             piece's centre crosses the middle of the screen while the page
+//             scrolls, like a date-picker wheel; quicker and brighter on a
+//             flick. Silent when the page is still, and on sideways panning.
 
 const KEY = 'page-sound:enabled';
 const CHANGE = 'page-sound:change';
@@ -71,11 +79,23 @@ function ctx() {
   return ac;
 }
 
-// Browsers keep an AudioContext suspended until a click or key press, so
-// wake it on the first one after a page load when sound is already on.
-const wake = () => { if (on) ctx()?.resume(); };
-addEventListener('pointerdown', wake, { once: true, capture: true });
-addEventListener('keydown', wake, { once: true, capture: true });
+// Browsers keep an AudioContext suspended on a new page until a click, tap
+// or key press there; scrolling and hovering don't count. So when sound is
+// already on: try to start it at once (some browsers allow it), and keep
+// trying on every press until it runs. (Until 2026-11-18 it listened for
+// the first press only, and only pointerdown/keydown, so the scroll and
+// hover sounds stayed silent on any page the visitor hadn't clicked yet,
+// and for good if that first press came too early.)
+const WAKE = ['pointerdown', 'pointerup', 'click', 'touchend', 'keydown'] as const;
+const wake = () => {
+  if (!on) return;
+  const a = ctx();
+  if (!a) return;
+  if (a.state === 'running') { WAKE.forEach((t) => removeEventListener(t, wake, true)); return; }
+  a.resume().catch(() => {});
+};
+WAKE.forEach((t) => addEventListener(t, wake, true));
+if (on) wake();
 
 function noise(a: AudioContext, seconds: number) {
   const buf = a.createBuffer(1, Math.ceil(a.sampleRate * seconds), a.sampleRate);
@@ -238,6 +258,25 @@ export function playDetent(strength: number) {
   const k = Math.min(1, 0.35 + strength * 0.65);
   hit(a, 4200, 8, 0.07 * k, 0.001, 0.03);
   blip(a, 2400, 0.008 * k, 0.001, 0.02, 0, 'square');
+}
+
+let lastWallTick = 0;
+/** The playground wall: a piece's centre crossing the middle of the screen
+ *  as the page scrolls, like the notched wheel of a phone's date picker.
+ *  A short wooden click with a crisp top; `strength` 0–1 from the scroll's
+ *  speed, so a flick runs the clicks into a soft purr. */
+export function playWallTick(strength: number) {
+  const a = ready(); if (!a) return;
+  const now = performance.now();
+  if (now - lastWallTick < 30) return;   // a fast flick purrs, never buzzes
+  lastWallTick = now;
+  const k = Math.min(1, strength), lvl = 0.5 + 0.5 * k, t = a.currentTime;
+  const o = a.createOscillator();
+  o.frequency.setValueAtTime(1300 + k * 500, t);
+  o.frequency.exponentialRampToValueAtTime(700, t + 0.025);
+  o.connect(envelope(a, 0.18 * lvl, 0.001, 0.03, t));
+  o.start(t); o.stop(t + 0.05);
+  hit(a, 4200, 3, 0.08 * lvl, 0.001, 0.012);
 }
 
 /** One tick of a number counting up. */

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preloader — the last pixel, explored</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Served from the repo root (launch config "sound-mockup"). Round 2 of
+     ../curtain-shapes "1 · Last pixel" (picked 2026-11-18, with Blinds):
+     the black cover over a capture of the real home page breaks into
+     pixels, and one stays longest on the word "pixel". No Moss. */
+  :root { --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --font-sans: 'Manrope', system-ui, sans-serif; --font-mono: 'Azeret Mono', monospace; --gutter: 2.5rem; }
+  :root[data-mode='dark'] { --paper: #1b1a19; --ink: #ecebe8; --ink-dim: #a09d98; --line: rgb(255 255 255 / 0.12); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 600; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .bar { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; padding: .75rem var(--gutter); border-bottom: 1px solid var(--line); }
+  .bar .name { font-size: .875rem; margin-right: auto; }
+  .pill { border: 1px solid var(--ink); background: none; border-radius: 999px; padding: .4rem .8rem; cursor: pointer; font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; }
+  .pill[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+  .sep { width: 1px; height: 1.2rem; background: var(--line); margin: 0 .4rem; }
+  .wrap { padding: 1.5rem var(--gutter) 1rem; }
+  .screen { position: relative; aspect-ratio: 2880 / 1740; max-width: calc(74vh * 2880 / 1740); width: 100%; margin: 0 auto; overflow: hidden; border: 1px solid var(--line); background: var(--paper); cursor: pointer; }
+  .shot { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .shot--dark { display: none; }
+  :root[data-mode='dark'] .shot--light { display: none; }
+  :root[data-mode='dark'] .shot--dark { display: block; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .net { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; padding: .75rem var(--gutter) 0; }
+  .net .mono, .readout { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); }
+  .readout { margin-left: auto; font-variant-numeric: tabular-nums; }
+  /* stands in for the portrait while it's still downloading */
+  .veil { position: absolute; left: 54%; top: 8%; width: 36%; height: 80%; background: var(--paper); opacity: 0; transition: opacity .6s ease; pointer-events: none; }
+  .veil[data-on] { opacity: 1; transition: none; }
+  .why { padding: 1rem var(--gutter) 4rem; max-width: 64rem; }
+  .why p { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); margin: 0 0 .5rem; max-width: 50rem; }
+  .why b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="name">Curtain · last pixel</span>
+  <span data-group="v" style="display:contents">
+    <button class="pill" aria-pressed="true" data-v="scatter">A · Scatter</button>
+    <button class="pill" aria-pressed="false" data-v="close">B · Closing in</button>
+    <button class="pill" aria-pressed="false" data-v="ripple">C · Ripple out</button>
+    <button class="pill" aria-pressed="false" data-v="res">D · Resolution</button>
+    <button class="pill" aria-pressed="false" data-v="fall">E · Falling</button>
+    <button class="pill" aria-pressed="false" data-v="pblinds">F · Pixel blinds</button>
+    <button class="pill" aria-pressed="false" data-v="stop">G · Full stop</button>
+    <button class="pill" aria-pressed="false" data-v="nudge">H · Nudge</button>
+    <button class="pill" aria-pressed="false" data-v="blinds">I · Blinds (as liked)</button>
+  </span>
+  <span class="sep"></span>
+  <span data-group="c" style="display:contents">
+    <button class="pill" aria-pressed="true" data-c="ink">Ink</button>
+    <button class="pill" aria-pressed="false" data-c="#141414">Black, both modes</button>
+    <button class="pill" aria-pressed="false" data-c="#3a0b09">Oxblood</button>
+  </span>
+  <span class="sep"></span>
+  <button class="pill" id="mode" aria-pressed="false">Dark mode</button>
+  <button class="pill" id="slow" aria-pressed="false">Slow ×4</button>
+  <button class="pill" id="play">▶ Play</button>
+</div>
+
+<div class="net">
+  <span class="mono">Connection</span>
+  <span data-group="n" style="display:contents">
+    <button class="pill" aria-pressed="true" data-n="fast">Fast</button>
+    <button class="pill" aria-pressed="false" data-n="slow">Slow (≈3s)</button>
+    <button class="pill" aria-pressed="false" data-n="vslow">Very slow (past 4s)</button>
+  </span>
+  <span class="readout" id="readout" aria-live="off">—</span>
+</div>
+
+<div class="wrap">
+  <div class="screen" id="screen">
+    <img class="shot shot--light" src="../curtain-bars/hero-light.webp" alt="">
+    <img class="shot shot--dark" src="../curtain-bars/hero-dark.webp" alt="">
+    <div class="veil" id="veil"></div>
+    <canvas id="c"></canvas>
+  </div>
+</div>
+
+<div class="why">
+  <p>Press <b>Play</b> or click the screen. A beat of flat black while the page loads, then it breaks into pixels; one is always the last to go, on the word "pixel". <b>Slow ×4</b> shows the order.</p>
+  <p><b>A · Scatter</b> — round 1's: pixels wink out in a loose scatter from the top.</p>
+  <p><b>B · Closing in</b> — the edges of the screen clear first and the black closes in on the word, so the eye is led to "pixel" before the last one goes.</p>
+  <p><b>C · Ripple out</b> — the reverse: the black clears in a ring that starts at the word and spreads to the corners, while the one on the word holds.</p>
+  <p><b>D · Resolution</b> — the black loses resolution in four steps, big blocks to fine grain, like an image loading, until one pixel is left. <i>My pick: the one that reads most like "pixels".</i></p>
+  <p><b>E · Falling</b> — the pixels drop out of the frame row by row from the bottom, like tiles; the last one hangs a beat, then falls too.</p>
+  <p><b>F · Pixel blinds</b> — your two picks together: the slats of the blinds pull back to the left in pixel steps, top first; the last pixel stays on the word.</p>
+  <p><b>G · Full stop</b> — after the scatter, the last pixel glides along the line and shrinks into the full stop after "pixel", ending the sentence.</p>
+  <p><b>H · Nudge</b> — the last pixel is left a little off the grid; it nudges into place (the sentence's "I nudge"), and only then goes.</p>
+  <p><b>I · Blinds</b> — round 1's Blinds, as you liked it, for comparison.</p>
+  <p><b>Connection</b> — the curtain follows the page's real loading. <b>Fast</b>: ready at once, so it plays straight through. <b>Slow</b>: it clears as the page loads and the last part (the last pixel, or the last slats) waits until the page is ready. <b>Very slow</b>: at 4 seconds it lets go anyway and the page shows as it is; the portrait (here, a blank patch) arrives a moment later. It never runs faster than its own pace, only slower.</p>
+  <p>On the site any of these would still wait for the page to load, skip on a key or click, and simply fade under reduced motion.</p>
+</div>
+
+<script>
+  const canvas = document.getElementById('c'), cx = canvas.getContext('2d'), screen = document.getElementById('screen');
+  let pick = 'scatter', colour = 'ink', slow = 1, raf = 0, cells = [], S = 0, ROWS = 0, COLS = 0;
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const fill = () => (colour === 'ink' ? css('--ink') : colour);
+  const DUR = { scatter: 1600, close: 1600, ripple: 1600, res: 1700, fall: 1800, pblinds: 1600, stop: 2000, nudge: 2000, blinds: 1100 };
+  // In the capture (share of width / height): the word "pixel", and its full stop
+  const WORD = [0.198, 0.6], STOP = [0.215, 0.637], STOP_SIZE = 0.0045;
+  const GRID_END = .78;   // the grid has cleared by here; the last pixel has the rest
+
+  const hash = (n) => { const s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); };
+  const ease = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  const backOut = (t) => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+  const clamp = (t) => Math.min(1, Math.max(0, t));
+
+  function size() { const r = screen.getBoundingClientRect(), d = devicePixelRatio || 1; canvas.width = r.width * d; canvas.height = r.height * d; cx.setTransform(d, 0, 0, d, 0, 0); return r; }
+
+  function makeCells(W, H) {
+    S = W / 28; COLS = Math.ceil(W / S); ROWS = Math.ceil(H / S); cells = [];
+    const wx = WORD[0] * W, wy = WORD[1] * H, far = Math.hypot(Math.max(wx, W - wx), Math.max(wy, H - wy));
+    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+      const d = Math.hypot(x * S + S / 2 - wx, y * S + S / 2 - wy) / far, r = Math.random();
+      let t;
+      if (pick === 'close') t = (1 - d) * .85 + r * .1;
+      else if (pick === 'ripple') t = d * .85 + r * .1;
+      else if (pick === 'fall') t = (1 - y / ROWS) * .7 + r * .25;
+      else t = (y / ROWS) * .45 + r * .5;
+      cells.push({ x: x * S, y: y * S, t, r, vx: (r - .5) * .6 });
+    }
+  }
+
+  function square(x, y, g) { if (g > 0) cx.fillRect(x - g / 2, y - g / 2, g, g); }
+
+  // The stubborn one. Default: holds, then a small pop and it's gone.
+  function lastPixel(p, W, H) {
+    const x = WORD[0] * W, y = WORD[1] * H;
+    if (pick === 'stop') {
+      const k = ease(clamp((p - .8) / .17));
+      const tx = STOP[0] * W, ty = STOP[1] * H, g = S + (STOP_SIZE * W - S) * k;
+      if (p >= .99) return;
+      square(x + (tx - x) * k, y + (ty - y) * k, g);
+      return;
+    }
+    if (pick === 'nudge') {
+      const k = clamp((p - .8) / .1), off = 1 - backOut(k);
+      if (p >= .97) return;
+      const g = S * (1 - easeOut(clamp((p - .92) / .05)));
+      square(x + S * .38 * off, y - S * .3 * off, g);
+      return;
+    }
+    if (pick === 'fall') {
+      const k = clamp((p - .86) / .14);
+      square(x, y + k * k * H * .7, S);
+      return;
+    }
+    const k = clamp((p - .88) / .12);
+    if (k >= 1) return;
+    square(x, y, S * (1 - k * k) * (1 + .25 * Math.sin(k * Math.PI)));
+  }
+
+  function draw(p, W, H, holding) {
+    cx.clearRect(0, 0, W, H);
+    cx.fillStyle = fill();
+    if (holding) { cx.fillRect(0, 0, W, H); return; }
+    const g = p / GRID_END;   // grid progress, 0..1 (and past)
+
+    if (pick === 'blinds') {
+      const n = 10, sh = H / n;
+      for (let i = 0; i < n; i++) { const q = ease(clamp((p - (i / n) * .45) / .55)); const h = sh * (1 - q); if (h > 0) cx.fillRect(0, i * sh, W, h + .5); }
+      return;
+    }
+
+    if (pick === 'res') {
+      // four steps of resolution; each step keeps fewer, smaller blocks
+      const levels = [4, 8, 16, 28], keep = [.8, .55, .3, .1];
+      const L = Math.min(3, Math.floor(clamp(g) * 4));
+      if (g < 1) {
+        const n = levels[L], s = W / n, rows = Math.ceil(H / s);
+        for (let y = 0; y < rows; y++) for (let x = 0; x < n; x++) if (hash(L * 977 + y * 131 + x * 7.3) < keep[L]) cx.fillRect(x * s, y * s, s + .5, s + .5);
+      }
+      lastPixel(p, W, H);
+      return;
+    }
+
+    if (pick === 'pblinds') {
+      const n = Math.round(H / S / 2), sh = H / n;
+      for (let i = 0; i < n; i++) {
+        const q = clamp((g - (i / n) * .45) / .55), len = Math.ceil((W * (1 - ease(q))) / S) * S;   // pulls back in whole pixels
+        if (len > 0) cx.fillRect(0, i * sh, len, sh + .5);
+        // one loose pixel trailing each slat's end
+        if (q > 0 && q < 1) cx.fillRect(len + S * .25, i * sh + (hash(i) > .5 ? 0 : sh - S), S * .5, S * .5);
+      }
+      lastPixel(p, W, H);
+      return;
+    }
+
+    cells.forEach((c) => {
+      if (pick === 'fall') {
+        const k = g * 1.1 - c.t;
+        if (k <= 0) { cx.fillRect(c.x, c.y, S + .5, S + .5); return; }
+        const dy = k * k * H * 2.2, dx = c.vx * k * S * 3;
+        if (c.y + dy < H) cx.fillRect(c.x + dx, c.y + dy, S, S);
+        return;
+      }
+      const k = clamp((g * 1.12 - c.t) / .12);
+      if (k >= 1) return;
+      const s = S * (1 - easeOut(k));
+      cx.fillRect(c.x + (S - s) / 2, c.y + (S - s) / 2, s + .5, s + .5);
+    });
+    lastPixel(p, W, H);
+  }
+
+  // How much of the page has loaded by t ms, per connection (0..1)
+  let net = 'fast';
+  const CAP = 4000;   // the site's limit: after this the curtain goes regardless
+  const loaded = (t) => {
+    if (net === 'fast') return clamp(t / 250);
+    if (net === 'slow') return t < 3000 ? clamp(.15 + .85 * Math.pow(t / 3000, .7)) * .97 : 1;
+    return t < 7000 ? .15 + .55 * clamp(t / 4000) : 1;   // very slow: ~70% at the cap, done at 7s
+  };
+  const readout = document.getElementById('readout'), veil = document.getElementById('veil');
+
+  function play() {
+    cancelAnimationFrame(raf);
+    const r = size(), W = r.width, H = r.height;
+    makeCells(W, H);
+    const dur = DUR[pick] * slow, t0 = performance.now();
+    let p = 0, last = t0;
+    veil.setAttribute('data-on', '');
+    const tick = (now) => {
+      const t = now - t0, dt = now - last; last = now;
+      const lt = t / slow, l = loaded(lt), done = l >= 1, capped = lt >= CAP;
+      // the curtain may go only as far as the page has loaded; the last part waits for ready (or the cap)
+      const target = done || capped ? 1 : Math.min(.8, l * .8);
+      if (lt > 120) p = Math.min(target, p + dt / dur);
+      if (l >= 1 && veil.hasAttribute('data-on')) veil.removeAttribute('data-on');
+      readout.textContent = `Loaded ${Math.round(l * 100)}% · ${(lt / 1000).toFixed(1)}s` + (capped && !done ? ' · 4s limit, page shows as it is' : done ? ' · ready' : '');
+      if (p <= 0) draw(0, W, H, true); else draw(p, W, H, false);
+      if (p >= 1 && done) return;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  }
+
+  document.querySelectorAll('[data-group]').forEach((g) => g.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    if (b.dataset.v) pick = b.dataset.v; if (b.dataset.c) colour = b.dataset.c; if (b.dataset.n) net = b.dataset.n;
+    play();
+  }));
+  document.getElementById('play').onclick = play;
+  screen.onclick = play;
+  const s = document.getElementById('slow');
+  s.onclick = () => { slow = slow === 1 ? 4 : 1; s.setAttribute('aria-pressed', slow > 1); play(); };
+  const m = document.getElementById('mode');
+  m.onclick = () => { const d = document.documentElement.dataset.mode !== 'dark'; document.documentElement.dataset.mode = d ? 'dark' : 'light'; m.setAttribute('aria-pressed', d); play(); };
+  addEventListener('load', play);
+</script>
+</body>
+</html>

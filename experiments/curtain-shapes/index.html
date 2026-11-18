@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preloader — curtain shapes, beyond bars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Served from the repo root (launch config "sound-mockup"). Same set-up
+     as ../curtain-bars: a flat cover over a capture of the real home page,
+     held for a beat, then it leaves. Here the cover leaves in shapes other
+     than sound bars. No Moss. */
+  :root { --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --font-sans: 'Manrope', system-ui, sans-serif; --font-mono: 'Azeret Mono', monospace; --gutter: 2.5rem; }
+  :root[data-mode='dark'] { --paper: #1b1a19; --ink: #ecebe8; --ink-dim: #a09d98; --line: rgb(255 255 255 / 0.12); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 600; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .bar { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; padding: .75rem var(--gutter); border-bottom: 1px solid var(--line); }
+  .bar .name { font-size: .875rem; margin-right: auto; }
+  .pill { border: 1px solid var(--ink); background: none; border-radius: 999px; padding: .4rem .8rem; cursor: pointer; font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; }
+  .pill[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+  .sep { width: 1px; height: 1.2rem; background: var(--line); margin: 0 .4rem; }
+  .wrap { padding: 1.5rem var(--gutter) 1rem; }
+  .screen { position: relative; aspect-ratio: 2880 / 1740; max-width: calc(74vh * 2880 / 1740); width: 100%; margin: 0 auto; overflow: hidden; border: 1px solid var(--line); background: var(--paper); cursor: pointer; }
+  .shot { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .shot--dark { display: none; }
+  :root[data-mode='dark'] .shot--light { display: none; }
+  :root[data-mode='dark'] .shot--dark { display: block; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .why { padding: 1rem var(--gutter) 4rem; max-width: 64rem; }
+  .why p { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); margin: 0 0 .5rem; max-width: 50rem; }
+  .why b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="name">Curtain · shapes</span>
+  <span data-group="v" style="display:contents">
+    <button class="pill" aria-pressed="true" data-v="pixel">1 · Last pixel</button>
+    <button class="pill" aria-pressed="false" data-v="curve">2 · Page curve</button>
+    <button class="pill" aria-pressed="false" data-v="liquid">3 · Liquid</button>
+    <button class="pill" aria-pressed="false" data-v="brush">4 · Watercolour edge</button>
+    <button class="pill" aria-pressed="false" data-v="blinds">5 · Blinds</button>
+    <button class="pill" aria-pressed="false" data-v="fold">6 · Paper fold</button>
+    <button class="pill" aria-pressed="false" data-v="iris">7 · Aperture</button>
+    <button class="pill" aria-pressed="false" data-v="doors">8 · Doors</button>
+  </span>
+  <span class="sep"></span>
+  <span data-group="c" style="display:contents">
+    <button class="pill" aria-pressed="true" data-c="ink">Ink</button>
+    <button class="pill" aria-pressed="false" data-c="#141414">Black, both modes</button>
+    <button class="pill" aria-pressed="false" data-c="#3a0b09">Oxblood</button>
+  </span>
+  <span class="sep"></span>
+  <button class="pill" id="mode" aria-pressed="false">Dark mode</button>
+  <button class="pill" id="slow" aria-pressed="false">Slow ×4</button>
+  <button class="pill" id="play">▶ Play</button>
+</div>
+
+<div class="wrap">
+  <div class="screen" id="screen">
+    <img class="shot shot--light" src="../curtain-bars/hero-light.webp" alt="">
+    <img class="shot shot--dark" src="../curtain-bars/hero-dark.webp" alt="">
+    <canvas id="c"></canvas>
+  </div>
+</div>
+
+<div class="why">
+  <p>Press <b>Play</b> or click the screen. Each run: a beat of flat black while the page loads, then it leaves. <b>Slow ×4</b> shows the shape.</p>
+  <p><b>1 · Last pixel</b> — the black breaks into square pixels that wink out in a loose scatter from the top, and one pixel stays a moment longer, by the word "pixel" in your sentence, before it goes too. The headline's claim, said once, without a word. <i>My pick.</i></p>
+  <p><b>2 · Page curve</b> — the black lifts with its corners first and its middle hanging lowest, the same curve the page makes over the black footer, so the site opens and ends on one shape.</p>
+  <p><b>3 · Liquid</b> — the edge is a slow, heavy wave, like ink being drawn up; it wobbles more while moving fast and flattens as it leaves.</p>
+  <p><b>4 · Watercolour edge</b> — a rough, bleeding brush edge with a paler wash just under it, after your own paintings.</p>
+  <p><b>5 · Blinds</b> — ten horizontal slats close up one after another from the top, like a blind being drawn.</p>
+  <p><b>6 · Paper fold</b> — the black folds up like a sheet of paper in an accordion, each fold a shade lighter or darker.</p>
+  <p><b>7 · Aperture</b> — a circle opens from your sentence and grows until the black is gone, like a camera iris.</p>
+  <p><b>8 · Doors</b> — the black parts in the middle and the two halves slide away left and right.</p>
+  <p>On the site any of these would still wait for the page to load, skip on a key or click, and simply fade under reduced motion.</p>
+</div>
+
+<script>
+  const canvas = document.getElementById('c'), cx = canvas.getContext('2d'), screen = document.getElementById('screen');
+  let pick = 'pixel', colour = 'ink', slow = 1, raf = 0, cells = [];
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const fill = () => (colour === 'ink' ? css('--ink') : colour);
+  const ground = () => css('--paper');
+  const DUR = { pixel: 1500, curve: 1100, liquid: 1300, brush: 1300, blinds: 1100, fold: 1200, iris: 1100, doors: 1000 };
+  // Where the word "pixel" sits in the capture (share of width / height)
+  const PIXEL_AT = [0.198, 0.6], SENTENCE_AT = [0.19, 0.53];
+
+  const hash = (n) => { const s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); };
+  const noise = (x) => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return hash(i) * (1 - u) + hash(i + 1) * u; };
+  const fbm = (x) => noise(x) * .55 + noise(x * 2.3 + 7) * .28 + noise(x * 5.1 + 3) * .17;
+  const ease = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  const clamp = (t) => Math.min(1, Math.max(0, t));
+
+  function size() { const r = screen.getBoundingClientRect(), d = devicePixelRatio || 1; canvas.width = r.width * d; canvas.height = r.height * d; cx.setTransform(d, 0, 0, d, 0, 0); return r; }
+
+  function makeCells(W, H) {
+    cells = []; const s = W / 28, cols = Math.ceil(W / s), rows = Math.ceil(H / s);
+    const last = [Math.floor(PIXEL_AT[0] * W / s), Math.floor(PIXEL_AT[1] * H / s)];
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      const isLast = x === last[0] && y === last[1];
+      // loose top-to-bottom order with plenty of scatter
+      const t = isLast ? 1 : clamp((y / rows) * .45 + Math.random() * .5);
+      cells.push({ x: x * s, y: y * s, s, t, isLast });
+    }
+  }
+
+  // Edge helper: fill the cover from the top down to y(x)
+  function fillDown(W, edgeAt) {
+    cx.beginPath(); cx.moveTo(0, 0);
+    for (let x = 0; x <= W; x += 4) cx.lineTo(x, edgeAt(x));
+    cx.lineTo(W, 0); cx.closePath(); cx.fill();
+  }
+
+  function draw(p, W, H, holding) {
+    cx.clearRect(0, 0, W, H);
+    cx.fillStyle = fill();
+    if (holding) { cx.fillRect(0, 0, W, H); return; }
+    const e = ease(p), speed = Math.min(1, ((ease(Math.min(1, p + .01)) - e) / .01) / 1.5);
+
+    if (pick === 'pixel') {
+      cells.forEach((c) => {
+        if (c.isLast) {
+          // the stubborn one: holds, then a small pop and it's gone
+          const k = clamp((p - .88) / .12);
+          if (k >= 1) return;
+          const g = c.s * (1 - k * k) * (1 + .25 * Math.sin(k * Math.PI));
+          cx.fillRect(c.x + (c.s - g) / 2, c.y + (c.s - g) / 2, g, g);
+          return;
+        }
+        const k = clamp((p * 1.35 - c.t) / .12);   // each pixel shrinks quickly once its turn comes
+        if (k >= 1) return;
+        const g = c.s * (1 - easeOut(k));
+        cx.fillRect(c.x + (c.s - g) / 2, c.y + (c.s - g) / 2, g + .5, g + .5);
+      });
+    }
+
+    if (pick === 'curve') {
+      const bow = H * .32 * Math.sin(Math.PI * Math.min(1, e * 1.1));
+      // corners lift first and the middle hangs lowest, as the page's own end does
+      const base = (1 - e) * H - bow * .2;
+      cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(0, base);
+      cx.quadraticCurveTo(W / 2, base + bow * 2, W, base);
+      cx.lineTo(W, 0); cx.closePath(); cx.fill();
+    }
+
+    if (pick === 'liquid') {
+      const amp = H * (.05 + .12 * speed) * (1 - e * .5);
+      const base = (1 - e) * (H + amp * 2) - amp;
+      fillDown(W, (x) => base + amp * (Math.sin(x / W * 5.2 + p * 6) * .6 + Math.sin(x / W * 11.3 - p * 9) * .4));
+    }
+
+    if (pick === 'brush') {
+      const amp = H * .09, base = (1 - e) * (H + amp * 2.4) - amp;
+      const edge = (x) => base + amp * (fbm(x / W * 9 + p * 1.5) * 1.6 - .8) + amp * .35 * (hash(Math.floor(x / 3)) - .5);
+      // a paler wash bleeding just under the edge
+      cx.globalAlpha = .35; fillDown(W, (x) => edge(x) + amp * (.6 + fbm(x / W * 6 + 40) * .9)); cx.globalAlpha = 1;
+      fillDown(W, edge);
+    }
+
+    if (pick === 'blinds') {
+      const n = 10, sh = H / n;
+      for (let i = 0; i < n; i++) {
+        const q = ease(clamp((p - (i / n) * .45) / .55));
+        const h = sh * (1 - q);
+        if (h > 0) cx.fillRect(0, i * sh, W, h + .5);
+      }
+    }
+
+    if (pick === 'fold') {
+      const n = 6, total = H * (1 - e), ph = total / n;
+      const ink = fill(), shade = ground();
+      for (let i = 0; i < n; i++) {
+        cx.fillStyle = ink; cx.fillRect(0, i * ph, W, ph + .5);
+        // folds facing away catch less light as the sheet folds tighter
+        cx.globalAlpha = (i % 2 ? .1 : .02) * Math.min(1, e * 3);
+        cx.fillStyle = shade; cx.fillRect(0, i * ph, W, ph + .5);
+        cx.globalAlpha = 1;
+      }
+    }
+
+    if (pick === 'iris') {
+      const ox = SENTENCE_AT[0] * W, oy = SENTENCE_AT[1] * H;
+      const R = Math.hypot(Math.max(ox, W - ox), Math.max(oy, H - oy)) * 1.02;
+      cx.beginPath(); cx.rect(0, 0, W, H); cx.arc(ox, oy, R * e, 0, Math.PI * 2, true); cx.fill('evenodd');
+    }
+
+    if (pick === 'doors') {
+      const off = (W / 2) * e;
+      cx.fillRect(-off, 0, W / 2, H); cx.fillRect(W / 2 + off, 0, W / 2, H);
+    }
+  }
+
+  function play() {
+    cancelAnimationFrame(raf);
+    const r = size(), W = r.width, H = r.height;
+    makeCells(W, H);
+    const hold = 400 * slow, dur = DUR[pick] * slow, t0 = performance.now();
+    const tick = (now) => {
+      const t = now - t0;
+      if (t < hold) draw(0, W, H, true);
+      else { const p = Math.min(1, (t - hold) / dur); draw(p, W, H, false); if (p >= 1) return; }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  }
+
+  document.querySelectorAll('[data-group]').forEach((g) => g.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    if (b.dataset.v) pick = b.dataset.v; if (b.dataset.c) colour = b.dataset.c;
+    play();
+  }));
+  document.getElementById('play').onclick = play;
+  screen.onclick = play;
+  const s = document.getElementById('slow');
+  s.onclick = () => { slow = slow === 1 ? 4 : 1; s.setAttribute('aria-pressed', slow > 1); play(); };
+  const m = document.getElementById('mode');
+  m.onclick = () => { const d = document.documentElement.dataset.mode !== 'dark'; document.documentElement.dataset.mode = d ? 'dark' : 'light'; m.setAttribute('aria-pressed', d); play(); };
+  addEventListener('load', play);
+</script>
+</body>
+</html>

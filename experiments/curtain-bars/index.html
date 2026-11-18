@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preloader — the curtain lifts on bars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Served from the repo root (launch config "sound-mockup"). The hero
+     under the curtain is a capture of the real home page (hero-light/dark.webp). After mariavasilyeva.com: a flat
+     black cover leaves the screen upward, its bottom edge a row of
+     columns of different heights, like sound bars, that re-step as it
+     moves (faster = more jagged). No Moss. */
+  :root { --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --font-sans: 'Manrope', system-ui, sans-serif; --font-serif: 'Crimson Pro', serif; --font-mono: 'Azeret Mono', monospace; --gutter: 2.5rem; }
+  :root[data-mode='dark'] { --paper: #1b1a19; --ink: #ecebe8; --ink-dim: #a09d98; --line: rgb(255 255 255 / 0.12); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 600; }
+  .mono { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .bar { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; padding: .75rem var(--gutter); border-bottom: 1px solid var(--line); }
+  .bar .name { font-size: .875rem; margin-right: auto; }
+  .pill { border: 1px solid var(--ink); background: none; border-radius: 999px; padding: .4rem .8rem; cursor: pointer; font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; }
+  .pill[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+  .sep { width: 1px; height: 1.2rem; background: var(--line); margin: 0 .4rem; }
+
+  /* The "screen": a copy of the hero, at 16:10 */
+  .wrap { padding: 1.5rem var(--gutter) 1rem; }
+  .screen { position: relative; aspect-ratio: 2880 / 1740; max-width: calc(74vh * 2880 / 1740); width: 100%; margin: 0 auto; overflow: hidden; border: 1px solid var(--line); background: var(--paper); }
+  .hero { position: absolute; inset: 0; display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 4%; padding: 0 6%; }
+  .hero .loc { margin-bottom: 1.2rem; }
+  .hero h1 { font-family: var(--font-serif); font-weight: 300; letter-spacing: -0.03em; line-height: 1.05; font-size: clamp(1.4rem, 3.2vw, 3.1rem); margin: 0 0 1rem; max-width: 26ch; }
+  .hero h1 em { font-style: italic; }
+  .hero p { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); max-width: 34ch; margin: 0; }
+  .hero img { width: 100%; height: auto; display: block; }
+  .nav { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; padding: 1.1rem 6%; font-size: .8rem; }
+  .nav span:last-child { font-family: var(--font-mono); font-weight: 400; font-size: .75rem; color: var(--ink-dim); letter-spacing: .06em; text-transform: uppercase; }
+  .shot { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .shot--dark { display: none; }
+  :root[data-mode='dark'] .shot--light { display: none; }
+  :root[data-mode='dark'] .shot--dark { display: block; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  .why { padding: 1rem var(--gutter) 4rem; max-width: 64rem; }
+  .why p { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); margin: 0 0 .5rem; max-width: 50rem; }
+  .why b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="name">Curtain · bars</span>
+  <span data-group="v" style="display:contents">
+    <button class="pill" aria-pressed="true" data-v="A">A · Sound bars</button>
+    <button class="pill" aria-pressed="false" data-v="B">B · Fold up</button>
+    <button class="pill" aria-pressed="false" data-v="C">C · From the middle</button>
+    <button class="pill" aria-pressed="false" data-v="D">D · Few wide bars</button>
+    <button class="pill" aria-pressed="false" data-v="E">E · Staircase</button>
+    <button class="pill" aria-pressed="false" data-v="F">F · Equaliser</button>
+    <button class="pill" aria-pressed="false" data-v="G">G · Drops down</button>
+    <button class="pill" aria-pressed="false" data-v="H">H · Splits open</button>
+    <button class="pill" aria-pressed="false" data-v="I">I · Fine grain</button>
+    <button class="pill" aria-pressed="false" data-v="J">J · Slides left</button>
+    <button class="pill" aria-pressed="false" data-v="K">K · Wave</button>
+    <button class="pill" aria-pressed="false" data-v="L">L · Two layers</button>
+  </span>
+  <span class="sep"></span>
+  <span data-group="c" style="display:contents">
+    <button class="pill" aria-pressed="true" data-c="ink">Ink</button>
+    <button class="pill" aria-pressed="false" data-c="#141414">Black, both modes</button>
+    <button class="pill" aria-pressed="false" data-c="#3a0b09">Oxblood</button>
+  </span>
+  <span class="sep"></span>
+  <button class="pill" id="mode" aria-pressed="false">Dark mode</button>
+  <button class="pill" id="slow" aria-pressed="false">Slow ×4</button>
+  <button class="pill" id="play">▶ Play</button>
+</div>
+
+<div class="wrap">
+  <div class="screen" id="screen">
+    <!-- The real home page as it is now (1440 wide, captured from the dev site after the hero is in) -->
+    <img class="shot shot--light" src="hero-light.webp" alt="">
+    <img class="shot shot--dark" src="hero-dark.webp" alt="">
+    <canvas id="c"></canvas>
+  </div>
+</div>
+
+<div class="why">
+  <p>Press <b>Play</b> (or click the screen). Each run: the screen is flat black for a beat while the page loads, then the black leaves upward with a stepped edge. <b>Slow ×4</b> lets you see the edge. No Moss; the hero is simply there underneath, ready.</p>
+  <p><b>A · Sound bars</b> — the closest to her site: one cover rising, its bottom edge a row of uneven columns that re-step as it moves, more jagged at full speed, flattening as it settles off the top. <i>My pick.</i></p>
+  <p><b>B · Fold up</b> — the same columns, but they leave one after another from left to right, so the black folds up like the keys of a piano being lifted. Reads more as a wave.</p>
+  <p><b>C · From the middle</b> — the columns in the centre leave first and the edges last, opening onto her sentence like a stage.</p>
+  <p><b>D · Few wide bars</b> — six broad columns instead of many thin ones; calmer and more graphic, less "audio".</p>
+  <p><b>E · Staircase</b> — the bars line up as steps, low on the left and high on the right, so the black climbs off like a staircase, re-stepping as it goes.</p>
+  <p><b>F · Equaliser</b> — even bars with small gaps and rounded ends, like an audio level meter, bouncing as the black rises.</p>
+  <p><b>G · Drops down</b> — the same stepped edge, but the black falls off the bottom instead of lifting, as if a cloth slid off.</p>
+  <p><b>H · Splits open</b> — the black parts in the middle: the top half lifts, the bottom half drops, both edges stepped, opening on the sentence.</p>
+  <p><b>I · Fine grain</b> — 64 thin bars, faster (0.9s): a crisp, high-resolution, almost glitchy edge.</p>
+  <p><b>J · Slides left</b> — the bars lie on their side and the black leaves to the left, as if wiping off the screen like a page turn.</p>
+  <p><b>K · Wave</b> — the bar heights follow one smooth wave that travels across, instead of random steps. Calmer, more musical.</p>
+  <p><b>L · Two layers</b> — a grey layer trails just behind the black, so it reads as two curtains, the second following the first.</p>
+  <p>Timings in this mock: 400ms of black, then ~1.1s to clear. On the site it would still wait for the page to load (as the current curtain does), skip on a key or click, and fade simply under reduced motion.</p>
+</div>
+
+<script>
+  const canvas = document.getElementById('c'), cx = canvas.getContext('2d'), screen = document.getElementById('screen');
+  let pick = 'A', colour = 'ink', slow = 1, raf = 0;
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const fill = () => (colour === 'ink' ? css('--ink') : colour);
+
+  function size() { const r = screen.getBoundingClientRect(), d = devicePixelRatio || 1; canvas.width = r.width * d; canvas.height = r.height * d; cx.setTransform(d, 0, 0, d, 0, 0); return r; }
+
+  // Each lift: n bars, duration, re-steps on the way, edge depth, direction
+  const V = {
+    A: { n: 26, dur: 1100, step: 14, amp: .22, speedAmp: true },
+    B: { n: 26, dur: 1300, step: 0, amp: .22, stag: 'lr' },
+    C: { n: 26, dur: 1300, step: 0, amp: .22, stag: 'mid' },
+    D: { n: 6, dur: 1100, step: 14, amp: .14, even: true },
+    E: { n: 18, dur: 1200, step: 8, amp: .34, stair: 6 },
+    F: { n: 24, dur: 1200, step: 16, amp: .22, even: true, pill: true },
+    G: { n: 26, dur: 1100, step: 14, amp: .22, dir: 'down' },
+    H: { n: 26, dur: 1200, step: 14, amp: .18, dir: 'split' },
+    I: { n: 64, dur: 900, step: 22, amp: .16, speedAmp: true },
+    J: { n: 14, dur: 1100, step: 12, amp: .2, dir: 'left' },
+    K: { n: 44, dur: 1300, amp: .24, wave: true },
+    L: { n: 26, dur: 1300, step: 14, amp: .22, layer: true },
+  };
+  let cols = [];
+  function makeCols(len) {
+    const v = V[pick]; cols = []; let x = 0; const base = len / v.n;
+    while (x < len - .5) { const w = v.even ? base : base * (0.45 + Math.random() * 1.1); cols.push({ x, w: Math.min(w, len - x), seed: Math.random() * 1000 }); x += w; }
+  }
+  const hash = (n) => { const s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); };
+  const easeInOut = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const clamp = (t) => Math.min(1, Math.max(0, t));
+
+  // How far each bar still reaches, measured from the side it leaves to
+  function reach(v, c, i, p, L, salt) {
+    const n = cols.length;
+    let q = p;
+    if (v.stag === 'lr') q = clamp((p - (i / n) * .35) / .65);
+    if (v.stag === 'mid') { const d = Math.abs(i - (n - 1) / 2) / ((n - 1) / 2); q = clamp((p - d * .35) / .65); }
+    const eq = easeInOut(q);
+    const e = easeInOut(p), speed = Math.min(1, ((easeInOut(Math.min(1, p + .01)) - e) / .01) / 1.5);
+    const amp = L * v.amp * (v.speedAmp ? .25 + .75 * speed : 1) * (1 - eq * .6);
+    const k = v.step ? Math.floor(p * v.step) : 0;
+    let jag = hash(c.seed + salt + k * 13.7);
+    if (v.stair) jag = Math.floor(((i / n) * .8 + hash(c.seed + k) * .2) * v.stair) / v.stair;
+    if (v.wave) jag = .5 + .5 * Math.sin(i * .38 - p * 14);
+    const edge = (1 - eq) * (L + amp) - amp;
+    return { base: edge, end: edge + jag * amp };
+  }
+
+  function bar(x, y, w, h, pill, horiz) {
+    if (w <= 0 || h <= 0) return;
+    if (!pill) { cx.fillRect(x, y, w, h); return; }
+    cx.beginPath(); cx.roundRect(x, y, w, h, Math.min(w, h) / 2); cx.fill();
+  }
+
+  function lay(v, p, W, H, salt) {
+    const dir = v.dir || 'up';
+    const halves = dir === 'split' ? [['up', H / 2, 0], ['down', H / 2, 500]] : [[dir, dir === 'left' ? W : H, 0]];
+    halves.forEach(([d, L, s2]) => cols.forEach((c, i) => {
+      const r = reach(v, c, i, p, L, salt + s2);
+      const gap = v.pill ? c.w * .18 : 0, x = Math.floor(c.x) + gap / 2, w = Math.ceil(c.w) + 1 - gap;
+      if (v.pill) {   // solid cover to the base, then a rounded bar below it
+        const b = Math.max(0, r.base);
+        if (d === 'up') { cx.fillRect(Math.floor(c.x), 0, Math.ceil(c.w) + 1, b); bar(x, b - w, w, r.end - b + w, true); }
+        return;
+      }
+      const len = Math.max(0, r.end);
+      if (d === 'up') cx.fillRect(Math.floor(c.x), 0, Math.ceil(c.w) + 1, len);
+      if (d === 'down') cx.fillRect(Math.floor(c.x), H - len, Math.ceil(c.w) + 1, len);
+      if (d === 'left') cx.fillRect(0, Math.floor(c.x), len, Math.ceil(c.w) + 1);
+    }));
+  }
+
+  function draw(p, W, H, holding) {
+    cx.clearRect(0, 0, W, H);
+    if (holding) { cx.fillStyle = fill(); cx.fillRect(0, 0, W, H); return; }
+    const v = V[pick];
+    if (v.layer) { cx.fillStyle = css('--ink-dim'); lay(v, clamp((p - .15) / .85), W, H, 300); lay2(v, p, W, H); return; }
+    cx.fillStyle = fill(); lay(v, p, W, H, 0);
+  }
+  // Two layers: the grey trails the black by a little
+  function lay2(v, p, W, H) { cx.fillStyle = fill(); lay(v, clamp(p * 1.18), W, H, 0); }
+
+  function play() {
+    cancelAnimationFrame(raf);
+    const r = size(), W = r.width, H = r.height, v = V[pick];
+    makeCols(v.dir === 'left' ? H : W);
+    const hold = 400 * slow, dur = v.dur * slow, t0 = performance.now();
+    const tick = (now) => {
+      const t = now - t0;
+      if (t < hold) draw(0, W, H, true);
+      else { const p = Math.min(1, (t - hold) / dur); draw(p, W, H, false); if (p >= 1) return; }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  }
+
+  document.querySelectorAll('[data-group]').forEach((g) => g.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    if (b.dataset.v) pick = b.dataset.v; if (b.dataset.c) colour = b.dataset.c;
+    play();
+  }));
+  document.getElementById('play').onclick = play;
+  screen.onclick = play;
+  const s = document.getElementById('slow');
+  s.onclick = () => { slow = slow === 1 ? 4 : 1; s.setAttribute('aria-pressed', slow > 1); play(); };
+  const m = document.getElementById('mode');
+  m.onclick = () => { const d = document.documentElement.dataset.mode !== 'dark'; document.documentElement.dataset.mode = d ? 'dark' : 'light'; m.setAttribute('aria-pressed', d); play(); };
+  addEventListener('load', play);
+</script>
+</body>
+</html>

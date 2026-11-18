@@ -83,44 +83,38 @@ effect:
   that by being the very first thing a visitor sees — it sets the design-eng
   claim before a word of copy does.
 - **The preloader, on the home page, on first paint** (`Preloader.astro`,
-  on request, after huyml.co, chosen 2026-11-16 from the mocks in
-  `experiments/preloader-moss/`: take 2, page "B · soft focus", Moss
-  "2 · peeks up"). First the whole screen is a flat curtain in the ink
-  colour (no shadow, a hard edge; re-inked light in dark mode); then it
-  draws back to open a strip on the left (two steps, on request), over
-  the page's ground with only the hero sentence on it, centred. Moss,
-  from her clip of him pushing (`public/images/moss/moss-push.webp`, cut
-  by `scripts/moss-push-sprite.py`), strolls in with his cup and raises
-  his paw just as he reaches the curtain: while his paw is up the
-  curtain's edge is on it (paw positions measured per frame). He pushes
-  it across as the page loads (the progress; no number), with one pause
-  halfway; it leaves the screen just as his paw comes down, and he
-  strolls out, smiling, at his walking pace. Follow the clip's cues and
-  keep it calm, not rushed (on request). Then the sentence glides from
-  the middle to its place, the layer goes, the rest of the hero comes
-  into focus one piece after another (blur to sharp; the portrait
-  first, starting while the sentence is still gliding so the page is
-  never blank, on an even ease so nothing pops; 2026-11-17), and Moss peeks up
-  from behind his books, his card last. It only goes as far as the page
-  has loaded (images, and the hero sprite via `hero-scrub:ready`, capped
-  at 4s). The hero is all in by ~6.5s, as huyml.co's (2026-11-16: it
-  was ~13.5s, too slow, on request): the push runs at his pace, and the
-  sentence glides as the curtain leaves, while he strolls out over the
-  page; the walking loader before it ran ~4s. Home page only, every time
-  it's opened or refreshed (on request); not when arriving from another
-  page of the site, nor on back/forward. A deliberate key, click, tap or
-  real scroll skips it (not in its first 1.2s, never a shortcut such as
-  Cmd+R): the layer fades and the hero shows. A CSS failsafe hides it at
-  20s; it removes itself from the DOM. It always hands over to the hero
-  (on request, 2026-11-17): no scroll restoration on a refresh, and the
-  page is held at the top under the curtain (`data-preloader-hold`,
-  released when it ends or at 20s). Under reduced motion: no Moss, no
-  glide, the curtain fades. Values under PRELOADER in `tokens.css`. The
-  terracotta "dot that went for a walk" loader it replaced is in git
-  history; the walking loader (`Loader.astro`, `data/loader.ts`,
-  `scripts/walk-sprite.py`, LOADER tokens) is parked, not deleted.
-  Its reason: the one screen with nothing else to show; it puts her
-  sentence first, alone, and hands the visitor to the page, and to Moss.
+  "Pixel blinds", on request, 2026-11-18, "F · Pixel blinds" of
+  `experiments/curtain-pixel/`, after mariavasilyeva.com's cover; rounds
+  in `experiments/curtain-bars/` and `curtain-shapes/` led there). The
+  whole screen is flat ink over the hero (no shadow, a hard edge;
+  re-inked light in dark mode; black-in-both-modes and oxblood were mocked too, no pick made, so it stays ink). After
+  a beat the ink is cut into horizontal slats that pull back to the left
+  in whole-pixel steps, top first, each trailing one loose pixel; one
+  pixel is the last to go, on the word "pixel" in the hero sentence,
+  holds a moment and pops. Then the hero is simply there: no glide, no
+  focus-in, no peek. It moves only as far as the page has loaded
+  (images, and the hero sprite via `hero-scrub:ready`): while loading,
+  the slats clear in proportion and the last pixel waits; at 4s it lets
+  go regardless and the page shows as it is (asked about, 2026-11-18;
+  never a frozen black screen). ~2s on a loaded page. Home page only,
+  every time it's opened or refreshed (on request); not when arriving
+  from another page of the site, nor on back/forward. A deliberate key,
+  click, tap or real scroll skips it (not in its first 1.2s, never a
+  shortcut such as Cmd+R): the layer fades and the hero shows. A CSS
+  failsafe hides it at 20s; it removes itself from the DOM. It always
+  hands over to the hero (on request, 2026-11-17): no scroll restoration
+  on a refresh, and the page is held at the top under the curtain
+  (`data-preloader-hold`, released when it ends or at 20s). Under
+  reduced motion: no slats, the ink fades. Values under PRELOADER in
+  `tokens.css`. Moss pushing the curtain (2026-11-16 to 11-18, after
+  huyml.co, `experiments/preloader-moss/`) is parked in
+  `PreloaderMoss.astro` with his tokens and `moss-push.webp`, on request
+  ("stop the pushing of Moss for now"). The terracotta "dot that went
+  for a walk" loader is in git history; the walking loader
+  (`Loader.astro`, `data/loader.ts`, `scripts/walk-sprite.py`, LOADER
+  tokens) is parked, not deleted.
+  Its reason: the one screen with nothing else to show; it opens on her
+  sentence and says its last word, "pixel", once, without a word.
 - **A consistent hover system on interactive surfaces**, not one bespoke
   effect per component. Work tiles, links, and cards get *the same* motion
   vocabulary reused everywhere: default state is quiet; hover reveals
@@ -228,7 +222,9 @@ effect:
   in `ask.ts` (no model, nothing sent or kept), and when nothing
   matches he says so (`pixelUnknown`) rather than guess.
 
-- **`PixelBreak`, approved on request.** The word "pixel" at the end of
+- **`PixelBreak`, approved on request, now parked** (2026-11-17, on
+  request: the hero's "pixel" is plain text again; the component, its
+  tokens and its sand sound stay, no page mounts it). The word "pixel" at the end of
   the hero sentence breaks into ~3px round dots when the pointer crosses
   it and settles back into type. While the pointer stays on the word
   the dots stay broken and are repelled by it like a magnet; they go
@@ -331,9 +327,17 @@ effect:
   in `data/playDepth.ts`, values under PLAY DEPTH in `tokens.css`.
   Its reason: the work seen whole as a wall you walk along, at your
   own pace.
+  Each picture on it breathes (on request, 2026-11-18, option A
+  "Breathe" of `experiments/playground-motion/`, after
+  mariavasilyeva.com, whose tiles are short loops): it slowly pushes in
+  and drifts inside its frame, then eases back, 8–12s, each on its own
+  phase; not the cut-out portrait; still under reduced motion. An
+  approved exception to the no-idle-animation rule, this wall only.
+  Wet paint, scroll pull, window light and hover-only were mocked and
+  passed over. Values under PLAY DEPTH in `tokens.css`.
 
-Outside those nine moments — hero shader, first-paint loader, the reused
-hover system, `CursorTrail`, `CursorLamp`, Pixel, PixelBreak, BeyondWork, the playground wall — the old rule still applies at full strength:
+Outside those eight moments — hero shader, first-paint loader, the reused
+hover system, `CursorTrail`, `CursorLamp`, Pixel, BeyondWork, the playground wall — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,
@@ -591,10 +595,18 @@ walked back. Concretely, in the current implementation:
   string per /work archive row on hover or focus (the one hover sound),
   soft key clicks as Moss types (panel and field), a click as the
   Privacy before/after line crosses a pin under the visitor's hand (its
-  sway is silent), a sand scatter and settle on "pixel", a metal detent
+  sway is silent), a sand scatter and settle on "pixel" (silent since PixelBreak was parked, 2026-11-17), a metal detent
   as the Beyond ring is thrown or turned (not on its drift), and counter
   ticks on a case's numbers (first count only). Footsteps on the
-  playground wall were mocked and left out, on request. Nothing else has
+  playground wall were mocked and left out, on request. A seventh, on
+  request (2026-11-17, "A · Detent" of `experiments/sound-scroll/`): on
+  the playground wall, a soft wooden click as each piece's centre crosses
+  the middle of the screen while the page scrolls, like a date-picker
+  wheel (`playWallTick`); silent when still and when panning sideways.
+  Rounds of other wall sounds (knock, wind bell, koto, per-painting
+  scenes, techno music, single notes) were mocked in `experiments/sound-*`
+  and turned down; a curtain sound for the preloader was mocked too but
+  can't be heard (sound is always off on a first visit or reload). Nothing else has
   sound: more would be overdoing it, her words. Its reason: a felt
   response, only for a visitor who asks for it. Don't add sounds without
   asking; the About page's record player plays on its own press, apart
@@ -761,7 +773,9 @@ walked back. Concretely, in the current implementation:
   on the left (her photo as given, the porch painting as a stamp
   inside its bottom-right corner, on request 2026-11-14, no
   post-it; camera looks and a cutout were tried and turned down),
-  beside "Hi, I’m Anupama.", her bio in her words and the tabs. Since
+  beside "Hi, I’m Anupama.", her bio in her words, LinkedIn and email
+  icons (the email icon copies her address, "Copy email" on hover; no
+  separate copy icon, on request 2026-11-17) and the tabs. Since
   2026-11-14, on request, the portrait stretches to that column's
   height so both start and end on one line (it used to be 4:5 and
   sticky), and the tab list is 200px tall (`--about-reel-h`); a "Read
