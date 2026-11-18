@@ -124,8 +124,15 @@ export const pixelTree: Record<string, PixelNode> = {
   locked: {
     q: 'Is anything locked?',
     say: [
-      'One. <strong>Rebuilding IAM at Okta</strong> is behind a password. I don’t have it. Tiny creature, limited access.',
-      'Send her a note saying who you are and she’ll share it.',
+      // Follows site.lock (data/site.ts): one passcode opens everything.
+      site.lock.cases === 'all'
+        ? 'All the case studies are behind one passcode. I don’t have it. Tiny creature, limited access.'
+        : site.lock.cases === 'marked'
+          ? 'One. <strong>Rebuilding IAM at Okta</strong> is behind a passcode. I don’t have it. Tiny creature, limited access.'
+          : 'Nothing right now. Every case study is open. Go and look before someone changes their mind.',
+      site.lock.cases === 'none'
+        ? 'Want the story behind one? She’ll walk you through it.'
+        : 'Send her a note saying who you are and she’ll share it.',
     ],
     exits: [email, linkedin],
     next: ['bye'],

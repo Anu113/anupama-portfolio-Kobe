@@ -22,21 +22,25 @@
    server: the gated sections are already in the page's HTML, only hidden
    with the `hidden` attribute until the password matches client-side. It
    deters a casual click, the same as both references; it does not protect
-   anything a determined visitor couldn't read from view-source. */
+   anything a determined visitor couldn't read from view-source.
+
+   It takes the site's one passcode (site.lock in data/site.ts, via
+   scripts/unlock.ts, on request 2026-11-18): the right one here unlocks
+   the whole site and every locked case for a while, and a visitor who
+   typed it anywhere else sees the remainder already open. */
 import { gmailCompose } from '../data/site';
 import LockIcon from './LockIcon.astro';
 
 interface Props {
   slug: string;
   caseTitle: string;
-  password: string;
   /** id of the hidden container this panel unlocks. */
   targetId: string;
 }
-const { slug, caseTitle, password, targetId } = Astro.props;
+const { slug, caseTitle, targetId } = Astro.props;
 const mailHref = gmailCompose(`Password for "${caseTitle}"`);
 ---
-<div class="gate" data-gate data-slug={slug} data-password={password} data-target={targetId}>
+<div class="gate" data-case-gate data-slug={slug} data-target={targetId}>
   <p class="u-label gate__eyebrow">
     <LockIcon size="0.8em" />
     Locked
@@ -147,13 +151,11 @@ const mailHref = gmailCompose(`Password for "${caseTitle}"`);
 </style>
 
 <script>
-  // Compares to the plaintext `data-password` on the panel itself — see the
-  // security note in cases.ts and this file's header comment. Remembers a
-  // correct unlock in sessionStorage so a reload or an in-page anchor jump
-  // during the same visit doesn't re-hide content already earned.
-  document.querySelectorAll<HTMLElement>('[data-gate]').forEach((gate) => {
-    const slug = gate.dataset.slug!;
-    const password = gate.dataset.password ?? '';
+  import { passcodeMatches, unlock, onUnlocked } from '../scripts/unlock';
+
+  // The site's one passcode, compared and remembered by scripts/unlock.ts
+  // — see the security note in cases.ts and this file's header comment.
+  document.querySelectorAll<HTMLElement>('[data-case-gate]').forEach((gate) => {
     const target = document.getElementById(gate.dataset.target!);
     const form = gate.querySelector<HTMLFormElement>('[data-gate-form]');
     const input = gate.querySelector<HTMLInputElement>('.gate__input');
@@ -161,24 +163,17 @@ const mailHref = gmailCompose(`Password for "${caseTitle}"`);
     const peek = gate.querySelector<HTMLButtonElement>('[data-gate-peek]');
     if (!target || !form || !input) return;
 
-    const storeKey = `case-unlocked:${slug}`;
-
     const reveal = () => {
       target.hidden = false;
       form.replaceWith(
         Object.assign(document.createElement('p'), {
           className: 'gate__unlocked',
-          textContent: 'Unlocked for this visit — the rest is below.',
+          textContent: 'Unlocked — the rest is below.',
         })
       );
     };
 
-    try {
-      if (sessionStorage.getItem(storeKey) === '1') reveal();
-    } catch {
-      /* Storage can be unavailable (private browsing, some embeds) — the
-         form still works, it just won't remember across a reload. */
-    }
+    onUnlocked(reveal);
 
     peek?.addEventListener('click', () => {
       const showing = peek.getAttribute('aria-pressed') === 'true';
@@ -195,16 +190,14 @@ const mailHref = gmailCompose(`Password for "${caseTitle}"`);
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const ok = input.value.trim().toLowerCase() === password.trim().toLowerCase();
-      if (!ok) {
+      if (!passcodeMatches(input.value)) {
         err?.removeAttribute('hidden');
         input.setAttribute('aria-invalid', 'true');
         return;
       }
       err?.setAttribute('hidden', '');
       input.removeAttribute('aria-invalid');
-      try { sessionStorage.setItem(storeKey, '1'); } catch { /* see above */ }
-      reveal();
+      unlock();
     });
   });
 </script>

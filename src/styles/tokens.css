@@ -1285,6 +1285,35 @@
    Contrast: as LOCKED GATE — --fg-dim on the card 4.5 : 1 light,
    5.9 : 1 dark.
    ============================================================ */
+/* ============================================================
+   LOCK FROST (LockFrost.astro, SiteGate.astro): a locked case says so
+   before the click (on request, 2026-11-18, "A · Frost" of
+   experiments/password-lock/): hovered or focused, its picture frosts
+   over and a small lock with "Password protected" settles into place.
+   The whole-site gate ("C · Frosted home") uses the same frost over the
+   home page. The veil is the page's own ground, so it follows dark mode.
+   The lock is small on purpose: at 52px it read "too huge to be cute".
+   Contrast: the pill's ink on its 85% ground clears 4.5 : 1 in both
+   modes, whatever is blurred behind it.
+   ============================================================ */
+:root {
+  --frost-blur: 14px;
+  --frost-veil: color-mix(in srgb, var(--bg) 50%, transparent);
+  --frost-grain: 0.14;              /* the frost's texture; a blur alone reads as out of focus */
+  --frost-lock: 24px;               /* the lock on a card */
+  --frost-lock-site: 30px;          /* the lock on the site gate's card */
+  --frost-pill: color-mix(in srgb, var(--bg) 85%, transparent);
+  --frost-settle: 8px;              /* the lock and pill rise this far into place */
+  --dur-frost: 560ms;               /* the hover system's reveal length */
+  --site-gate-blur: 18px;
+  --site-gate-veil: color-mix(in srgb, var(--bg) 45%, transparent);
+  --site-gate-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 24px 60px -20px rgb(0 0 0 / 0.25);
+  --site-gate-pad: 2.5rem 2.75rem 2rem;
+  --site-gate-w: 26rem;
+  --dur-site-gate-clear: 900ms;     /* the frost clearing off the page */
+  --z-site-gate: 10002;             /* above the preloader and the cursor trail */
+}
+
 :root {
   --case-card: var(--locked-card);
   --radius-case-card: var(--radius-locked-card);

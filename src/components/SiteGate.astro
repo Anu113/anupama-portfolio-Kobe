@@ -1,0 +1,242 @@
+---
+/* SiteGate.astro — the whole site behind the passcode (on request,
+   2026-11-18, "C · Frosted home" of experiments/password-lock/). Mounted
+   by Base.astro only while `site.lock.site` is on (data/site.ts; off by
+   default).
+
+   What it shows: the page itself, frosted, with one small card on top —
+   the same chunky lock as a locked case's frost, "Password *protected*",
+   who she is in one line, the passcode field and "No passcode? Email me".
+   The right passcode clears the frost off the page and the card fades;
+   the page is simply there. It's the site's one passcode
+   (scripts/unlock.ts): it also opens every locked case, and a visitor
+   who typed it in the last `rememberHours` never sees this.
+
+   Its reason: the page behind the glass says whose site this is and what
+   kind of work is in it before the passcode, and the same frost as the
+   locked cards makes the two read as one system.
+
+   Decided before paint in Base.astro (`data-site-lock` on <html>), so the
+   page never flashes unfrosted; the home page's preloader stands down
+   while it's on. While locked: the page can't scroll and everything but
+   this card is inert, so focus stays in it; it's a modal dialog to
+   screen readers. Under reduced motion the frost goes at once.
+
+   A soft gate: the page under the frost ships in the HTML. See the `lock`
+   comment in data/site.ts. Values under LOCK FROST in tokens.css. */
+import { site, gmailCompose } from '../data/site';
+const mailHref = gmailCompose('Passcode for your portfolio');
+---
+<div class="site-gate" role="dialog" aria-modal="true" aria-labelledby="site-gate-h" data-site-gate>
+  <div class="site-gate__card">
+    <svg class="site-gate__lock" viewBox="0 0 66 74" aria-hidden="true">
+      <path class="site-gate__shackle" d="M19 34V22a14 14 0 0 1 28 0v12" />
+      <rect x="7" y="31" width="52" height="40" rx="12" fill="currentColor" />
+      <circle cx="33" cy="47" r="5" class="site-gate__hole" />
+      <rect x="31" y="49" width="4" height="10" rx="2" class="site-gate__hole" />
+    </svg>
+    <h2 class="site-gate__head" id="site-gate-h">Password <em>protected</em></h2>
+    <p class="site-gate__lede">{site.name}, Staff Product Designer. The passcode came with the link.</p>
+
+    <form class="site-gate__form" data-site-gate-form autocomplete="off">
+      <label class="u-label-mono site-gate__label" for="site-gate-pw">Passcode</label>
+      <div class="site-gate__field">
+        <input
+          class="site-gate__input"
+          id="site-gate-pw"
+          name="passcode"
+          type="password"
+          autocomplete="off"
+          aria-describedby="site-gate-err"
+        />
+        <button class="site-gate__go" type="submit" aria-label="Unlock">
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
+      <p class="site-gate__err" id="site-gate-err" role="alert" data-site-gate-err hidden>
+        That's not it. Try again.
+      </p>
+    </form>
+    <p class="site-gate__ask">
+      No passcode? <a href={mailHref} target="_blank" rel="noopener">Email me<span class="u-sr-only"> (opens Gmail in a new tab)</span></a> for one.
+    </p>
+  </div>
+</div>
+
+<style>
+  .site-gate {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-site-gate);
+    display: none;
+    place-items: center;
+    padding: var(--gutter);
+    -webkit-backdrop-filter: blur(var(--site-gate-blur)) saturate(1.1);
+    backdrop-filter: blur(var(--site-gate-blur)) saturate(1.1);
+    background: var(--site-gate-veil);
+    transition:
+      backdrop-filter var(--dur-site-gate-clear) var(--ease-out),
+      -webkit-backdrop-filter var(--dur-site-gate-clear) var(--ease-out),
+      background var(--dur-site-gate-clear) var(--ease-out);
+  }
+  :global(:root[data-site-lock]) .site-gate { display: grid; }
+  :global(:root[data-site-lock]) { overflow: hidden; }
+
+  /* the frost's grain, as LockFrost's */
+  .site-gate::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: var(--frost-grain);
+    mix-blend-mode: overlay;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    transition: opacity var(--dur-site-gate-clear) var(--ease-out);
+  }
+
+  .site-gate__card {
+    position: relative;
+    width: min(var(--site-gate-w), 100%);
+    padding: var(--site-gate-pad);
+    background: var(--bg);
+    color: var(--fg);
+    box-shadow: var(--site-gate-shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: opacity var(--dur-hover) var(--ease-out), translate var(--dur-frost) var(--ease-out);
+  }
+  .site-gate__lock { width: var(--frost-lock-site); height: auto; margin-bottom: 1.25rem; overflow: visible; }
+  .site-gate__shackle { fill: none; stroke: currentColor; stroke-width: 5; stroke-linecap: round; }
+  .site-gate__hole { fill: var(--bg); }
+  .site-gate__head {
+    font-family: var(--font-serif);
+    font-weight: var(--weight-serif);
+    font-size: var(--step-heading);
+    line-height: 1.1;
+    letter-spacing: var(--tracking-serif);
+    margin: 0 0 0.6rem;
+  }
+  .site-gate__head em { font-style: italic; }
+  .site-gate__lede {
+    margin: 0 0 1.75rem;
+    font-size: var(--step-copy);
+    line-height: var(--leading-copy);
+    color: var(--fg-dim);
+    text-wrap: balance;
+  }
+
+  .site-gate__form { width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .site-gate__label { margin: 0 0 0.25rem; }
+  /* One underline, no box, as the locked case page's field. */
+  .site-gate__field {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--fg);
+  }
+  .site-gate__field:focus-within { box-shadow: 0 1px 0 var(--focus); }
+  .site-gate__input {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    font-size: var(--step-body);
+    color: var(--fg);
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0.6rem 0 0.6rem 2.25rem;
+    text-align: center;
+  }
+  .site-gate__input:focus-visible { outline: none; }
+  .site-gate__go {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--fg-dim);
+    font-family: var(--font-mono);
+    font-size: var(--step-body);
+    cursor: pointer;
+    transition: color var(--dur-micro) var(--ease-out);
+  }
+  .site-gate__go:hover { color: var(--fg); }
+  .site-gate__go:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
+  .site-gate__err { margin: 0.6rem 0 0; font-size: var(--step-copy); color: var(--accent-text); }
+  .site-gate__ask { margin: 1.5rem 0 0; font-size: var(--step-copy); color: var(--fg-dim); }
+
+  /* Unlocked: the frost clears off the page, the card fades. */
+  .site-gate.is-clearing {
+    -webkit-backdrop-filter: blur(0) saturate(1);
+    backdrop-filter: blur(0) saturate(1);
+    background: transparent;
+    pointer-events: none;
+  }
+  .site-gate.is-clearing::before { opacity: 0; }
+  .site-gate.is-clearing .site-gate__card { opacity: 0; translate: 0 var(--frost-settle); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-gate, .site-gate::before, .site-gate__card { transition: none; }
+  }
+</style>
+
+<script>
+  import { passcodeMatches, unlock, isUnlocked } from '../scripts/unlock';
+  import { cssMs } from '../scripts/css-time';
+
+  const html = document.documentElement;
+  const gate = document.querySelector<HTMLElement>('[data-site-gate]');
+  const form = gate?.querySelector<HTMLFormElement>('[data-site-gate-form]');
+  const input = gate?.querySelector<HTMLInputElement>('.site-gate__input');
+  const err = gate?.querySelector<HTMLElement>('[data-site-gate-err]');
+
+  if (gate && form && input) {
+    // Everything but the gate is out of reach while it's up.
+    const others = [...document.body.children].filter(
+      (el): el is HTMLElement => el instanceof HTMLElement && el !== gate && el.tagName !== 'SCRIPT',
+    );
+    const hold = (on: boolean) => others.forEach((el) => { el.inert = on; });
+
+    if ('siteLock' in html.dataset && !isUnlocked()) {
+      hold(true);
+      input.focus({ preventScroll: true });
+    } else {
+      delete html.dataset.siteLock;
+      gate.remove();
+    }
+
+    addEventListener('site:unlocked', () => {
+      if (!gate.isConnected) return;
+      hold(false);
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      gate.classList.add('is-clearing');
+      setTimeout(() => {
+        delete html.dataset.siteLock;
+        gate.remove();
+        const main = document.getElementById('main');
+        if (main) {
+          main.tabIndex = -1;
+          main.focus({ preventScroll: true });
+          main.addEventListener('blur', () => main.removeAttribute('tabindex'), { once: true });
+        }
+      }, reduce ? 0 : cssMs('--dur-site-gate-clear', 900));
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!passcodeMatches(input.value)) {
+        err?.removeAttribute('hidden');
+        input.setAttribute('aria-invalid', 'true');
+        input.select();
+        return;
+      }
+      err?.setAttribute('hidden', '');
+      input.removeAttribute('aria-invalid');
+      unlock();
+    });
+  }
+</script>

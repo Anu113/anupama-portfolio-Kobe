@@ -1,0 +1,92 @@
+---
+/* LockFrost.astro — the frost a locked case's picture wears on hover
+   (on request, 2026-11-18, "A · Frost" of experiments/password-lock/).
+   Drop it inside the picture's box (positioned); the card around it
+   carries `data-locked`. Hovered, or focused from the keyboard, the
+   picture frosts over and a small lock with "Password protected" rises
+   8px into place, on the hover system's curve. The card still clicks
+   through, to the case's gate (LockedGate.astro), where the visitor types
+   the passcode or emails her.
+
+   Its reason: a locked case says so before the click, not after it.
+   At rest the card keeps its small LockIcon by the title, so nobody has
+   to hover to find out; on touch, with no hover, the frost shows at rest.
+   Once the visitor has the passcode (`data-unlocked` on <html>, from
+   scripts/unlock.ts), the frost is gone everywhere.
+
+   Purely visual and aria-hidden: the card's link says "password
+   protected" to screen readers itself. Under reduced motion it appears
+   without the rise. Values under LOCK FROST in tokens.css. */
+---
+<span class="lock-frost" aria-hidden="true">
+  <svg class="lock-frost__lock" viewBox="0 0 66 74">
+    <path class="lock-frost__shackle" d="M19 34V22a14 14 0 0 1 28 0v12" />
+    <rect class="lock-frost__body" x="7" y="31" width="52" height="40" rx="12" />
+    <circle class="lock-frost__hole" cx="33" cy="47" r="5" />
+    <rect class="lock-frost__hole" x="31" y="49" width="4" height="10" rx="2" />
+  </svg>
+  <span class="lock-frost__pill">Password protected</span>
+</span>
+
+<style>
+  .lock-frost {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.6rem;
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(var(--frost-blur)) saturate(1.15);
+    backdrop-filter: blur(var(--frost-blur)) saturate(1.15);
+    background: var(--frost-veil);
+    opacity: 0;
+    transition: opacity var(--dur-frost) var(--ease-out);
+  }
+  /* grain: one tiny noise tile, overlaid */
+  .lock-frost::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: var(--frost-grain);
+    mix-blend-mode: overlay;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .lock-frost > * {
+    position: relative;
+    translate: 0 var(--frost-settle);
+    transition: translate var(--dur-frost) var(--ease-out);
+  }
+  .lock-frost__lock { width: var(--frost-lock); height: auto; overflow: visible; }
+  .lock-frost__shackle { fill: none; stroke: var(--fg); stroke-width: 5; stroke-linecap: round; }
+  .lock-frost__body { fill: var(--fg); }
+  .lock-frost__hole { fill: var(--bg); }
+  .lock-frost__pill {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono);
+    font-size: var(--step-fine);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.4;
+    color: var(--fg);
+    background: var(--frost-pill);
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+  }
+
+  :global([data-locked]:is(:hover, :focus-visible, :focus-within)) .lock-frost { opacity: 1; }
+  :global([data-locked]:is(:hover, :focus-visible, :focus-within)) .lock-frost > * { translate: none; }
+  /* Touch: no hover, so the frost is there at rest. */
+  @media (hover: none) {
+    .lock-frost { opacity: 1; }
+    .lock-frost > * { translate: none; }
+  }
+  /* Already unlocked: nothing to say. */
+  :global(:root[data-unlocked]) .lock-frost { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lock-frost > * { translate: none; transition: none; }
+  }
+</style>

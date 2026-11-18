@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Locked case — the gate</title>
+<!--
+  Where a locked card leads: LockedGate.astro as it is today (centred
+  column, Role / Scope / Outcome as soft cards, underline passcode
+  field, "Email me"). Unchanged except the lock in the eyebrow is the
+  same chunky lock the hover shows, so the click lands on the thing it
+  promised. Passcode for the mock: demo.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#fcfcfc;--fg:#262626;--dim:#707070;--card:color-mix(in srgb,var(--fg) 3%,var(--bg));
+  --serif:'Crimson Pro',Georgia,serif;--sans:'Manrope',system-ui,sans-serif;--mono:'Azeret Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.16,1,.3,1)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--fg);font:600 14px/1.7 var(--sans);letter-spacing:.03em}
+.mono{font:400 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.nav{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(20px,4vw,40px)}
+.nav a{color:inherit;text-decoration:none}
+.nav__links{display:flex;gap:24px;font:400 14px var(--mono);text-transform:uppercase;color:var(--dim)}
+.nav__links .on{color:var(--fg)}
+.locked{padding:clamp(48px,9vw,96px) clamp(20px,4vw,40px) 120px;animation:rise 480ms var(--ease) both}
+@keyframes rise{from{opacity:0;translate:0 10px}}
+.col{max-width:48rem;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}
+.lockmark{width:34px;margin-bottom:18px}
+.lockmark .shackle{fill:none;stroke:var(--fg);stroke-width:5;stroke-linecap:round}
+.eyebrow{margin:0 0 1rem}
+.case{font-size:13px;color:var(--dim);margin:0 0 .4rem}
+h1{font:300 clamp(1.875rem,1.643rem + .952vw,2.5rem)/1.1 var(--serif);letter-spacing:-.03em;margin:0 0 .9rem;text-wrap:balance}
+h1 em{font-style:italic}
+.body{font-size:13px;color:var(--dim);max-width:34rem;margin:0 0 2.25rem;text-wrap:balance}
+dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;width:100%;margin:0 0 2.5rem;text-align:left}
+dl>div{background:var(--card);border-radius:28px;padding:1.4rem 1.5rem 1.5rem}
+dt{margin-bottom:.45rem}
+dd{margin:0;font-size:13px;line-height:1.55}
+@media (max-width:700px){dl{grid-template-columns:1fr}}
+form{width:100%;max-width:22rem;display:flex;flex-direction:column;align-items:center}
+label{margin-bottom:.25rem}
+.wrap{width:100%;border-bottom:1px solid var(--fg)}
+.wrap:focus-within{box-shadow:0 1px 0 var(--fg)}
+input{width:100%;border:0;background:none;color:var(--fg);font:400 16px var(--mono);letter-spacing:.2em;padding:.6rem 0;text-align:center;outline:none}
+.err{color:var(--fg);font-size:12px;margin-top:.5rem}
+.btn{margin-top:1.25rem;font:400 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:var(--fg);color:var(--bg);border:0;border-radius:99px;padding:.85rem 1.6rem;cursor:pointer}
+.reach{font-size:13px;color:var(--dim);margin-top:1.5rem}
+.reach a,.back{color:var(--fg);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--fg) 45%,transparent);text-underline-offset:3px}
+.back{margin-top:3rem;text-decoration:none}
+.open{margin-top:1rem;font-size:13px}
+</style>
+</head>
+<body>
+<header class="nav"><a href="index.html">Anupama Mishra</a><nav class="nav__links"><a class="on" href="index.html">Work</a><span>About</span><span>Play</span></nav></header>
+<main class="locked"><div class="col">
+  <svg class="lockmark" viewBox="0 0 66 74" aria-hidden="true"><path class="shackle" d="M19 34V22a14 14 0 0 1 28 0v12"/><rect x="7" y="31" width="52" height="40" rx="12" fill="var(--fg)"/><circle cx="33" cy="47" r="5" fill="var(--bg)"/><rect x="31" y="49" width="4" height="10" rx="2" fill="var(--bg)"/></svg>
+  <p class="mono eyebrow" id="eyebrow">Okta · Under NDA</p>
+  <p class="case" id="caseTitle"></p>
+  <h1>The interesting parts are <em>confidential</em>.</h1>
+  <p class="body">The detailed process is protected, but here is the public version. Have the passcode? Step in for the full case study.</p>
+  <dl id="facts"></dl>
+  <form id="f" autocomplete="off">
+    <label class="mono" for="pw">Passcode</label>
+    <div class="wrap"><input id="pw" type="password" aria-describedby="err"></div>
+    <p class="err" id="err" role="alert" hidden>That’s not it. Try again.</p>
+    <button class="btn" type="submit">Unlock</button>
+    <p class="open mono" id="ok" hidden>Unlocked — the case study opens here.</p>
+  </form>
+  <p class="reach">No passcode? <a href="#" onclick="return false">Email me</a> and I’ll walk you through it.</p>
+  <a class="mono back" href="index.html"><span aria-hidden="true">◂</span> All work</a>
+</div></main>
+<script>
+const data = {
+  okta:{co:'Okta',t:'Rebuilding IAM for enterprise admins',role:'Staff Product Designer, IAM + Developer Tools',scope:'Entitlements, role management, OIN publishing and developer onboarding',out:'Shipped to an admin console used by about 20,000 companies and an 8,000-app integration network'},
+  privacy:{co:'PayPal',t:'Privacy settings people can read',role:'Owned the design · Research through delivery',scope:'Data & Privacy settings',out:'Launched to 80M+ people'},
+  chase:{co:'Walmart Labs',t:'Chase Pay inside Walmart Pay',role:'Product designer, Walmart Pay',scope:'Chase Pay inside Walmart Pay',out:'Validated with real customers in-store'},
+  debit:{co:'PayPal',t:'A debit card people finish signing up for',role:'Product designer · End-to-end flows',scope:'Card enrollment and cash back',out:'Rebuilt inside the PayPal app'},
+};
+const k = new URLSearchParams(location.search).get('case') || 'okta';
+const d = data[k] || {co:'PayPal',t:'Case study',role:'Product designer',scope:'—',out:'—'};
+document.getElementById('eyebrow').textContent = d.co + ' · Password protected';
+document.getElementById('caseTitle').textContent = d.t;
+document.getElementById('facts').innerHTML = [['Role',d.role],['Scope',d.scope],['Outcome',d.out]].map(([a,b])=>`<div><dt class="mono">${a}</dt><dd>${b}</dd></div>`).join('');
+document.getElementById('f').addEventListener('submit', e => {
+  e.preventDefault();
+  const ok = document.getElementById('pw').value === 'demo';
+  document.getElementById('err').hidden = ok;
+  document.getElementById('ok').hidden = !ok;
+  document.getElementById('pw').setAttribute('aria-invalid', !ok);
+});
+</script>
+</body>
+</html>

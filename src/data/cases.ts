@@ -22,6 +22,8 @@
 // real figure or words before an interview leans on it. Numbers that came
 // from her decks (ID proofing, Privacy, the Chase study) are unchanged.
 
+import { site } from './site';
+
 export type CaseBlock =
   /** Body copy. One string per paragraph. */
   | { kind: 'prose'; text: string[] }
@@ -163,12 +165,18 @@ export interface CaseStudy {
       anything. That is the same limit both reference sites accept — a soft,
       deter-casual-browsing gate, not confidentiality. Genuinely NDA'd
       specifics belong in the "reach out, I'll walk you through it live"
-      pattern already in the closing band below, never in `password`.
+      pattern already in the closing band below.
+
+      There is no per-case password: every gate takes the site's one
+      passcode, `site.lock.passcode` in data/site.ts (on request,
+      2026-11-18). `site.lock.cases` decides which of these apply —
+      'none' (today), 'marked' or 'all'; read a case's lock through
+      lockFor() below, never `locked` directly.
 
       `scope` and `outcome` are the public version a fully locked case
       shows on LockedGate, beside `role`: one line each, short enough for
       a recruiter to read at a glance. Only facts cleared to be public. */
-  locked?: { password: string; preview: number; scope?: string; outcome?: string };
+  locked?: { preview: number; scope?: string; outcome?: string };
   /** The case's two sides, by key, with the short names the section
       openers show (see `answers` and the `sides` block). */
   thread?: Record<string, string>;
@@ -197,11 +205,9 @@ export const cases: CaseStudy[] = [
     /* Demonstration case for the FULL gate — see the `locked` field's own
        comment on CaseStudy above before adding this to a case with real
        specifics. preview: 0 renders LockedGate.astro in place of the whole
-       page; nothing about this case is visible until the password matches.
-       [Placeholder password — replace before sharing this link with
-       anyone.] */
+       page; nothing about this case is visible until the passcode matches
+       (the site's one passcode, site.lock in data/site.ts). */
     locked: {
-      password: 'okta2026',
       preview: 0,
       scope: 'Entitlements, role management, OIN publishing and developer onboarding',
       /* Okta's public scale, not a claim of her impact (chosen on request
@@ -3895,3 +3901,15 @@ export const cases: CaseStudy[] = [
 ];
 
 export const caseBySlug = (slug: string) => cases.find((c) => c.slug === slug);
+
+/* A case's lock, as the site applies it (`site.lock.cases`): 'none' —
+   nothing; 'marked' — the case's own `locked`; 'all' — its own, or a
+   full lock (preview 0). Every reader of a case's lock state (the case
+   page, the /work tiles, the home cards, the "Next" band, Moss) goes
+   through this. */
+export const lockFor = (c: CaseStudy | undefined): CaseStudy['locked'] => {
+  const mode = site.lock.cases;
+  if (!c || mode === 'none') return undefined;
+  return c.locked ?? (mode === 'all' ? { preview: 0 } : undefined);
+};
+export const isCaseLocked = (slug: string) => !!lockFor(caseBySlug(slug));

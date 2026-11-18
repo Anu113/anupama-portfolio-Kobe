@@ -20,8 +20,15 @@
    Laid out after carlthomasiv.com/work: the picture, then the company in
    mono, the title, one short line (the impact) and the label chips last.
    No role line and no paragraph, on request — every card is the same
-   four lines so the grid reads evenly. The page passes labelsFor(w). */
+   four lines so the grid reads evenly. The page passes labelsFor(w).
+
+   A locked case (`locked`, from lockFor() in cases.ts) keeps the small
+   lock by its title and, on hover or focus, frosts its picture with
+   "Password protected" (LockFrost.astro, on request 2026-11-18); it
+   still clicks through to the gate. Screen readers hear "password
+   protected" after the title. */
 import LockIcon from './LockIcon.astro';
+import LockFrost from './LockFrost.astro';
 import WorkStage from './WorkStage.astro';
 import { hueFor } from '../data/work';
 import type { Play, Desk } from '../data/workPlay';
@@ -43,14 +50,16 @@ const {
   stage,
 } = Astro.props;
 ---
-<a class="card" href={href}>
+<a class="card" href={href} data-locked={locked || undefined}>
   <div class={`card__media${stage ? ' card__media--stage' : ''}`} data-theme={theme} data-hue={hueFor(company) ?? ''} style={`--ratio: ${ratio};`}>
     {stage ? <WorkStage stage={stage} /> : <img src={image} alt={alt} loading="lazy" decoding="async" />}
+    {locked && <LockFrost />}
   </div>
   {company && <p class="card__co u-label-mono">{company}</p>}
   <h2 class="card__title">
     {title}
     {locked && <LockIcon class="card__lock" size="0.6em" />}
+    {locked && <span class="u-sr-only">, password protected</span>}
   </h2>
   {impact && <p class="card__impact">{impact}</p>}
   {labels.length > 0 && (
@@ -71,7 +80,10 @@ const {
     padding: clamp(1rem, 2.5vw, 1.75rem);
     margin-bottom: 1rem;
   }
-  .card__media--stage { position: relative; padding: 0; }
+  .card__media--stage { padding: 0; }
+  .card__media { position: relative; }
+  /* Locked: the frost is the hover, so the picture holds still under it. */
+  .card[data-locked]:is(:hover, :focus-visible) .card__media > img { transform: none; }
   .card__media > img {
     width: 100%; height: 100%;
     object-fit: contain; display: block;

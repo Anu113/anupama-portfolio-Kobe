@@ -5,6 +5,10 @@ import CursorTrail from '../components/CursorTrail.astro';
 import CursorLamp from '../components/CursorLamp.astro';
 import Footer from '../components/Footer.astro';
 import Preloader from '../components/Preloader.astro';
+import SiteGate from '../components/SiteGate.astro';
+import { site } from '../data/site';
+import { UNLOCK_KEY } from '../scripts/unlock';
+const siteLock = site.lock.site;
 /* `trail` is the cursor line (and, in dark mode, the cursor lamp — see
    CursorLamp.astro). It is on everywhere except pages that own the
    cursor themselves — /playground puts a grab hand on its pannable field,
@@ -48,6 +52,21 @@ const {
         const root = document.documentElement;
         root.dataset.modePref = pref;
         root.dataset.mode = pref === 'system' ? 'light' : pref;
+      })();
+    </script>
+    <!-- The passcode (site.lock in data/site.ts, scripts/unlock.ts),
+         decided before first paint: a visitor who typed it in the last
+         few hours gets `data-unlocked` (no frost on locked cards, no
+         gates); otherwise, while the whole-site lock is on,
+         `data-site-lock` puts the frosted gate up (SiteGate.astro) before
+         the page can flash unfrosted. -->
+    <script is:inline define:vars={{ siteLock, unlockKey: UNLOCK_KEY }}>
+      (() => {
+        const root = document.documentElement;
+        let until = 0;
+        try { until = Number(localStorage.getItem(unlockKey)); } catch (e) {}
+        if (until > Date.now()) root.dataset.unlocked = '';
+        else if (siteLock) root.dataset.siteLock = '';
       })();
     </script>
     <!-- Page arrival, after andreas.vision (chosen 2026-11-17 from
@@ -97,6 +116,7 @@ const {
     <main id="main"><slot />{trail && <CursorLamp />}</main>
     <Footer />
     {trail && <CursorTrail />}
+    {siteLock && <SiteGate />}
     <!-- Wheel scrolls ease to a stop instead of halting (smooth-scroll.ts, Lenis). -->
     <script>import '../scripts/smooth-scroll';</script>
     <style>

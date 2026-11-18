@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en" data-mode="light" data-opt="a" data-view="home" data-scope="all">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Locked cases — frost on hover</title>
+<!--
+  Mocks (2026-11-18, on request): a locked case says so BEFORE the click.
+  Hover or focus a locked card and its picture frosts over, a small lock
+  appears with "Password protected", and the card still clicks through
+  to the existing gate (gate.html here, LockedGate.astro on the site),
+  where the visitor types the passcode or emails her.
+  Five treatments, A–E, on the home cards and the /work tiles. At rest
+  every locked card already carries the small lock by its company name,
+  as the site does today, so nobody has to hover to find out.
+  Values inline on purpose; the pick moves into tokens.css.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#fcfcfc; --fg:#262626; --dim:#707070; --line:rgb(0 0 0/.08);
+  --bezel:#0e0e0f;
+  --pale-mix:#fff 55%; --deep-mix:#3d4f86 16%;
+  --glow:rgb(255 255 255/.55); --glow-corner:rgb(255 255 255/.6);
+  --ease:cubic-bezier(.16,1,.3,1); --dur:560ms; --dur-fast:200ms;
+  --serif:'Crimson Pro',Georgia,serif; --sans:'Manrope',system-ui,sans-serif; --mono:'Azeret Mono',ui-monospace,monospace;
+  /* FROST — the new values */
+  --frost-blur:14px;
+  --frost-veil:rgb(255 255 255/.5);
+  --frost-grain:.14;
+  --lock-size:24px;
+}
+[data-mode=dark]{--bg:#1b1a19;--fg:#ecebe8;--dim:#a09d98;--line:rgb(255 255 255/.1);
+  --frost-veil:rgb(27 26 25/.38); --frost-grain:.14}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--fg);font:600 12px/1.8 var(--sans);padding:0 clamp(24px,5vw,80px) 180px;transition:background .3s,color .3s}
+em{font-style:italic}
+.intro{max-width:780px;padding-top:64px}
+.intro h1{font:300 44px/1.1 var(--serif);letter-spacing:-.02em}
+.intro p{color:var(--dim);margin-top:16px;max-width:68ch}
+.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;padding:16px 0;margin-top:32px;border-bottom:1px solid var(--line)}
+.bar hr{width:1px;height:20px;border:0;background:var(--line);margin:0 6px}
+.pill{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--fg);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer}
+.pill:hover{border-color:var(--fg)}
+.pill[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.note{color:var(--dim);margin-top:12px;min-height:3.6em;max-width:80ch}
+.note b{color:var(--fg);font-weight:600}
+.sub{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin:40px 0 16px}
+
+/* ---------- the ground, as WorkGround.astro draws it ---------- */
+.stage{position:relative;overflow:hidden;display:grid;place-items:center;isolation:isolate;
+  --pale:color-mix(in oklab,var(--hue),var(--pale-mix));
+  --deep:color-mix(in oklab,var(--hue),var(--deep-mix));
+  background:
+    radial-gradient(42% 46% at 50% 46%,var(--glow),transparent 72%),
+    radial-gradient(60% 55% at 12% 0%,var(--glow-corner),transparent 70%),
+    linear-gradient(155deg,var(--pale) 0%,var(--hue) 50%,var(--deep) 100%)}
+.phone{position:relative;z-index:1;height:80%;aspect-ratio:786/1704;padding:1.6%;background:var(--bezel);border-radius:13% / 6%;
+  box-shadow:0 18px 40px -14px rgb(0 0 0/.35),0 1px 2px rgb(0 0 0/.2);transition:translate var(--dur) var(--ease)}
+.phone img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:11% / 5%}
+a.card:hover .phone,a.tile:hover .phone{translate:0 -6px}
+a[data-locked]:hover .phone,a[data-locked]:focus-visible .phone{translate:none}
+
+a.card,a.tile{color:inherit;text-decoration:none;display:block}
+a:focus-visible{outline:2px solid var(--fg);outline-offset:4px}
+.cards{display:grid;gap:24px}
+.card{display:grid!important;grid-template-columns:1fr 1.25fr;height:480px;border:1px solid var(--line)}
+.card .phone{height:400px}
+.card__body{padding:32px;display:flex;flex-direction:column;gap:8px}
+.num,.meta{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+.meta{display:inline-flex;gap:6px;align-items:center}
+.meta svg{width:11px;height:11px}
+.title{font-size:18px;line-height:1.3;margin-top:8px}
+.tag{color:var(--dim);max-width:44ch}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:40px 24px}
+.tile .stage{aspect-ratio:16/10}
+.tile .meta{margin-top:12px}
+.tile__t{font-size:14px;line-height:1.35}
+[data-view=home] #tilesWrap,[data-view=work] #cardsWrap{display:none}
+@media (max-width:800px){.card{grid-template-columns:1fr;height:auto}.card .stage{order:-1;aspect-ratio:4/3}}
+
+/* ---------- FROST: shared by every option ---------- */
+.frost{position:absolute;inset:0;z-index:3;display:grid;place-items:center;align-content:center;gap:10px;pointer-events:none;
+  -webkit-backdrop-filter:blur(var(--frost-blur)) saturate(1.15);backdrop-filter:blur(var(--frost-blur)) saturate(1.15);
+  background:var(--frost-veil);
+  opacity:0;transition:opacity var(--dur) var(--ease)}
+/* grain: frost has a texture, a blur alone reads as "out of focus" */
+.frost::before{content:"";position:absolute;inset:0;opacity:var(--frost-grain);mix-blend-mode:overlay;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.lock{position:relative;width:var(--lock-size);height:auto;color:var(--fg);overflow:visible}
+.lock .body{fill:var(--fg)}
+.lock .shackle{fill:none;stroke:var(--fg);stroke-width:5;stroke-linecap:round;transform-origin:33px 26px;transition:translate var(--dur) var(--ease)}
+.lock .hole{fill:var(--bg)}
+.lock .face{display:none}
+.plabel{position:relative;font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--fg);
+  background:color-mix(in srgb,var(--bg) 78%,transparent);padding:5px 12px;border-radius:99px;white-space:nowrap}
+.plabel span{color:var(--dim)}
+
+a[data-locked]:is(:hover,:focus-visible) .frost{opacity:1}
+.touch a[data-locked] .frost{opacity:1}
+
+/* A · Frost — the lock and label settle up into place */
+[data-opt=a] .frost>*{translate:0 8px;transition:translate var(--dur) var(--ease)}
+[data-opt=a] a[data-locked]:is(:hover,:focus-visible) .frost>*{translate:none}
+
+/* B · The shackle lifts — "locked, but you can go in" */
+[data-opt=b] .frost>*{scale:.92;transition:scale var(--dur) var(--ease)}
+[data-opt=b] a[data-locked]:is(:hover,:focus-visible) .frost>*{scale:1}
+[data-opt=b] a[data-locked]:is(:hover,:focus-visible) .lock .shackle{translate:0 -6px;transition-delay:180ms}
+.plabel em{font-style:normal;display:none}
+[data-opt=b] .plabel em{display:inline}
+
+/* C · A tag on a string, swinging in from the top edge */
+[data-opt=c] .frost{align-content:start;padding-top:0}
+[data-opt=c] .swing{position:relative;display:grid;justify-items:center;transform-origin:50% 0;rotate:-14deg;translate:0 -30%;transition:translate var(--dur) var(--ease)}
+[data-opt=c] .swing::before{content:"";width:1px;height:56px;background:var(--fg);opacity:.55}
+[data-opt=c] .swing .lock{margin-top:-4px}
+[data-opt=c] .swing .plabel{margin-top:10px}
+[data-opt=c] a[data-locked]:is(:hover,:focus-visible) .swing{translate:none;animation:swing 1.4s var(--ease) both}
+@keyframes swing{0%{rotate:-14deg}30%{rotate:9deg}55%{rotate:-5deg}75%{rotate:2deg}100%{rotate:0deg}}
+.swing{display:contents}
+[data-opt=c] .swing{display:grid}
+
+/* D · Breath on glass — the frost wipes up from the bottom */
+[data-opt=d] .frost{opacity:1;clip-path:inset(100% 0 0 0);transition:clip-path var(--dur) var(--ease)}
+[data-opt=d] a[data-locked]:is(:hover,:focus-visible) .frost,[data-opt=d] .touch a[data-locked] .frost{clip-path:inset(0 0 0 0)}
+.touch[data-opt=d] a[data-locked] .frost{clip-path:inset(0)}
+[data-opt=d] .frost>*{opacity:0;translate:0 14px;transition:opacity 300ms var(--ease),translate var(--dur) var(--ease)}
+[data-opt=d] a[data-locked]:is(:hover,:focus-visible) .frost>*{opacity:1;translate:none;transition-delay:160ms}
+
+/* E · A lock with a face — it blinks once, then looks at the label */
+[data-opt=e] .lock .hole{display:none}
+[data-opt=e] .lock .face{display:inline}
+[data-opt=e] .frost>*{translate:0 8px;transition:translate var(--dur) var(--ease)}
+[data-opt=e] a[data-locked]:is(:hover,:focus-visible) .frost>*{translate:none}
+[data-opt=e] .eye{fill:var(--bg);transform-box:fill-box;transform-origin:center}
+[data-opt=e] a[data-locked]:is(:hover,:focus-visible) .eye{animation:blink 2.6s 400ms both}
+@keyframes blink{0%,6%,100%{scale:1 1}3%{scale:1 .1}}
+[data-opt=e] .lock{width:60px}
+
+.touch a[data-locked] .frost>*{translate:none!important;scale:1!important;opacity:1!important}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<header class="intro">
+  <h1>Locked cases, <em>before</em> the click</h1>
+  <p>Hover a locked card: its picture frosts over, a small lock says “Password protected”, and the card still clicks through to the gate you already have, where they type the passcode or email you. At rest a locked card already shows the small lock by its company name, so nobody has to hover to find out. Try the keyboard too: Tab onto a card and it frosts the same way.</p>
+</header>
+
+<nav class="bar" id="bar" aria-label="Mock controls">
+  <button class="pill" data-k="opt" data-v="a">A · Frost</button>
+  <button class="pill" data-k="opt" data-v="b">B · Shackle lifts</button>
+  <button class="pill" data-k="opt" data-v="c">C · Hanging tag</button>
+  <button class="pill" data-k="opt" data-v="d">D · Breath on glass</button>
+  <button class="pill" data-k="opt" data-v="e">E · Lock with a face</button>
+  <hr>
+  <button class="pill" data-k="view" data-v="home">Home cards</button>
+  <button class="pill" data-k="view" data-v="work">/work tiles</button>
+  <hr>
+  <button class="pill" data-k="scope" data-v="all">Every case locked</button>
+  <button class="pill" data-k="scope" data-v="okta">Okta only</button>
+  <hr>
+  <button class="pill" data-k="touch" data-v="on" id="touchBtn">Touch</button>
+  <button class="pill" data-k="mode" data-v="light">Light</button>
+  <button class="pill" data-k="mode" data-v="dark">Dark</button>
+</nav>
+<p class="note" id="note"></p>
+
+<div id="cardsWrap"><p class="sub">Home cards</p><div class="cards" id="cards"></div></div>
+<div id="tilesWrap"><p class="sub">/work tiles</p><div class="tiles" id="tiles"></div></div>
+
+<script>
+const IMG = '../work-colour-blocks/img/';
+const cases = [
+  { k:'okta',    co:'Okta',         hue:'#c9dcf2', title:'Rebuilding IAM for enterprise admins', tag:'A ground-up rebuild of the admin console, shipped under live tenants.', img:'okta-phone', home:'01' },
+  { k:'privacy', co:'PayPal',       hue:'#e0d6ef', title:'Privacy settings people can read', tag:'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.', img:'pv-hub', home:'02' },
+  { k:'scan',    co:'Walmart Labs', hue:'#f4dc9c', title:'Scan & Go, in-store', img:'sg-cart' },
+  { k:'chase',   co:'Walmart Labs', hue:'#f4dc9c', title:'Chase Pay inside Walmart Pay', tag:'Brought Chase Pay into Walmart Pay, validated with real customers in-store.', img:'ch-setup', home:'03' },
+  { k:'debit',   co:'PayPal',       hue:'#cfe7d8', title:'A debit card people finish signing up for', tag:'Card enrollment and cash back rebuilt inside the PayPal app.', img:'debit-intro', home:'04' },
+  { k:'id',      co:'PayPal',       hue:'#e0d6ef', title:'An ID check people get through the first time', img:'id-steps' },
+  { k:'ads',     co:'PayPal',       hue:'#e0d6ef', title:'Privacy-first ad personalization', img:'ads-privacy' },
+];
+const notes = {
+  a:'<b>A · Frost.</b> The picture frosts, the lock and label settle up 8px into place. The quietest one: the same curve and duration as every other hover on the site.',
+  b:'<b>B · Shackle lifts.</b> Frost, then the lock’s shackle lifts a little a beat later, as if to say “locked, but come in”. The label adds “· Click to enter”.',
+  c:'<b>C · Hanging tag.</b> A lock on a string drops in from the top edge and swings to rest, like a tag on a door. The most playful; it moves the most.',
+  d:'<b>D · Breath on glass.</b> The frost wipes up from the bottom edge, like breath on a window, then the lock appears in it.',
+  e:'<b>E · Lock with a face.</b> The keyhole becomes two eyes and a small smile; it blinks once. The “cute” reading taken furthest — check it sits next to Moss without feeling like a second mascot.',
+};
+const lock = () => `
+<svg class="lock" viewBox="0 0 66 74" aria-hidden="true">
+  <path class="shackle" d="M19 34V22a14 14 0 0 1 28 0v12"/>
+  <rect class="body" x="7" y="31" width="52" height="40" rx="12"/>
+  <g class="hole"><circle cx="33" cy="47" r="5"/><rect x="31" y="49" width="4" height="10" rx="2"/></g>
+  <g class="face"><ellipse class="eye" cx="25" cy="49" rx="3.2" ry="4"/><ellipse class="eye" cx="41" cy="49" rx="3.2" ry="4"/>
+    <path d="M28 58q5 4 10 0" fill="none" stroke="var(--bg)" stroke-width="2.6" stroke-linecap="round"/></g>
+</svg>`;
+const small = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+const frost = `<div class="frost" aria-hidden="true"><div class="swing">${lock()}<p class="plabel">Password protected<em><span> · Click to enter</span></em></p></div></div>`;
+const stage = c => `<div class="stage" style="--hue:${c.hue}"><div class="phone"><img src="${IMG}${c.img}.webp" alt=""></div>${frost}</div>`;
+const meta = c => `<span class="meta" data-meta>${c.co}</span>`;
+
+function render(){
+  const scope = document.documentElement.dataset.scope;
+  const isLocked = c => scope === 'all' || c.k === 'okta';
+  const attrs = c => isLocked(c)
+    ? `href="gate.html?case=${c.k}" data-locked aria-label="${c.title} — ${c.co}, password protected"`
+    : `href="#" onclick="return false"`;
+  const lockMark = c => isLocked(c) ? small : '';
+  document.getElementById('cards').innerHTML = cases.filter(c => c.home).sort((a,b)=>a.home.localeCompare(b.home)).map(c => `
+    <a class="card" ${attrs(c)}>
+      <div class="card__body"><span class="num">${c.home}</span><p class="meta">${lockMark(c)}${c.co}</p><h3 class="title">${c.title}</h3><p class="tag">${c.tag}</p></div>
+      ${stage(c)}
+    </a>`).join('');
+  document.getElementById('tiles').innerHTML = cases.map(c => `
+    <a class="tile" ${attrs(c)}>${stage(c)}<p class="meta">${lockMark(c)}${c.co}</p><h3 class="tile__t">${c.title}</h3></a>`).join('');
+}
+
+const root = document.documentElement, bar = document.getElementById('bar');
+function sync(){
+  bar.querySelectorAll('.pill').forEach(b => {
+    const on = b.dataset.k === 'touch' ? root.classList.contains('touch') : root.dataset[b.dataset.k] === b.dataset.v;
+    b.setAttribute('aria-pressed', on);
+  });
+  document.getElementById('note').innerHTML = notes[root.dataset.opt] +
+    (root.classList.contains('touch') ? ' <b>Touch:</b> no hover on a phone, so the frost shows at rest on locked cards.' : '');
+  history.replaceState(null, '', '#' + root.dataset.opt + '-' + root.dataset.view + '-' + root.dataset.scope);
+}
+bar.addEventListener('click', e => {
+  const b = e.target.closest('.pill'); if (!b) return;
+  if (b.dataset.k === 'touch') root.classList.toggle('touch');
+  else root.dataset[b.dataset.k] = b.dataset.v;
+  if (b.dataset.k === 'scope') render();
+  sync();
+});
+const [o, v, s] = location.hash.slice(1).split('-');
+if (o) root.dataset.opt = o; if (v) root.dataset.view = v; if (s) root.dataset.scope = s;
+render(); sync();
+</script>
+</body>
+</html>
