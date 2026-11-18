@@ -1,5 +1,6 @@
 ---
-/* PrivacyCover.astro — the Privacy case's main image: a composed,
+/* PrivacyCover.astro — the main image of the three PayPal privacy cases
+   (Privacy settings, Data rights, Ads consent; `kind`): a composed,
    annotated mockup on the project hue, after rachelatwork.com's case
    covers (on request, in place of a strip of cropped screenshots). The
    redesigned Data and privacy page in a phone, three pieces of the
@@ -18,8 +19,21 @@
 import PrivacyScreen from './PrivacyScreen.astro';
 import '../styles/pp-sans.css';
 
-interface Props { alt: string }
-const { alt } = Astro.props;
+import Illo from './PrivacyIllo.astro';
+
+// One cover per PayPal privacy case (on request, 2026-11-18, when the
+// Privacy case was split): the same layout, a different phone, pieces and
+// notes. Every piece is copy from that case's own screens.
+type Kind = 'privacy' | 'data-rights' | 'ads-consent';
+interface Props { alt: string; kind?: Kind }
+const { alt, kind = 'privacy' } = Astro.props;
+const phone: Record<Kind, string> = { privacy: 'it-hub', 'data-rights': 'it-clean', 'ads-consent': 'ck-1' };
+const notes: Record<Kind, [string, string, string, string]> = {
+  privacy: ['One page, three headings', 'A switch that says what it uses', 'Once a year, a check in the card', 'Learn more, at the end'],
+  'data-rights': ['Delete part, keep the account', 'One tick per data type', 'A request says where it is', 'Clean up comes first'],
+  'ads-consent': ['Once a year, one setting at a time', 'Asking first, with equal answers', 'The yearly card opens a checkup', 'Off until you turn it on'],
+};
+const n = notes[kind];
 ---
 <div class="cv" data-cv role="img" aria-label={alt}>
   <div class="cv__canvas" aria-hidden="true">
@@ -35,41 +49,78 @@ const { alt } = Astro.props;
       <div class="cv__screen" inert>
         <div class="cv__draw">
           <div class="sb"><span>9:41</span><span class="sb__icons"><i></i><i></i><i></i></span></div>
-          <div class="cv__scr"><PrivacyScreen id="hub" /></div>
+          <div class="cv__scr"><PrivacyScreen id={phone[kind]} /></div>
         </div>
       </div>
     </div>
 
-    <p class="cv__note" style="left: 760px; top: 71px;"><b>01</b>One page, three headings</p>
+    <p class="cv__note" style="left: 760px; top: 71px;"><b>01</b>{n[0]}</p>
 
-    <div class="cv__piece" style="left: 106px; top: 66px; width: 320px;">
-      <div class="pc-row">
-        <span class="pc-t">Get personalized offers</span>
-        <span class="pc-switch"><i></i></span>
-      </div>
-      <p class="pc-d">Personalized deals and offers is turned off. Turn it on to get money saving deals that are personalized to you.</p>
-      <p class="pc-link">Learn how it works</p>
-    </div>
-    <p class="cv__note" style="left: 106px; top: 22px;"><b>02</b>A switch that says what’s on</p>
+    {kind === 'privacy' && (
+      <>
+        <div class="cv__piece" style="left: 106px; top: 66px; width: 320px;">
+          <div class="pc-row"><span class="pc-t">Get personalized offers</span><span class="pc-switch pc-switch--on"><i></i></span></div>
+          <p class="pc-d">On. You’ll see deals based on where you shop.</p>
+          <p class="pc-k">What it uses</p>
+          <p class="pc-d pc-d--ink">Where you’ve paid with PayPal, and stores you’ve visited in PayPal’s network</p>
+        </div>
+        <div class="cv__piece pc-anniv" style="left: 120px; top: 322px; width: 320px;">
+          <span class="pc-anniv__art"><Illo name="anniv" size={64} /></span>
+          <p class="pc-k">One year of your settings</p>
+          <p class="pc-q">Personalized deals are on. Still want them?</p>
+          <div class="pc-btns"><span class="pc-btn pc-btn--p">Keep on</span><span class="pc-btn">Turn off</span></div>
+        </div>
+        <div class="cv__piece pc-learn" style="left: 772px; top: 196px; width: 220px;">
+          <img src="/images/paypal-privacy/learn-others.webp" alt="" width="220" height="149" />
+          <p class="pc-learn__t">What others see when you use PayPal</p>
+        </div>
+      </>
+    )}
 
-    <div class="cv__piece" style="left: 140px; top: 322px; width: 300px;">
-      <div class="pc-row">
-        <span class="pc-t">Personal info</span>
-        <span class="pc-check"></span>
-      </div>
-      <p class="pc-d">This helps us keep your account safe, personalize your experience, and contact you when needed.</p>
-      <p class="pc-link">What’s included ⌄</p>
-    </div>
-    <p class="cv__note" style="left: 140px; top: 470px;"><b>03</b>One tick per data type</p>
+    {kind === 'data-rights' && (
+      <>
+        <div class="cv__piece" style="left: 106px; top: 66px; width: 320px;">
+          <div class="pc-row"><span class="pc-t">Personal info</span><span class="pc-check"></span></div>
+          <p class="pc-d">This helps us keep your account safe, personalize your experience, and contact you when needed.</p>
+          <p class="pc-link">What’s included ⌄</p>
+        </div>
+        <div class="cv__piece" style="left: 140px; top: 322px; width: 300px;">
+          <ol class="pc-steps">
+            <li class="is-done">Requested</li>
+            <li class="is-done">We confirmed it’s you</li>
+            <li class="is-now">Gathering your data<span>We’ll email you when it’s ready.</span></li>
+          </ol>
+        </div>
+        <div class="cv__piece cv__piece--on" style="left: 772px; top: 262px; width: 320px;">
+          <div class="pc-row pc-row--start"><span class="pc-t">Clean up your data</span><span class="pc-new">New</span></div>
+          <p class="pc-d">Delete data you don’t need, like marketing or face scan data. Your account stays open.</p>
+        </div>
+      </>
+    )}
 
-    <div class="cv__piece cv__piece--on" style="left: 772px; top: 262px; width: 320px;">
-      <div class="pc-row pc-row--start">
-        <span class="pc-t">Clean up your data</span>
-        <span class="pc-new">New</span>
-      </div>
-      <p class="pc-d">Delete your non-essential data such as marketing data, face scan etc., without closing your account.</p>
-    </div>
-    <p class="cv__note" style="left: 772px; top: 392px;"><b>04</b>Clean up, without closing the account</p>
+    {kind === 'ads-consent' && (
+      <>
+        <div class="cv__piece" style="left: 76px; top: 66px; width: 350px;">
+          <p class="pc-q">Want PayPal ads that match your interests?</p>
+          <p class="pc-d">It stays off unless you turn it on. You can change it any time in Online ad preferences.</p>
+          <div class="pc-btns"><span class="pc-btn">Allow</span><span class="pc-btn">Not now</span></div>
+        </div>
+        <div class="cv__piece pc-anniv" style="left: 120px; top: 322px; width: 320px;">
+          <span class="pc-anniv__art"><Illo name="anniv" size={64} /></span>
+          <p class="pc-k">One year of your settings</p>
+          <p class="pc-q">Time for your privacy checkup</p>
+          <div class="pc-btns"><span class="pc-btn pc-btn--p">Start checkup</span><span class="pc-btn">Not now</span></div>
+        </div>
+        <div class="cv__piece" style="left: 772px; top: 262px; width: 320px;">
+          <div class="pc-row"><span class="pc-t">Online ad preferences</span><span class="pc-switch"><i></i></span></div>
+          <p class="pc-d">Choose whether we share some of your info with our ad partners.</p>
+        </div>
+      </>
+    )}
+
+    <p class="cv__note" style="left: 106px; top: 22px;"><b>02</b>{n[1]}</p>
+    <p class="cv__note" style={`left: ${kind === 'privacy' || kind === 'ads-consent' ? 120 : 140}px; top: 476px;`}><b>03</b>{n[2]}</p>
+    <p class="cv__note" style={`left: 772px; top: ${kind === 'privacy' ? 420 : 392}px;`}><b>04</b>{n[3]}</p>
   </div>
 </div>
 
@@ -127,6 +178,26 @@ const { alt } = Astro.props;
   .pc-switch i { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--pp-surface); box-shadow: var(--pp-tile-shadow); }
   .pc-check { flex: none; position: relative; width: 20px; height: 20px; border-radius: 4px; background: var(--pp-illo-deep); }
   .pc-check::after { content: ''; position: absolute; left: 7px; top: 3px; width: 5px; height: 10px; border: solid var(--pp-surface); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .pc-switch--on { background: var(--pp-illo-deep); }
+  .pc-switch--on i { left: 22px; }
+  .pc-k { margin-top: 10px !important; font-size: var(--cover-type-badge); color: var(--pp-ink-dim); }
+  .pc-anniv .pc-k { margin-top: 0 !important; }
+  .pc-d--ink { color: var(--pp-ink); }
+  .pc-q { margin-top: 4px !important; font-size: var(--cover-type-title); line-height: 1.3; padding-right: 70px; }
+  .cv__piece:not(.pc-anniv) .pc-q { padding-right: 0; }
+  .pc-anniv__art { position: absolute; top: 10px; right: 10px; }
+  .pc-btns { display: flex; gap: 8px; margin-top: 14px; }
+  .pc-btn { flex: 1; text-align: center; padding: 9px 8px; border-radius: var(--radius-pill); box-shadow: inset 0 0 0 1.5px var(--pp-illo-deep); color: var(--pp-illo-deep); font-size: var(--cover-type-body); font-weight: var(--pp-w-med); }
+  .pc-btn--p { background: var(--pp-illo-deep); color: var(--pp-surface); }
+  .pc-learn { padding: 0; overflow: hidden; }
+  .pc-learn img { display: block; width: 100%; height: auto; }
+  .pc-learn__t { padding: 12px 14px 14px; font-size: var(--cover-type-body); }
+  .pc-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; font-size: var(--cover-type-body); }
+  .pc-steps li { position: relative; padding-left: 26px; }
+  .pc-steps li span { display: block; color: var(--pp-ink-dim); margin-top: 2px; }
+  .pc-steps li::before { content: ''; position: absolute; left: 0; top: 3px; width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--pp-line); }
+  .pc-steps li.is-done::before { background: var(--pp-blue); box-shadow: none; }
+  .pc-steps li.is-now::before { box-shadow: inset 0 0 0 4px var(--pp-blue); }
   .pc-new { padding: 2px 8px; border-radius: 4px; background: var(--pp-new); color: var(--pp-surface); font-size: var(--cover-type-badge); font-weight: var(--pp-w-med); }
 
   /* The notes: numbered, in the site's mono, the decision each piece shows. */

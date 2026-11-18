@@ -824,6 +824,7 @@
   --pp-scrim: rgb(0 20 53 / 0.45);
   --pp-coin-shade: inset -3px -3px 0 rgb(0 0 0 / 0.12);
   --pp-tile-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+  --pp-tile-shadow-hover: 0 6px 18px rgb(0 20 53 / 0.14), 0 1px 3px rgb(0 20 53 / 0.08); /* the shipped screens' card under the pointer */
   --pp-card-shadow: 0 18px 30px -12px rgb(20 44 142 / 0.45);
 
   --pp-phone-w: var(--phone-w);

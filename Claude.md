@@ -956,6 +956,39 @@ walked back. Concretely, in the current implementation:
   it cost, what held). Ink, no hairlines, no accent; values under CASE
   STORY in `tokens.css`. Privacy's teamwork moment is a stand-in, on her
   request, marked in `cases.ts`: replace it with her real account.
+- **The Privacy case's versions** (on request, 2026-11-18): Before (the
+  old list) → First version (four tiles) → Second version (the
+  illustrated screens with the blue reminder card, which never launched)
+  → Shipped (minimal: values on the right, the yearly check answered in
+  its card, explanations ending on their switch; drawn from
+  `experiments/privacy-case-learnings/redesign.html`). "What shipped",
+  after The hard call, says why the second version didn't ship; the
+  reasons there are drafted from the screens and need her confirmation.
+  The compares, the craft rows and the cover show Shipped (`it-*`
+  screens in `PrivacyScreen.astro`); the illustrated screens appear only
+  as the Second version (`v2-*` pairs and the evolution row). Shipped
+  screens use PayPal Sans at regular weight (medium only on buttons and
+  links) and one line icon set (`i-l-*` in `PrivacyIllo.astro`). The
+  hub's values are example placeholders. The hub ends on her "Learn more
+  about PayPal privacy" cards from her Figma (white cards, her art as a
+  band, no "Read" link; on request 2026-11-18); what each opens is still
+  to be written. A mixed version (her
+  illustrations with the minimal screens' state and controls) is mocked
+  in `experiments/privacy-case-learnings/mix.html`. The /work tile, the
+  home card and `hero.webp` still show the second version.
+- **Privacy is three cases** (split on request, 2026-11-18, proposal in
+  `experiments/privacy-case-learnings/checkup.html`): `paypal-privacy`
+  (the settings: hub, versions, craft, context, web sub-nav; 60% fewer
+  calls), `paypal-data-rights` (new: get a copy, delete part and keep the
+  account, the six steps, the delete screen's one call; 76% faster data
+  access; timeline, team and a second number to confirm with her; cover
+  `public/images/paypal-data-rights/hero.webp`, rendered from its coded
+  screens) and `paypal-ads-consent`, whose Auto Privacy Advisor now shows
+  the yearly checkup as live screens (`ck-*`, set `checkup`). The hub's
+  yearly card is card A, "Anniversary" (her "celebrate it like an
+  anniversary"; `anniv` in `PrivacyIllo.astro`); on the Ads consent case
+  it opens the checkup. The Privacy case links to both with the `see`
+  block (one line and a link). Don't fold them back into one.
 - `cases.ts` holds case-study content as structural prose with `[X]`
   placeholders for real numbers — written from what this file already
   records about each project, not confirmed by Anupama. It also currently

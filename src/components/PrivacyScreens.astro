@@ -35,46 +35,67 @@ import DeviceBox from './DeviceBox.astro';
 import PrivacyScreen from './PrivacyScreen.astro';
 import '../styles/pp-sans.css';
 
-export type PrivacySet = 'hub' | 'shopping' | 'request' | 'delete' | 'contextual' | 'first' | 'evolution';
+export type PrivacySet = 'hub' | 'shopping' | 'request' | 'delete' | 'contextual' | 'first' | 'evolution'
+  | 'v2-hub' | 'v2-deals' | 'checkup';
 interface Props { set: PrivacySet; caption?: string }
 const { set, caption } = Astro.props;
 
 interface Phone { id: string; label: string; alt?: string; before?: boolean; offset?: number }
 const sets: Record<PrivacySet, Phone[]> = {
+  // What shipped (it-* screens). The illustrated screens (hub, shop-offers,
+  // req, del-choice, ctx-*) are the second version, which never launched,
+  // on request 2026-11-18; they appear only in the v2-* pairs and the
+  // evolution row.
   hub: [
-    { id: 'hub', label: 'Data and privacy' },
-    { id: 'hub', label: 'Further down', offset: 586 },
-    { id: 'deals-ads', label: 'Deals & ads' },
+    { id: 'it-hub', label: 'Data and privacy' },
+    { id: 'it-hub', label: 'Further down', offset: 344 },
   ],
   shopping: [
-    { id: 'shop-offers', label: 'Personalized offers' },
-    { id: 'shop-how', label: 'How it works' },
+    { id: 'it-deals', label: 'Personalized offers' },
+    { id: 'it-how', label: 'How it works' },
   ],
   request: [
-    { id: 'req', label: 'Get a copy' },
-    { id: 'req', label: 'File format', offset: 566 },
+    { id: 'it-req', label: 'Get a copy' },
+    { id: 'it-status', label: 'Your data request' },
   ],
   delete: [
-    { id: 'del-choice', label: 'Two ways to delete' },
-    { id: 'del-clean', label: 'Clean up your data' },
+    { id: 'it-del-choice', label: 'Two ways to delete' },
+    { id: 'it-clean', label: 'Clean up your data' },
   ],
   contextual: [
-    { id: 'ctx-offers', label: 'In the offers' },
-    { id: 'ctx-card', label: 'In Deals & Offers' },
-    { id: 'ctx-sheet', label: 'Shopping and Privacy' },
+    { id: 'it-offers', label: 'In the offers' },
+    { id: 'it-why', label: 'Why these offers' },
   ],
-  // The hard call: the first redesign, a tile page and the sheet behind
-  // three of its tiles, then the old page, that version and the revised one.
+  // The hard call: the first version, a tile page and the sheet behind
+  // three of its tiles.
   first: [
     { id: 'v1-hub', label: 'Four tiles' },
     { id: 'v1-profile', label: 'Profile Privacy' },
     { id: 'v1-notify', label: 'Service Notifications' },
     { id: 'v1-features', label: 'Feature Preferences' },
   ],
+  // The second version (illustrated, never launched) beside what shipped.
+  'v2-hub': [
+    { id: 'hub', label: 'Second version' },
+    { id: 'it-hub', label: 'Shipped' },
+  ],
+  'v2-deals': [
+    { id: 'shop-offers', label: 'Second version' },
+    { id: 'it-deals', label: 'Shipped' },
+  ],
+  // The yearly checkup (Ads consent: Auto Privacy Advisor). The first phone
+  // is live from card A through every step; the rest hold one step each.
+  checkup: [
+    { id: 'ck-start', label: 'Card A opens it' },
+    { id: 'ck-1', label: 'Step 1 of 4' },
+    { id: 'ck-3', label: 'Step 3 of 4' },
+    { id: 'ck-done', label: 'Done' },
+  ],
   evolution: [
     { id: 'hub-old', label: 'Before', before: true, alt: 'Before: Manage your privacy settings, one list of five rows: Permissions you’ve given, Manage your cookies, Interest-based marketing, PayPal Shopping, and Download, correct and Delete your data.' },
     { id: 'v1-hub', label: 'First version' },
-    { id: 'hub', label: 'Revised' },
+    { id: 'hub', label: 'Second version' },
+    { id: 'it-hub', label: 'Shipped' },
   ],
 };
 const phones = sets[set];
@@ -89,10 +110,19 @@ const links: Record<string, string[]> = {
   'ctx-offers': ['ctx-sheet'],
   'ctx-card': ['ctx-sheet'],
   'v1-hub': ['v1-profile', 'v1-notify', 'v1-features'],
+  'it-hub': ['it-deals', 'it-req', 'it-del-choice'],
+  'it-deals': ['it-how'],
+  'it-req': ['it-status'],
+  'it-del-choice': ['it-clean'],
+  'it-clean': ['del-done'],
+  'it-offers': ['it-why'],
+  'ck-start': ['ck-1', 'ck-2', 'ck-3', 'ck-4', 'ck-done'],
+  'ck-1': ['ck-2', 'ck-3', 'ck-4', 'ck-done'],
+  'ck-3': ['ck-4', 'ck-done'],
 };
 // A phone that starts on a sheet starts with the page the sheet belongs
 // to underneath it, so closing the sheet lands somewhere real.
-const parents: Record<string, string> = { 'shop-how': 'shop-offers', 'del-choice': 'hub', 'ctx-sheet': 'ctx-card', 'v1-profile': 'v1-hub', 'v1-notify': 'v1-hub', 'v1-features': 'v1-hub' };
+const parents: Record<string, string> = { 'it-how': 'it-deals', 'it-why': 'it-offers', 'it-del-choice': 'it-hub', 'shop-how': 'shop-offers', 'del-choice': 'hub', 'ctx-sheet': 'ctx-card', 'v1-profile': 'v1-hub', 'v1-notify': 'v1-hub', 'v1-features': 'v1-hub' };
 const reach = (start: string) => {
   const seen = new Set<string>(parents[start] ? [parents[start]] : []);
   const walk = (id: string) => (links[id] ?? []).forEach((n) => { if (!seen.has(n) && n !== start) { seen.add(n); walk(n); } });
@@ -104,6 +134,10 @@ const names: Record<string, string> = {
   'shop-how': 'How it works', req: 'Get a copy of your data', 'req-done': 'Request submitted',
   'del-choice': 'Delete your data', 'del-clean': 'Clean up your data', 'del-done': 'Request submitted',
   'ctx-offers': 'Exclusive offers', 'ctx-card': 'Deals & Offers', 'ctx-sheet': 'Shopping and Privacy',
+  'it-hub': 'Data and privacy', 'it-deals': 'Personalized deals and offers', 'it-how': 'How it works', 'it-status': 'Your data request',
+  'it-clean': 'Clean up your data', 'it-offers': 'Exclusive offers', 'it-why': 'Why you see these offers',
+  'it-req': 'Get a copy of your data', 'it-del-choice': 'Delete your data',
+  'ck-start': 'Data and privacy', 'ck-1': 'Step 1 of 4, ads on other sites', 'ck-2': 'Step 2 of 4, personalized deals', 'ck-3': 'Step 3 of 4, face scan data', 'ck-4': 'Step 4 of 4, a copy of your data', 'ck-done': 'Checkup done',
   'v1-hub': 'Data and Privacy, first version', 'v1-profile': 'Profile Privacy', 'v1-notify': 'Service Notifications', 'v1-features': 'Feature Preferences',
 };
 ---
@@ -246,6 +280,8 @@ const names: Record<string, string> = {
         if (count) count.innerHTML = `<b>${n}</b> of ${boxes.length} selected`;
         if (all) all.textContent = n === boxes.length ? 'Unselect all' : 'Select all';
         if (submit) { if (n) submit.removeAttribute('aria-disabled'); else submit.setAttribute('aria-disabled', 'true'); }
+        // A submit that says what it does: "Delete 2 types of data".
+        if (submit?.dataset.n) submit.textContent = n ? submit.dataset.n.replace('#', String(n)).replace('types', n === 1 ? 'type' : 'types') : 'Choose data to delete';
       };
       all?.addEventListener('click', () => {
         const every = boxes.every((b) => b.getAttribute('aria-checked') === 'true');
@@ -330,7 +366,7 @@ const names: Record<string, string> = {
       else if (t.hasAttribute('data-home')) home();
       else if (t.hasAttribute('data-dismiss')) {
         const card = t.closest<HTMLElement>('[data-card]');
-        if (card) { card.hidden = true; showToast('Got it. We won’t show this again.'); top().querySelector<HTMLElement>('[data-focus]')?.focus({ preventScroll: true }); }
+        if (card) { card.hidden = true; showToast(t.dataset.msg ?? 'Got it. We won’t show this again.'); top().querySelector<HTMLElement>('[data-focus]')?.focus({ preventScroll: true }); }
       } else if (t.dataset.stub) showToast(`${t.dataset.stub} isn’t part of this prototype.`);
     });
     phone.addEventListener('keydown', (e) => { if (e.key === 'Escape' && screens().length > 1) { e.preventDefault(); back(); } });
