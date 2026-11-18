@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound, round 5 — the playground as a museum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Served from the repo root (launch config "sound-mockup") so her
+     pieces come straight from public/images. */
+  :root {
+    --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / 0.1); --tile: rgb(0 0 0 / 0.03);
+    --font-sans: 'Manrope', system-ui, sans-serif; --font-serif: 'Crimson Pro', serif; --font-mono: 'Azeret Mono', monospace;
+    --gutter: 2.5rem;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 600; }
+  .mono { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .bar { position: sticky; top: 0; z-index: 10; display: flex; gap: 1.5rem; align-items: center; padding: .9rem var(--gutter); background: var(--paper); border-bottom: 1px solid var(--line); }
+  .bar .name { font-size: .875rem; margin-right: auto; }
+  .pill { border: 1px solid var(--ink); background: none; border-radius: 999px; padding: .45rem .9rem; cursor: pointer; font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; }
+  .pill[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+  .bar label { display: flex; gap: .6rem; align-items: center; }
+  input[type=range] { accent-color: var(--ink); }
+  .intro { padding: 3rem var(--gutter) 1rem; max-width: 64rem; }
+  h1, h2 { font-family: var(--font-serif); font-weight: 300; letter-spacing: -0.03em; margin: 0; line-height: 1.05; }
+  h1 { font-size: 2.75rem; margin-bottom: .75rem; }
+  h2 { font-size: 1.75rem; margin: .4rem 0 .5rem; }
+  h1 em, h2 em { font-style: italic; }
+  p { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); margin: 0 0 .5rem; max-width: 46rem; }
+  p b { color: var(--ink); }
+  section { padding: 2rem var(--gutter) 3rem; border-top: 1px solid var(--line); }
+  .head { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: end; margin-bottom: 1.5rem; }
+  .variants { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .why { margin-top: 1.25rem; display: grid; gap: .25rem; }
+
+  .wall { position: relative; height: 24rem; overflow: hidden; background: var(--tile); border-radius: 20px; cursor: grab; touch-action: none; user-select: none; }
+  .wall:active { cursor: grabbing; }
+  .track { position: absolute; top: 0; left: 0; height: 100%; display: flex; gap: 3rem; align-items: center; padding: 0 2rem; will-change: transform; }
+  figure { margin: 0; flex: none; transition: transform .5s cubic-bezier(.16,1,.3,1); }
+  figure:hover, figure:focus-visible { transform: translateY(-4px); }
+  figure img { display: block; height: 13rem; width: auto; pointer-events: none; }
+  figure:nth-child(3n) img { height: 15.5rem; }
+  figure:nth-child(4n+1) img { height: 11rem; }
+  figcaption { font-family: var(--font-mono); font-weight: 400; font-size: .625rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-dim); margin-top: .5rem; opacity: 0; transition: opacity .3s; max-width: 13rem; }
+  figcaption i { font-style: normal; display: block; opacity: .7; margin-top: .2rem; }
+  figure:hover figcaption, figure:focus-visible figcaption, figure.near figcaption { opacity: 1; }
+  .now { margin-top: .75rem; min-height: 1.2em; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="name">Sound, round 5</span>
+  <button class="pill" id="master" aria-pressed="false">Sound off</button>
+  <label class="mono">Volume <input id="vol" type="range" min="0" max="1" step="0.01" value="0.8"></label>
+</div>
+
+<div class="intro">
+  <h1>A museum of <em>moments</em></h1>
+  <p>Not a wall you walk past: a quiet museum where each painting holds a moment, and sound is how you step into it. Nothing plays while you move; sound comes when you stop and look (rest the pointer on a piece, or focus one with Tab). Everything sits in one soft room echo, so it feels like a hall, not a speaker. All made here in the browser: no recordings, nothing from any film.</p>
+  <p>Press <b>Sound off</b> once so it reads <b>Sound on</b>: you will hear one soft note to confirm. Then pick a variant and rest the pointer on a painting for a second or two; the line under the wall says what you are hearing. Tab moves between paintings too.</p>
+</div>
+
+<section>
+  <div class="head">
+    <div>
+      <span class="mono">Playground</span>
+      <h2>Step into a <em>painting</em></h2>
+    </div>
+    <div class="variants" data-group="play">
+      <button class="pill" aria-pressed="true" data-v="A">A · Living paintings</button>
+      <button class="pill" aria-pressed="false" data-v="B">B · The hall answers</button>
+      <button class="pill" aria-pressed="false" data-v="C">C · Times of day</button>
+      <button class="pill" aria-pressed="false" data-v="D">D · The room leans in</button>
+    </div>
+  </div>
+  <div class="wall" id="wall" aria-label="Playground: drag to move along; Tab to each painting">
+    <div class="track" id="track"></div>
+  </div>
+  <p class="mono now" id="now" aria-live="polite"></p>
+  <div class="why">
+    <p><b>A · Living paintings</b> — each painting carries the sound of its own moment, faint, as if you'd leaned close: morning birds on the porch, the breeze and a cup set down by the reading window, glass bangles for the three sisters, an earring's tiny bells, an old clock for the couple, rain for the girl in grey, near silence for "Quiet, for now", a small spark for the young witch. It fades in when you stop and out when you move on. <i>My pick: it's the museum of experience, and it tells a hiring manager these are moments she painted, not files.</i></p>
+    <p><b>B · The hall answers</b> — no scenes. Rest on a painting and a single low, soft note blooms and rings out in the hall's echo, each painting its own note on the Japanese yo scale, so looking at a few in turn makes a slow chord. The most "gallery", the least literal.</p>
+    <p><b>C · Times of day</b> — the room changes as you travel along: morning birds at the start, summer cicadas by afternoon, rain in the evening, crickets at night, crossfading as you drag. One quiet bed that only plays while the pointer is over the wall.</p>
+    <p><b>D · The room leans in</b> — a faint museum air under the wall; rest on a painting and the room hushes around it and one warm tone rises, as if the space is listening with you. Leave and the air comes back.</p>
+  </div>
+</section>
+
+<script>
+  // ---------- audio: one room for everything ----------
+  let ac = null, on = false, master = null, room = null, dry = null;
+  const LOUD = 4;   // round 5's first cut was far too quiet on laptop speakers
+  const vol = document.getElementById('vol');
+  function ctx() {
+    if (ac) return ac;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = +vol.value * LOUD;
+    // a gentle limiter, so the louder levels never clip
+    const lim = ac.createDynamicsCompressor(); lim.threshold.value = -10; lim.ratio.value = 6; master.connect(lim); lim.connect(ac.destination);
+    // a hall: 3.2s of decaying noise as the impulse
+    const len = Math.ceil(ac.sampleRate * 3.2), ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    const conv = ac.createConvolver(); conv.buffer = ir;
+    const wet = ac.createGain(); wet.gain.value = .45;
+    dry = ac.createGain(); dry.gain.value = 1;
+    room = ac.createGain();
+    room.connect(conv); conv.connect(wet); wet.connect(master);
+    dry.connect(master);
+    return ac;
+  }
+  // sounds connect to `out()`: dry plus a send into the room
+  function out() { const g = ac.createGain(); g.connect(dry); g.connect(room); return g; }
+  vol.oninput = () => { if (master) master.gain.value = +vol.value * LOUD; };
+  const btn = document.getElementById('master');
+  btn.onclick = () => { on = !on; btn.setAttribute('aria-pressed', on); btn.textContent = on ? 'Sound on' : 'Sound off'; if (on) ctx().resume().then(() => { hallNote(2); if (pick === 'C' && wallHover) dayStart(); if (pick === 'D' && wallHover) airStart(); }); else stopAll(); };
+  const ready = () => (on && ac && ac.state === 'running') ? ac : null;
+
+  function noise(a, s) { const b = a.createBuffer(1, Math.ceil(a.sampleRate * s), a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const n = a.createBufferSource(); n.buffer = b; return n; }
+  function env(a, dest, peak, att, rel, t) { const g = a.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att); g.gain.exponentialRampToValueAtTime(0.0001, t + att + rel); g.connect(dest); return g; }
+  function blip(dest, f, peak, att, rel, delay = 0, type = 'sine', fEnd) { const a = ac, t = a.currentTime + delay, o = a.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); if (fEnd) o.frequency.exponentialRampToValueAtTime(fEnd, t + att + rel); o.connect(env(a, dest, peak, att, rel, t)); o.start(t); o.stop(t + att + rel + .02); }
+  function hit(dest, f, q, peak, att, rel, type = 'bandpass', delay = 0) { const a = ac, t = a.currentTime + delay, len = att + rel + .03, n = noise(a, len), b = a.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; n.connect(b); b.connect(env(a, dest, peak, att, rel, t)); n.start(t); n.stop(t + len); }
+  // a looping noise bed through a filter, with its own gain
+  function bed(dest, f, q, type) { const a = ac, n = noise(a, 2); n.loop = true; const b = a.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; const g = a.createGain(); g.gain.value = 0; n.connect(b); b.connect(g); g.connect(dest); n.start(); return { g, b, n }; }
+
+  // ---------- A · the moment in each painting ----------
+  // Each scene: start(bus) schedules its sounds into `bus` until stopped.
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function every(fn, min, max) { let id; const go = () => { fn(); id = setTimeout(go, rnd(min, max)); }; id = setTimeout(go, rnd(100, 500)); return () => clearTimeout(id); }
+  const bird = (bus) => { const f = rnd(2600, 3600), n = Math.floor(rnd(2, 5)); for (let k = 0; k < n; k++) blip(bus, f * rnd(.9, 1.15), .03, .01, .06, k * .09, 'sine', f * rnd(1.2, 1.5)); };
+  const scenes = {
+    birds: (bus) => every(() => bird(bus), 700, 1800),
+    window: (bus) => { const b = bed(bus, 600, .5, 'lowpass'); b.g.gain.setTargetAtTime(.05, ac.currentTime, .6); const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = .15; lg.gain.value = .03; lfo.connect(lg); lg.connect(b.g.gain); lfo.start();
+      const cup = setTimeout(() => { blip(bus, 3100, .03, .001, .5); blip(bus, 4650, .015, .001, .3); hit(bus, 2000, 2, .03, .001, .03); }, 900);
+      return () => { clearTimeout(cup); b.g.gain.setTargetAtTime(0, ac.currentTime, .3); setTimeout(() => { b.n.stop(); lfo.stop(); }, 1500); }; },
+    bangles: (bus) => every(() => { const n = Math.floor(rnd(3, 6)); for (let k = 0; k < n; k++) { const f = rnd(3400, 5200); blip(bus, f, .018, .001, .25, k * rnd(.04, .08)); blip(bus, f * 2.7, .006, .001, .12, k * .06); } }, 1400, 2600),
+    earring: (bus) => every(() => { for (let k = 0; k < 3; k++) blip(bus, rnd(5200, 6500), .012, .001, .35, k * .05); }, 1600, 3000),
+    clock: (bus) => { let tick = 0; return every(() => { tick ^= 1; hit(bus, tick ? 2300 : 1700, 9, .06, .001, .04); blip(bus, tick ? 1150 : 900, .015, .001, .05); }, 900, 900); },
+    rain: (bus) => { const b = bed(bus, 2200, .4, 'bandpass'); b.g.gain.setTargetAtTime(.03, ac.currentTime, .6); const stop = every(() => { const f = rnd(1800, 4000); blip(bus, f, .012, .001, .03, 0, 'sine', f * .6); }, 40, 160); return () => { stop(); b.g.gain.setTargetAtTime(0, ac.currentTime, .3); setTimeout(() => b.n.stop(), 1500); }; },
+    quiet: (bus) => { const b = bed(bus, 300, .3, 'lowpass'); b.g.gain.setTargetAtTime(.025, ac.currentTime, 1); return () => { b.g.gain.setTargetAtTime(0, ac.currentTime, .3); setTimeout(() => b.n.stop(), 1500); }; },
+    spark: (bus) => every(() => { const base = rnd(1800, 2400); [1, 1.26, 1.5, 2].reverse().forEach((r, k) => blip(bus, base * r, .015, .002, .4, k * .06)); }, 1800, 3200),
+  };
+  const pieces = [
+    ['play-three.jpg', 'In order of height', 'bangles', 'glass bangles'],
+    ['play-porch.jpg', 'Before anyone else wakes', 'birds', 'morning birds'],
+    ['play-reading.jpg', 'The tea went cold', 'window', 'a breeze at the window, a cup set down'],
+    ['play-earrings.jpg', 'Half a thought', 'earring', 'an earring’s small bells'],
+    ['play-care.jpg', 'Who holds whom', 'clock', 'an old clock in the room'],
+    ['play-green-eyes.jpg', 'Someone I almost knew', 'rain', 'rain on the window'],
+    ['play-sage.jpg', 'Quiet, for now', 'quiet', 'almost nothing'],
+    ['play-hermione.jpg', 'The brightest witch of her age', 'spark', 'a small spark'],
+  ];
+
+  // ---------- B · the hall answers: one note per painting, yo scale ----------
+  const YO = [0, 2, 5, 7, 9], hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  function hallNote(i) {
+    const a = ready(); if (!a) return;
+    const m = 50 + Math.floor(i / 5) * 12 + YO[i % 5], f = hz(m), o = out(), t = a.currentTime;
+    const g = a.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.09, t + .5); g.gain.exponentialRampToValueAtTime(.0001, t + 4.5); g.connect(o);
+    [[1, 'sine'], [2, 'sine'], [3, 'triangle']].forEach(([r, type], k) => { const x = a.createOscillator(); x.type = type; x.frequency.value = f * r; const xg = a.createGain(); xg.gain.value = [1, .3, .08][k]; x.connect(xg); xg.connect(g); x.start(t); x.stop(t + 4.6); });
+  }
+
+  // ---------- C · times of day across the wall ----------
+  let day = null;
+  function dayStart() {
+    const a = ready(); if (!a || day) return;
+    const bus = out(); bus.gain.value = 0; bus.gain.setTargetAtTime(1, a.currentTime, .5);
+    const cic = bed(bus, 5200, 6, 'bandpass'), cicLfo = a.createOscillator(), cicDepth = a.createGain(), cicAmp = a.createGain();
+    // cicadas: a fast throb on the bed
+    cic.g.disconnect(); cic.g.gain.value = 1; cicAmp.gain.value = 0; cic.g.connect(cicAmp); cicAmp.connect(bus);
+    cicLfo.frequency.value = 38; cicDepth.gain.value = 0; cicLfo.connect(cicDepth); cicDepth.connect(cicAmp.gain); cicLfo.start();
+    const rain = bed(bus, 2200, .4, 'bandpass');
+    const levels = { birds: 0, cicada: 0, rain: 0, crickets: 0 };
+    const stopBirds = every(() => { if (Math.random() < levels.birds) bird(bus); }, 500, 1300);
+    const stopCrickets = every(() => { if (Math.random() < levels.crickets) for (let k = 0; k < 3; k++) blip(bus, 4400, .012, .002, .03, k * .05); }, 350, 700);
+    day = { bus, levels, set(k) { // k: 0..1 along the wall
+        const z = (x) => Math.max(0, 1 - Math.abs(k * 4 - x) / 1);   // four zones, overlapping
+        levels.birds = z(0) + z(4); levels.cicada = z(1); levels.rain = z(2); levels.crickets = z(3);
+        cicDepth.gain.setTargetAtTime(.03 * levels.cicada, a.currentTime, .3); cicAmp.gain.setTargetAtTime(.03 * levels.cicada, a.currentTime, .3);
+        rain.g.gain.setTargetAtTime(.035 * levels.rain, a.currentTime, .3);
+      },
+      stop() { bus.gain.setTargetAtTime(0, a.currentTime, .4); stopBirds(); stopCrickets(); setTimeout(() => { cic.n.stop(); rain.n.stop(); cicLfo.stop(); }, 2000); day = null; } };
+    day.set(along());
+  }
+
+  // ---------- D · the room leans in ----------
+  let air = null;
+  function airStart() {
+    const a = ready(); if (!a || air) return;
+    const b = bed(out(), 420, .4, 'lowpass'); b.g.gain.setTargetAtTime(.04, a.currentTime, .8);
+    air = b;
+  }
+  function airStop() { if (!air) return; const b = air; air = null; b.g.gain.setTargetAtTime(0, ac.currentTime, .4); setTimeout(() => b.n.stop(), 2000); }
+  let lean = null;
+  function leanIn(i) {
+    const a = ready(); if (!a) return;
+    air?.g.gain.setTargetAtTime(.008, a.currentTime, .5);   // the room hushes
+    const f = hz(57 + YO[i % 5]), o = out(), g = a.createGain(); g.gain.value = .0001; g.gain.setTargetAtTime(.05, a.currentTime + .3, .8); g.connect(o);
+    const x = a.createOscillator(), y = a.createOscillator(); x.frequency.value = f; y.frequency.value = f * 1.5; x.connect(g); const yg = a.createGain(); yg.gain.value = .35; y.connect(yg); yg.connect(g); x.start(); y.start();
+    lean = { g, x, y };
+  }
+  function leanOut() {
+    if (!lean) return; const l = lean; lean = null;
+    l.g.gain.setTargetAtTime(0, ac.currentTime, .4); setTimeout(() => { l.x.stop(); l.y.stop(); }, 2000);
+    air?.g.gain.setTargetAtTime(.04, ac.currentTime, .8);
+  }
+
+  // ---------- resting on a painting ----------
+  let pick = 'A', current = -1, restTimer = null, scene = null;
+  const now = document.getElementById('now');
+  function rest(i) {
+    if (i === current) return; leave(); current = i;
+    restTimer = setTimeout(() => {   // a short beat, so passing over isn't "looking"
+      const a = ready(); if (!a) return;
+      if (pick === 'A') { const bus = out(); bus.gain.value = 0; bus.gain.setTargetAtTime(1, a.currentTime, .5); const stop = scenes[pieces[i % 8][2]](bus); scene = { bus, stop }; now.textContent = 'Hearing: ' + pieces[i % 8][3]; }
+      if (pick === 'B') hallNote(i % 8);
+      if (pick === 'D') leanIn(i % 8);
+    }, 350);
+  }
+  function leave() {
+    clearTimeout(restTimer); current = -1; now.textContent = '';
+    if (scene) { const s = scene; scene = null; s.bus.gain.setTargetAtTime(0, ac.currentTime, .35); setTimeout(() => s.stop?.(), 1500); }
+    leanOut();
+  }
+  function stopAll() { leave(); day?.stop(); airStop(); }
+
+  document.querySelector('[data-group]').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-v]'); if (!b) return;
+    stopAll();
+    document.querySelectorAll('[data-v]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    pick = b.dataset.v;
+    if (wallHover) enterWall();
+  });
+
+  // ---------- the wall ----------
+  const track = document.getElementById('track'), wall = document.getElementById('wall');
+  for (let r = 0; r < 3; r++) pieces.forEach(([f, t, , heard], k) => {
+    const i = r * 8 + k, fig = document.createElement('figure');
+    fig.tabIndex = r === 1 ? 0 : -1;
+    fig.innerHTML = `<img src="/public/images/${f}" alt=""><figcaption>${t}<i>${heard}</i></figcaption>`;
+    fig.addEventListener('pointerenter', () => { if (!dragging) rest(i); });
+    fig.addEventListener('pointerleave', () => leave());
+    fig.addEventListener('focus', () => { centreOn(fig); rest(i); });
+    fig.addEventListener('blur', () => leave());
+    track.append(fig);
+  });
+  let x = 0, v = 0, dragging = false, lastX = 0, wallHover = false;
+  const wrapW = () => track.scrollWidth / 3;
+  const along = () => ((-x) % wrapW()) / wrapW();
+  function moveBy(dx) {
+    x += dx; const W = wrapW(); if (x < -W * 2) x += W; if (x > 0) x -= W;
+    track.style.transform = `translateX(${x}px)`;
+    day?.set(along());
+  }
+  function centreOn(fig) { moveBy(wall.clientWidth / 2 - (fig.offsetLeft + fig.offsetWidth / 2 + x)); }
+  requestAnimationFrame(() => moveBy(-wrapW()));
+  function enterWall() { wallHover = true; if (pick === 'C') dayStart(); if (pick === 'D') airStart(); }
+  wall.addEventListener('pointerenter', enterWall);
+  wall.addEventListener('pointerleave', () => { wallHover = false; leave(); day?.stop(); airStop(); });
+  wall.addEventListener('focusin', () => { if (!wallHover) enterWall(); });
+  wall.addEventListener('focusout', (e) => { if (!wall.contains(e.relatedTarget) && !wall.matches(':hover')) { day?.stop(); airStop(); } });
+  wall.addEventListener('pointerdown', (e) => { dragging = true; leave(); v = 0; lastX = e.clientX; wall.setPointerCapture(e.pointerId); });
+  wall.addEventListener('pointermove', (e) => { if (!dragging) return; const dx = e.clientX - lastX; v = dx; lastX = e.clientX; moveBy(dx); });
+  wall.addEventListener('pointerup', () => {
+    dragging = false;
+    const coast = () => { if (dragging) return; v *= .93; if (Math.abs(v) < .3) return; moveBy(v); requestAnimationFrame(coast); };
+    requestAnimationFrame(coast);
+  });
+</script>
+</body>
+</html>

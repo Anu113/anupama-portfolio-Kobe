@@ -10,7 +10,9 @@
    words start and end on the same line (4:5 once the page is one
    column). Right: "Hi, I’m Anupama." (all italic), then "Updated on …"
    (`updated` in data/about.ts) in mono, her bio in her words, how to
-   reach her, three icon buttons (LinkedIn, copy email, email); then,
+   reach her, two icon buttons (LinkedIn, and the email icon, which
+   copies her address: "Copy email" on hover, "Copied" on press; the
+   Gmail link is the word "email" in the line above); then,
    after andreas.vision/about, his tabs in his order (Testimonials /
    Experience / Tools, on request 2026-11-14: her LinkedIn
    recommendations with their photos, company logos, app icons) over a
@@ -110,13 +112,10 @@ const updatedLabel = new Date(`${updated}T00:00:00Z`).toLocaleDateString('en-GB'
           </a>
           <span class="tipped" data-copy-wrap>
             <button class="icon" type="button" data-copy={site.email} aria-label="Copy email address">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
             </button>
             <span class="tip" aria-hidden="true" data-tip>Copy email</span>
           </span>
-          <a class="icon" href={gmail} target="_blank" rel="noopener" aria-label="Email Anupama (opens Gmail in a new tab)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
-          </a>
           <span class="u-sr-only" role="status" data-copy-status></span>
         </div>
       </section>

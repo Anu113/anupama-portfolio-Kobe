@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound, round 8 — the playground on scroll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Served from the repo root (launch config "sound-mockup") so her
+     pieces come straight from public/images. A rough copy of the
+     playground wall: columns that rise with the page's scroll, each at
+     its own speed, eased. */
+  :root {
+    --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --font-sans: 'Manrope', system-ui, sans-serif; --font-serif: 'Crimson Pro', serif; --font-mono: 'Azeret Mono', monospace;
+    --gutter: 2.5rem;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 600; }
+  .mono { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .bar { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; gap: .5rem; align-items: center; padding: .75rem var(--gutter); background: var(--paper); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .bar .name { font-size: .875rem; margin-right: auto; }
+  .pill { border: 1px solid var(--ink); background: none; border-radius: 999px; padding: .4rem .8rem; cursor: pointer; font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; }
+  .pill[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+  .sep { width: 1px; height: 1.2rem; background: var(--line); margin: 0 .5rem; }
+  input[type=range] { accent-color: var(--ink); width: 6rem; }
+  .intro { padding: 7rem var(--gutter) 3rem; max-width: 64rem; }
+  h1 { font-family: var(--font-serif); font-weight: 300; letter-spacing: -0.03em; margin: 0 0 .75rem; line-height: 1.05; font-size: 2.75rem; }
+  h1 em { font-style: italic; }
+  p { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); margin: 0 0 .5rem; max-width: 46rem; }
+  p b { color: var(--ink); }
+  .scroller { height: 520vh; position: relative; }
+  .stage { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+  .cols { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2.5rem; padding: 0 var(--gutter); }
+  .col { display: flex; flex-direction: column; gap: 2.5rem; padding-top: 70vh; will-change: transform; }
+  .col img { width: 100%; height: auto; display: block; }
+  .col:nth-child(odd) img { width: 82%; }
+  .col:nth-child(3n) img { margin-left: auto; }
+  .heading { position: absolute; left: 0; right: 0; top: 34vh; text-align: center; font-family: var(--font-serif); font-weight: 300; font-size: 2.75rem; letter-spacing: -0.03em; pointer-events: none; }
+  .heading em { font-style: italic; }
+  .meter { position: fixed; left: var(--gutter); bottom: 1.25rem; z-index: 10; display: flex; gap: .75rem; align-items: center; }
+  .meter i { display: block; width: 8rem; height: 2px; background: var(--line); position: relative; }
+  .meter i b { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--ink); }
+  .outro { padding: 4rem var(--gutter) 6rem; max-width: 64rem; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="name">Sound, round 8 · scroll</span>
+  <button class="pill" id="master" aria-pressed="false">Sound off</button>
+  <span class="sep"></span>
+  <span data-group="v" style="display:contents">
+    <button class="pill" aria-pressed="true" data-v="A">A · Detent</button>
+    <button class="pill" aria-pressed="false" data-v="B">B · Pass-by notes</button>
+    <button class="pill" aria-pressed="false" data-v="C">C · Hum that opens</button>
+    <button class="pill" aria-pressed="false" data-v="D">D · Breeze chord</button>
+  </span>
+  <span class="sep"></span>
+  <label class="mono">Vol <input id="vol" type="range" min="0" max="1" step="0.01" value="0.8"></label>
+</div>
+
+<div class="intro">
+  <h1>The wall, <em>scrolled</em></h1>
+  <p>A rough copy of the playground: scroll and the columns of her work rise past, each at its own pace. Each variant makes sound <b>only from the scroll's movement</b> — silent when the page is still, louder and quicker the faster you go — and stops the moment you stop.</p>
+  <p>Press <b>Sound off</b> so it reads <b>Sound on</b> (a soft note confirms), pick a variant in the bar, and scroll down. Try slow, then a fast flick. The variant buttons stay at the top.</p>
+  <p class="mono">Scroll ↓</p>
+</div>
+
+<div class="scroller" id="scroller">
+  <div class="stage">
+    <div class="heading">A place for <em>endless</em> experimentation</div>
+    <div class="cols" id="cols"></div>
+  </div>
+</div>
+
+<div class="meter mono" aria-hidden="true">Speed <i><b id="speed"></b></i></div>
+
+<div class="outro">
+  <p><b>A · Detent</b> — a soft, tight click each time a piece crosses the middle of the screen, like the notched wheel of an iPhone date picker or a watch crown. Slow scroll: separate clicks you can count. Fast flick: they run into a soft purr. Warm wooden body, clean electronic edge. <i>My pick, if any: it's the one people already know from their phones, and it says "you moved one piece" and nothing more.</i></p>
+  <p><b>B · Pass-by notes</b> — the same moments, but each crossing is a soft music-box note, pitched by where the piece sits on the wall, so scrolling plays a run on the bright yo scale. Prettiest; closest to "music", so it may tire fastest.</p>
+  <p><b>C · Hum that opens</b> — one low, soft chord that's silent at rest; scrolling turns it up and opens its filter like a DJ's knob, faster = brighter. The techno one.</p>
+  <p><b>D · Breeze chord</b> — air through tall grass, tuned to a soft chord rather than plain noise, rising and falling with the scroll's speed.</p>
+  <p>Honest take: scroll is the one thing every visitor does constantly, so a sound on it is heard far more than any other on the site. If none of these still feels right after a minute of scrolling, the right call is to leave the playground silent.</p>
+</div>
+
+<script>
+  // ---------- audio ----------
+  let ac = null, on = false, master = null, room = null, dry = null;
+  const LOUD = 3, vol = document.getElementById('vol');
+  function ctx() {
+    if (ac) return ac;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = +vol.value * LOUD;
+    const lim = ac.createDynamicsCompressor(); lim.threshold.value = -12; lim.ratio.value = 8; master.connect(lim); lim.connect(ac.destination);
+    const len = Math.ceil(ac.sampleRate * 2), ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+    const conv = ac.createConvolver(); conv.buffer = ir; const wet = ac.createGain(); wet.gain.value = .3;
+    room = ac.createGain(); room.connect(conv); conv.connect(wet); wet.connect(master);
+    dry = ac.createGain(); dry.connect(master);
+    return ac;
+  }
+  const out = () => { const g = ac.createGain(); g.connect(dry); g.connect(room); return g; };
+  vol.oninput = () => { if (master) master.gain.value = +vol.value * LOUD; };
+  const ready = () => (on && ac && ac.state === 'running') ? ac : null;
+  const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  function env(dest, t, peak, att, dec) { const g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att); g.gain.exponentialRampToValueAtTime(.0001, t + att + dec); g.connect(dest); return g; }
+  let NB = null;
+  const nsrc = () => { if (!NB) { NB = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = NB.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; } const s = ac.createBufferSource(); s.buffer = NB; return s; };
+
+  // A · detent: a short wooden click with a crisp top
+  let lastTick = 0;
+  function detent(speed) {
+    const a = ready(); if (!a) return;
+    const nowMs = performance.now(); if (nowMs - lastTick < 30) return; lastTick = nowMs;
+    const t = a.currentTime, o = out(), lvl = .5 + .5 * Math.min(1, speed);
+    const x = a.createOscillator(); x.frequency.setValueAtTime(1300 + speed * 500, t); x.frequency.exponentialRampToValueAtTime(700, t + .025);
+    x.connect(env(o, t, .09 * lvl, .001, .03)); x.start(t); x.stop(t + .05);
+    const s = nsrc(), f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 4200; f.Q.value = 3;
+    s.connect(f); f.connect(env(o, t, .05 * lvl, .001, .012)); s.start(t, Math.random() * .5); s.stop(t + .03);
+  }
+  // B · pass-by notes on the yo scale
+  const YO = [0, 2, 5, 7, 9];
+  let lastNote = 0;
+  function passNote(slot, speed) {
+    const a = ready(); if (!a) return;
+    const nowMs = performance.now(); if (nowMs - lastNote < 60) return; lastNote = nowMs;
+    const m = 74 + Math.floor(slot / 5) * 12 + YO[slot % 5], t = a.currentTime, o = out(), lvl = .6 + .4 * Math.min(1, speed);
+    [[1, .07], [2.76, .02], [5.4, .008]].forEach(([r, p]) => { const x = a.createOscillator(); x.frequency.value = hz(m) * r; x.connect(env(o, t, p * lvl, .002, .9 / Math.sqrt(r))); x.start(t); x.stop(t + 1); });
+  }
+  // C · a low chord whose level and filter follow speed
+  let hum = null;
+  function humMake() {
+    const a = ctx(), g = a.createGain(); g.gain.value = 0;
+    const f = a.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 5; f.frequency.value = 200;
+    f.connect(g); g.connect(out());
+    const oscs = [45, 52, 57, 64].flatMap((m) => [-8, 8].map((d) => { const x = a.createOscillator(); x.type = 'sawtooth'; x.frequency.value = hz(m); x.detune.value = d; x.connect(f); x.start(); return x; }));
+    return { g, f, oscs };
+  }
+  // D · tuned air: noise through resonant band-passes on a soft chord
+  let breeze = null;
+  function breezeMake() {
+    const a = ctx(), g = a.createGain(); g.gain.value = 0; g.connect(out());
+    const s = nsrc(); s.loop = true;
+    const bands = [62, 69, 74, 78, 81].map((m) => { const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = hz(m); f.Q.value = 28; s.connect(f); const bg = a.createGain(); bg.gain.value = 1.4; f.connect(bg); bg.connect(g); return f; });
+    const hiss = a.createBiquadFilter(); hiss.type = 'highpass'; hiss.frequency.value = 3000; const hg = a.createGain(); hg.gain.value = .05; s.connect(hiss); hiss.connect(hg); hg.connect(g);
+    s.start();
+    return { g, s, bands };
+  }
+  function continuous(speed) {
+    if (!ac) return;
+    const t = ac.currentTime, k = Math.min(1, speed);
+    if (pick === 'C') { hum ||= humMake(); hum.g.gain.setTargetAtTime(.09 * k, t, .08); hum.f.frequency.setTargetAtTime(180 + 2600 * k * k, t, .08); }
+    else if (hum) hum.g.gain.setTargetAtTime(0, t, .1);
+    if (pick === 'D') { breeze ||= breezeMake(); breeze.g.gain.setTargetAtTime(.22 * k, t, .12); breeze.bands.forEach((f, i) => f.Q.setTargetAtTime(28 - 14 * k, t, .1)); }
+    else if (breeze) breeze.g.gain.setTargetAtTime(0, t, .1);
+  }
+
+  const btn = document.getElementById('master');
+  btn.onclick = () => {
+    on = !on; btn.setAttribute('aria-pressed', on); btn.textContent = on ? 'Sound on' : 'Sound off';
+    if (on) ctx().resume().then(() => passNote(4, .5));
+    else { hum && hum.g.gain.setTargetAtTime(0, ac.currentTime, .05); breeze && breeze.g.gain.setTargetAtTime(0, ac.currentTime, .05); }
+  };
+  let pick = 'A';
+  document.querySelector('[data-group]').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-v]'); if (!b) return;
+    document.querySelectorAll('[data-v]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    pick = b.dataset.v;
+  });
+
+  // ---------- the wall ----------
+  const files = ['play-three', 'play-porch', 'play-reading', 'play-earrings', 'play-care', 'play-green-eyes', 'play-sage', 'play-hermione', 'play-cup', 'play-bears', 'play-blue-sari', 'play-late-desk'];
+  const colsEl = document.getElementById('cols'), N = 5, SPEEDS = [.92, 1.08, 1, 1.12, .88];
+  const cols = [];
+  for (let c = 0; c < N; c++) {
+    const col = document.createElement('div'); col.className = 'col';
+    for (let k = 0; k < 30; k++) { const img = document.createElement('img'); img.src = `/public/images/${files[(c * 3 + k * 5) % files.length]}.jpg`; img.alt = ''; col.append(img); }
+    colsEl.append(col); cols.push({ el: col, y: 0, imgs: [...col.children] });
+  }
+  const scroller = document.getElementById('scroller'), speedEl = document.getElementById('speed');
+  let eased = 0, prevEased = 0, last = performance.now(), smoothSpeed = 0;
+  function frame(now) {
+    const dt = Math.min(64, now - last); last = now;
+    const target = Math.max(0, scrollY - scroller.offsetTop) * .8;
+    eased += (target - eased) * (1 - Math.exp(-dt / 120));
+    const mid = innerHeight / 2;
+    cols.forEach((c, ci) => {
+      const before = c.y; c.y = -eased * SPEEDS[ci];
+      c.el.style.transform = `translateY(${c.y}px)`;
+      // a piece's centre crossing the middle of the screen
+      c.imgs.forEach((img, k) => {
+        const centre = img.offsetTop + img.offsetHeight / 2;
+        const p = centre + before, q = centre + c.y;
+        if ((p - mid) * (q - mid) < 0) {
+          const sp = Math.min(1.5, Math.abs(q - p) / 12);
+          if (pick === 'A') detent(sp);
+          if (pick === 'B') passNote((ci * 3 + k) % 10, sp);
+        }
+      });
+    });
+    const v = Math.abs(eased - prevEased) / Math.max(1, dt);   // px per ms
+    prevEased = eased;
+    smoothSpeed += (v - smoothSpeed) * (1 - Math.exp(-dt / 80));
+    const k = Math.min(1, smoothSpeed / 2.5);
+    speedEl.style.width = k * 100 + '%';
+    if (ready()) continuous(k < .01 ? 0 : k);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

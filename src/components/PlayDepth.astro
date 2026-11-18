@@ -45,7 +45,20 @@
    Up/Down scroll the page as usual. Under reduced motion the wall moves as
    one sheet with the page (no easing, no column speeds), the heading moves
    with it, and there's no throw. Its reason: the work seen whole as a wall
-   you walk along, at your own pace. */
+   you walk along, at your own pace.
+
+   Breathe (on request, 2026-11-18, option A of
+   experiments/playground-motion/, after mariavasilyeva.com, whose tiles
+   are short loops): each picture slowly pushes in and drifts inside its
+   frame, then eases back, on its own timing, so the still pieces have a
+   little life. Not the cut-out portrait. Values under PLAY DEPTH in
+   tokens.css. Still under reduced motion.
+
+   Sound (page sound on only, playWallTick in sound.ts; on request,
+   2026-11-17, "A · Detent" of experiments/sound-scroll/): as the page
+   scrolls, a soft click each time a piece's centre crosses the middle of
+   the screen, like a date-picker wheel; a flick runs them into a purr.
+   Silent when still and when panning sideways. */
 import PageHeader from './PageHeader.astro';
 import { depthPieces, wall } from '../data/playDepth';
 ---
@@ -122,6 +135,16 @@ import { depthPieces, wall } from '../data/playDepth';
     will-change: transform;
   }
   .pdepth__wall :global(.pdepth__tile.is-cut) { background: none; }
+  /* The frame clips the picture so it can breathe inside it; hover lifts
+     the frame. A cut-out (the portrait) has no box to breathe in, so it
+     isn't clipped and stays still. */
+  .pdepth__wall :global(.pdepth__frame) {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .pdepth__wall :global(.pdepth__tile.is-cut .pdepth__frame) { overflow: visible; }
   .pdepth__wall :global(.pdepth__tile img) {
     display: block;
     width: 100%;
@@ -129,7 +152,24 @@ import { depthPieces, wall } from '../data/playDepth';
     object-fit: cover;
     pointer-events: none;
     -webkit-user-drag: none;
-    transition: transform var(--dur-hover) var(--ease-out);
+  }
+  /* Breathe (on request, 2026-11-18, option A of
+     experiments/playground-motion/, after mariavasilyeva.com's living
+     tiles): each picture slowly pushes in and drifts a little, then eases
+     back, on its own length and phase, so the wall is never quite still
+     while no two neighbours move together. */
+  .pdepth__wall :global(.pdepth__tile:not(.is-cut) img) {
+    transform: scale(var(--pdepth-breathe-from));
+    animation: pdepth-breathe calc(var(--pdepth-breathe-dur) + var(--breathe-i) * var(--pdepth-breathe-dur-step)) ease-in-out infinite;
+    animation-delay: var(--breathe-delay);
+    will-change: transform;
+  }
+  @keyframes pdepth-breathe {
+    0%, 100% { transform: scale(var(--pdepth-breathe-from)); }
+    50% {
+      transform: scale(var(--pdepth-breathe-to))
+        translate(calc(var(--breathe-x) * var(--pdepth-breathe-drift)), calc(var(--breathe-y) * var(--pdepth-breathe-drift)));
+    }
   }
 
   /* The caption: mono ink under the piece, no ground behind it, never wider
@@ -159,17 +199,19 @@ import { depthPieces, wall } from '../data/playDepth';
   }
   @media (hover: hover) {
     .pdepth__stage:not(.is-dragging) :global(.pdepth__tile:hover) { z-index: 5; }
-    .pdepth__stage:not(.is-dragging) :global(.pdepth__tile:hover img) { transform: scale(1.03); }
+    .pdepth__stage:not(.is-dragging) :global(.pdepth__tile:hover .pdepth__frame) { transform: scale(1.03); }
     .pdepth__stage:not(.is-dragging) :global(.pdepth__tile:hover figcaption) { opacity: 1; transform: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     .pdepth__wall :global(.pdepth__tile figcaption),
-    .pdepth__wall :global(.pdepth__tile img) { transition: none; }
+    .pdepth__wall :global(.pdepth__frame) { transition: none; }
+    .pdepth__wall :global(.pdepth__tile:not(.is-cut) img) { animation: none; transform: none; }
   }
 </style>
 
 <script>
   import { depthPieces, wall } from '../data/playDepth';
+  import { playWallTick } from '../scripts/sound';
 
   const root = document.querySelector<HTMLElement>('[data-pdepth]');
   const stage = root?.querySelector<HTMLElement>('[data-stage]');
@@ -181,7 +223,7 @@ import { depthPieces, wall } from '../data/playDepth';
     const mod = (a: number, n: number) => ((a % n) + n) % n;
     const N = depthPieces.length;
 
-    interface Tile { el: HTMLElement; x: number; y: number; w: number; h: number; k: number; hid?: boolean; }
+    interface Tile { el: HTMLElement; x: number; y: number; w: number; h: number; k: number; hid?: boolean; py?: number; }
     let tiles: Tile[] = [];
     let PW = 0, WRAP = 0;    // the wall's width, and the widest column plus its gutter
     let edge = 0;            // the heading's line, in stage px at the top: the work starts below it
@@ -256,9 +298,21 @@ import { depthPieces, wall } from '../data/playDepth';
           img.alt = '';
           img.decoding = 'async';
           img.draggable = false;
+          // Breathe: the picture sits in a frame that clips it, and pushes in
+          // and drifts inside it on its own timing (PLAY DEPTH in tokens.css).
+          // The numbers come from the tile's place in the wall, so every
+          // visit breathes the same, and neighbours never move in step.
+          const frame = document.createElement('div');
+          frame.className = 'pdepth__frame';
+          const n = tiles.length;
+          frame.style.setProperty('--breathe-i', String(n % 5));
+          frame.style.setProperty('--breathe-delay', `${-((n * 2.3) % 12).toFixed(1)}s`);
+          frame.style.setProperty('--breathe-x', String((n % 2 ? 1 : -1) * (2 + (n % 3))));
+          frame.style.setProperty('--breathe-y', String((n % 3 ? -1 : 1) * (2 + ((n + 1) % 2))));
+          frame.append(img);
           const cap = document.createElement('figcaption');
           cap.textContent = piece.medium ? `${piece.title} · ${piece.medium}` : piece.title;
-          el.append(img, cap);
+          el.append(frame, cap);
           el.style.width = `${w}px`;
           el.style.height = `${h}px`;
           el.style.visibility = 'hidden';
@@ -303,9 +357,19 @@ import { depthPieces, wall } from '../data/playDepth';
         velX *= wall.friction;
         if (Math.abs(velX) < 0.05) velX = 0;
       }
+      // The scroll's click (page sound on only, sound.ts): a piece's centre
+      // crossing the middle of the screen. Only scroll moves pieces up and
+      // down, so sideways panning is silent. One click a frame at most.
+      let ticked = false;
       for (const t of tiles) {
         const x = mod(t.x + camX + WRAP, PW) - WRAP;
         const y = t.y - f * t.k;
+        const py = t.py;
+        t.py = y;
+        if (!ticked && py !== undefined && x + t.w > 0 && x < W) {
+          const c0 = py + t.h / 2 - H / 2, c1 = y + t.h / 2 - H / 2;
+          if (c0 * c1 < 0) { ticked = true; playWallTick(Math.abs(y - py) / 12); }
+        }
         const off = x + t.w < -40 || x > W + 40 || y + t.h < -60 || y > H + 60;
         if (off) { if (!t.hid) { t.el.style.visibility = 'hidden'; t.hid = true; } continue; }
         if (t.hid) { t.el.style.visibility = ''; t.hid = false; }

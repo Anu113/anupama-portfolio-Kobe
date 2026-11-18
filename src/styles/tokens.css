@@ -1127,6 +1127,9 @@
   --preloader-pause-at: 0.5;             /* the one pause, this far across */
   --dur-preloader-pause: 300ms;
   --dur-preloader-black: 400ms;          /* first, the whole screen is curtain this long */
+  --dur-preloader-blinds: 1600ms;        /* Pixel blinds: slats and last pixel at their own pace, page loaded */
+  --preloader-pixels: 28;                /* the pixel: the screen's width (or 1.4x its height) over this */
+  --preloader-wait-at: 0.8;              /* while loading, it goes only this far (slats gone, last pixel waiting) */
   --dur-preloader-open: 500ms;           /* ...then it draws back to open the strip */
   --ease-preloader-open: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-preloader-max: 4000ms;           /* images still out by now count as in */
@@ -1491,6 +1494,13 @@
   --pdepth-caption-size: 0.625rem;         /* 10px: smaller than --step-fine, on request, so a caption fits its piece's width in three lines */
   --pdepth-caption-leading: 1.3;
   --pdepth-focus-inset: 6px;
+  /* Breathe: each picture pushes in and drifts inside its frame, then back
+     (on request, 2026-11-18, option A of experiments/playground-motion/). */
+  --pdepth-breathe-from: 1.02;             /* at rest: a hair over 1, so the drift never shows an edge */
+  --pdepth-breathe-to: 1.12;               /* at the deepest breath */
+  --pdepth-breathe-drift: 1%;              /* × 2–4 per piece, sideways and up/down */
+  --pdepth-breathe-dur: 8s;                /* the shortest breath … */
+  --pdepth-breathe-dur-step: 1s;           /* … plus 0–4 of these, so neighbours fall out of step */
 }
 
 /* ============================================================

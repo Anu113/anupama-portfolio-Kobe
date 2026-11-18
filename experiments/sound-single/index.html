@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound, round 7 — one sound for the playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Served from the repo root (launch config "sound-mockup") so her
+     pieces come straight from public/images. */
+  :root {
+    --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / 0.1); --tile: rgb(0 0 0 / 0.03);
+    --font-sans: 'Manrope', system-ui, sans-serif; --font-serif: 'Crimson Pro', serif; --font-mono: 'Azeret Mono', monospace;
+    --gutter: 2.5rem;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 600; }
+  .mono { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .bar { position: sticky; top: 0; z-index: 10; display: flex; gap: 1.5rem; align-items: center; padding: .9rem var(--gutter); background: var(--paper); border-bottom: 1px solid var(--line); }
+  .bar .name { font-size: .875rem; margin-right: auto; }
+  .pill { border: 1px solid var(--ink); background: none; border-radius: 999px; padding: .45rem .9rem; cursor: pointer; font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; }
+  .pill[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+  .bar label { display: flex; gap: .6rem; align-items: center; }
+  input[type=range] { accent-color: var(--ink); }
+  .intro { padding: 3rem var(--gutter) 1rem; max-width: 64rem; }
+  h1, h2 { font-family: var(--font-serif); font-weight: 300; letter-spacing: -0.03em; margin: 0; line-height: 1.05; }
+  h1 { font-size: 2.75rem; margin-bottom: .75rem; }
+  h2 { font-size: 1.75rem; margin: .4rem 0 .5rem; }
+  h1 em, h2 em { font-style: italic; }
+  p { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); margin: 0 0 .5rem; max-width: 46rem; }
+  p b { color: var(--ink); }
+  section { padding: 2rem var(--gutter) 3rem; border-top: 1px solid var(--line); }
+  .head { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: end; margin-bottom: 1.5rem; }
+  .variants { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .why { margin-top: 1.25rem; display: grid; gap: .25rem; }
+
+  .wall { position: relative; height: 24rem; overflow: hidden; background: var(--tile); border-radius: 20px; cursor: grab; touch-action: none; user-select: none; }
+  .wall:active { cursor: grabbing; }
+  .track { position: absolute; top: 0; left: 0; height: 100%; display: flex; gap: 3rem; align-items: center; padding: 0 2rem; will-change: transform; }
+  figure { margin: 0; flex: none; transition: transform .5s cubic-bezier(.16,1,.3,1); }
+  figure:hover, figure:focus-visible { transform: translateY(-4px); }
+  figure img { display: block; height: 13rem; width: auto; pointer-events: none; }
+  figure:nth-child(3n) img { height: 15.5rem; }
+  figure:nth-child(4n+1) img { height: 11rem; }
+  figcaption { font-family: var(--font-mono); font-weight: 400; font-size: .625rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-dim); margin-top: .5rem; opacity: 0; transition: opacity .3s; max-width: 13rem; }
+  figcaption i { font-style: normal; display: block; opacity: .7; margin-top: .2rem; }
+  figure:hover figcaption, figure:focus-visible figcaption, figure.near figcaption { opacity: 1; }
+  .now { margin-top: .75rem; min-height: 1.2em; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="name">Sound, round 7</span>
+  <button class="pill" id="master" aria-pressed="false">Sound off</button>
+  <label class="mono">Volume <input id="vol" type="range" min="0" max="1" step="0.01" value="0.8"></label>
+</div>
+
+<div class="intro">
+  <h1>One small <em>sound</em></h1>
+  <p>No music. One short sound, under a second or two, when you stop at a painting in the museum — the same size as the site's other sounds. Each mixes the two sides you named: a warm, Ghibli-like note (music box, glass, a soft pluck on the bright yo scale) shaped the way techno shapes sound (a filter sweep, an echo, a sub under it, a little digital grit). Each painting has its own note, so stopping at a few in turn sounds like a phrase, never a track. Nothing plays while you drag.</p>
+  <p>Press <b>Sound off</b> once so it reads <b>Sound on</b> (one soft note confirms it). Pick a variant, then rest the pointer on a painting for a moment. Tab moves between paintings too.</p>
+</div>
+
+<section>
+  <div class="head">
+    <div>
+      <span class="mono">Playground</span>
+      <h2>Step into a <em>painting</em></h2>
+    </div>
+    <div class="variants" data-group="play">
+      <button class="pill" aria-pressed="true" data-v="A">A · Soft pluck</button>
+      <button class="pill" aria-pressed="false" data-v="B">B · Music box, echoed</button>
+      <button class="pill" aria-pressed="false" data-v="C">C · Bell and sub</button>
+      <button class="pill" aria-pressed="false" data-v="D">D · Pixel chime</button>
+    </div>
+  </div>
+  <div class="wall" id="wall" aria-label="Playground: drag to move along; Tab to each painting">
+    <div class="track" id="track"></div>
+  </div>
+  <p class="mono now" id="now" aria-live="polite"></p>
+  <div class="why">
+    <p><b>A · Soft pluck</b> — a warm note whose brightness closes fast, the way a techno synth plucks, with two soft echoes trailing into the hall. Round, a little electronic, never sharp. <i>My pick: warm first, techno in the shape.</i></p>
+    <p><b>B · Music box, echoed</b> — one music-box note, then an echo that repeats and darkens, like a dub delay. The most Ghibli of the four, with the techno in its tail.</p>
+    <p><b>C · Bell and sub</b> — a clear glass ting with a very soft low thump under it, felt more than heard, like a kick from a distant club.</p>
+    <p><b>D · Pixel chime</b> — two quick notes, slightly grainy, like a gentle game sound. Answers the site's "last stubborn pixel" line; the most playful.</p>
+  </div>
+</section>
+
+<script>
+  // ---------- audio: one room for everything ----------
+  let ac = null, on = false, master = null, room = null, dry = null;
+  const LOUD = 4;   // round 5's first cut was far too quiet on laptop speakers
+  const vol = document.getElementById('vol');
+  function ctx() {
+    if (ac) return ac;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = +vol.value * LOUD;
+    // a gentle limiter, so the louder levels never clip
+    const lim = ac.createDynamicsCompressor(); lim.threshold.value = -10; lim.ratio.value = 6; master.connect(lim); lim.connect(ac.destination);
+    // a hall: 3.2s of decaying noise as the impulse
+    const len = Math.ceil(ac.sampleRate * 3.2), ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    const conv = ac.createConvolver(); conv.buffer = ir;
+    const wet = ac.createGain(); wet.gain.value = .45;
+    dry = ac.createGain(); dry.gain.value = 1;
+    room = ac.createGain();
+    room.connect(conv); conv.connect(wet); wet.connect(master);
+    dry.connect(master);
+    return ac;
+  }
+  // sounds connect to `out()`: dry plus a send into the room
+  function out() { const g = ac.createGain(); g.connect(dry); g.connect(room); return g; }
+  vol.oninput = () => { if (master) master.gain.value = +vol.value * LOUD; };
+  const btn = document.getElementById('master');
+  btn.onclick = () => { on = !on; btn.setAttribute('aria-pressed', on); btn.textContent = on ? 'Sound on' : 'Sound off'; if (on) ctx().resume().then(() => { hallNote(2); if (pick === 'C' && wallHover) dayStart(); if (pick === 'D' && wallHover) airStart(); }); else stopAll(); };
+  const ready = () => (on && ac && ac.state === 'running') ? ac : null;
+
+  function noise(a, s) { const b = a.createBuffer(1, Math.ceil(a.sampleRate * s), a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const n = a.createBufferSource(); n.buffer = b; return n; }
+  function env(a, dest, peak, att, rel, t) { const g = a.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att); g.gain.exponentialRampToValueAtTime(0.0001, t + att + rel); g.connect(dest); return g; }
+  function blip(dest, f, peak, att, rel, delay = 0, type = 'sine', fEnd) { const a = ac, t = a.currentTime + delay, o = a.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); if (fEnd) o.frequency.exponentialRampToValueAtTime(fEnd, t + att + rel); o.connect(env(a, dest, peak, att, rel, t)); o.start(t); o.stop(t + att + rel + .02); }
+  function hit(dest, f, q, peak, att, rel, type = 'bandpass', delay = 0) { const a = ac, t = a.currentTime + delay, len = att + rel + .03, n = noise(a, len), b = a.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; n.connect(b); b.connect(env(a, dest, peak, att, rel, t)); n.start(t); n.stop(t + len); }
+  // a looping noise bed through a filter, with its own gain
+  function bed(dest, f, q, type) { const a = ac, n = noise(a, 2); n.loop = true; const b = a.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; const g = a.createGain(); g.gain.value = 0; n.connect(b); b.connect(g); g.connect(dest); n.start(); return { g, b, n }; }
+
+  const pieces = [
+    ['play-three.jpg', 'In order of height'], ['play-porch.jpg', 'Before anyone else wakes'],
+    ['play-reading.jpg', 'The tea went cold'], ['play-earrings.jpg', 'Half a thought'],
+    ['play-care.jpg', 'Who holds whom'], ['play-green-eyes.jpg', 'Someone I almost knew'],
+    ['play-sage.jpg', 'Quiet, for now'], ['play-hermione.jpg', 'The brightest witch of her age'],
+  ];
+  // Each painting its own note: the yo scale (0 2 5 7 9), over an octave and a half
+  const YO = [0, 2, 5, 7, 9], hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const noteOf = (i) => 62 + Math.floor(i / 5) * 12 + YO[i % 5];
+
+  // A shared echo, three sixteenths at 120 bpm, darkening each repeat
+  let echo = null;
+  function echoIn() {
+    if (echo) return echo;
+    const d = ac.createDelay(1); d.delayTime.value = .375;
+    const fb = ac.createGain(); fb.gain.value = .38;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2200;
+    echo = ac.createGain(); echo.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d);
+    const o = out(); o.gain.value = .6; lp.connect(o);
+    return echo;
+  }
+  function toneEnv(dest, t, peak, att, dec) { const g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att); g.gain.exponentialRampToValueAtTime(.0001, t + att + dec); g.connect(dest); return g; }
+
+  // A · a warm synth pluck: a filter that snaps shut, two echoes
+  function pluck(m) {
+    const t = ac.currentTime, o = out(), f = ac.createBiquadFilter();
+    f.type = 'lowpass'; f.Q.value = 7; f.frequency.setValueAtTime(hz(m) * 8, t); f.frequency.exponentialRampToValueAtTime(hz(m) * 1.2, t + .25);
+    const g = toneEnv(o, t, .16, .004, .6); f.connect(g);
+    const e = ac.createGain(); e.gain.value = .5; g.connect(e); e.connect(echoIn());
+    [['sawtooth', -6], ['sawtooth', 6], ['triangle', 0]].forEach(([type, det]) => { const x = ac.createOscillator(); x.type = type; x.frequency.value = hz(m); x.detune.value = det; x.connect(f); x.start(t); x.stop(t + .7); });
+  }
+  // B · a music-box note into a dub echo
+  function musicbox(m) {
+    const t = ac.currentTime, o = out(), f = hz(m + 12);
+    const bus = ac.createGain(); bus.connect(o); const e = ac.createGain(); e.gain.value = .9; bus.connect(e); e.connect(echoIn());
+    [[1, .1], [2.76, .03], [5.4, .012]].forEach(([r, p]) => { const x = ac.createOscillator(); x.frequency.value = f * r; x.connect(toneEnv(bus, t, p, .002, 1 / Math.sqrt(r))); x.start(t); x.stop(t + 1.1); });
+  }
+  // C · glass ting over a soft sub thump
+  function bellSub(m) {
+    const t = ac.currentTime, o = out(), f = hz(m + 12);
+    [[1, .07], [2.32, .025], [4.25, .012]].forEach(([r, p]) => { const x = ac.createOscillator(); x.frequency.value = f * r; x.connect(toneEnv(o, t, p, .002, 1.4 - r * .15)); x.start(t); x.stop(t + 1.5); });
+    const k = ac.createOscillator(); k.frequency.setValueAtTime(110, t); k.frequency.exponentialRampToValueAtTime(42, t + .12);
+    const kg = toneEnv(dry, t, .5, .004, .3); k.connect(kg); k.start(t); k.stop(t + .4);
+  }
+  // D · two quick grainy notes (root, then a fifth up)
+  let crush = null;
+  function crusher() {
+    if (crush) return crush;
+    const ws = ac.createWaveShaper(), n = 1024, c = new Float32Array(n);
+    for (let i = 0; i < n; i++) { const xx = i / (n - 1) * 2 - 1; c[i] = Math.round(xx * 7) / 7; }
+    ws.curve = c; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 5000; ws.connect(lp); lp.connect(out());
+    return (crush = ws);
+  }
+  function pixel(m) {
+    const t = ac.currentTime;
+    [[m + 12, 0], [m + 19, .07]].forEach(([n, dt]) => { const x = ac.createOscillator(); x.type = 'square'; x.frequency.value = hz(n); const g = toneEnv(crusher(), t + dt, .05, .002, .22); x.connect(g); x.start(t + dt); x.stop(t + dt + .3); });
+  }
+  function hallNote() { musicbox(74); }   // the "sound on" confirmation
+
+  // ---------- resting on a painting ----------
+  let pick = 'A', current = -1, restTimer = null;
+  const now = document.getElementById('now');
+  function rest(i) {
+    if (i === current) return; leave(); current = i;
+    restTimer = setTimeout(() => {   // a short beat, so passing over isn't "looking"
+      const a = ready(); if (!a) return;
+      const m = noteOf(i % 8);
+      ({ A: pluck, B: musicbox, C: bellSub, D: pixel })[pick](m);
+      now.textContent = pieces[i % 8][1];
+    }, 300);
+  }
+  function leave() { clearTimeout(restTimer); current = -1; now.textContent = ''; }
+  function stopAll() { leave(); }
+  const dayStart = () => {}, airStart = () => {}, airStop = () => {}, day = null;
+
+  document.querySelector('[data-group]').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-v]'); if (!b) return;
+    document.querySelectorAll('[data-v]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    pick = b.dataset.v;
+  });
+
+  // ---------- the wall ----------
+  const track = document.getElementById('track'), wall = document.getElementById('wall');
+  for (let r = 0; r < 3; r++) pieces.forEach(([f, t], k) => {
+    const i = r * 8 + k, fig = document.createElement('figure');
+    fig.tabIndex = r === 1 ? 0 : -1;
+    fig.innerHTML = `<img src="/public/images/${f}" alt=""><figcaption>${t}</figcaption>`;
+    fig.addEventListener('pointerenter', () => { if (!dragging) rest(i); });
+    fig.addEventListener('pointerleave', () => leave());
+    fig.addEventListener('focus', () => { centreOn(fig); rest(i); });
+    fig.addEventListener('blur', () => leave());
+    track.append(fig);
+  });
+  let x = 0, v = 0, dragging = false, lastX = 0, wallHover = false;
+  const wrapW = () => track.scrollWidth / 3;
+  const along = () => ((-x) % wrapW()) / wrapW();
+  function moveBy(dx) {
+    x += dx; const W = wrapW(); if (x < -W * 2) x += W; if (x > 0) x -= W;
+    track.style.transform = `translateX(${x}px)`;
+  }
+  function centreOn(fig) { moveBy(wall.clientWidth / 2 - (fig.offsetLeft + fig.offsetWidth / 2 + x)); }
+  requestAnimationFrame(() => moveBy(-wrapW()));
+  function enterWall() { wallHover = true; }
+  wall.addEventListener('pointerenter', enterWall);
+  wall.addEventListener('pointerleave', () => { wallHover = false; leave(); });
+  wall.addEventListener('focusin', () => { if (!wallHover) enterWall(); });
+  wall.addEventListener('focusout', (e) => { if (!wall.contains(e.relatedTarget) && !wall.matches(':hover')) leave(); });
+  wall.addEventListener('pointerdown', (e) => { dragging = true; leave(); v = 0; lastX = e.clientX; wall.setPointerCapture(e.pointerId); });
+  wall.addEventListener('pointermove', (e) => { if (!dragging) return; const dx = e.clientX - lastX; v = dx; lastX = e.clientX; moveBy(dx); });
+  wall.addEventListener('pointerup', () => {
+    dragging = false;
+    const coast = () => { if (dragging) return; v *= .93; if (Math.abs(v) < .3) return; moveBy(v); requestAnimationFrame(coast); };
+    requestAnimationFrame(coast);
+  });
+</script>
+</body>
+</html>
