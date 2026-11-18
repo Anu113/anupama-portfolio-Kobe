@@ -1012,6 +1012,13 @@ walked back. Concretely, in the current implementation:
   anniversary"; `anniv` in `PrivacyIllo.astro`); on the Ads consent case
   it opens the checkup. The Privacy case links to both with the `see`
   block (one line and a link). Don't fold them back into one.
+  All three use the same composed cover (`PrivacyCover.astro`), each on
+  its own ground so a recruiter doesn't read them as one (on request,
+  2026-11-19): Privacy lilac, Data rights mint, Ads consent apricot
+  (`--cover-ground-*` under PRIVACY COVER). Burst, full-bleed, Arch and
+  a cut-down "lite" version were mocked
+  (`experiments/privacy-case-learnings/cover-*.html`) and turned down;
+  don't change the cover itself.
 - `cases.ts` holds case-study content as structural prose with `[X]`
   placeholders for real numbers — written from what this file already
   records about each project, not confirmed by Anupama. It also currently

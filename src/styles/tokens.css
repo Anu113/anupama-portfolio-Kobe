@@ -954,6 +954,12 @@
   --cover-type-body: 13px;
   --cover-type-badge: 11px;
   --cover-type-note: 13px;
+  /* each case's own ground behind the cover (on request, 2026-11-19:
+     the same cover on all three, "not the same colour for everyone").
+     Privacy keeps PayPal's lilac; the others take their own. */
+  --cover-ground-privacy: var(--hue-paypal);
+  --cover-ground-data-rights: #d4ebdd;
+  --cover-ground-ads-consent: #f6dcc6;
 }
 
 /* CONTEXTUAL PRIVACY (ContextualPrivacy.astro) — her contextual privacy

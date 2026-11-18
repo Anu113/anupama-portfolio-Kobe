@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayPal privacy cases — cover options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-18. Cover options for the three PayPal privacy cases
+  (Privacy settings, Data rights, Ads consent), which today share one
+  layout and read as the same case at a glance. A and B are renders of
+  the built covers (art/covers/); C, D and E are drawn here from the
+  shipped screens rendered to images (art/phones/). Numbers are the
+  cases' own: 60% fewer calls, 76% faster data access, 41% opted in.
+  Each direction shows the three covers large, then at /work tile size.
+  Serve from the repo root: /experiments/privacy-case-learnings/cover-options.html
+-->
+<style>
+  @font-face { font-family: 'PP Sans'; font-weight: 300; src: local('PayPal Sans Big Light'), local('PayPalSansBig-Light'); }
+  @font-face { font-family: 'PP Sans'; font-weight: 400; src: local('PayPal Sans Big Regular'), local('PayPalSansBig-Regular'); }
+  @font-face { font-family: 'PP Sans'; font-weight: 500; src: local('PayPal Sans Big Medium'), local('PayPalSansBig-Medium'), local('PayPalSansBigMedium-Regular'); }
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070; --blue: #2f6fd6;
+    --pp: 'PP Sans', 'PayPal Sans Big', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --ink: #001435; --dimp: #545d68; --navy: #003087; --deep: #1040c8;
+    --lilac: #e0d6ef; --mint: #cfe7d8; --peach: #f5dccd;
+    --note-bg: #262626; --note-ink: #fcfcfc;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f0efec; color: var(--fg); font: 600 13px/1.6 var(--font-sans); }
+  .doc { max-width: 1760px; margin: 0 auto; padding: 56px 32px 160px; }
+  h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 10px; letter-spacing: -0.01em; }
+  h2 { font: 300 32px/1.15 var(--font-serif); margin: 4px 0 6px; }
+  em { font-style: italic; }
+  .dek { color: var(--dim); margin: 0 0 8px; max-width: 86ch; }
+  .lbl { font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  section { margin: 72px 0 0; }
+  .dir { background: var(--bg); border-radius: 22px; padding: 26px; }
+  .dir--rec { box-shadow: inset 0 0 0 1.5px var(--blue); }
+  .dir__head { display: flex; justify-content: space-between; gap: 20px; align-items: baseline; margin-bottom: 16px; }
+  .rec { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--blue); }
+  .covers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 1300px) { .covers { grid-template-columns: 1fr; } }
+  .cap { margin: 8px 2px 0; font: 400 10.5px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--dim); }
+  .glance { margin-top: 18px; display: flex; gap: 10px; align-items: flex-end; }
+  .glance .lbl { margin-right: 8px; align-self: center; }
+  .glance .cv { width: 210px; }
+  .pros { margin: 14px 0 0; padding-left: 18px; color: var(--dim); max-width: 120ch; }
+  .pros b { color: var(--fg); }
+
+  /* a cover: fixed 1200 × 575 canvas (the case cover's 1800 × 862), scaled to its box */
+  .cv { position: relative; width: 100%; aspect-ratio: 1800 / 862; overflow: hidden; border-radius: 4px; container-type: inline-size; }
+  .cv > img.full { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cv__c { position: absolute; left: 0; top: 0; width: 1200px; height: 575px; transform-origin: 0 0; font-family: var(--pp); color: var(--ink); font-synthesis: none; }
+  .ph { position: absolute; display: block; filter: drop-shadow(0 18px 30px rgb(0 20 53 / .18)); }
+  .note { position: absolute; margin: 0; display: inline-flex; gap: 10px; padding: 7px 13px; border-radius: 999px; background: var(--note-bg); color: var(--note-ink); font: 400 15px/1.2 var(--font-mono); white-space: nowrap; }
+  .note b { font-weight: 400; color: #b7b7b7; }
+
+  /* C · structure */
+  .lab { position: absolute; display: flex; align-items: center; gap: 16px; }
+  .lab i { display: block; width: 90px; border-top: 1.5px dashed rgb(0 20 53 / .35); }
+  .lab span { font: 400 30px/1.15 var(--pp); letter-spacing: -0.01em; }
+  .lab small { display: block; font: 400 14px/1 var(--font-mono); color: var(--dimp); margin-top: 6px; letter-spacing: .02em; }
+  /* C · flow */
+  .arrow { position: absolute; font: 300 42px/1 var(--pp); color: rgb(0 20 53 / .4); }
+  .step { position: absolute; font: 400 15px/1 var(--font-mono); color: var(--ink); letter-spacing: .03em; }
+  /* C · decision */
+  .ask { position: absolute; left: 84px; top: 112px; width: 560px; }
+  .ask p { margin: 0; }
+  .ask__q { font: 400 50px/1.08 var(--pp); letter-spacing: -0.015em; }
+  .ask__d { font: 400 19px/1.45 var(--pp); color: var(--dimp); margin-top: 18px !important; max-width: 470px; }
+  .ask__b { display: flex; gap: 14px; margin-top: 34px; }
+  .ask__b span { flex: 1; max-width: 220px; text-align: center; padding: 18px; border-radius: 999px; box-shadow: inset 0 0 0 2px var(--deep); color: var(--deep); font: 500 21px/1 var(--pp); background: rgb(255 255 255 / .55); }
+  /* D · number */
+  .num { position: absolute; left: 90px; top: 150px; width: 560px; }
+  .num b { display: block; font: 300 210px/0.82 var(--font-serif); letter-spacing: -0.03em; color: var(--ink); }
+  .num span { display: block; margin-top: 26px; font: 400 26px/1.25 var(--pp); color: var(--ink); max-width: 440px; }
+  .num small { display: block; margin-top: 18px; font: 400 14px/1 var(--font-mono); color: var(--dimp); letter-spacing: .04em; text-transform: uppercase; }
+  /* E · macro */
+  .macro { position: absolute; overflow: hidden; border-radius: 26px; box-shadow: 0 24px 60px rgb(0 20 53 / .16); background: #fff; }
+  .macro img { position: absolute; display: block; max-width: none; }
+  .macro-cap { position: absolute; left: 80px; top: 200px; width: 380px; }
+  .macro-cap p { margin: 0; font: 400 34px/1.15 var(--pp); letter-spacing: -0.01em; }
+  .macro-cap small { display: block; margin-top: 16px; font: 400 14px/1 var(--font-mono); color: var(--dimp); text-transform: uppercase; letter-spacing: .04em; }
+</style>
+</head>
+<body>
+<main class="doc">
+  <p class="lbl">Experiment · PayPal privacy cases · cover options · 2026-11-18</p>
+  <h1>Three cases, <em>three different covers</em></h1>
+  <p class="dek">Today all three share one layout, one hue and the same four notes, so on /work they read as one case three times. Five directions below, each shown for all three cases, then at tile size, the way a recruiter scans the grid.</p>
+
+  <!-- ================= A ================= -->
+  <section>
+    <div class="dir">
+      <div class="dir__head"><div><p class="lbl">A · Today</p><h2>One layout, one hue</h2></div></div>
+      <div class="covers">
+        <div><div class="cv"><img class="full" src="art/covers/a-privacy.webp" alt=""></div><p class="cap">Privacy settings</p></div>
+        <div><div class="cv"><img class="full" src="art/covers/a-data.webp" alt=""></div><p class="cap">Data rights</p></div>
+        <div><div class="cv"><img class="full" src="art/covers/a-ads.webp" alt=""></div><p class="cap">Ads consent</p></div>
+      </div>
+      <div class="glance"><span class="lbl">At tile size</span><div class="cv"><img class="full" src="art/covers/a-privacy.webp" alt=""></div><div class="cv"><img class="full" src="art/covers/a-data.webp" alt=""></div><div class="cv"><img class="full" src="art/covers/a-ads.webp" alt=""></div></div>
+      <ul class="pros"><li><b>The problem:</b> at tile size all three are a lilac block with a phone in the middle and four dark pills.</li></ul>
+    </div>
+  </section>
+
+  <!-- ================= B ================= -->
+  <section>
+    <div class="dir">
+      <div class="dir__head"><div><p class="lbl">B · Same layout, own colour</p><h2>Lilac, mint, peach</h2></div></div>
+      <div class="covers">
+        <div><div class="cv"><img class="full" src="art/covers/a-privacy.webp" alt=""></div><p class="cap">Privacy settings · lilac</p></div>
+        <div><div class="cv"><img class="full" src="art/covers/b-data.webp" alt=""></div><p class="cap">Data rights · mint</p></div>
+        <div><div class="cv"><img class="full" src="art/covers/b-ads.webp" alt=""></div><p class="cap">Ads consent · peach</p></div>
+      </div>
+      <div class="glance"><span class="lbl">At tile size</span><div class="cv"><img class="full" src="art/covers/a-privacy.webp" alt=""></div><div class="cv"><img class="full" src="art/covers/b-data.webp" alt=""></div><div class="cv"><img class="full" src="art/covers/b-ads.webp" alt=""></div></div>
+      <ul class="pros"><li><b>Smallest change.</b> Colour tells them apart, the shape still doesn't. Two new grounds would be an exception to "one hue per company", like Debit Card's mint on the home page.</li></ul>
+    </div>
+  </section>
+
+  <!-- ================= C ================= -->
+  <section>
+    <div class="dir dir--rec">
+      <div class="dir__head"><div><p class="lbl">C · Each case its own shape</p><h2>Structure, flow, decision</h2></div><span class="rec">Recommended</span></div>
+      <p class="dek">Each cover shows the one thing its case is about, in a different arrangement: Privacy is a structure, Data rights is a flow, Ads consent is a question. Same lilac, same type.</p>
+      <div class="covers">
+        <div><div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="c-privacy"></div></div><p class="cap">Privacy settings · the structure</p></div>
+        <div><div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="c-data"></div></div><p class="cap">Data rights · the flow</p></div>
+        <div><div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="c-ads"></div></div><p class="cap">Ads consent · the decision</p></div>
+      </div>
+      <div class="glance"><span class="lbl">At tile size</span>
+        <div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="c-privacy"></div></div>
+        <div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="c-data"></div></div>
+        <div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="c-ads"></div></div>
+      </div>
+      <ul class="pros"><li><b>Reads as three different pieces of work</b> even at tile size: one phone with labels, three phones in a row, a headline with two buttons. Still product-first, and the Ads cover is the ask itself.</li></ul>
+    </div>
+  </section>
+
+  <!-- ================= D ================= -->
+  <section>
+    <div class="dir">
+      <div class="dir__head"><div><p class="lbl">D · The number first</p><h2>60%, 76%, 41%</h2></div></div>
+      <div class="covers">
+        <div><div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="d-privacy"></div></div><p class="cap">Privacy settings</p></div>
+        <div><div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="d-data"></div></div><p class="cap">Data rights</p></div>
+        <div><div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="d-ads"></div></div><p class="cap">Ads consent</p></div>
+      </div>
+      <div class="glance"><span class="lbl">At tile size</span>
+        <div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="d-privacy"></div></div>
+        <div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="d-data"></div></div>
+        <div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="d-ads"></div></div>
+      </div>
+      <ul class="pros"><li><b>Fastest for a recruiter:</b> the outcome is the first thing read. But the number is already in the title and the headline numbers under the cover, so it says it three times, and it leans toward the stat-counter look the brief avoids.</li></ul>
+    </div>
+  </section>
+
+  <!-- ================= E ================= -->
+  <section>
+    <div class="dir">
+      <div class="dir__head"><div><p class="lbl">E · One detail, close up</p><h2>The phone, up close</h2></div></div>
+      <div class="covers">
+        <div><div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="e-privacy"></div></div><p class="cap">Privacy settings · values on the right</p></div>
+        <div><div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="e-data"></div></div><p class="cap">Data rights · what we keep</p></div>
+        <div><div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="e-ads"></div></div><p class="cap">Ads consent · one step, two answers</p></div>
+      </div>
+      <div class="glance"><span class="lbl">At tile size</span>
+        <div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="e-privacy"></div></div>
+        <div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="e-data"></div></div>
+        <div class="cv" style="background:var(--lilac)"><div class="cv__c" data-c="e-ads"></div></div>
+      </div>
+      <ul class="pros"><li><b>Feels the most crafted</b>: one phone, large, running off the bottom edge, with a line on what to look at. At tile size the three phones look alike again.</li></ul>
+    </div>
+  </section>
+</main>
+
+<!-- cover canvases, 1200 × 575 -->
+<template id="c-privacy">
+  <img class="ph" src="art/phones/it-hub.png" style="left:330px; top:38px; width:236px" alt="">
+  <div class="lab" style="left:600px; top:212px"><i></i><span>Profile privacy<small>2 settings</small></span></div>
+  <div class="lab" style="left:600px; top:300px"><i></i><span>Permissions and shared data<small>3 settings</small></span></div>
+  <div class="lab" style="left:600px; top:388px"><i></i><span>Your data rights<small>3 settings</small></span></div>
+  <p class="note" style="left:600px; top:124px"><b>01</b>One page, three headings, every setting one tap away</p>
+</template>
+<template id="c-data">
+  <img class="ph" src="art/phones/it-req.png" style="left:140px; top:58px; width:212px" alt="">
+  <span class="arrow" style="left:380px; top:250px">→</span>
+  <img class="ph" src="art/phones/it-status.png" style="left:494px; top:58px; width:212px" alt="">
+  <span class="arrow" style="left:734px; top:250px">→</span>
+  <img class="ph" src="art/phones/it-clean.png" style="left:848px; top:58px; width:212px" alt="">
+  <span class="step" style="left:150px; top:526px">01 Choose the data</span>
+  <span class="step" style="left:504px; top:526px">02 See where it is</span>
+  <span class="step" style="left:858px; top:526px">03 Keep the account</span>
+</template>
+<template id="c-ads">
+  <div class="ask">
+    <p class="ask__q">Want PayPal ads that match your interests?</p>
+    <p class="ask__d">It stays off unless you turn it on. You can change it any time in Online ad preferences.</p>
+    <div class="ask__b"><span>Allow</span><span>Not now</span></div>
+  </div>
+  <img class="ph" src="art/phones/ck-start.png" style="left:820px; top:38px; width:236px" alt="">
+  <p class="note" style="left:84px; top:470px"><b>01</b>Equal answers, off by default</p>
+</template>
+
+<template id="d-privacy">
+  <div class="num"><b>60%</b><span>fewer support calls about privacy settings</span><small>80M+ people · PayPal app and web</small></div>
+  <img class="ph" src="art/phones/it-hub.png" style="left:790px; top:38px; width:236px" alt="">
+</template>
+<template id="d-data">
+  <div class="num"><b>76%</b><span>faster data access, with part of your data deletable</span><small>PayPal, Venmo and Honey</small></div>
+  <img class="ph" src="art/phones/it-clean.png" style="left:790px; top:38px; width:236px" alt="">
+</template>
+<template id="d-ads">
+  <div class="num"><b>41%</b><span>opted in once PayPal asked first</span><small>9 markets · off by default</small></div>
+  <img class="ph" src="art/phones/ck-1.png" style="left:790px; top:38px; width:236px" alt="">
+</template>
+
+<template id="e-privacy">
+  <div class="macro-cap"><p>Every setting says what it’s set to.</p><small>Values on the right</small></div>
+  <img class="ph" src="art/phones/it-hub.png" style="left:600px; top:64px; width:430px" alt="">
+</template>
+<template id="e-data">
+  <div class="macro-cap"><p>Delete part, and see what stays.</p><small>Clean up your data</small></div>
+  <img class="ph" src="art/phones/it-clean.png" style="left:600px; top:64px; width:430px" alt="">
+</template>
+<template id="e-ads">
+  <div class="macro-cap"><p>One setting a step, two equal answers.</p><small>The yearly checkup</small></div>
+  <img class="ph" src="art/phones/ck-1.png" style="left:600px; top:64px; width:430px" alt="">
+</template>
+
+<script>
+  document.querySelectorAll('[data-c]').forEach((el) => el.append(document.getElementById(el.dataset.c).content.cloneNode(true)));
+  const fit = () => document.querySelectorAll('.cv__c').forEach((c) => { c.style.transform = `scale(${c.parentElement.clientWidth / 1200})`; });
+  fit(); addEventListener('resize', fit);
+</script>
+</body>
+</html>

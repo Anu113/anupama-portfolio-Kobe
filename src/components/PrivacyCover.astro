@@ -14,6 +14,10 @@
    is ever cropped. Where the frame is too small for the notes to read,
    only the phone shows.
 
+   The frame behind it takes each case's own ground (`--cover-ground-*`,
+   on request, 2026-11-19), so the three covers don't read as one; the
+   cover itself is the same on all three.
+
    Decorative to assistive tech except for its one label (the case's
    hero alt). Values under PRIVACY COVER in tokens.css. */
 import PrivacyScreen from './PrivacyScreen.astro';
@@ -35,7 +39,7 @@ const notes: Record<Kind, [string, string, string, string]> = {
 };
 const n = notes[kind];
 ---
-<div class="cv" data-cv role="img" aria-label={alt}>
+<div class={`cv cv--${kind}`} data-cv role="img" aria-label={alt}>
   <div class="cv__canvas" aria-hidden="true">
     <svg class="cv__wires" viewBox="0 0 1200 525">
       <path d="M487 150 C 460 150, 452 128, 426 128" />
@@ -125,6 +129,10 @@ const n = notes[kind];
 </div>
 
 <style>
+  /* Each case's own ground, on the frame round the cover. */
+  :global(.hero__frame.hero__frame:has(> .cv--privacy)) { background: var(--cover-ground-privacy); }
+  :global(.hero__frame.hero__frame:has(> .cv--data-rights)) { background: var(--cover-ground-data-rights); }
+  :global(.hero__frame.hero__frame:has(> .cv--ads-consent)) { background: var(--cover-ground-ads-consent); }
   /* The frame gives the size; the canvas is scaled to fit it whole. */
   .cv { position: relative; width: 100%; height: 100%; overflow: hidden; container-type: size; }
   .cv__canvas {

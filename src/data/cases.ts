@@ -470,7 +470,7 @@ export const cases: CaseStudy[] = [
     title: 'Privacy settings 80 million people can read, and 60% fewer calls about them',
     hero: {
       src: '/images/paypal-privacy/hero.webp',
-      alt: 'The redesigned Data and privacy page in a phone, with three pieces of the redesign beside it: a switch for personalized offers, a Personal info data type with a tick, and Clean up your data, marked New',
+      alt: 'The redesigned Data and privacy page in a phone, with three pieces beside it: a switch for personalized offers, the yearly check card, and a Learn more card',
       mockup: 'privacy',
     },
     /* Opener in the combined pattern (rachelatwork.com × carlthomasiv.com):
