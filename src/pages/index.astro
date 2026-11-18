@@ -44,7 +44,7 @@ const cards = homeCards.map((c) => {
              status light, city, weather, ticking time (LocalTime.astro). -->
         <div class="hero__eyebrow" data-rise style="--rise-i:0"><LocalTime /></div>
         <h1 class="u-display hero__line" data-rise style="--rise-i:1">
-          <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn pixel.
+          <em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn <span class="hero__end">pixel<span class="hero__stop" aria-hidden="true"></span></span><span class="u-sr-only">.</span>
         </h1>
         <p class="hero__more" data-rise style="--rise-i:2">
           10+ years in fintech, enterprise software and developer tools,
@@ -202,6 +202,16 @@ const cards = homeCards.map((c) => {
   /* 26ch, was 22ch: the headline ended ~70px short of its own column,
      and that width went to the gap before the illustration. */
   .hero__line { max-width: 26ch; text-wrap: pretty; }
+  /* A square full stop: the sentence ends on a pixel (on request,
+     2026-11-18). The real "." stays for screen readers and copying. */
+  .hero__end { white-space: nowrap; }   /* the stop never wraps away from its word */
+  .hero__stop {
+    display: inline-block;
+    width: var(--hero-stop-size);
+    height: var(--hero-stop-size);
+    margin-left: var(--hero-stop-gap);
+    background: currentColor;
+  }
   .hero__more { font-size: var(--step-copy); line-height: var(--leading-copy); letter-spacing: var(--tracking-copy); color: var(--fg-dim); max-width: 54ch; margin: var(--space-head-body) 0 0; text-wrap: pretty; }
   .hero__co { color: var(--fg); }
 

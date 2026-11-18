@@ -115,6 +115,9 @@ effect:
   tokens) is parked, not deleted.
   Its reason: the one screen with nothing else to show; it opens on her
   sentence and says its last word, "pixel", once, without a word.
+  The sentence itself ends on a square full stop, a pixel, to answer it
+  (on request, 2026-11-18; `.hero__stop`, `--hero-stop-size`; the real
+  "." stays for screen readers and copying).
 - **A consistent hover system on interactive surfaces**, not one bespoke
   effect per component. Work tiles, links, and cards get *the same* motion
   vocabulary reused everywhere: default state is quiet; hover reveals

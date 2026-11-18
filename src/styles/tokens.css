@@ -328,6 +328,11 @@
      under it (a sliver of pill read as a mistake). The hero is the
      screen minus this. */
   --hero-peek: 3.75rem;
+  /* The hero sentence ends on a square full stop, a pixel, to answer the
+     preloader's last pixel (on request, 2026-11-18). Sized to the serif's
+     own round stop. */
+  --hero-stop-size: 0.12em;
+  --hero-stop-gap: 0.03em;
   /* The band's top padding: the nav → headline gap (index.astro). On a
      short screen it gives way first, so the peek above still fits: the
      hero's content (the row, ~31rem) and its bottom padding (~3rem) plus
