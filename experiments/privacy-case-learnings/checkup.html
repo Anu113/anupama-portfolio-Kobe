@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayPal Privacy — the yearly checkup, and splitting the case</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-18. Two things.
+  1. A yearly privacy checkup in the look of card A ("Anniversary") from
+     yearly-check.html, after Google's Privacy Checkup. Its content is her
+     own proposal, the Auto Privacy Advisor (APA) in the Ads consent case
+     (cases.ts, id 'apa'): one step at a time, a progress bar, a line on
+     what each change does; steps that open ad sharing, a copy of your
+     data, or erasing one kind of data. Setting values are examples.
+  2. A proposal to split the Privacy case, which now carries four problems.
+  Nothing in src/ changes. Serve from the repo root:
+  /experiments/privacy-case-learnings/checkup.html
+-->
+<style>
+  @font-face { font-family: 'PP Sans'; font-weight: 300; src: local('PayPal Sans Big Light'), local('PayPalSansBig-Light'); }
+  @font-face { font-family: 'PP Sans'; font-weight: 400; src: local('PayPal Sans Big Regular'), local('PayPalSansBig-Regular'); }
+  @font-face { font-family: 'PP Sans'; font-weight: 500; src: local('PayPal Sans Big Medium'), local('PayPalSansBig-Medium'), local('PayPalSansBigMedium-Regular'); }
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070; --blue: #2f6fd6;
+    --card: color-mix(in srgb, #262626 3%, #fcfcfc);
+    --pp: 'PP Sans', 'PayPal Sans Big', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --ink: #001435; --dimp: #545d68; --link: #0063c7; --deep: #1040c8; --navy: #003087;
+    --sky: #e3f0fb; --sky-2: #c9e2f8; --bright: #1f6bff; --yellow: #ffd140; --ground: #f5f3ee; --line: #e3e1dc; --ok: #0a7a52;
+    --shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f0efec; color: var(--fg); font: 600 13px/1.6 var(--font-sans); }
+  .doc { max-width: 1400px; margin: 0 auto; padding: 56px 32px 160px; }
+  h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 10px; letter-spacing: -0.01em; }
+  h2 { font: 300 32px/1.15 var(--font-serif); margin: 6px 0 8px; }
+  h3 { font: 300 21px/1.2 var(--font-serif); margin: 0 0 6px; }
+  em { font-style: italic; }
+  .dek { color: var(--dim); margin: 0 0 8px; max-width: 82ch; }
+  .lbl { font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .x { font: 400 11px/1 var(--font-mono); background: color-mix(in srgb, #262626 7%, #fcfcfc); padding: 2px 5px; }
+  section { margin: 64px 0 0; }
+  .panel { background: var(--bg); border-radius: 20px; padding: 24px; }
+
+  /* flow */
+  .flow { display: flex; gap: 14px; overflow-x: auto; padding: 4px 4px 12px; }
+  .step { flex: none; width: 262px; }
+  .step .lbl { display: block; margin-bottom: 8px; }
+  .step p.note { margin: 10px 2px 0; color: var(--dim); font-size: 12px; }
+  .arrow { flex: none; align-self: center; color: var(--dim); font: 400 18px/1 var(--font-mono); margin-top: -40px; }
+
+  .phone { width: 262px; height: 548px; border-radius: 34px; background: #111; padding: 7px; }
+  .scr { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 28px; background: var(--ground); font: 400 11.5px/1.4 var(--pp); color: var(--ink); font-synthesis: none; display: flex; flex-direction: column; }
+  .scr--white { background: #fff; }
+  .sb { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; font: 500 10.5px/1 var(--pp); color: #000; flex: none; }
+  .nv { height: 30px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; flex: none; color: var(--ink); }
+  .ln { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .body { padding: 0 12px; flex: 1; display: flex; flex-direction: column; }
+  .t { font: 400 19px/1.15 var(--pp); letter-spacing: -0.01em; margin: 0 0 3px; }
+  .s { color: var(--dimp); font-size: 10.5px; margin: 0 0 10px; }
+  .gh { font-size: 12.5px; margin: 12px 2px 6px; }
+  .list { background: #fff; border-radius: 10px; }
+  .r { display: grid; grid-template-columns: 20px 1fr auto 12px; gap: 9px; align-items: center; padding: 9px 11px; font-size: 11.5px; }
+  .r + .r { box-shadow: inset 0 1px 0 var(--line); }
+  .r .v { font-size: 10.5px; color: var(--dimp); }
+  .r svg { width: 18px; height: 18px; } .r .c { color: var(--dimp); display: grid; } .r .c svg { width: 12px; height: 12px; }
+  .bt { flex: 1; border-radius: 999px; padding: 9px 6px; text-align: center; font: 500 11.5px/1 var(--pp); white-space: nowrap; }
+  .bt--p { background: var(--navy); color: #fff; }
+  .bt--o { box-shadow: inset 0 0 0 1.5px var(--navy); color: var(--navy); }
+  .bt--full { display: block; flex: none; }
+  .btns { display: flex; gap: 6px; margin-top: 11px; }
+  .k { font-size: 10px; color: var(--dimp); margin: 0; }
+  .q { font-size: 13.5px; line-height: 1.3; margin: 3px 0 0; }
+
+  /* card A, as picked */
+  .yc { position: relative; border-radius: 12px; padding: 12px 92px 12px 12px; background: #fff; box-shadow: var(--shadow); }
+  .yc .btns { margin-right: -80px; }
+  .anniv { position: absolute; right: 10px; top: 10px; width: 72px; height: 72px; }
+  .sub { font-size: 10.5px; color: var(--dimp); margin: 3px 0 0; }
+
+  /* checkup screens */
+  .prog { display: flex; align-items: center; gap: 8px; margin: 2px 0 12px; }
+  .prog__bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+  .prog__bar i { display: block; height: 100%; background: var(--deep); border-radius: 2px; }
+  .prog span { font-size: 10px; color: var(--dimp); }
+  .hero { height: 112px; border-radius: 12px; background: var(--sky); display: grid; place-items: center; margin-bottom: 12px; }
+  .sc { background: #fff; border-radius: 12px; box-shadow: var(--shadow); padding: 12px; }
+  .sc__row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .sc__t { font-size: 13.5px; }
+  .state { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--dimp); margin-top: 3px; }
+  .state i { width: 7px; height: 7px; border-radius: 50%; background: var(--deep); }
+  .state--off i { background: #9da3a9; }
+  .means { margin: 10px 0 0; padding: 9px 10px; border-radius: 9px; background: var(--ground); font-size: 10.5px; line-height: 1.4; color: var(--ink); }
+  .means b { font-weight: 500; }
+  .sw { width: 34px; height: 20px; border-radius: 10px; background: var(--deep); position: relative; flex: none; }
+  .sw::after { content: ''; position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+  .sw--off { background: #c9ced4; } .sw--off::after { right: auto; left: 2px; }
+  .notnow { text-align: center; color: var(--link); font: 500 11px/1 var(--pp); margin-top: 12px; }
+  .grow { flex: 1; }
+  .foot { padding: 10px 12px 16px; flex: none; }
+  .chk { display: grid; grid-template-columns: 16px 1fr auto; gap: 9px; align-items: center; padding: 8px 11px; font-size: 11.5px; }
+  .chk + .chk { box-shadow: inset 0 1px 0 var(--line); }
+  .chk .v { font-size: 10.5px; color: var(--dimp); }
+  .tick { width: 16px; height: 16px; border-radius: 50%; background: var(--ok); color: #fff; display: grid; place-items: center; }
+  .tick svg { width: 10px; height: 10px; stroke-width: 2.4; }
+  .done-art { display: grid; place-items: center; margin: 8px 0 6px; }
+  .notif { margin: 10px 8px; padding: 10px 11px; border-radius: 14px; background: rgb(255 255 255 / .82); box-shadow: 0 4px 18px rgb(0 0 0 / .12); display: grid; grid-template-columns: 26px 1fr; gap: 9px; font-size: 11px; }
+  .notif .app { width: 26px; height: 26px; border-radius: 6px; background: var(--navy); color: #fff; display: grid; place-items: center; font: 500 13px/1 var(--pp); font-style: italic; }
+  .notif b { display: block; font-weight: 500; }
+  .notif small { color: var(--dimp); font-size: 10px; }
+  .lock { background: linear-gradient(#5f7ea8, #a7b8cf); }
+  .lock .time { color: #fff; text-align: center; font: 300 44px/1 var(--pp); margin-top: 26px; }
+  .lock .date { color: #fff; text-align: center; font: 400 12px/1 var(--pp); margin: 6px 0 18px; }
+
+  /* split */
+  .split { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 1100px) { .split { grid-template-columns: 1fr; } }
+  .case { background: var(--bg); border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+  .case--new { box-shadow: inset 0 0 0 1.5px var(--blue); }
+  .case h3 { margin: 0; }
+  .case .tl { font: 300 17px/1.3 var(--font-serif); color: var(--fg); margin: 0; }
+  .case ul { margin: 0; padding-left: 18px; }
+  .case li + li { margin-top: 3px; }
+  .case .from { font: 400 10.5px/1.5 var(--font-mono); color: var(--dim); text-transform: uppercase; letter-spacing: .03em; }
+  .case .num { display: flex; gap: 6px; flex-wrap: wrap; }
+  .case .num span { font: 400 11px/1 var(--font-mono); padding: 6px 8px; border-radius: 999px; background: var(--card); }
+  .now { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  @media (max-width: 1000px) { .now { grid-template-columns: 1fr 1fr; } }
+  .now div { background: var(--card); border-radius: 14px; padding: 14px; }
+  .now b { display: block; font: 300 18px/1.2 var(--font-serif); margin-bottom: 4px; }
+  .now p { margin: 0; color: var(--dim); font-size: 12px; }
+  .story { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 1000px) { .story { grid-template-columns: 1fr; } }
+  .story ol { margin: 8px 0 0; padding-left: 20px; }
+  .story li + li { margin-top: 5px; }
+  .story li span { color: var(--dim); }
+  .story .hl { background: color-mix(in srgb, #2f6fd6 10%, transparent); border-radius: 4px; padding: 0 3px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="back" viewBox="0 0 24 24"><path d="M20 12H4.5M10.5 6l-6 6 6 6"/></symbol>
+  <symbol id="close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></symbol>
+  <symbol id="block" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M6.4 17.6L17.6 6.4"/></symbol>
+  <symbol id="lock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2"/></symbol>
+  <symbol id="tag" viewBox="0 0 24 24"><path d="M4 4h7.5l8.5 8.5-7.5 7.5L4 11.5zM8.5 8.5h.01"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="anniv" viewBox="0 0 72 72">
+    <circle cx="36" cy="38" r="30" fill="#e3f0fb"/>
+    <rect x="18" y="22" width="36" height="34" rx="6" fill="#1f6bff"/>
+    <rect x="18" y="22" width="36" height="10" rx="5" fill="#1040c8"/>
+    <rect x="25" y="17" width="4" height="10" rx="2" fill="#001435"/><rect x="43" y="17" width="4" height="10" rx="2" fill="#001435"/>
+    <text x="36" y="50" text-anchor="middle" font-family="PP Sans, Helvetica Neue, Arial" font-size="15" fill="#fff">1 yr</text>
+    <path d="M60 14l1.6 4.2 4.2 1.6-4.2 1.6L60 25.6l-1.6-4.2-4.2-1.6 4.2-1.6z" fill="#ffd140"/>
+    <circle cx="12" cy="20" r="2" fill="#ffd140"/><circle cx="64" cy="48" r="1.8" fill="#1f6bff"/><circle cx="10" cy="52" r="1.6" fill="#c9e2f8"/>
+  </symbol>
+</defs></svg>
+
+<main class="doc">
+  <p class="lbl">Experiment · PayPal Privacy · yearly checkup and case split · 2026-11-18</p>
+  <h1>The yearly check, grown into a <em>privacy checkup</em></h1>
+  <p class="dek">Card A opens a short checkup, after Google's Privacy Checkup. Its steps aren't invented: they're your own Auto Privacy Advisor from the Ads consent case, which has words and Google's screenshot but no screens of its own. Values are examples.</p>
+
+  <!-- ================= FLOW ================= -->
+  <section>
+    <p class="lbl">The flow</p>
+    <h2>One year in: a checkup, one setting at a time</h2>
+    <p class="dek">Your APA, as written: "one step at a time, a progress bar, and a clear line on what each change does". Each step shows the setting as it is now, says what it means in a line, and asks once. "Not now" on every step, as on Google's.</p>
+    <div class="panel"><div class="flow">
+
+      <!-- 0 · Notification -->
+      <div class="step">
+        <span class="lbl">0 · Or a nudge</span>
+        <div class="phone"><div class="scr lock">
+          <div class="sb" style="color:#fff"><span>9:41</span><span>▮</span></div>
+          <p class="time">9:41</p><p class="date">Wednesday, 18 November</p>
+          <div class="notif"><span class="app">P</span><div><b>PayPal</b>It's been a year since you set up your privacy. Take a quick checkup?<br><small>now</small></div></div>
+        </div></div>
+        <p class="note">Your APA's "Ask": a notification suggests the checkup. People opt in to APA, and can opt out.</p>
+      </div>
+      <span class="arrow">→</span>
+
+      <!-- 1 · Hub with card A -->
+      <div class="step">
+        <span class="lbl">1 · Card A on the hub</span>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg></div>
+          <div class="body">
+            <p class="t">Data and privacy</p><p class="s">Set your privacy controls and manage your data.</p>
+            <div class="yc">
+              <svg class="anniv" aria-hidden="true"><use href="#anniv"/></svg>
+              <p class="k">One year of your settings</p>
+              <p class="q">Time for your privacy checkup</p>
+              <p class="sub">4 settings, one at a time.</p>
+              <div class="btns"><span class="bt bt--p">Start checkup</span><span class="bt bt--o">Not now</span></div>
+            </div>
+            <p class="gh">Profile privacy</p>
+            <div class="list">
+              <div class="r"><svg class="ln"><use href="#search"/></svg><span>Search privacy</span><span class="v">Email, phone</span><span class="c"><svg class="ln"><use href="#chev"/></svg></span></div>
+              <div class="r"><svg class="ln"><use href="#block"/></svg><span>Blocked profiles</span><span class="v">2</span><span class="c"><svg class="ln"><use href="#chev"/></svg></span></div>
+            </div>
+            <p class="gh">Permissions and shared data</p>
+            <div class="list">
+              <div class="r"><svg class="ln"><use href="#lock"/></svg><span>Permissions</span><span class="v">3 apps</span><span class="c"><svg class="ln"><use href="#chev"/></svg></span></div>
+              <div class="r"><svg class="ln"><use href="#tag"/></svg><span>Deals &amp; ads</span><span class="v">On</span><span class="c"><svg class="ln"><use href="#chev"/></svg></span></div>
+            </div>
+          </div>
+        </div></div>
+        <p class="note">The card you picked. Its question changes from one setting to the whole checkup; the anniversary stays.</p>
+      </div>
+      <span class="arrow">→</span>
+
+      <!-- 2 · Step 1 -->
+      <div class="step">
+        <span class="lbl">2 · Step 1 of 4</span>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><span></span><svg class="ln" width="18" height="18"><use href="#close"/></svg></div>
+          <div class="body">
+            <div class="prog"><span class="prog__bar"><i style="width:25%"></i></span><span>1 of 4</span></div>
+            <div class="hero"><svg width="96" height="80" viewBox="0 0 96 80" aria-hidden="true"><rect x="10" y="12" width="52" height="40" rx="5" fill="#fff"/><rect x="16" y="20" width="22" height="4" rx="2" fill="#1040c8"/><rect x="16" y="29" width="38" height="3" rx="1.5" fill="#c9e2f8"/><rect x="16" y="36" width="30" height="3" rx="1.5" fill="#c9e2f8"/><rect x="40" y="30" width="46" height="36" rx="5" fill="#1f6bff"/><circle cx="52" cy="44" r="5" fill="#ffd140"/><rect x="60" y="41" width="20" height="3" rx="1.5" fill="#fff"/><rect x="60" y="48" width="14" height="3" rx="1.5" fill="#c9e2f8"/></svg></div>
+            <p class="t" style="font-size:17px">PayPal ads on other sites</p>
+            <div class="sc">
+              <div class="sc__row"><span><span class="sc__t">Online ad preferences</span><br><span class="state"><i></i>On</span></span><span class="sw"></span></div>
+              <p class="means"><b>What this means:</b> PayPal shares some of your info with partners like Facebook and Google, so its ads there match your interests. Turning it off doesn't stop PayPal ads; it stops the matching.</p>
+            </div>
+            <span class="grow"></span>
+          </div>
+          <div class="foot"><div class="btns" style="margin:0"><span class="bt bt--o">Keep on</span><span class="bt bt--o">Turn off</span></div><p class="notnow">Not now</p></div>
+        </div></div>
+        <p class="note">From your Ads consent case: sharing with ad partners, and what turning it off does and doesn't do. Equal answers.</p>
+      </div>
+      <span class="arrow">→</span>
+
+      <!-- 3 · Step 2 -->
+      <div class="step">
+        <span class="lbl">3 · Step 2 of 4</span>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg><svg class="ln" width="18" height="18"><use href="#close"/></svg></div>
+          <div class="body">
+            <div class="prog"><span class="prog__bar"><i style="width:50%"></i></span><span>2 of 4</span></div>
+            <div class="hero" style="background:#fff4cc"><svg width="96" height="80" viewBox="0 0 96 80" aria-hidden="true"><rect x="22" y="10" width="40" height="62" rx="6" fill="#003087"/><rect x="26" y="16" width="32" height="48" rx="3" fill="#fff"/><rect x="30" y="22" width="24" height="12" rx="3" fill="#ffd140"/><rect x="30" y="38" width="24" height="12" rx="3" fill="#e3f0fb"/><path d="M70 22l1.6 4.2 4.2 1.6-4.2 1.6L70 33.6l-1.6-4.2-4.2-1.6 4.2-1.6z" fill="#1f6bff"/></svg></div>
+            <p class="t" style="font-size:17px">Personalized deals</p>
+            <div class="sc">
+              <div class="sc__row"><span><span class="sc__t">Get personalized offers</span><br><span class="state"><i></i>On</span></span><span class="sw"></span></div>
+              <p class="means"><b>What it uses:</b> where you've paid with PayPal, and stores you've visited in PayPal's network. We never sell your personal information.</p>
+            </div>
+            <span class="grow"></span>
+          </div>
+          <div class="foot"><div class="btns" style="margin:0"><span class="bt bt--o">Keep on</span><span class="bt bt--o">Turn off</span></div><p class="notnow">Not now</p></div>
+        </div></div>
+        <p class="note">The shipped switch, with its "What it uses" lines, as a step.</p>
+      </div>
+      <span class="arrow">→</span>
+
+      <!-- 4 · Step 3 -->
+      <div class="step">
+        <span class="lbl">4 · Step 3 of 4</span>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg><svg class="ln" width="18" height="18"><use href="#close"/></svg></div>
+          <div class="body">
+            <div class="prog"><span class="prog__bar"><i style="width:75%"></i></span><span>3 of 4</span></div>
+            <div class="hero" style="background:#e4f4ec"><svg width="96" height="80" viewBox="0 0 96 80" aria-hidden="true"><rect x="20" y="14" width="56" height="52" rx="6" fill="#fff"/><circle cx="36" cy="34" r="9" fill="#0a7a52" opacity=".25"/><path d="M30 34l4 4 8-8" stroke="#0a7a52" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="50" y="28" width="18" height="4" rx="2" fill="#c9e2f8"/><rect x="50" y="36" width="12" height="4" rx="2" fill="#c9e2f8"/><rect x="28" y="50" width="40" height="6" rx="3" fill="#e3f0fb"/></svg></div>
+            <p class="t" style="font-size:17px">Data you don't need</p>
+            <div class="sc">
+              <span class="sc__t">Face scan data</span><br><span class="state"><i></i>Stored · used to verify your ID</span>
+              <p class="means"><b>If you delete it:</b> your account stays open. To verify your ID again, you'll need to re-upload it.</p>
+            </div>
+            <span class="grow"></span>
+          </div>
+          <div class="foot"><div class="btns" style="margin:0"><span class="bt bt--o">Keep it</span><span class="bt bt--o">Delete it</span></div><p class="notnow">Not now</p></div>
+        </div></div>
+        <p class="note">Your APA's "erasing one kind of data, like face scan or marketing data, without closing the account", with the shipped Clean up's line on what you lose.</p>
+      </div>
+      <span class="arrow">→</span>
+
+      <!-- 5 · Step 4 -->
+      <div class="step">
+        <span class="lbl">5 · Step 4 of 4</span>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg><svg class="ln" width="18" height="18"><use href="#close"/></svg></div>
+          <div class="body">
+            <div class="prog"><span class="prog__bar"><i style="width:100%"></i></span><span>4 of 4</span></div>
+            <div class="hero"><svg width="96" height="80" viewBox="0 0 96 80" aria-hidden="true"><path d="M26 18h30l12 12v34a4 4 0 0 1-4 4H26a4 4 0 0 1-4-4V22a4 4 0 0 1 4-4z" fill="#fff"/><path d="M56 18v12h12" fill="#c9e2f8"/><rect x="30" y="38" width="28" height="4" rx="2" fill="#1040c8"/><rect x="30" y="46" width="22" height="3" rx="1.5" fill="#c9e2f8"/><circle cx="68" cy="60" r="11" fill="#1f6bff"/><path d="M68 54v9M64 59l4 4 4-4" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg></div>
+            <p class="t" style="font-size:17px">See what PayPal has</p>
+            <div class="sc">
+              <span class="sc__t">Get a copy of your data</span><br><span class="state state--off"><i></i>Never requested</span>
+              <p class="means"><b>What you get:</b> a file of the data types you choose, like personal info and marketing data. We'll email you when it's ready.</p>
+            </div>
+            <span class="grow"></span>
+          </div>
+          <div class="foot"><div class="btns" style="margin:0"><span class="bt bt--o">Request a copy</span><span class="bt bt--o">Skip</span></div><p class="notnow">Not now</p></div>
+        </div></div>
+        <p class="note">Your APA's "a copy of your data", opening the shipped Get a copy screen.</p>
+      </div>
+      <span class="arrow">→</span>
+
+      <!-- 6 · Done -->
+      <div class="step">
+        <span class="lbl">6 · Done</span>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><span></span><svg class="ln" width="18" height="18"><use href="#close"/></svg></div>
+          <div class="body">
+            <div class="done-art"><svg width="72" height="72" aria-hidden="true"><use href="#anniv"/></svg></div>
+            <p class="t" style="text-align:center;font-size:18px">You're all set for another year</p>
+            <p class="s" style="text-align:center">Here's what you checked.</p>
+            <div class="list">
+              <div class="chk"><span class="tick"><svg class="ln"><use href="#check"/></svg></span><span>Ads on other sites</span><span class="v">Turned off</span></div>
+              <div class="chk"><span class="tick"><svg class="ln"><use href="#check"/></svg></span><span>Personalized deals</span><span class="v">Kept on</span></div>
+              <div class="chk"><span class="tick"><svg class="ln"><use href="#check"/></svg></span><span>Face scan data</span><span class="v">Deleted</span></div>
+              <div class="chk"><span class="tick"><svg class="ln"><use href="#check"/></svg></span><span>Copy of your data</span><span class="v">Skipped</span></div>
+            </div>
+            <p class="s" style="text-align:center;margin-top:10px">You can change any of these in Data and privacy.</p>
+            <span class="grow"></span>
+          </div>
+          <div class="foot"><span class="bt bt--p bt--full">Done</span></div>
+        </div></div>
+        <p class="note">The anniversary closes the loop, and the summary is your APA's "feedback on what each change does".</p>
+      </div>
+
+    </div></div>
+  </section>
+
+  <!-- ================= STORY ================= -->
+  <section>
+    <p class="lbl">Where it goes in the story</p>
+    <h2>The hub's card opens your APA</h2>
+    <p class="dek">Your APA is a proposal, and the case says so. That keeps it honest: the hub's card is shipped, the checkup it opens is the next step you proposed.</p>
+    <div class="story">
+      <div class="panel">
+        <h3>Privacy settings case</h3>
+        <ol>
+          <li>The situation, My scope, The hard call</li>
+          <li>What shipped <span>(second version → shipped)</span></li>
+          <li>The craft <span class="hl">opens on the hub with card A</span></li>
+          <li>Impact</li>
+          <li class="hl">One line under the hub: "Once a year, the card opens a checkup. See it in the Ads consent case." <span>(a link, no new section)</span></li>
+        </ol>
+      </div>
+      <div class="panel">
+        <h3>Ads consent case</h3>
+        <ol>
+          <li>The situation: ~1% found the setting</li>
+          <li>The ask: equal Allow and Not now</li>
+          <li class="hl">Auto Privacy Advisor: these six screens replace Google's screenshot <span>(Google's moves to a caption: "after Google's Privacy Checkup")</span></li>
+          <li>Impact</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SPLIT ================= -->
+  <section>
+    <p class="lbl">Too many problems in one case?</p>
+    <h2>Yes. The Privacy case carries four.</h2>
+    <p class="dek">Each of these could open its own case: its own problem, its own screens, its own number. Together they make a 2,300-word page where a skimming recruiter can't tell which one is the point.</p>
+    <div class="panel">
+      <div class="now">
+        <div><b>1 · Settings people can read</b><p>The hub's structure: card sorts, four tiles, the second version, what shipped. 60% fewer calls.</p></div>
+        <div><b>2 · Data rights</b><p>Get a copy, delete part and keep the account, the six-step request, what the law keeps. 76% faster data access.</p></div>
+        <div><b>3 · Privacy in context</b><p>Explanations where the question comes up: offers, Shopping and Privacy, the contextual map.</p></div>
+        <div><b>4 · Web account settings</b><p>The blue-on-blue sub-navigation made white. Up to 85% better on some tasks.</p></div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:28px">Proposed: three cases, one privacy body of work</h3>
+    <div class="split" style="margin-top:12px">
+      <div class="case">
+        <span class="lbl">Keep · trimmed</span>
+        <h3>PayPal Privacy settings</h3>
+        <p class="tl">Privacy settings 80 million people can read, and 60% fewer calls about them</p>
+        <span class="from">Problems 1, 3 and 4</span>
+        <ul>
+          <li>Situation, scope, the hard call</li>
+          <li>What shipped, the craft (hub with card A, deals, Learn more cards)</li>
+          <li>Privacy in context, as one row</li>
+          <li>Web sub-nav, as one compare</li>
+        </ul>
+        <div class="num"><span>60% fewer calls</span><span>4.7/5 rating</span><span>80M people</span></div>
+      </div>
+      <div class="case case--new">
+        <span class="lbl">New · from what's folded in now</span>
+        <h3>PayPal Data rights</h3>
+        <p class="tl">Delete part of your data and keep the account, across PayPal, Venmo and Honey</p>
+        <span class="from">Problem 2 · "What the law keeps" plus the request and delete screens</span>
+        <ul>
+          <li>The storyboard, the six steps as a diagram</li>
+          <li>Get a copy: compare and screens, then the status</li>
+          <li>Delete: two ways, Clean up, what the law keeps</li>
+          <li>The edge cases</li>
+        </ul>
+        <div class="num"><span>76% faster data access</span><span>[X] requests a month</span></div>
+      </div>
+      <div class="case">
+        <span class="lbl">Keep · grows</span>
+        <h3>PayPal Ads consent</h3>
+        <p class="tl">Privacy-first ad personalization</p>
+        <span class="from">Already its own case</span>
+        <ul>
+          <li>Default flipped to asking first</li>
+          <li>The ask, with equal answers</li>
+          <li>Auto Privacy Advisor: the checkup above, as screens</li>
+        </ul>
+        <div class="num"><span>~1% found the setting</span><span>its own numbers</span></div>
+      </div>
+    </div>
+    <p class="dek" style="margin-top:16px">Your resume already names Data rights as its own piece of work: "streamlining of data deletion and request processes across PayPal, Honey, and Venmo platforms". Split out, the Privacy case drops to roughly half its length before any copy is trimmed. <span class="x">[X]</span> Data rights needs one more real number to stand alone; 76% faster data access is the start.</p>
+  </section>
+</main>
+</body>
+</html>

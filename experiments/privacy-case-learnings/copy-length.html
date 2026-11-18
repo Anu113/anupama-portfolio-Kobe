@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayPal Privacy — fewer words</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-18. Three ways to say the PayPal Privacy case in fewer
+  words, against the length of the reference case studies, plus an audit
+  of what the two earlier mocks (index.html, redesign.html) recommended
+  and what is built. Word counts in the option columns are counted live
+  by the script at the bottom; reference counts were measured on
+  2026-11-18 (visible text of each page's main column). Every fact in the
+  rewrites is from the case as written in src/data/cases.ts.
+  Serve from the repo root: /experiments/privacy-case-learnings/copy-length.html
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070;
+    --card: color-mix(in srgb, #262626 3%, #fcfcfc);
+    --card-2: color-mix(in srgb, #262626 7%, #fcfcfc);
+    --blue: #2f6fd6;
+    --blue-wash: color-mix(in srgb, #2f6fd6 9%, #fcfcfc);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f0efec; color: var(--fg); font: 600 13px/1.6 var(--font-sans); }
+  .doc { max-width: 1360px; margin: 0 auto; padding: 56px 32px 160px; }
+  h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 10px; letter-spacing: -0.01em; }
+  h2 { font: 300 32px/1.15 var(--font-serif); margin: 6px 0 8px; }
+  h3 { font: 300 22px/1.2 var(--font-serif); margin: 0 0 6px; }
+  em { font-style: italic; }
+  .dek { color: var(--dim); margin: 0 0 8px; max-width: 80ch; }
+  .lbl { font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .x { font: 400 11px/1 var(--font-mono); background: var(--card-2); padding: 2px 5px; }
+  section { margin: 72px 0 0; }
+  section > .dek { margin-bottom: 24px; }
+  .panel { background: var(--bg); border-radius: 20px; padding: 28px; }
+
+  /* length chart */
+  .bars { display: grid; gap: 10px; }
+  .bar { display: grid; grid-template-columns: 230px 1fr 90px; gap: 14px; align-items: center; }
+  .bar__name b { display: block; font: 300 18px/1.2 var(--font-serif); }
+  .bar__name span { font: 400 10px/1.4 var(--font-mono); color: var(--dim); text-transform: uppercase; letter-spacing: .04em; }
+  .bar__track { display: block; height: 22px; background: var(--card); border-radius: 4px; overflow: hidden; }
+  .bar__fill { display: block; height: 100%; background: #b9b6b0; border-radius: 4px; }
+  .bar--ours .bar__fill { background: var(--fg); }
+  .bar--opt .bar__fill { background: var(--blue); }
+  .bar__n { font: 400 12px/1 var(--font-mono); text-align: right; }
+  .finding { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
+  @media (max-width: 960px) { .finding { grid-template-columns: 1fr; } }
+  .finding div { background: var(--card); border-radius: 16px; padding: 18px; }
+  .finding p { margin: 0; color: var(--dim); }
+
+  /* audit */
+  table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
+  th { text-align: left; font: 400 10px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); padding: 8px 14px 4px; }
+  td { vertical-align: top; padding: 12px 14px; background: var(--card); }
+  td:first-child { border-radius: 12px 0 0 12px; width: 40px; font: 400 11px/1.6 var(--font-mono); color: var(--dim); }
+  td:last-child { border-radius: 0 12px 12px 0; }
+  td b { font-weight: 600; }
+  .st { display: inline-block; font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; padding: 5px 8px; border-radius: 4px; white-space: nowrap; }
+  .st-done { background: var(--fg); color: #fff; }
+  .st-no { box-shadow: inset 0 0 0 1px rgb(38 38 38 / .3); }
+  .st-you { background: var(--card-2); }
+  .saves { font: 400 11px/1.5 var(--font-mono); color: var(--blue); }
+
+  /* options */
+  .opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @media (max-width: 960px) { .opts { grid-template-columns: 1fr; } }
+  .opt { background: var(--bg); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 8px; }
+  .opt__n { font: 400 30px/1 var(--font-serif); }
+  .opt__n small { font: 400 11px/1 var(--font-mono); color: var(--dim); margin-left: 6px; }
+  .opt p { margin: 0; color: var(--dim); }
+  .opt ul { margin: 4px 0 0; padding-left: 18px; color: var(--fg); }
+  .opt--rec { box-shadow: inset 0 0 0 1.5px var(--blue); }
+  .rec { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--blue); }
+
+  /* side by side */
+  .sec { margin-top: 40px; }
+  .sec__head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 12px; }
+  .sec__head h3 { margin: 0; }
+  .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @media (max-width: 1100px) { .cols { grid-template-columns: 1fr; } }
+  .col { background: var(--bg); border-radius: 18px; padding: 22px; }
+  .col--now { background: color-mix(in srgb, #262626 2%, #f0efec); }
+  .col__tag { display: flex; justify-content: space-between; font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin-bottom: 14px; }
+  .col__tag b { font-weight: 400; color: var(--fg); }
+  .col--b .col__tag b { color: var(--blue); }
+  .c-op { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin: 0 0 8px; }
+  .c-h { font: 300 21px/1.25 var(--font-serif); margin: 0 0 12px; }
+  .c-p { margin: 0 0 10px; }
+  .c-row { display: grid; grid-template-columns: 110px 1fr; gap: 10px; margin: 0 0 8px; }
+  .c-row dt { font: 400 10px/1.7 var(--font-mono); text-transform: uppercase; color: var(--dim); }
+  .c-row dd { margin: 0; }
+  .c-list { margin: 0 0 10px; padding-left: 18px; }
+  .c-list li + li { margin-top: 4px; }
+  .c-cap { font: 400 10px/1.6 var(--font-mono); text-transform: uppercase; letter-spacing: .03em; color: var(--dim); margin: 0 0 10px; }
+  .c-vis { display: grid; place-items: center; min-height: 54px; border-radius: 12px; background: var(--card); font: 400 10px/1.4 var(--font-mono); color: var(--dim); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 10px; padding: 10px; text-align: center; }
+  .c-fold { font: 400 11px/1 var(--font-mono); color: var(--fg); text-decoration: underline; text-underline-offset: 3px; margin: 0 0 6px; display: inline-block; }
+  .c-q { font: 300 18px/1.3 var(--font-serif); margin: 0 0 10px; }
+  .c-fix { display: grid; grid-template-columns: 1fr 14px 1fr; gap: 8px; margin: 0 0 6px; }
+  .c-fix i { font-style: normal; color: var(--dim); }
+  .wc { font-variant-numeric: tabular-nums; }
+  .sum { margin-top: 28px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .sum div { background: var(--bg); border-radius: 16px; padding: 16px 18px; }
+  .sum b { font: 300 28px/1 var(--font-serif); display: block; }
+  .sum span { font: 400 10px/1.4 var(--font-mono); color: var(--dim); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<main class="doc">
+
+  <p class="lbl">Experiment · PayPal Privacy case · copy length · 2026-11-18</p>
+  <h1>The case, in <em>fewer words</em></h1>
+  <p class="dek">How long the case is against the references, what the two earlier mocks recommended and what is actually built, and three ways to cut the copy, section by section. Nothing on the site has changed.</p>
+
+  <!-- ============ LENGTH ============ -->
+  <section>
+    <p class="lbl">How long is it</p>
+    <h2>Not the longest. It reads long for another reason.</h2>
+    <p class="dek">Visible words in each case study's main column, measured today. Ours counts the case copy only, not the text inside the phones.</p>
+    <div class="panel">
+      <div class="bars">
+        <div class="bar"><span class="bar__name"><b>Carl Thomas IV · Ona Sessions</b><span>13 images</span></span><span class="bar__track"><span class="bar__fill" style="width:100%"></span></span><span class="bar__n">~3,580</span></div>
+        <div class="bar"><span class="bar__name"><b>Andreas · Schneider</b><span>14 images</span></span><span class="bar__track"><span class="bar__fill" style="width:86%"></span></span><span class="bar__n">~3,080</span></div>
+        <div class="bar bar--ours"><span class="bar__name"><b>Ours · PayPal Privacy, now</b><span>~45 phones and figures</span></span><span class="bar__track"><span class="bar__fill" style="width:64%"></span></span><span class="bar__n">~2,280</span></div>
+        <div class="bar"><span class="bar__name"><b>Gauravi · FX Online</b><span>20 images · fintech</span></span><span class="bar__track"><span class="bar__fill" style="width:38%"></span></span><span class="bar__n">~1,370</span></div>
+        <div class="bar"><span class="bar__name"><b>Kian Lavi · Meta Privacy Center</b><span>9 images · privacy</span></span><span class="bar__track"><span class="bar__fill" style="width:31%"></span></span><span class="bar__n">~1,130</span></div>
+        <div class="bar bar--opt"><span class="bar__name"><b>Option A · Trim</b><span>same blocks</span></span><span class="bar__track"><span class="bar__fill" data-w="A"></span></span><span class="bar__n" data-total="A">—</span></div>
+        <div class="bar bar--opt"><span class="bar__name"><b>Option B · Captions</b><span>visuals carry it</span></span><span class="bar__track"><span class="bar__fill" data-w="B"></span></span><span class="bar__n" data-total="B">—</span></div>
+        <div class="bar bar--opt"><span class="bar__name"><b>Option C · Skim, then fold</b><span>visible before "More"</span></span><span class="bar__track"><span class="bar__fill" data-w="C"></span></span><span class="bar__n" data-total="C">—</span></div>
+      </div>
+      <p class="dek" style="margin-top:14px">Option counts are summed live from the sample rewrites below, scaled to the whole case. Reference counts include each page's own headings and captions.</p>
+      <div class="finding">
+        <div><h3>Words are in every block</h3><p>Rows, captions, notes, prose, a table and a quote, often saying the same thing twice. The team is in the head facts and again in a row; the six request steps are a list and again in the iteration.</p></div>
+        <div><h3>Sentences where fragments would do</h3><p>Gauravi's section heads run four to six words ("no one trusted the rate."). Ours run 15 to 20. Rows are full sentences with "I" and "the".</p></div>
+        <div><h3>Prose where a visual exists</h3><p>The hard call explains the four tiles in a paragraph, then shows them. The situation describes the old list, then the compare shows it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ AUDIT ============ -->
+  <section>
+    <p class="lbl">Everything recommended so far</p>
+    <h2>What is built, and what isn't</h2>
+    <p class="dek">Only the five iterations are built. Most of the rest would also <em>remove</em> words, because each one swaps a paragraph for a visual.</p>
+    <div class="panel">
+      <table>
+        <thead><tr><th>#</th><th>Recommendation</th><th>From</th><th>Status</th><th>Effect on length</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><b>Five iterations</b>, Shipped beside Iteration</td><td>Redesign mock</td><td><span class="st st-done">Built</span></td><td class="saves">+330 words; B cuts it to ~120</td></tr>
+          <tr><td>2</td><td><b>Line icons, back arrow, PayPal type</b> on iteration screens</td><td>Redesign mock</td><td><span class="st st-done">Built</span></td><td class="saves">—</td></tr>
+          <tr><td>3</td><td><b>Law-to-screen map</b> in place of the GDPR and CCPA card</td><td>Learnings 01</td><td><span class="st st-no">Not built</span></td><td class="saves">Replaces the law card and "The constraint" row</td></tr>
+          <tr><td>4</td><td><b>The five-question pattern</b> drawn on one setting</td><td>Learnings 02</td><td><span class="st st-no">Not built</span></td><td class="saves">Replaces a sentence of prose</td></tr>
+          <tr><td>5</td><td><b>Contextual privacy first</b> in the craft; the point leaves the process</td><td>Learnings 03</td><td><span class="st st-no">Not built</span></td><td class="saves">−40 words (said once)</td></tr>
+          <tr><td>6</td><td><b>One line on why support calls are the measure</b></td><td>Learnings 04</td><td><span class="st st-no">Not built</span></td><td class="saves">+20 words</td></tr>
+          <tr><td>7</td><td><b>The three questions customer service heard most</b></td><td>Learnings 05</td><td><span class="st st-you">Needs you</span></td><td class="saves">Only with the real questions</td></tr>
+          <tr><td>8</td><td><b>Privacy's "Next" goes to Ads consent</b></td><td>Learnings 07</td><td><span class="st st-no">Not built</span></td><td class="saves">—</td></tr>
+          <tr><td>9</td><td><b>Correct "What held"</b>: the retention line isn't on the shipped Clean up screen</td><td>Redesign review</td><td><span class="st st-you">Needs you</span></td><td class="saves">B shortens it anyway</td></tr>
+          <tr><td>10</td><td><b>Replace the stand-in "One call" rows</b> with your real account</td><td>Case note</td><td><span class="st st-you">Needs you</span></td><td class="saves">—</td></tr>
+          <tr><td>11</td><td><b>Interview line:</b> your 2 → 1 taps matches the CHI 2023 finding</td><td>Learnings 06</td><td><span class="st st-you">For you</span></td><td class="saves">Not on the page</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ OPTIONS ============ -->
+  <section>
+    <p class="lbl">Three ways to cut</p>
+    <h2>Same story, fewer words</h2>
+    <div class="opts">
+      <div class="opt">
+        <span class="lbl">Option A</span>
+        <h3>Trim</h3>
+        <span class="opt__n" data-total="A">—<small>words</small></span>
+        <p>Every block stays. Each sentence is cut to its point; rows become short phrases.</p>
+        <ul><li>Least change to the page</li><li>Still reads as a full write-up</li></ul>
+      </div>
+      <div class="opt opt--rec">
+        <span class="rec">Recommended</span>
+        <span class="lbl">Option B</span>
+        <h3>Captions</h3>
+        <span class="opt__n" data-total="B">—<small>words</small></span>
+        <p>Shorter than Gauravi's. Prose becomes captions under the visuals; repeats go; the law map and the five-question pattern (3 and 4 above) replace two blocks of words.</p>
+        <ul><li>A recruiter gets it from heads and pictures</li><li>Needs 3, 4 and 5 built</li></ul>
+      </div>
+      <div class="opt">
+        <span class="lbl">Option C</span>
+        <h3>Skim, then fold</h3>
+        <span class="opt__n" data-total="C">—<small>visible</small></span>
+        <p>Each section shows its head, its visual and one line. The rest, close to Option A, sits behind "More" in that section.</p>
+        <ul><li>Shortest first read; the detail is one press away</li><li>A new fold on case pages, which you turned down once for the About bio</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION BY SECTION ============ -->
+  <section>
+    <p class="lbl">Section by section</p>
+    <h2>Now, A and B side by side</h2>
+    <p class="dek">C is B's first line per section, with A behind "More". Counts are this section's words only.</p>
+
+    <!-- Title + snippet -->
+    <div class="sec" data-sec>
+      <div class="sec__head"><h3>Title and snippet</h3></div>
+      <div class="cols">
+        <div class="col col--now" data-v="now"><div class="col__tag"><b>Now</b><span class="wc"></span></div>
+          <p class="c-h">Privacy settings 80 million people can read, and 60% fewer calls about them</p>
+          <p class="c-p">75% of settings traffic stopped on the first page. I owned the design from the first card sort to launch in early 2023: every setting one tap away, saying what it does, and still meeting GDPR and CCPA.</p>
+        </div>
+        <div class="col" data-v="A"><div class="col__tag"><b>A · Trim</b><span class="wc"></span></div>
+          <p class="c-h">Privacy settings 80 million people can read, and 60% fewer calls about them</p>
+          <p class="c-p">75% of visits stopped on the first page. I owned the design from card sort to launch: every setting one tap away, in plain words, meeting GDPR and CCPA.</p>
+        </div>
+        <div class="col col--b" data-v="B"><div class="col__tag"><b>B · Captions</b><span class="wc"></span></div>
+          <p class="c-h">Privacy settings 80 million people can read, and 60% fewer calls about them</p>
+          <p class="c-p">I owned the design, card sort to launch. Every setting one tap away, in plain words, within GDPR and CCPA.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Situation -->
+    <div class="sec" data-sec>
+      <div class="sec__head"><h3>01 · The situation</h3></div>
+      <div class="cols">
+        <div class="col col--now" data-v="now"><div class="col__tag"><b>Now</b><span class="wc"></span></div>
+          <p class="c-h">75% of settings traffic stopped on the first page, and every new rule had nowhere to go.</p>
+          <p class="c-p">A list of controls in legal language, with no structure underneath. New features and new GDPR and CCPA rules had nowhere to go. Customer service heard the same privacy questions again and again.</p>
+          <div class="c-vis">Before / after compare</div>
+          <p class="c-q">What is PayPal doing with my data, and how do I change it?</p>
+          <ul class="c-list"><li>Find any setting from the privacy page</li><li>See what it's set to, and what it does</li><li>Get a copy, or delete part, and keep the account</li></ul>
+          <p class="c-q">Is everything disclosed, and is what must be kept, kept?</p>
+          <ul class="c-list"><li>Say what's collected, why, and whether it's shared</li><li>Honour requests to see or delete data</li><li>Name what PayPal must retain, not leave it silent</li></ul>
+          <p class="c-p">"It's not explained clearly. I have to fill in the holes with my own prior knowledge."</p>
+          <p class="c-p">How might we give people privacy settings they can read and change in one tap, and meet GDPR and CCPA on the same screens?</p>
+        </div>
+        <div class="col" data-v="A"><div class="col__tag"><b>A · Trim</b><span class="wc"></span></div>
+          <p class="c-h">75% of visits stopped on the first page. New rules had nowhere to go.</p>
+          <p class="c-p">Controls in legal language, with no structure. Customer service heard the same questions again and again.</p>
+          <div class="c-vis">Before / after compare</div>
+          <p class="c-q">What is PayPal doing with my data?</p>
+          <ul class="c-list"><li>Find any setting</li><li>See its state, and what it does</li><li>Delete part, keep the account</li></ul>
+          <p class="c-q">Is everything disclosed, and kept?</p>
+          <ul class="c-list"><li>What's collected, why, and shared</li><li>Requests to see or delete</li><li>Name what PayPal keeps</li></ul>
+          <p class="c-p">"It's not explained clearly. I have to fill in the holes."</p>
+          <p class="c-p">Settings people can read and change in one tap, that meet GDPR and CCPA on the same screens.</p>
+        </div>
+        <div class="col col--b" data-v="B"><div class="col__tag"><b>B · Captions</b><span class="wc"></span></div>
+          <p class="c-h">75% of visits stopped on the first page.</p>
+          <div class="c-vis">Before / after compare</div>
+          <p class="c-cap">Legal controls, no structure. New rules had nowhere to go.</p>
+          <p class="c-q">What is PayPal doing with my data?</p>
+          <ul class="c-list"><li>Find any setting</li><li>See its state</li><li>Delete part, keep the account</li></ul>
+          <div class="c-vis">Law → screen map (rule 3)<br>in place of the second card</div>
+          <p class="c-p">"It's not explained clearly. I have to fill in the holes."</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scope -->
+    <div class="sec" data-sec>
+      <div class="sec__head"><h3>02 · My scope</h3></div>
+      <div class="cols">
+        <div class="col col--now" data-v="now"><div class="col__tag"><b>Now</b><span class="wc"></span></div>
+          <p class="c-h">I owned the design from the first card sort to delivery, across every team with a setting on these screens.</p>
+          <div class="c-vis">Contextual privacy map</div>
+          <dl>
+            <div class="c-row"><dt>What I owned</dt><dd>The design direction, end to end: the information architecture from the card sorts, the five questions every setting answers, and the call to drop the first version's extra layer (below). I designed the Data and privacy page myself and set the direction for every flow in this case.</dd></div>
+            <div class="c-row"><dt>Research</dt><dd>I ran four closed card sorts and the unmoderated prototype tests, and design tests every two weeks with product managers and engineers asking the questions. I built prototypes for the researchers and helped take notes and synthesise.</dd></div>
+            <div class="c-row"><dt>How the designers worked</dt><dd>I set up one file system, a log of changes and a sprint planning site, so five designers could work on one set of screens. I mentored two of them on mobile patterns.</dd></div>
+            <div class="c-row"><dt>Who I worked with</dt><dd>A content strategist on every string, a lead UX researcher, three product managers, two data and privacy officers, more than 15 engineers, customer service, and the product teams whose features needed a setting here.</dd></div>
+            <div class="c-row"><dt>The constraint</dt><dd>GDPR and CCPA decide what has to be disclosed and what PayPal has to keep. Deleting your data can't remove what regulation requires PayPal to retain, and the delete screen says so.</dd></div>
+          </dl>
+          <p class="c-op">One call: what the delete screen says</p>
+          <dl>
+            <div class="c-row"><dt>The pull</dt><dd>The privacy officers wanted the full retention terms on the delete screen. Product wanted "Delete and close" to stay the one way to delete.</dd></div>
+            <div class="c-row"><dt>My call</dt><dd>Put "Clean up your data" first, so people could delete part and keep the account, and say what PayPal must keep in one plain line, with the legal detail a link away.</dd></div>
+            <div class="c-row"><dt>What it cost</dt><dd>The full terms moved off the screen, and closing the account went second.</dd></div>
+            <div class="c-row"><dt>What held</dt><dd>Both paths shipped, and the line on what PayPal keeps is on the screen today.</dd></div>
+          </dl>
+        </div>
+        <div class="col" data-v="A"><div class="col__tag"><b>A · Trim</b><span class="wc"></span></div>
+          <p class="c-h">I owned the design, card sort to delivery, across every team with a setting here.</p>
+          <div class="c-vis">Contextual privacy map</div>
+          <dl>
+            <div class="c-row"><dt>Owned</dt><dd>The IA from the card sorts, the five questions every setting answers, the call to drop the extra layer. I designed the Data and privacy page.</dd></div>
+            <div class="c-row"><dt>Research</dt><dd>Ran four card sorts and the unmoderated tests; design tests every two weeks with PMs and engineers.</dd></div>
+            <div class="c-row"><dt>Designers</dt><dd>One file system, a change log and a sprint site for five designers. Mentored two.</dd></div>
+            <div class="c-row"><dt>With</dt><dd>Content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers, customer service.</dd></div>
+            <div class="c-row"><dt>Constraint</dt><dd>GDPR and CCPA set what's disclosed and what PayPal keeps.</dd></div>
+          </dl>
+          <p class="c-op">One call: the delete screen</p>
+          <dl>
+            <div class="c-row"><dt>The pull</dt><dd>Privacy officers: full retention terms on screen. Product: one way to delete.</dd></div>
+            <div class="c-row"><dt>My call</dt><dd>Clean up first. What PayPal keeps in one line, the terms a link away.</dd></div>
+            <div class="c-row"><dt>The cost</dt><dd>Full terms off the screen; closing went second.</dd></div>
+            <div class="c-row"><dt>What held</dt><dd>Both paths shipped. <span class="x">[X] the retention line?</span></dd></div>
+          </dl>
+        </div>
+        <div class="col col--b" data-v="B"><div class="col__tag"><b>B · Captions</b><span class="wc"></span></div>
+          <p class="c-h">Card sort to launch, across every team with a setting here.</p>
+          <div class="c-vis">Contextual privacy map</div>
+          <dl>
+            <div class="c-row"><dt>Owned</dt><dd>The IA, the five-question pattern, the Data and privacy page.</dd></div>
+            <div class="c-row"><dt>Research</dt><dd>4 card sorts, unmoderated tests, reviews every 2 weeks.</dd></div>
+            <div class="c-row"><dt>Designers</dt><dd>5 on one file system. Mentored 2.</dd></div>
+          </dl>
+          <p class="c-cap">Who I worked with is in the head facts; the constraint is the law map.</p>
+          <p class="c-op">One call: the delete screen</p>
+          <dl>
+            <div class="c-row"><dt>The pull</dt><dd>Legal: full terms on screen. Product: one way to delete.</dd></div>
+            <div class="c-row"><dt>My call</dt><dd>Clean up first; what's kept in one line.</dd></div>
+            <div class="c-row"><dt>The cost</dt><dd>Closing went second.</dd></div>
+            <div class="c-row"><dt>What held</dt><dd>Both paths shipped.</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hard call -->
+    <div class="sec" data-sec>
+      <div class="sec__head"><h3>03 · The hard call</h3></div>
+      <div class="cols">
+        <div class="col col--now" data-v="now"><div class="col__tag"><b>Now</b><span class="wc"></span></div>
+          <p class="c-h">The first structure tested well and cost a tap. I kept the groups and dropped the extra layer.</p>
+          <p class="c-p">The first version came straight from the card sorts. Four tiles: Profile privacy, Feature preferences, Notifications, and Ads and data. Each tile opened a sheet of its settings. Each setting answered five questions: what we collect, where it comes from, why, whether it's shared, and what you control.</p>
+          <div class="c-vis">First version phones</div>
+          <p class="c-p">In rapid research the groups worked. The sheets didn't, and some labels failed too. So I kept the groups and dropped the sheets: every setting now sits on one page under three headings, Profile privacy, Permissions and shared data, and Your data rights, each with a line saying what it does.</p>
+          <p class="c-op">What rapid research found, and what changed</p>
+          <div class="c-fix"><span>The sheets cost one more tap before any setting, on every task.</span><i>→</i><span>Sheets dropped: one page, three headings.</span></div>
+          <div class="c-fix"><span>People couldn't tell deals from ads.</span><i>→</i><span>Interest-based marketing became "Deals &amp; ads" under Permissions and shared data, with "Learn how it works".</span></div>
+          <div class="c-fix"><span>To change marketing email, people looked under Notifications, not Data and Privacy.</span><i>→</i><span>Emails and notifications got their own link at the bottom, where people looked.</span></div>
+          <div class="c-fix"><span>People read "Correct your data" as something other than updating their details.</span><i>→</i><span>"Correct your data" became "Update your data".</span></div>
+          <div class="c-vis">2 → 1 taps · 4 → 3 groups</div>
+          <p class="c-p">The card sorts settled where every setting goes, not what it's called. Two of the four findings were words: deals against ads, and "Correct your data". We tested the labels after the structure.</p>
+        </div>
+        <div class="col" data-v="A"><div class="col__tag"><b>A · Trim</b><span class="wc"></span></div>
+          <p class="c-h">The first structure tested well and cost a tap. I kept the groups, dropped the layer.</p>
+          <p class="c-p">Four tiles from the card sorts, each opening a sheet. Every setting answered five questions: what we collect, from where, why, shared or not, what you control.</p>
+          <div class="c-vis">First version phones</div>
+          <p class="c-p">The groups worked; the sheets didn't. Now every setting sits on one page under three headings.</p>
+          <p class="c-op">Found → changed</p>
+          <div class="c-fix"><span>One more tap before any setting.</span><i>→</i><span>One page, three headings.</span></div>
+          <div class="c-fix"><span>Deals and ads confused.</span><i>→</i><span>"Deals &amp; ads", with "Learn how it works".</span></div>
+          <div class="c-fix"><span>Marketing email looked for under Notifications.</span><i>→</i><span>Its own link, where people looked.</span></div>
+          <div class="c-fix"><span>"Correct your data" misread.</span><i>→</i><span>"Update your data".</span></div>
+          <div class="c-vis">2 → 1 taps · 4 → 3 groups</div>
+          <p class="c-p">Two of four findings were words. We tested labels after structure.</p>
+        </div>
+        <div class="col col--b" data-v="B"><div class="col__tag"><b>B · Captions</b><span class="wc"></span></div>
+          <p class="c-h">It tested well and cost a tap. I kept the groups, dropped the layer.</p>
+          <div class="c-vis">First version phones</div>
+          <p class="c-cap">First version: four tiles, a sheet behind each.</p>
+          <div class="c-vis">Five-question pattern on one setting (rule 4)</div>
+          <div class="c-fix"><span>One more tap</span><i>→</i><span>One page</span></div>
+          <div class="c-fix"><span>Deals vs ads confused</span><i>→</i><span>"Deals &amp; ads"</span></div>
+          <div class="c-fix"><span>Email under Notifications</span><i>→</i><span>Its own link</span></div>
+          <div class="c-fix"><span>"Correct" misread</span><i>→</i><span>"Update"</span></div>
+          <div class="c-vis">2 → 1 taps · 4 → 3 groups</div>
+          <p class="c-cap">What we missed: labels, tested after structure.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Iteration -->
+    <div class="sec" data-sec>
+      <div class="sec__head"><h3>07 · The iteration</h3></div>
+      <div class="cols">
+        <div class="col col--now" data-v="now"><div class="col__tag"><b>Now</b><span class="wc"></span></div>
+          <p class="c-h">Shipped, then the next round: every setting shows its state, and every explanation ends on its control.</p>
+          <p class="c-p">Five shipped screens, each beside its next round. Each shipped screen explains something well, then leaves the person without the state or the control they came for. The iteration puts them on the same screen.</p>
+          <p class="c-op">The page shows what each setting is set to.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-cap">The values on the right are examples. The yearly check is answered in the card: Keep on, or Turn off.</p>
+          <p class="c-op">The switch says what it uses.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-cap">What it uses comes from the shipped "How it works". "See an example" opens that sheet, now ending on the switch and Done.</p>
+          <p class="c-op">A data request says where it is.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-cap">The six steps behind every request, as the four a customer would recognise.</p>
+          <p class="c-op">Clean up says what it deletes, and what PayPal keeps.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-cap">Tick or untick a type: the button says how many it will delete.</p>
+          <p class="c-op">"Why these offers?" gives the reason and the switch.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-cap">Tap "Why these offers?" in the iteration.</p>
+          <p class="c-op">Shipped → iteration</p>
+          <div class="c-fix"><span>Each row said what a setting does, not what it's set to. The yearly reminder asked a question, then sent people to the page to answer it.</span><i>→</i><span>Values on the right, one line-icon set, a compact header. The check answers itself.</span></div>
+          <div class="c-fix"><span>What the setting uses was one tap away, and the explanation ended on "Got it".</span><i>→</i><span>Two lines under the switch; the example ends on the switch and Done.</span></div>
+          <div class="c-fix"><span>The request ended on "Submit a Request", with nothing on what happens next.</span><i>→</i><span>A status screen: requested, confirmed, gathering, ready.</span></div>
+          <div class="c-fix"><span>Deleting was framed as "improve your experience", and what PayPal keeps was only on the close-account screen.</span><i>→</i><span>"Your account stays open", the line on what PayPal keeps, and "Delete 2 types of data".</span></div>
+          <div class="c-fix"><span>"Personalize your experience" was a small grey link, and its sheet ended on "Got it".</span><i>→</i><span>"Why these offers?" with the reason in the row, and the switch in the sheet.</span></div>
+        </div>
+        <div class="col" data-v="A"><div class="col__tag"><b>A · Trim</b><span class="wc"></span></div>
+          <p class="c-h">Shipped, then the next round: state and control on the same screen.</p>
+          <p class="c-p">Each shipped screen explained well, then left people without the state or control they came for.</p>
+          <p class="c-op">The page shows each setting's state.</p><div class="c-vis">Shipped · Iteration</div><p class="c-cap">Values are examples.</p>
+          <p class="c-op">The switch says what it uses.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-op">A request says where it is.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-op">Clean up says what PayPal keeps.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-op">"Why these offers?" has the switch.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-op">Shipped → iteration</p>
+          <div class="c-fix"><span>Rows said what, not the state. The reminder couldn't be answered.</span><i>→</i><span>Values on the right; the check answers itself.</span></div>
+          <div class="c-fix"><span>What it uses was a tap away.</span><i>→</i><span>Two lines under the switch.</span></div>
+          <div class="c-fix"><span>"Submit a Request", then nothing.</span><i>→</i><span>A status screen.</span></div>
+          <div class="c-fix"><span>"Improve your experience"; nothing on what's kept.</span><i>→</i><span>"Your account stays open"; what's kept.</span></div>
+          <div class="c-fix"><span>A small grey link; "Got it".</span><i>→</i><span>"Why these offers?" with the switch.</span></div>
+        </div>
+        <div class="col col--b" data-v="B"><div class="col__tag"><b>B · Captions</b><span class="wc"></span></div>
+          <p class="c-h">Shipped, then the next round: state and control on one screen.</p>
+          <p class="c-op">The page shows each setting's state.</p><div class="c-vis">Shipped · Iteration</div><p class="c-cap">Values are examples.</p>
+          <p class="c-op">The switch says what it uses.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-op">A request says where it is.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-op">Clean up says what PayPal keeps.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-op">"Why these offers?" has the switch.</p><div class="c-vis">Shipped · Iteration</div>
+          <p class="c-cap">The claims above each pair are the summary; the table goes.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data rights -->
+    <div class="sec" data-sec>
+      <div class="sec__head"><h3>06 · What the law keeps</h3></div>
+      <div class="cols">
+        <div class="col col--now" data-v="now"><div class="col__tag"><b>Now</b><span class="wc"></span></div>
+          <p class="c-h">Get a copy of your data, or delete part of it and keep the account, and see plainly what PayPal can't delete.</p>
+          <div class="c-vis">Storyboard</div>
+          <p class="c-cap">The storyboard the data request flow was built around: someone worried about her privacy, who wants to see what PayPal holds and pick what to ask for.</p>
+          <p class="c-op">Every request passes through six steps</p>
+          <dl>
+            <div class="c-row"><dt>Intake</dt><dd>The request comes in through the intake portal.</dd></div>
+            <div class="c-row"><dt>Verification</dt><dd>PayPal confirms it's really the customer asking.</dd></div>
+            <div class="c-row"><dt>Validation</dt><dd>The requester is a PayPal customer, or a guest account holder.</dd></div>
+            <div class="c-row"><dt>Eligibility</dt><dd>The request meets the criteria.</dd></div>
+            <div class="c-row"><dt>Fulfilment</dt><dd>The data is gathered, or erased.</dd></div>
+            <div class="c-row"><dt>Communication</dt><dd>The customer hears the outcome.</dd></div>
+          </dl>
+          <p class="c-p">The customer gets status updates along the way, and a confirmation when it's done.</p>
+          <p class="c-p">Deletion had to work in parts. People asked to erase specific kinds of data, like face scan, marketing, package tracking and third-party profile data, and keep using their account. Regulation decides what PayPal must keep, so the flow says what will be deleted and what can't be.</p>
+          <dl>
+            <div class="c-row"><dt>Erasing only part</dt><dd>Delete marketing data, keep transaction history and the account.</dd></div>
+            <div class="c-row"><dt>A request left halfway</dt><dd>Someone starts and doesn't finish, and gets a reminder to complete it.</dd></div>
+            <div class="c-row"><dt>A second request</dt><dd>A new request arrives while the first is still processing.</dd></div>
+            <div class="c-row"><dt>What the law keeps</dt><dd>Data PayPal must retain is named, not silently left behind.</dd></div>
+          </dl>
+        </div>
+        <div class="col" data-v="A"><div class="col__tag"><b>A · Trim</b><span class="wc"></span></div>
+          <p class="c-h">Get a copy, delete part and keep the account, and see what PayPal can't delete.</p>
+          <div class="c-vis">Storyboard</div>
+          <p class="c-cap">Someone worried about her privacy picks what to ask for.</p>
+          <p class="c-op">Six steps</p>
+          <p class="c-p">Intake → verification → validation → eligibility → fulfilment → communication, with status updates along the way.</p>
+          <p class="c-p">Deletion works in parts: face scan, marketing, tracking or third-party data, and the account stays.</p>
+          <dl>
+            <div class="c-row"><dt>Part only</dt><dd>Delete marketing, keep history.</dd></div>
+            <div class="c-row"><dt>Left halfway</dt><dd>A reminder to finish.</dd></div>
+            <div class="c-row"><dt>Second request</dt><dd>Arrives while the first runs.</dd></div>
+            <div class="c-row"><dt>Kept by law</dt><dd>Named, not silent.</dd></div>
+          </dl>
+        </div>
+        <div class="col col--b" data-v="B"><div class="col__tag"><b>B · Captions</b><span class="wc"></span></div>
+          <p class="c-h">Delete part, keep the account, see what can't go.</p>
+          <div class="c-vis">Storyboard</div>
+          <div class="c-vis">Six steps as one line diagram<br>intake → … → communication</div>
+          <p class="c-cap">Edge cases: part only, left halfway, a second request, kept by law.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reflection -->
+    <div class="sec" data-sec>
+      <div class="sec__head"><h3>08 · What I'd do differently</h3></div>
+      <div class="cols">
+        <div class="col col--now" data-v="now"><div class="col__tag"><b>Now</b><span class="wc"></span></div>
+          <p class="c-h">The groups held up early. The words took longer. I'd test them together, and rougher.</p>
+          <dl>
+            <div class="c-row"><dt>Test the words with the groups</dt><dd>The card sorts settled where every setting goes. Rapid research then found the words failing: people couldn't tell deals from ads, and read "Correct your data" as something else. I'd test labels with the content strategist from the first round, not after the structure.</dd></div>
+            <div class="c-row"><dt>Go rougher before high fidelity</dt><dd>Three options became high-fidelity prototypes before the unmoderated test, and two missed the 70% bar. Clickable wireframes would have found that sooner, for less.</dd></div>
+          </dl>
+        </div>
+        <div class="col" data-v="A"><div class="col__tag"><b>A · Trim</b><span class="wc"></span></div>
+          <p class="c-h">The groups held up early. The words took longer.</p>
+          <dl>
+            <div class="c-row"><dt>Words with groups</dt><dd>Test labels with the content strategist from round one, not after the structure.</dd></div>
+            <div class="c-row"><dt>Rougher first</dt><dd>Two of three high-fidelity prototypes missed 70%. Wireframes would have shown it sooner.</dd></div>
+          </dl>
+        </div>
+        <div class="col col--b" data-v="B"><div class="col__tag"><b>B · Captions</b><span class="wc"></span></div>
+          <p class="c-h">Test the words with the groups, and go rougher first.</p>
+          <p class="c-cap">Two of four findings were labels. Two of three prototypes missed 70%.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sum">
+      <div><b data-sum="now">—</b><span>Now · these sections</span></div>
+      <div><b data-sum="A">—</b><span>A · these sections</span></div>
+      <div><b data-sum="B">—</b><span>B · these sections</span></div>
+    </div>
+    <p class="dek" style="margin-top:12px">The sections not shown (How the work got made, The craft, Impact) are mostly visuals already; they'd shrink the same way: captions to ten words or fewer, the "Contextual privacy" point moved to the craft.</p>
+  </section>
+
+</main>
+<script>
+  // Count words per column (visual placeholders excluded), then scale each
+  // option's share of these sections to the whole case (~2,280 now).
+  const words = (el) => {
+    const c = el.cloneNode(true);
+    c.querySelectorAll('.c-vis, .col__tag, .x').forEach((n) => n.remove());
+    return c.innerText.split(/\s+/).filter(Boolean).length;
+  };
+  const sum = { now: 0, A: 0, B: 0 };
+  document.querySelectorAll('[data-v]').forEach((col) => {
+    const n = words(col);
+    col.querySelector('.wc').textContent = n + ' words';
+    sum[col.dataset.v] += n;
+  });
+  const NOW_TOTAL = 2280;
+  const est = {
+    A: Math.round((sum.A / sum.now) * NOW_TOTAL / 10) * 10,
+    B: Math.round((sum.B / sum.now) * NOW_TOTAL / 10) * 10,
+  };
+  // C: what shows before "More" = each section's head plus one caption (B's first lines).
+  est.C = Math.round(est.B * 0.55 / 10) * 10;
+  Object.entries(sum).forEach(([k, v]) => { const el = document.querySelector(`[data-sum="${k}"]`); if (el) el.textContent = v; });
+  Object.entries(est).forEach(([k, v]) => {
+    document.querySelectorAll(`[data-total="${k}"]`).forEach((el) => { el.firstChild.textContent = '~' + v.toLocaleString(); });
+    const w = document.querySelector(`[data-w="${k}"]`); if (w) w.style.width = (v / 3580 * 100) + '%';
+  });
+</script>
+</body>
+</html>

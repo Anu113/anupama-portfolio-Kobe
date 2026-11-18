@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayPal Privacy — a mixed shipped version</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-18. Story B for the Privacy case: what shipped is a mix of
+  her second version (PayPal illustrations, the blue reminder card, a card
+  per row with her icons) and the minimal screens now on the site (state on
+  the right, the check answered in its card, explanations ending on their
+  switch). Each row: her second version | minimal (Story A, built) | mix.
+  Her art in the mix is cropped from her own screens in
+  public/images/paypal-privacy/, never redrawn. Copy is hers, reworded only
+  for plain language. Hub values are example placeholders.
+  Serve from the repo root: /experiments/privacy-case-learnings/mix.html
+-->
+<style>
+  @font-face { font-family: 'PP Sans'; font-weight: 400; src: local('PayPal Sans Big Regular'), local('PayPalSansBig-Regular'); }
+  @font-face { font-family: 'PP Sans'; font-weight: 500; src: local('PayPal Sans Big Medium'), local('PayPalSansBig-Medium'), local('PayPalSansBigMedium-Regular'); }
+  @font-face { font-family: 'PP Sans'; font-weight: 300; src: local('PayPal Sans Big Light'), local('PayPalSansBig-Light'); }
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070;
+    --card: color-mix(in srgb, #262626 3%, #fcfcfc);
+    --card-2: color-mix(in srgb, #262626 7%, #fcfcfc);
+    --blue: #2f6fd6; --blue-wash: color-mix(in srgb, #2f6fd6 9%, #fcfcfc);
+    --pp: 'PP Sans', 'PayPal Sans Big', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --pp-ink: #001435; --pp-dim: #545d68; --pp-link: #0063c7; --pp-deep: #1040c8;
+    --pp-ground: #f5f3ee; --pp-line: #e3e1dc; --pp-btn: #1040c8;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f0efec; color: var(--fg); font: 600 13px/1.6 var(--font-sans); }
+  .doc { max-width: 1360px; margin: 0 auto; padding: 56px 32px 160px; }
+  h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 10px; letter-spacing: -0.01em; }
+  h2 { font: 300 32px/1.15 var(--font-serif); margin: 6px 0 8px; }
+  h3 { font: 300 22px/1.2 var(--font-serif); margin: 0 0 6px; }
+  em { font-style: italic; }
+  .dek { color: var(--dim); margin: 0 0 8px; max-width: 80ch; }
+  .lbl { font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .x { font: 400 11px/1 var(--font-mono); background: var(--card-2); padding: 2px 5px; }
+  section { margin: 64px 0 0; }
+
+  .stories { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 24px; }
+  @media (max-width: 900px) { .stories { grid-template-columns: 1fr; } }
+  .story { background: var(--bg); border-radius: 20px; padding: 24px; }
+  .story--b { box-shadow: inset 0 0 0 1.5px var(--blue); }
+  .story ol { margin: 10px 0 0; padding-left: 20px; }
+  .story li + li { margin-top: 4px; }
+  .story li span { color: var(--dim); }
+
+  .row { background: var(--bg); border-radius: 20px; padding: 28px; display: grid; grid-template-columns: repeat(3, auto) 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 1200px) { .row { grid-template-columns: repeat(3, auto); } .row .notes { grid-column: 1 / -1; } }
+  .tag { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
+  .tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--dim); }
+  .col--mix .tag { color: var(--fg); }
+  .col--mix .tag::before { background: var(--blue); }
+  .notes h3 { margin-bottom: 10px; }
+  .kv { display: grid; grid-template-columns: 70px 1fr; gap: 6px 12px; }
+  .kv dt { font: 400 10px/1.8 var(--font-mono); text-transform: uppercase; color: var(--dim); }
+  .kv dd { margin: 0; }
+
+  /* phones */
+  .phone { width: 260px; height: 563px; border-radius: 34px; background: #111; padding: 7px; }
+  .shot { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 28px; background: #fff; }
+  .shot img { position: absolute; max-width: none; display: block; }
+  .scr { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 28px; background: var(--pp-ground); font: 400 11.5px/1.4 var(--pp); color: var(--pp-ink); display: flex; flex-direction: column; font-synthesis: none; }
+  .scr--white { background: #fff; }
+  .scr b { font-weight: 400; }
+  .sb { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; font: 500 10.5px/1 var(--pp); color: #000; flex: none; }
+  .nv { height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 13px; flex: none; color: var(--pp-ink); }
+  .nv svg, .ic svg, .chev svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .body { padding: 0 12px 12px; overflow: hidden; flex: 1; }
+  .t { font: 400 19px/1.15 var(--pp); letter-spacing: -0.01em; margin: 0 0 4px; }
+  .t--c { text-align: center; }
+  .s { color: var(--pp-dim); font-size: 11px; margin: 0 0 10px; }
+  .s--c { text-align: center; }
+  .gh { font: 400 12.5px/1 var(--pp); margin: 12px 2px 7px; }
+  .list { background: #fff; border-radius: 10px; overflow: hidden; }
+  .r { display: grid; grid-template-columns: 22px 1fr auto 12px; gap: 9px; align-items: center; padding: 9px 11px; }
+  .r + .r { box-shadow: inset 0 1px 0 var(--pp-line); }
+  .r .rt { display: block; font-size: 11.5px; }
+  .r .rd { display: block; font-size: 10px; color: var(--pp-dim); line-height: 1.3; }
+  .r .v { font-size: 10.5px; color: var(--pp-dim); }
+  .chev { color: var(--pp-dim); display: grid; }
+  .ic { display: grid; place-items: center; color: var(--pp-ink); }
+  .cards { display: grid; gap: 6px; }
+  .cardrow { background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgb(0 20 53 / .08); }
+  .art { display: block; margin: 0 auto; border-radius: 0; background-repeat: no-repeat; }
+  .crop { position: relative; overflow: hidden; flex: none; }
+  .crop img { position: absolute; max-width: none; display: block; }
+  .remind { background: var(--pp-deep); color: #fff; border-radius: 8px; padding: 12px; margin: 0 0 4px; display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+  .remind p { margin: 0; }
+  .remind .rq { font: 300 15px/1.2 var(--pp); }
+  .remind .rs { font-size: 10px; opacity: .9; margin-top: 4px; }
+  .btns { display: flex; gap: 6px; margin-top: 10px; grid-column: 1 / -1; }
+  .bt { flex: 1; border-radius: 999px; padding: 7px 8px; text-align: center; font: 500 11px/1 var(--pp); }
+  .bt--w { background: #fff; color: var(--pp-deep); }
+  .bt--o { box-shadow: inset 0 0 0 1.5px #fff; color: #fff; }
+  .bt--p { background: var(--pp-btn); color: #fff; }
+  .bt--full { display: block; padding: 11px; font-size: 12px; }
+  .check { background: #fff; border-radius: 10px; padding: 11px; box-shadow: inset 0 0 0 1.5px var(--pp-link); margin: 0 0 4px; }
+  .check .k { font-size: 10px; color: var(--pp-dim); margin: 0 0 4px; }
+  .check .q { font-size: 13px; line-height: 1.3; margin: 0 0 10px; }
+  .bt--line { box-shadow: inset 0 0 0 1.5px var(--pp-btn); color: var(--pp-btn); }
+  .card { background: #fff; border-radius: 10px; padding: 11px; }
+  .swrow { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .swrow .st { display: block; font-size: 13px; margin-bottom: 2px; }
+  .swrow small { color: var(--pp-dim); font-size: 10.5px; }
+  .sw { width: 36px; height: 21px; border-radius: 11px; background: var(--pp-deep); position: relative; flex: none; }
+  .sw::after { content: ''; position: absolute; right: 2px; top: 2px; width: 17px; height: 17px; border-radius: 50%; background: #fff; }
+  .mini { font-size: 10px; color: var(--pp-dim); margin: 12px 0 5px; }
+  .uses { margin: 0; padding-left: 15px; font-size: 11px; display: grid; gap: 3px; }
+  .lnk { color: var(--pp-link); font: 500 11px/1 var(--pp); display: block; margin-top: 11px; }
+  .lnk--rule { border-top: 1px solid var(--pp-line); padding-top: 10px; }
+  .never { display: grid; justify-items: center; gap: 4px; margin-top: 14px; text-align: center; color: var(--pp-dim); font-size: 10.5px; }
+  .box { width: 15px; height: 15px; border-radius: 3px; box-shadow: inset 0 0 0 1.5px var(--pp-dim); position: relative; flex: none; }
+  .box--on { background: var(--pp-deep); box-shadow: none; }
+  .box--on::after { content: ''; position: absolute; left: 5px; top: 2px; width: 4px; height: 8px; border: solid #fff; border-width: 0 1.8px 1.8px 0; transform: rotate(45deg); }
+  .cr { display: grid; grid-template-columns: 22px 1fr 15px; gap: 9px; align-items: start; padding: 10px 11px; }
+  .cr + .cr { box-shadow: inset 0 1px 0 var(--pp-line); }
+  .cr .rt { font-size: 11.5px; display: block; }
+  .cr .rd { font-size: 10px; color: var(--pp-dim); display: block; line-height: 1.35; }
+  .keep { background: #fff; border-radius: 10px; padding: 9px 11px; margin-top: 8px; display: grid; grid-template-columns: 15px 1fr; gap: 7px; font-size: 10px; color: var(--pp-dim); line-height: 1.4; }
+  .keep b { color: var(--pp-ink); }
+  .foot { padding: 9px 12px 14px; background: var(--pp-ground); box-shadow: 0 -1px 0 var(--pp-line); flex: none; }
+  .foot small { display: block; text-align: center; color: var(--pp-dim); font-size: 10px; margin-top: 6px; }
+  .count { display: flex; justify-content: space-between; font-size: 10px; color: var(--pp-dim); margin: 0 2px 6px; }
+  .count .lnk { display: inline; margin: 0; font-size: 10.5px; }
+  .dim-bg { position: absolute; inset: 0; background: rgb(0 0 0 / .4); }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 46px; background: #fff; border-radius: 16px 16px 0 0; padding: 14px 14px 16px; display: flex; flex-direction: column; }
+  .why { display: grid; grid-template-columns: 30px 1fr; gap: 9px; margin: 8px 0 2px; }
+  .why .rt { font-size: 12px; display: block; }
+  .why .rd { font-size: 10.5px; color: var(--pp-dim); display: block; line-height: 1.35; }
+  .grow { flex: 1; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></symbol>
+  <symbol id="i-block" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M6.4 17.6L17.6 6.4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2"/></symbol>
+  <symbol id="i-cookie" viewBox="0 0 24 24"><path d="M20 12.5A8 8 0 1 1 11.5 4a3 3 0 0 0 3.5 3.5 3 3 0 0 0 5 5zM9 10h.01M9.5 15h.01M14 14.5h.01"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H4.5M10.5 6l-6 6 6 6"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.8h.01"/></symbol>
+</defs></svg>
+<main class="doc">
+
+  <p class="lbl">Experiment · PayPal Privacy · a mixed shipped version · 2026-11-18</p>
+  <h1>What shipped, as a <em>mix</em> of both</h1>
+  <p class="dek">Two ways to tell how the second version became what shipped. A is built on the case now. B keeps your illustrations, blue card and icon cards, and moves in the minimal screens' state and controls. Each row: your second version, the minimal one, the mix.</p>
+
+  <div class="stories">
+    <div class="story">
+      <p class="lbl">Story A · built</p>
+      <h3>The second version put art first. What shipped is the settings.</h3>
+      <ol>
+        <li>Illustrations removed <span>settings start under the title</span></li>
+        <li>Values on the right</li>
+        <li>The check answered in its card</li>
+        <li>Explanations end on their switch</li>
+        <li>Plainer words</li>
+      </ol>
+    </div>
+    <div class="story story--b">
+      <p class="lbl">Story B · this mock</p>
+      <h3>The second version had the right look and the wrong order. What shipped kept the look and put the settings first.</h3>
+      <ol>
+        <li>Illustrations kept, smaller <span>the first setting is on the first screen</span></li>
+        <li>Values on the right of your icon cards</li>
+        <li>The blue card stays, and answers itself</li>
+        <li>Explanations end on their switch</li>
+        <li>Plainer words</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ===== HUB ===== -->
+  <section>
+    <p class="lbl">01 · Data and privacy</p>
+    <h2>The hub</h2>
+    <div class="row">
+      <div class="col"><div class="tag">Second version</div>
+        <div class="phone"><div class="shot"><img src="../../public/images/paypal-privacy/evolution.webp" alt="Her second version of the Data and privacy page" data-crop="1278 52 1745 1640 1800 1696"></div></div>
+      </div>
+      <div class="col"><div class="tag">A · Minimal</div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg width="20" height="20"><use href="#i-back"/></svg></div>
+          <div class="body">
+            <p class="t">Data and privacy</p>
+            <p class="s">Set your privacy controls and manage your data.</p>
+            <div class="check"><p class="k">Yearly check</p><p class="q">Personalized deals are on. Still want offers based on where you shop?</p><div class="btns" style="margin:0"><span class="bt bt--p">Keep on</span><span class="bt bt--line">Turn off</span></div></div>
+            <p class="gh">Profile privacy</p>
+            <div class="list">
+              <div class="r"><span class="ic"><svg width="18" height="18"><use href="#i-search"/></svg></span><span class="rt">Search privacy</span><span class="v">Email, phone</span><span class="chev"><svg width="12" height="12"><use href="#i-chev"/></svg></span></div>
+              <div class="r"><span class="ic"><svg width="18" height="18"><use href="#i-block"/></svg></span><span class="rt">Blocked profiles</span><span class="v">2</span><span class="chev"><svg width="12" height="12"><use href="#i-chev"/></svg></span></div>
+            </div>
+            <p class="gh">Permissions and shared data</p>
+            <div class="list">
+              <div class="r"><span class="ic"><svg width="18" height="18"><use href="#i-lock"/></svg></span><span class="rt">Permissions</span><span class="v">3 apps</span><span class="chev"><svg width="12" height="12"><use href="#i-chev"/></svg></span></div>
+              <div class="r"><span class="ic"><svg width="18" height="18"><use href="#i-cookie"/></svg></span><span class="rt">Cookies</span><span class="v">Essential</span><span class="chev"><svg width="12" height="12"><use href="#i-chev"/></svg></span></div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col col--mix"><div class="tag">B · Mix</div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg width="20" height="20"><use href="#i-back"/></svg></div>
+          <div class="body">
+            <div class="crop" style="width:64px;height:64px;margin:0 auto" data-cropbox="1430 150 1615 335 1800 1696" data-src="../../public/images/paypal-privacy/evolution.webp"></div>
+            <p class="t t--c" style="margin-top:6px">Data and privacy</p>
+            <p class="s s--c">Set your privacy controls and manage your data.</p>
+            <div class="remind">
+              <div><p class="rq">Personalized deals are on.</p><p class="rs">It’s been a year. Still want offers based on where you shop?</p></div>
+              <div class="crop" style="width:34px;height:40px;align-self:start" data-cropbox="1620 640 1700 740 1800 1696" data-src="../../public/images/paypal-privacy/evolution.webp"></div>
+              <div class="btns"><span class="bt bt--w">Keep on</span><span class="bt bt--o">Turn off</span></div>
+            </div>
+            <p class="gh">Profile privacy</p>
+            <div class="cards">
+              <div class="cardrow r"><div class="crop" style="width:22px;height:22px" data-cropbox="1313 903 1375 965 1800 1696" data-src="../../public/images/paypal-privacy/evolution.webp"></div><span class="rt">Search privacy</span><span class="v">Email, phone</span><span class="chev"><svg width="12" height="12"><use href="#i-chev"/></svg></span></div>
+              <div class="cardrow r"><div class="crop" style="width:22px;height:22px" data-cropbox="1313 1029 1375 1091 1800 1696" data-src="../../public/images/paypal-privacy/evolution.webp"></div><span class="rt">Blocked profiles</span><span class="v">2</span><span class="chev"><svg width="12" height="12"><use href="#i-chev"/></svg></span></div>
+            </div>
+            <p class="gh">Permissions and shared data</p>
+            <div class="cards">
+              <div class="cardrow r"><div class="crop" style="width:22px;height:22px" data-cropbox="1313 1250 1375 1312 1800 1696" data-src="../../public/images/paypal-privacy/evolution.webp"></div><span class="rt">Permissions</span><span class="v">3 apps</span><span class="chev"><svg width="12" height="12"><use href="#i-chev"/></svg></span></div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="notes">
+        <h3>What the mix takes from each</h3>
+        <dl class="kv">
+          <dt>Yours</dt><dd>The lock illustration and centred title, the deep-blue card with its shield, a card per row with your colour icons.</dd>
+          <dt>Minimal</dt><dd>Values on the right of every row; the card answers itself with Keep on and Turn off.</dd>
+          <dt>Changed</dt><dd>The illustration drops from ~124px to 64px, so the first setting is on the first screen. Blocked's red icon would need a non-error colour <span class="x">[X] your call</span>.</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DEALS ===== -->
+  <section>
+    <p class="lbl">02 · Personalized deals and offers</p>
+    <h2>The switch</h2>
+    <div class="row">
+      <div class="col"><div class="tag">Second version</div>
+        <div class="phone"><div class="shot"><img src="../../public/images/paypal-privacy/shopping.webp" alt="Her second version of Personalized deals and offers" data-crop="722 40 1214 1190 1800 1230"></div></div>
+      </div>
+      <div class="col"><div class="tag">A · Minimal</div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg width="20" height="20"><use href="#i-back"/></svg></div>
+          <div class="body">
+            <p class="t">Personalized deals and offers</p>
+            <p class="s">Get offers from PayPal to save at your favorite online stores.</p>
+            <div class="card">
+              <div class="swrow"><span><span class="st">Get personalized offers</span><small>On. You’ll see deals based on where you shop.</small></span><span class="sw"></span></div>
+              <p class="mini">What it uses</p>
+              <ul class="uses"><li>Where you’ve paid with PayPal</li><li>Stores you’ve visited in PayPal’s network</li></ul>
+              <span class="lnk">See an example</span>
+            </div>
+            <p class="never">We never sell your personal information.</p>
+          </div>
+        </div></div>
+      </div>
+      <div class="col col--mix"><div class="tag">B · Mix</div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg width="20" height="20"><use href="#i-back"/></svg></div>
+          <div class="body">
+            <p class="t">Personalized deals and offers</p>
+            <div class="crop" style="width:110px;height:80px;margin:6px auto 4px" data-cropbox="850 280 1140 490 1800 1230" data-src="../../public/images/paypal-privacy/shopping.webp"></div>
+            <p class="s s--c">Get offers from PayPal to save at your favorite online stores.</p>
+            <div class="card">
+              <div class="swrow"><span><span class="st">Get personalized offers</span><small>Personalized deals and offers is on.</small></span><span class="sw"></span></div>
+              <p class="mini">What it uses</p>
+              <ul class="uses"><li>Where you’ve paid with PayPal</li><li>Stores you’ve visited in PayPal’s network</li></ul>
+              <span class="lnk lnk--rule">Learn how it works</span>
+            </div>
+            <div class="never"><div class="crop" style="width:22px;height:24px" data-cropbox="948 985 990 1030 1800 1230" data-src="../../public/images/paypal-privacy/shopping.webp"></div>We never sell your personal information.</div>
+          </div>
+        </div></div>
+      </div>
+      <div class="notes">
+        <h3>What the mix takes from each</h3>
+        <dl class="kv">
+          <dt>Yours</dt><dd>The offers illustration, your switch card and "Learn how it works" under a rule, your green shield.</dd>
+          <dt>Minimal</dt><dd>"What it uses" in two lines, from your own "How it works", under the switch.</dd>
+          <dt>Changed</dt><dd>The illustration is smaller, so the switch sits at the top half. "How it works" ends on the switch, not "Got it".</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CLEAN UP ===== -->
+  <section>
+    <p class="lbl">03 · Clean up your data</p>
+    <h2>Deleting part</h2>
+    <div class="row">
+      <div class="col"><div class="tag">Second version</div>
+        <div class="phone"><div class="shot"><img src="../../public/images/paypal-privacy/data-delete.webp" alt="Her second version of Clean up your data" data-crop="1174 42 1578 1138 1620 1180"></div></div>
+      </div>
+      <div class="col"><div class="tag">A · Minimal</div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg width="20" height="20"><use href="#i-back"/></svg></div>
+          <div class="body">
+            <p class="t">Clean up your data</p>
+            <p class="s">Delete the data you don’t need. Your account stays open.</p>
+            <div class="list">
+              <div class="cr" style="grid-template-columns:1fr 15px"><span><span class="rt">Face scan data</span><span class="rd">To verify your ID again, you’ll need to re-upload it.</span></span><span class="box box--on"></span></div>
+              <div class="cr" style="grid-template-columns:1fr 15px"><span><span class="rt">Marketing data</span><span class="rd">Ads and offers get less relevant.</span></span><span class="box box--on"></span></div>
+              <div class="cr" style="grid-template-columns:1fr 15px"><span><span class="rt">Package tracking</span><span class="rd">You’ll no longer see it on PayPal.</span></span><span class="box"></span></div>
+            </div>
+            <div class="keep"><svg width="15" height="15" class="ic" style="fill:none;stroke:currentColor;stroke-width:1.6"><use href="#i-info"/></svg><span><b>What we keep.</b> Data the law requires, and to prevent fraud.</span></div>
+          </div>
+          <div class="foot"><span class="bt bt--p bt--full">Delete 2 types of data</span><small>You can’t undo this.</small></div>
+        </div></div>
+      </div>
+      <div class="col col--mix"><div class="tag">B · Mix</div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg width="20" height="20"><use href="#i-back"/></svg></div>
+          <div class="body">
+            <div class="crop" style="width:46px;height:46px;margin:0 auto" data-cropbox="1330 188 1420 280 1620 1180" data-src="../../public/images/paypal-privacy/data-delete.webp"></div>
+            <p class="t t--c" style="margin-top:6px">Clean up your data</p>
+            <p class="s s--c">Delete the data you don’t need. Your account stays open.</p>
+            <div class="count"><span>2 of 4 selected</span><span class="lnk">Select all</span></div>
+            <div class="list">
+              <div class="cr"><div class="crop" style="width:20px;height:20px" data-cropbox="1206 465 1246 505 1620 1180" data-src="../../public/images/paypal-privacy/data-delete.webp"></div><span><span class="rt">Face scan data</span><span class="rd">To verify your ID again, you’ll need to re-upload it.</span></span><span class="box box--on"></span></div>
+              <div class="cr"><div class="crop" style="width:20px;height:20px" data-cropbox="1206 610 1246 650 1620 1180" data-src="../../public/images/paypal-privacy/data-delete.webp"></div><span><span class="rt">Marketing data</span><span class="rd">Ads and offers get less relevant.</span></span><span class="box box--on"></span></div>
+              <div class="cr"><div class="crop" style="width:20px;height:20px" data-cropbox="1206 755 1246 795 1620 1180" data-src="../../public/images/paypal-privacy/data-delete.webp"></div><span><span class="rt">Package tracking</span><span class="rd">You’ll no longer see it on PayPal.</span></span><span class="box"></span></div>
+            </div>
+            <div class="keep"><svg width="15" height="15" class="ic" style="fill:none;stroke:currentColor;stroke-width:1.6"><use href="#i-info"/></svg><span><b>What we keep.</b> Data the law requires, and to prevent fraud.</span></div>
+          </div>
+          <div class="foot"><span class="bt bt--p bt--full">Delete 2 types of data</span><small>You can’t undo this.</small></div>
+        </div></div>
+      </div>
+      <div class="notes">
+        <h3>What the mix takes from each</h3>
+        <dl class="kv">
+          <dt>Yours</dt><dd>The clean-up icon and centred title, a colour icon per data type, the count and Select all.</dd>
+          <dt>Minimal</dt><dd>"Your account stays open", what PayPal keeps on this screen, a button that says what it deletes.</dd>
+          <dt>Changed</dt><dd>"Improve your experience… over-retained" is gone. Your frame is low resolution, so its icons crop soft here; on the site they'd be redrawn.</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== WHY ===== -->
+  <section>
+    <p class="lbl">04 · Shopping and Privacy</p>
+    <h2>Why these offers</h2>
+    <div class="row">
+      <div class="col"><div class="tag">Second version</div>
+        <div class="phone"><div class="shot"><img src="../../public/images/paypal-privacy/contextual.webp" alt="Her second version of the Shopping and Privacy sheet" data-crop="1380 36 1766 872 1800 908"></div></div>
+      </div>
+      <div class="col"><div class="tag">A · Minimal</div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="dim-bg"></div>
+          <div class="sheet">
+            <div style="display:flex;justify-content:flex-end"><svg width="18" height="18" class="ic" style="fill:none;stroke:currentColor;stroke-width:1.6"><use href="#i-close"/></svg></div>
+            <p class="t">Why you see these offers</p>
+            <ul class="uses" style="gap:8px;margin:6px 0 10px"><li>Deals, products and stores we think you’ll like, based on where you shop and what you buy.</li><li>Participating stores may ask PayPal to send you offers.</li></ul>
+            <div class="card" style="box-shadow:inset 0 0 0 1px var(--pp-line)"><div class="swrow"><span><span class="st" style="font-size:12px">Personalized offers</span><small>On</small></span><span class="sw"></span></div></div>
+            <p class="never">We never sell it, and won’t share it without your permission.</p>
+            <span class="grow"></span>
+            <span class="bt bt--p bt--full">Done</span>
+          </div>
+        </div></div>
+      </div>
+      <div class="col col--mix"><div class="tag">B · Mix</div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="dim-bg"></div>
+          <div class="sheet">
+            <div style="display:flex;justify-content:flex-end"><svg width="18" height="18" class="ic" style="fill:none;stroke:currentColor;stroke-width:1.6"><use href="#i-close"/></svg></div>
+            <div class="crop" style="width:56px;height:56px;margin:0 auto" data-cropbox="1515 272 1625 380 1800 908" data-src="../../public/images/paypal-privacy/contextual.webp"></div>
+            <p class="t t--c" style="font-size:17px;margin-top:6px">Shopping and Privacy</p>
+            <div class="why"><div class="crop" style="width:28px;height:28px" data-cropbox="1400 460 1450 510 1800 908" data-src="../../public/images/paypal-privacy/contextual.webp"></div><div><span class="rt">Deals inspired by you</span><span class="rd">Based on where you shop and what you buy.</span></div></div>
+            <div class="why"><div class="crop" style="width:28px;height:28px" data-cropbox="1400 568 1450 618 1800 908" data-src="../../public/images/paypal-privacy/contextual.webp"></div><div><span class="rt">Sent straight to you</span><span class="rd">Exclusive offers from your favorite stores.</span></div></div>
+            <div class="card" style="box-shadow:inset 0 0 0 1px var(--pp-line);margin-top:8px"><div class="swrow"><span><span class="st" style="font-size:12px">Personalized offers</span><small>On</small></span><span class="sw"></span></div></div>
+            <p class="never" style="margin-top:10px">Your info is securely encrypted. We never sell it, and won’t share it without your permission.</p>
+            <span class="grow"></span>
+            <span class="bt bt--p bt--full">Done</span>
+          </div>
+        </div></div>
+      </div>
+      <div class="notes">
+        <h3>What the mix takes from each</h3>
+        <dl class="kv">
+          <dt>Yours</dt><dd>The shield illustration, "Shopping and Privacy", your two rows with their icons, your encryption line.</dd>
+          <dt>Minimal</dt><dd>The switch in the sheet, and Done in place of "Got it".</dd>
+          <dt>Changed</dt><dd>The link to notification settings becomes the switch itself. The entry under the offers would read "Why these offers?" as in A.</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="lbl">If B is picked</p>
+    <h2>What changes on the case</h2>
+    <div class="stories" style="margin-top:12px">
+      <div class="story"><h3>On the site</h3><ol><li>The shipped screens are redrawn as the mix, using your illustrations in code (as the second version's are now)</li><li>"What shipped" is retitled to Story B's line, with the reasons cut to three: no state, a card you couldn't answer, explanations that ended on "Got it"</li><li>The compares and craft rows show the mix</li></ol></div>
+      <div class="story"><h3>From you</h3><ol><li>Which is closer to what launched: A, B, or somewhere between</li><li>Did the blue card ship, or was it a proposal?</li><li>What testing found about the second version, if anything</li></ol></div>
+    </div>
+  </section>
+
+</main>
+<script>
+  // Crop her screens: data-crop on <img> fills its phone from a region
+  // (x0 y0 x1 y1 W H); data-cropbox on a div shows exactly that region.
+  for (const img of document.querySelectorAll('img[data-crop]')) {
+    const [x0, y0, x1, y1, W, H] = img.dataset.crop.split(' ').map(Number);
+    const box = img.parentElement;
+    const fit = () => {
+      const bw = box.clientWidth, bh = box.clientHeight;
+      const s = Math.max(bw / (x1 - x0), bh / (y1 - y0));
+      Object.assign(img.style, { width: W * s + 'px', height: H * s + 'px', left: -x0 * s + (bw - (x1 - x0) * s) / 2 + 'px', top: -y0 * s + 'px' });
+    };
+    fit(); addEventListener('resize', fit);
+  }
+  for (const box of document.querySelectorAll('[data-cropbox]')) {
+    const [x0, y0, x1, y1, W, H] = box.dataset.cropbox.split(' ').map(Number);
+    const img = document.createElement('img');
+    img.src = box.dataset.src; img.alt = '';
+    const s = Math.min(box.clientWidth / (x1 - x0), box.clientHeight / (y1 - y0));
+    Object.assign(img.style, { width: W * s + 'px', height: H * s + 'px', left: -x0 * s + (box.clientWidth - (x1 - x0) * s) / 2 + 'px', top: -y0 * s + (box.clientHeight - (y1 - y0) * s) / 2 + 'px' });
+    box.append(img);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayPal Privacy — the yearly check card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-18. Options for the yearly check card at the top of the
+  shipped Data and privacy page (it-hub in PrivacyScreen.astro), and for
+  its two answers. Two notes from her own Wix case shaped them: the
+  reminder is "a positive reinforcement – celebrate it like an
+  anniversary", and in preliminary testing "a Door was the most common
+  symbol of privacy". Drawn in PayPal's look (PP Sans if installed),
+  illustrations flat in PayPal's blues, no photos. Only the card changes;
+  the rest of each phone is the shipped page.
+  Serve from the repo root: /experiments/privacy-case-learnings/yearly-check.html
+-->
+<style>
+  @font-face { font-family: 'PP Sans'; font-weight: 300; src: local('PayPal Sans Big Light'), local('PayPalSansBig-Light'); }
+  @font-face { font-family: 'PP Sans'; font-weight: 400; src: local('PayPal Sans Big Regular'), local('PayPalSansBig-Regular'); }
+  @font-face { font-family: 'PP Sans'; font-weight: 500; src: local('PayPal Sans Big Medium'), local('PayPalSansBig-Medium'), local('PayPalSansBigMedium-Regular'); }
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070;
+    --card: color-mix(in srgb, #262626 3%, #fcfcfc);
+    --blue: #2f6fd6;
+    /* PayPal, as in PAYPAL PRIVACY SCREENS */
+    --pp: 'PP Sans', 'PayPal Sans Big', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --ink: #001435; --dimp: #545d68; --link: #0063c7; --deep: #1040c8; --navy: #003087;
+    --sky: #e3f0fb; --sky-2: #c9e2f8; --bright: #1f6bff; --yellow: #ffd140; --ground: #f5f3ee; --line: #e3e1dc;
+    --shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f0efec; color: var(--fg); font: 600 13px/1.6 var(--font-sans); }
+  .doc { max-width: 1360px; margin: 0 auto; padding: 56px 32px 160px; }
+  h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 10px; letter-spacing: -0.01em; }
+  h2 { font: 300 32px/1.15 var(--font-serif); margin: 6px 0 8px; }
+  h3 { font: 300 21px/1.2 var(--font-serif); margin: 14px 0 4px; }
+  em { font-style: italic; }
+  .dek { color: var(--dim); margin: 0 0 8px; max-width: 80ch; }
+  .lbl { font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  section { margin: 64px 0 0; }
+  .quote { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 20px 0 0; }
+  .quote div { background: var(--bg); border-radius: 16px; padding: 18px 20px; }
+  .quote p { margin: 4px 0 0; font: 300 19px/1.3 var(--font-serif); }
+
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 1250px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  .opt { background: var(--bg); border-radius: 20px; padding: 18px 18px 20px; display: flex; flex-direction: column; align-items: center; }
+  .opt__head { align-self: stretch; display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .opt__head b { font: 300 20px/1 var(--font-serif); }
+  .opt p.why { align-self: stretch; margin: 12px 0 0; color: var(--dim); font-size: 12px; }
+  .rec { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--blue); }
+  .opt--rec { box-shadow: inset 0 0 0 1.5px var(--blue); }
+
+  /* phone with the shipped hub */
+  .phone { width: 262px; height: 540px; border-radius: 34px; background: #111; padding: 7px; flex: none; }
+  .scr { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 28px; background: var(--ground); font: 400 11.5px/1.4 var(--pp); color: var(--ink); font-synthesis: none; }
+  .scr b { font-weight: 400; }
+  .sb { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; font: 500 10.5px/1 var(--pp); color: #000; }
+  .nv { height: 28px; padding: 0 12px; display: flex; align-items: center; }
+  .ln { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .body { padding: 0 12px; }
+  .t { font: 400 19px/1.15 var(--pp); letter-spacing: -0.01em; margin: 0 0 3px; }
+  .s { color: var(--dimp); font-size: 10.5px; margin: 0 0 10px; }
+  .gh { font-size: 12.5px; margin: 12px 2px 6px; }
+  .list { background: #fff; border-radius: 10px; }
+  .r { display: grid; grid-template-columns: 20px 1fr auto 12px; gap: 9px; align-items: center; padding: 9px 11px; font-size: 11.5px; }
+  .r + .r { box-shadow: inset 0 1px 0 var(--line); }
+  .r .v { font-size: 10.5px; color: var(--dimp); }
+  .r svg { width: 18px; height: 18px; }
+  .r .c { color: var(--dimp); display: grid; }
+  .r .c svg { width: 12px; height: 12px; }
+
+  /* card base */
+  .yc { position: relative; border-radius: 12px; padding: 12px; margin-bottom: 2px; overflow: hidden; }
+  .yc p { margin: 0; }
+  .k { font-size: 10px; color: var(--dimp); }
+  .q { font-size: 13.5px; line-height: 1.3; margin: 3px 0 0 !important; }
+  .sub { font-size: 10.5px; color: var(--dimp); margin-top: 3px !important; line-height: 1.35; }
+  .btns { display: flex; gap: 6px; margin-top: 11px; }
+  .bt { flex: 1; border-radius: 999px; padding: 8px 6px; text-align: center; font: 500 11px/1 var(--pp); white-space: nowrap; }
+  .bt--p { background: var(--navy); color: #fff; }
+  .bt--o { box-shadow: inset 0 0 0 1.5px var(--navy); color: var(--navy); }
+  .bt--w { background: #fff; color: var(--navy); }
+  .bt--wo { box-shadow: inset 0 0 0 1.5px #fff; color: #fff; }
+  .bt--n { box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); background: #fff; }
+
+  /* A · Anniversary */
+  .yc--anniv { background: #fff; box-shadow: var(--shadow); padding-right: 92px; }
+  .anniv { position: absolute; right: 10px; top: 10px; width: 72px; height: 72px; }
+  /* B · Door */
+  .yc--door { background: var(--sky); display: grid; grid-template-columns: 1fr 58px; gap: 8px; }
+  .yc--door .btns { grid-column: 1 / -1; }
+  /* C · Deep blue */
+  .yc--blue { background: var(--deep); color: #fff; }
+  .yc--blue .k { color: rgb(255 255 255 / .75); }
+  .yc--blue .sub { color: rgb(255 255 255 / .85); }
+  .yc--blue .q { font-weight: 300; font-size: 15px; }
+  .shield { position: absolute; right: -6px; bottom: -10px; width: 86px; height: 96px; opacity: .95; }
+  /* D · The setting itself */
+  .yc--live { background: #fff; box-shadow: var(--shadow); }
+  .mini { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 9px; padding: 9px 10px; border-radius: 9px; background: var(--ground); }
+  .mini__t { font-size: 11.5px; }
+  .mini__t small { display: block; font-size: 9.5px; color: var(--dimp); }
+  .sw { width: 34px; height: 20px; border-radius: 10px; background: var(--deep); position: relative; flex: none; }
+  .sw::after { content: ''; position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+  .cal { display: inline-grid; place-items: center; font: 500 9px/1 var(--pp); color: var(--deep); background: var(--sky); border-radius: 5px; padding: 3px 6px; }
+  /* E · Postcard */
+  .yc--card { background: #fff; box-shadow: var(--shadow); padding: 0; }
+  .yc--card .art { height: 74px; background: var(--sky); position: relative; overflow: hidden; }
+  .yc--card .in { padding: 11px 12px 12px; }
+  /* F · Ticket */
+  .yc--ticket { background: #fff; box-shadow: var(--shadow); display: grid; grid-template-columns: 62px 1fr; padding: 0; }
+  .stub { background: var(--yellow); display: grid; place-items: center; text-align: center; position: relative; }
+  .stub::after { content: ''; position: absolute; right: -1px; top: 6px; bottom: 6px; border-right: 2px dotted #fff; }
+  .stub b { display: block; font: 300 24px/1 var(--pp); color: var(--navy); }
+  .stub small { display: block; font: 500 8.5px/1.2 var(--pp); color: var(--navy); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+  .yc--ticket .in { padding: 11px 12px; }
+  /* G · Quiet line */
+  .yc--quiet { background: #fff; box-shadow: var(--shadow); display: grid; grid-template-columns: 30px 1fr; gap: 9px; padding: 11px; }
+  .yc--quiet .btns { grid-column: 2; margin-top: 8px; }
+  .dot { width: 30px; height: 30px; border-radius: 50%; background: var(--sky); display: grid; place-items: center; color: var(--deep); }
+  /* H · Done state */
+  .yc--done { background: #fff; box-shadow: var(--shadow); display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; }
+  .tick { width: 34px; height: 34px; border-radius: 50%; background: #0a7a52; display: grid; place-items: center; color: #fff; }
+
+  /* CTA row */
+  .ctas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 1100px) { .ctas { grid-template-columns: 1fr; } }
+  .cta { background: var(--bg); border-radius: 20px; padding: 18px; }
+  .cta .demo { background: var(--ground); border-radius: 14px; padding: 14px; font: 400 11.5px/1.4 var(--pp); color: var(--ink); }
+  .cta .demo .yc { background: #fff; box-shadow: var(--shadow); }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--ground); border-radius: 999px; padding: 3px; margin-top: 11px; }
+  .seg span { text-align: center; padding: 7px; border-radius: 999px; font: 500 11px/1 var(--pp); color: var(--dimp); }
+  .seg .on { background: #fff; color: var(--navy); box-shadow: var(--shadow); }
+  .tl { display: flex; align-items: center; gap: 14px; margin-top: 11px; }
+  .tl .bt { flex: none; padding: 8px 16px; }
+  .tl a { color: var(--link); font: 500 11px/1 var(--pp); text-decoration: none; }
+  .chips { display: flex; gap: 6px; margin-top: 11px; flex-wrap: wrap; }
+  .chip { border-radius: 999px; padding: 7px 11px; font: 400 11px/1 var(--pp); box-shadow: inset 0 0 0 1px var(--line); background: #fff; }
+  .note { margin-top: 10px; color: var(--dim); font-size: 12px; }
+  .note b { color: var(--fg); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="back" viewBox="0 0 24 24"><path d="M20 12H4.5M10.5 6l-6 6 6 6"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></symbol>
+  <symbol id="block" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M6.4 17.6L17.6 6.4"/></symbol>
+  <symbol id="lock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2"/></symbol>
+  <symbol id="tag" viewBox="0 0 24 24"><path d="M4 4h7.5l8.5 8.5-7.5 7.5L4 11.5zM8.5 8.5h.01"/></symbol>
+  <symbol id="cal" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+</defs></svg>
+
+<template id="rest">
+  <p class="gh">Profile privacy</p>
+  <div class="list">
+    <div class="r"><svg class="ln"><use href="#search"/></svg><span>Search privacy</span><span class="v">Email, phone</span><span class="c"><svg class="ln"><use href="#chev"/></svg></span></div>
+    <div class="r"><svg class="ln"><use href="#block"/></svg><span>Blocked profiles</span><span class="v">2</span><span class="c"><svg class="ln"><use href="#chev"/></svg></span></div>
+  </div>
+  <p class="gh">Permissions and shared data</p>
+  <div class="list">
+    <div class="r"><svg class="ln"><use href="#lock"/></svg><span>Permissions</span><span class="v">3 apps</span><span class="c"><svg class="ln"><use href="#chev"/></svg></span></div>
+    <div class="r"><svg class="ln"><use href="#tag"/></svg><span>Deals &amp; ads</span><span class="v">On</span><span class="c"><svg class="ln"><use href="#chev"/></svg></span></div>
+  </div>
+</template>
+
+<main class="doc">
+  <p class="lbl">Experiment · PayPal Privacy · the yearly check card · 2026-11-18</p>
+  <h1>The yearly check, with <em>something to look at</em></h1>
+  <p class="dek">Eight cards for the top of the shipped Data and privacy page, then six ways to ask its question. Only the card changes; the rest of each phone is the page as built.</p>
+  <div class="quote">
+    <div><span class="lbl">From your Wix case</span><p>"Privacy reminder is a positive reinforcement – celebrate it like an anniversary."</p></div>
+    <div><span class="lbl">From your Wix case</span><p>"In preliminary testing, a 'Door' was the most common symbol of privacy that resonated with the consumers."</p></div>
+  </div>
+
+  <section>
+    <p class="lbl">The card</p>
+    <h2>Eight looks</h2>
+    <div class="grid">
+
+      <!-- A -->
+      <div class="opt opt--rec">
+        <div class="opt__head"><b>A · Anniversary</b><span class="rec">Recommended</span></div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg></div>
+          <div class="body">
+            <p class="t">Data and privacy</p><p class="s">Set your privacy controls and manage your data.</p>
+            <div class="yc yc--anniv">
+              <svg class="anniv" viewBox="0 0 72 72" aria-hidden="true">
+                <circle cx="36" cy="38" r="30" fill="#e3f0fb"/>
+                <rect x="18" y="22" width="36" height="34" rx="6" fill="#1f6bff"/>
+                <rect x="18" y="22" width="36" height="10" rx="5" fill="#1040c8"/>
+                <rect x="25" y="17" width="4" height="10" rx="2" fill="#001435"/><rect x="43" y="17" width="4" height="10" rx="2" fill="#001435"/>
+                <text x="36" y="50" text-anchor="middle" font-family="PP Sans, Helvetica Neue, Arial" font-size="15" fill="#fff">1 yr</text>
+                <path d="M60 14l1.6 4.2 4.2 1.6-4.2 1.6L60 25.6l-1.6-4.2-4.2-1.6 4.2-1.6z" fill="#ffd140"/>
+                <circle cx="12" cy="20" r="2" fill="#ffd140"/><circle cx="64" cy="48" r="1.8" fill="#1f6bff"/><circle cx="10" cy="52" r="1.6" fill="#c9e2f8"/>
+              </svg>
+              <p class="k">One year of your settings</p>
+              <p class="q">Personalized deals are on. Still want them?</p>
+              <div class="btns" style="margin-right:-80px"><span class="bt bt--p">Keep on</span><span class="bt bt--o">Turn off</span></div>
+            </div>
+            <div data-rest></div>
+          </div>
+        </div></div>
+        <p class="why">Your "celebrate it like an anniversary", as a calendar with "1 yr". Warm without taking over: the first setting still sits on the first screen.</p>
+      </div>
+
+      <!-- B -->
+      <div class="opt">
+        <div class="opt__head"><b>B · The door</b></div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg></div>
+          <div class="body">
+            <p class="t">Data and privacy</p><p class="s">Set your privacy controls and manage your data.</p>
+            <div class="yc yc--door">
+              <div>
+                <p class="k">Yearly check</p>
+                <p class="q">Who gets in is your call. Still want personalized deals?</p>
+              </div>
+              <svg viewBox="0 0 58 74" width="58" height="74" aria-hidden="true">
+                <rect x="6" y="4" width="46" height="68" rx="3" fill="#003087"/>
+                <path d="M10 8h38v62H10z" fill="#ffd140" opacity=".9"/>
+                <path d="M10 8l24 6v62l-24-6z" fill="#1f6bff"/>
+                <rect x="14" y="20" width="14" height="14" rx="1.5" fill="#1040c8"/>
+                <rect x="14" y="40" width="14" height="18" rx="1.5" fill="#1040c8"/>
+                <circle cx="29" cy="46" r="2" fill="#ffd140"/>
+              </svg>
+              <div class="btns"><span class="bt bt--p">Keep on</span><span class="bt bt--o" style="background:#fff">Turn off</span></div>
+            </div>
+            <div data-rest></div>
+          </div>
+        </div></div>
+        <p class="why">Your research's privacy symbol, a door left ajar with light behind it. The most meaningful option, and the one that needs the most care to stay out of the way.</p>
+      </div>
+
+      <!-- C -->
+      <div class="opt">
+        <div class="opt__head"><b>C · Your blue</b></div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg></div>
+          <div class="body">
+            <p class="t">Data and privacy</p><p class="s">Set your privacy controls and manage your data.</p>
+            <div class="yc yc--blue">
+              <svg class="shield" viewBox="0 0 86 96" aria-hidden="true"><path d="M43 6l34 12v26c0 24-15 40-34 48C24 84 9 68 9 44V18z" fill="#1f6bff"/><path d="M43 18l24 8.5V44c0 17-10.5 28.5-24 34-13.5-5.5-24-17-24-34V26.5z" fill="#c9e2f8"/><circle cx="43" cy="44" r="7" fill="#003087"/><path d="M39 47h8l-1.5 13h-5z" fill="#003087"/></svg>
+              <p class="k">Yearly check</p>
+              <p class="q" style="max-width:150px">Personalized deals are on. Still want them?</p>
+              <div class="btns" style="margin-right:56px"><span class="bt bt--w">Keep on</span><span class="bt bt--wo">Turn off</span></div>
+            </div>
+            <div data-rest></div>
+          </div>
+        </div></div>
+        <p class="why">Your second version's deep blue and shield, kept, with the question answered in the card. The loudest option; it is the page's one coloured block.</p>
+      </div>
+
+      <!-- D -->
+      <div class="opt">
+        <div class="opt__head"><b>D · The setting itself</b></div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg></div>
+          <div class="body">
+            <p class="t">Data and privacy</p><p class="s">Set your privacy controls and manage your data.</p>
+            <div class="yc yc--live">
+              <p class="k"><span class="cal">Once a year</span></p>
+              <p class="q">Still happy with this?</p>
+              <div class="mini"><span class="mini__t">Personalized deals<small>Based on where you shop</small></span><span class="sw"></span></div>
+              <div class="btns"><span class="bt bt--p">Looks good</span></div>
+            </div>
+            <div data-rest></div>
+          </div>
+        </div></div>
+        <p class="why">The visual is the real control: a miniature of the setting with its switch. Flip it or confirm. The most product-like; the least "fun".</p>
+      </div>
+
+      <!-- E -->
+      <div class="opt">
+        <div class="opt__head"><b>E · Postcard</b></div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg></div>
+          <div class="body">
+            <p class="t">Data and privacy</p><p class="s">Set your privacy controls and manage your data.</p>
+            <div class="yc yc--card">
+              <div class="art">
+                <svg viewBox="0 0 248 74" width="100%" height="74" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                  <circle cx="200" cy="80" r="56" fill="#c9e2f8"/>
+                  <circle cx="36" cy="18" r="10" fill="#ffd140"/>
+                  <rect x="150" y="18" width="62" height="44" rx="6" fill="#fff"/>
+                  <rect x="158" y="27" width="30" height="4" rx="2" fill="#1040c8"/><rect x="158" y="36" width="44" height="3" rx="1.5" fill="#c9e2f8"/><rect x="158" y="44" width="38" height="3" rx="1.5" fill="#c9e2f8"/>
+                  <rect x="190" y="25" width="14" height="8" rx="4" fill="#1f6bff"/><circle cx="200" cy="29" r="3" fill="#fff"/>
+                  <path d="M70 60c20-14 40-14 60 0" stroke="#1f6bff" stroke-width="2" fill="none" stroke-dasharray="3 4"/>
+                </svg>
+              </div>
+              <div class="in">
+                <p class="k">A year since your last check</p>
+                <p class="q">Personalized deals are on. Still want them?</p>
+                <div class="btns"><span class="bt bt--p">Keep on</span><span class="bt bt--o">Turn off</span></div>
+              </div>
+            </div>
+            <div data-rest></div>
+          </div>
+        </div></div>
+        <p class="why">A short illustrated band on top, like a note from PayPal. Most "fun"; the tallest card, so the list starts lowest of the eight.</p>
+      </div>
+
+      <!-- F -->
+      <div class="opt">
+        <div class="opt__head"><b>F · Ticket stub</b></div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg></div>
+          <div class="body">
+            <p class="t">Data and privacy</p><p class="s">Set your privacy controls and manage your data.</p>
+            <div class="yc yc--ticket">
+              <div class="stub"><div><b>1</b><small>year</small></div></div>
+              <div class="in">
+                <p class="k">Yearly check</p>
+                <p class="q">Personalized deals are on. Still want them?</p>
+                <div class="btns"><span class="bt bt--p">Keep on</span><span class="bt bt--o">Turn off</span></div>
+              </div>
+            </div>
+            <div data-rest></div>
+          </div>
+        </div></div>
+        <p class="why">The anniversary as a ticket stub in PayPal's yellow. Compact and playful; yellow is PayPal's own, used here as one small mark.</p>
+      </div>
+
+      <!-- G -->
+      <div class="opt">
+        <div class="opt__head"><b>G · Quiet</b></div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg></div>
+          <div class="body">
+            <p class="t">Data and privacy</p><p class="s">Set your privacy controls and manage your data.</p>
+            <div class="yc yc--quiet">
+              <span class="dot"><svg class="ln" width="16" height="16"><use href="#cal"/></svg></span>
+              <div><p class="k">Yearly check</p><p class="q" style="font-size:12.5px">Personalized deals are on. Still want them?</p></div>
+              <div class="btns"><span class="bt bt--p">Keep on</span><span class="bt bt--o">Turn off</span></div>
+            </div>
+            <div data-rest></div>
+          </div>
+        </div></div>
+        <p class="why">The built card, lifted onto white with one icon in a sky disc. The smallest change from what's on the site.</p>
+      </div>
+
+      <!-- H -->
+      <div class="opt">
+        <div class="opt__head"><b>H · After you answer</b></div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span>▮</span></div>
+          <div class="nv"><svg class="ln" width="20" height="20"><use href="#back"/></svg></div>
+          <div class="body">
+            <p class="t">Data and privacy</p><p class="s">Set your privacy controls and manage your data.</p>
+            <div class="yc yc--done">
+              <span class="tick"><svg class="ln" width="18" height="18" style="stroke-width:2.2"><use href="#check"/></svg></span>
+              <div><p class="q" style="margin:0 !important;font-size:12.5px">Kept on. See you next year.</p><p class="sub">You can change it anytime in Deals &amp; ads.</p></div>
+            </div>
+            <div data-rest></div>
+          </div>
+        </div></div>
+        <p class="why">Whichever card is picked, this is its second state: a short thank-you that says where to change it later, then it leaves.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="lbl">The two answers</p>
+    <h2>Six ways to ask "Still want them?"</h2>
+    <p class="dek">Your Ads consent case gave Allow and Not now equal weight so nobody was pushed. The same rule fits here: Turn off should be as easy to press as Keep on.</p>
+    <div class="ctas">
+      <div class="cta">
+        <p class="lbl">1 · Filled and outline</p>
+        <div class="demo"><div class="yc"><p class="q">Personalized deals are on. Still want them?</p><div class="btns"><span class="bt bt--p">Keep on</span><span class="bt bt--o">Turn off</span></div></div></div>
+        <p class="note">As built. <b>Clear, slightly leans to Keep on.</b></p>
+      </div>
+      <div class="cta">
+        <p class="lbl">2 · Equal outlines</p>
+        <div class="demo"><div class="yc"><p class="q">Personalized deals are on. Still want them?</p><div class="btns"><span class="bt bt--o">Keep on</span><span class="bt bt--o">Turn off</span></div></div></div>
+        <p class="note"><b>Recommended.</b> Neither answer is pushed, as in your Ads consent case.</p>
+      </div>
+      <div class="cta">
+        <p class="lbl">3 · On / Off control</p>
+        <div class="demo"><div class="yc"><p class="q">Personalized deals</p><div class="seg"><span class="on">On</span><span>Off</span></div></div></div>
+        <p class="note">The answer is the setting's state. <b>No question to read; it takes effect on tap.</b></p>
+      </div>
+      <div class="cta">
+        <p class="lbl">4 · Button and link</p>
+        <div class="demo"><div class="yc"><p class="q">Personalized deals are on. Still want them?</p><div class="tl"><span class="bt bt--p">Keep them</span><a>Turn off</a></div></div></div>
+        <p class="note">Common, but Turn off becomes the quieter choice. <b>Reads as a nudge on a privacy screen.</b></p>
+      </div>
+      <div class="cta">
+        <p class="lbl">5 · Answers as chips</p>
+        <div class="demo"><div class="yc"><p class="q">Personalized deals are on. Still want them?</p><div class="chips"><span class="chip">Yes, keep them</span><span class="chip">No, turn off</span><span class="chip">Ask me later</span></div></div></div>
+        <p class="note">Reads like a conversation, and adds "Ask me later". <b>Three answers, more to read.</b></p>
+      </div>
+      <div class="cta">
+        <p class="lbl">6 · Switch and done</p>
+        <div class="demo"><div class="yc"><div class="mini" style="margin:0;background:#fff;padding:0"><span class="mini__t">Personalized deals<small>On</small></span><span class="sw"></span></div><div class="btns"><span class="bt bt--n">Done</span></div></div></div>
+        <p class="note">Pairs with card D. <b>The switch does the work; Done just closes the card.</b></p>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+  const rest = document.getElementById('rest');
+  document.querySelectorAll('[data-rest]').forEach((el) => el.append(rest.content.cloneNode(true)));
+</script>
+</body>
+</html>

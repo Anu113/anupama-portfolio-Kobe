@@ -20,6 +20,10 @@
    - Financial info and Usage info as data types (named on the old
      screen), and every "What's included" list
    - both "Request submitted" screens.
+   The it-* screens are what shipped (on request, 2026-11-18: the
+   illustrated screens, "Second version", never launched). Their hub
+   values are example placeholders; the rest of their copy is hers, from
+   her frames, reworded only for plain language.
    Styles are PayPal's: PayPal Sans Big, light / regular / medium, never
    bold (styles/pp-sans.css); colours under PAYPAL PRIVACY SCREENS. */
 import Illo from './PrivacyIllo.astro';
@@ -74,6 +78,65 @@ const products = [
 const OFFERS_OFF = 'Personalized deals and offers is turned off. Turn it on to get money saving deals that are personalized to you.';
 const OFFERS_ON = 'Personalized deals and offers is on. We’ll show you deals based on where you’ve used PayPal.';
 
+// What shipped (2026-11-18, on request: the illustrated screens above,
+// "Second version", never launched; what launched was close to these, drawn
+// from experiments/privacy-case-learnings/redesign.html). Example values on
+// the hub are placeholders, said so in the case; every other line is hers,
+// reworded only for plain language.
+const itGroups = [
+  { h: 'Profile privacy', rows: [
+    { i: 'i-l-search', t: 'Search privacy', v: 'Email, phone' },
+    { i: 'i-l-block', t: 'Blocked profiles', v: '2' },
+  ] },
+  { h: 'Permissions and shared data', rows: [
+    { i: 'i-l-lock', t: 'Permissions', v: '3 apps' },
+    { i: 'i-l-cookie', t: 'Cookies', v: 'Essential' },
+    { i: 'i-l-tag', t: 'Deals & ads', v: 'On', go: 'it-deals' },
+  ] },
+  { h: 'Your data rights', rows: [
+    { i: 'i-l-download', t: 'Get a copy of your data', v: '', go: 'it-req' },
+    { i: 'i-l-edit', t: 'Update your data', v: '' },
+    { i: 'i-l-trash', t: 'Delete your data', v: '', go: 'it-del-choice' },
+  ] },
+];
+const itClean = [
+  { t: 'Face scan data', d: 'To verify your ID again, you’ll need to re-upload it.', on: true },
+  { t: 'Marketing data', d: 'Your shopping interests. Ads and offers get less relevant.', on: true },
+  { t: 'Package tracking', d: 'You’ll no longer see your package tracking on PayPal.', on: false },
+  { t: 'Profile data from other companies', d: 'Profile info we got from other companies.', on: false },
+];
+// Her "Learn more about PayPal privacy" cards (Figma WqJYNtCbRY0QGUPtodXrbn,
+// "The new revised ramp"), at the end of the hub, on request 2026-11-18
+// ("B · On white" of experiments/privacy-case-learnings/learn-cards.html,
+// no "Read" link). Art exported from her Figma at 3x. What each opens is
+// still to be written, so each says so in a toast.
+const itLearn = [
+  { img: '/images/paypal-privacy/learn-others.webp', t: 'What others see when you use PayPal' },
+  { img: '/images/paypal-privacy/learn-emails.webp', t: 'Manage emails & notifications' },
+  { img: '/images/paypal-privacy/learn-data.webp', t: 'Examples of how we use your data' },
+];
+// The yearly privacy checkup (on request, 2026-11-18, from
+// experiments/privacy-case-learnings/checkup.html): her Auto Privacy Advisor
+// from the Ads consent case, opened by card A. One step at a time, a
+// progress bar, a line on what each change does, "Not now" on every step.
+// Values are examples; every line is drawn from her cases.
+const ckSteps = [
+  { id: 'ck-1', art: 'laptop-person', h: 'PayPal ads on other sites', t: 'Online ad preferences', state: 'On', sw: true,
+    k: 'What this means', d: 'PayPal shares some of your info with partners like Facebook and Google, so its ads there match your interests. Turning it off doesn’t stop PayPal ads; it stops the matching.',
+    a: 'Keep on', b: 'Turn off' },
+  { id: 'ck-2', art: 'offers-person', h: 'Personalized deals', t: 'Get personalized offers', state: 'On', sw: true,
+    k: 'What it uses', d: 'Where you’ve paid with PayPal, and stores you’ve visited in PayPal’s network. We never sell your personal information.',
+    a: 'Keep on', b: 'Turn off' },
+  { id: 'ck-3', art: 'cleanup', h: 'Data you don’t need', t: 'Face scan data', state: 'Stored · used to verify your ID', sw: false,
+    k: 'If you delete it', d: 'Your account stays open. To verify your ID again, you’ll need to re-upload it.',
+    a: 'Keep it', b: 'Delete it' },
+  { id: 'ck-4', art: 'folder', h: 'See what PayPal has', t: 'Get a copy of your data', state: 'Never requested', sw: false,
+    k: 'What you get', d: 'A file of the data types you choose, like personal info and marketing data. We’ll email you when it’s ready.',
+    a: 'Request a copy', b: 'Skip' },
+];
+const IT_ON = 'On. You’ll see deals based on where you shop.';
+const IT_OFF = 'Off. Turn it on to get deals based on where you shop.';
+
 // The old Data and Privacy page and the first redesign (four tiles, a
 // sheet behind each), read off her boards.
 const oldRows = [
@@ -99,7 +162,8 @@ const v1Sheets: Record<string, { i: string; t: string; d: string; rows: { i: str
 };
 const v1Sheet = v1Sheets[id];
 
-const sheets = ['shop-how', 'del-choice', 'ctx-sheet', 'v1-profile', 'v1-notify', 'v1-features'];
+const ckIds = ckSteps.map((s) => s.id);
+const sheets = ['shop-how', 'del-choice', 'ctx-sheet', 'v1-profile', 'v1-notify', 'v1-features', 'it-how', 'it-why', 'it-del-choice'];
 const isSheet = sheets.includes(id);
 ---
 <section class:list={['scr', isSheet && 'scr--sheet']} data-screen={id} data-sheet={isSheet ? '' : undefined}>
@@ -485,6 +549,315 @@ const isSheet = sheets.includes(id);
       </div>
     </div>
   )}
+
+  {/* ================= THE CHECKUP (Ads consent: Auto Privacy Advisor) ================= */}
+
+  {/* ---------- Checkup: card A opens it ---------- */}
+  {id === 'ck-start' && (
+    <div class="plain plain--ground it">
+      <div class="nav it-nav"><span class="back it-ic" aria-hidden="true"><Illo name="i-l-back" size={22} /></span></div>
+      <div class="pad it-pad">
+        <p class="title" data-focus tabindex="-1">Data and privacy</p>
+        <p class="it-sub">Set your privacy controls and manage your data.</p>
+        <div class="it-check" data-card>
+          <span class="it-check__art" aria-hidden="true"><Illo name="anniv" size={62} /></span>
+          <p class="it-check__k">One year of your settings</p>
+          <p class="it-check__q">Time for your privacy checkup</p>
+          <p class="tile__d">4 settings, one at a time.</p>
+          <div class="btns">
+            <button class="b btn" data-go="ck-1">Start checkup</button>
+            <button class="b btn btn--line" data-dismiss data-msg="Not now. We’ll ask again later.">Not now</button>
+          </div>
+        </div>
+        <p class="it-gh">Permissions and shared data</p>
+        <div class="it-list">
+          <div class="it-row"><span class="it-ic"><Illo name="i-l-lock" size={20} /></span><span class="it-row__t">Permissions</span><span class="it-row__v">3 apps</span><span class="it-chev" aria-hidden="true"><Illo name="i-l-chev" size={14} /></span></div>
+          <div class="it-row"><span class="it-ic"><Illo name="i-l-tag" size={20} /></span><span class="it-row__t">Deals &amp; ads</span><span class="it-row__v">On</span><span class="it-chev" aria-hidden="true"><Illo name="i-l-chev" size={14} /></span></div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Checkup: one step at a time ---------- */}
+  {ckSteps.map((s, i) => id === s.id && (
+    <div class="plain plain--ground it ck">
+      <div class="nav it-nav ck__nav">
+        {i > 0 ? <button class="b back it-ic" data-back aria-label="Back"><Illo name="i-l-back" size={22} /></button> : <span></span>}
+        <button class="b close it-ic" data-home aria-label="Close the checkup"><Illo name="i-l-close" size={20} /></button>
+      </div>
+      <div class="pad it-pad ck__body">
+        <div class="ck__prog"><span class="ck__bar"><i style={`width: ${(i + 1) * 25}%`}></i></span><span class="xs dim">{i + 1} of {ckSteps.length}</span></div>
+        <div class="ck__hero" aria-hidden="true"><Illo name={s.art} size={92} /></div>
+        <p class="title ck__h" data-focus tabindex="-1">{s.h}</p>
+        <div class="card it-card">
+          <div class="switch-row switch-row--top">
+            <span><span class="it-card__t">{s.t}</span><span class="tile__d">{s.state}</span></span>
+            {s.sw && <button class="b switch" role="switch" aria-checked="true" aria-label={s.t} data-switch><i></i></button>}
+          </div>
+          <p class="ck__means"><span class="ck__k">{s.k}:</span> {s.d}</p>
+        </div>
+      </div>
+      <div class="foot ck__foot">
+        <div class="btns">
+          <button class="b btn btn--line" data-go={ckSteps[i + 1]?.id ?? 'ck-done'}>{s.a}</button>
+          <button class="b btn btn--line" data-go={ckSteps[i + 1]?.id ?? 'ck-done'}>{s.b}</button>
+        </div>
+        <button class="b link link--c" data-go={ckSteps[i + 1]?.id ?? 'ck-done'}>Not now</button>
+      </div>
+    </div>
+  ))}
+
+  {/* ---------- Checkup: done ---------- */}
+  {id === 'ck-done' && (
+    <div class="plain plain--ground it ck">
+      <div class="nav it-nav ck__nav"><span></span><button class="b close it-ic" data-home aria-label="Close the checkup"><Illo name="i-l-close" size={20} /></button></div>
+      <div class="pad it-pad ck__body">
+        <div class="ck__done-art" aria-hidden="true"><Illo name="anniv" size={80} /></div>
+        <p class="title title--c" data-focus tabindex="-1">You’re all set for another year</p>
+        <p class="it-sub" style="text-align:center">Here’s what you checked.</p>
+        <div class="it-list">
+          {[['Ads on other sites', 'Turned off'], ['Personalized deals', 'Kept on'], ['Face scan data', 'Deleted'], ['Copy of your data', 'Skipped']].map(([t, v]) => (
+            <div class="it-row ck__row"><span class="ck__tick" aria-hidden="true"><Illo name="i-l-check" size={12} /></span><span class="it-row__t">{t}</span><span class="it-row__v">{v}</span><span></span></div>
+          ))}
+        </div>
+        <p class="it-foot">You can change any of these in Data and privacy.</p>
+      </div>
+      <div class="foot ck__foot"><button class="b btn" data-home>Done</button></div>
+    </div>
+  )}
+
+  {/* ================= WHAT SHIPPED ================= */}
+
+  {/* ---------- Shipped: the hub shows what each setting is set to ---------- */}
+  {id === 'it-hub' && (
+    <div class="plain plain--ground it">
+      <div class="nav it-nav"><span class="back it-ic" aria-hidden="true"><Illo name="i-l-back" size={22} /></span></div>
+      <div class="pad it-pad">
+        <p class="title" data-focus tabindex="-1">Data and privacy</p>
+        <p class="it-sub">Set your privacy controls and manage your data.</p>
+        <div class="it-check" data-card>
+          <span class="it-check__art" aria-hidden="true"><Illo name="anniv" size={62} /></span>
+          <p class="it-check__k">One year of your settings</p>
+          <p class="it-check__q">Personalized deals are on. Still want them?</p>
+          <div class="btns">
+            <button class="b btn" data-dismiss data-msg="Kept on. We’ll ask again next year.">Keep on</button>
+            <button class="b btn btn--line" data-go="it-deals">Turn off</button>
+          </div>
+        </div>
+        {itGroups.map((g) => (
+          <>
+            <p class="it-gh">{g.h}</p>
+            <div class="it-list">
+              {g.rows.map((r) => (
+                <button class="b it-row" data-go={r.go} data-stub={r.go ? undefined : r.t}>
+                  <span class="it-ic"><Illo name={r.i} size={20} /></span>
+                  <span class="it-row__t">{r.t}</span>
+                  <span class="it-row__v">{r.v}</span>
+                  <span class="it-chev" aria-hidden="true"><Illo name="i-l-chev" size={14} /></span>
+                </button>
+              ))}
+            </div>
+          </>
+        ))}
+        <p class="it-gh">Learn more about PayPal privacy</p>
+        <div class="it-learn" role="group" aria-label="Learn more about PayPal privacy" data-lenis-prevent>
+          {itLearn.map((c) => (
+            <button class="b it-learn__card" data-stub={c.t}>
+              <img class="it-learn__art" src={c.img} alt="" width="148" height="100" loading="lazy" decoding="async" />
+              <span class="it-learn__t">{c.t}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Shipped: get a copy ---------- */}
+  {id === 'it-req' && (
+    <div class="plain plain--ground it" data-checks>
+      <div class="nav it-nav"><button class="b back it-ic" data-back aria-label="Back"><Illo name="i-l-back" size={22} /></button></div>
+      <div class="pad it-pad">
+        <p class="title" data-focus tabindex="-1">Get a copy of your data</p>
+        <p class="it-sub">Choose what data you want to download.</p>
+        <div class="count"><button class="b link" data-all>Select all</button><span class="xs dim" data-count aria-live="polite"></span></div>
+        <div class="it-list">
+          {dataTypes.map((d) => (
+            <div class="it-dtype">
+              <button class="b it-dtype__h" role="checkbox" aria-checked={d.on ? 'true' : 'false'} data-check><span class="it-row__t">{d.t}</span><span class="box"></span></button>
+              <p class="tile__d">{d.d}</p>
+              <button class="b link xs inc-btn" aria-expanded="false" data-disclose>What’s included <span class="inc-btn__c" aria-hidden="true">⌄</span></button>
+              <ul class="inc" hidden>{d.inc.map((x) => <li>{x}</li>)}</ul>
+            </div>
+          ))}
+        </div>
+        <p class="it-gh">Other connected apps</p>
+        <div class="it-list">
+          {apps.map((a) => (
+            <button class="b it-row it-row--check" role="checkbox" aria-checked="true" data-check><span class="it-row__t">{a.t}</span><span class="box"></span></button>
+          ))}
+        </div>
+        <p class="it-gh">File format</p>
+        <div class="select"><span class="xxs dim">File type</span><span class="sm">PDF</span><span class="select__c" aria-hidden="true">⌄</span></div>
+        <button class="b btn" data-go="it-status" data-submit>Request your data</button>
+        <p class="it-keep it-keep--c"><span class="it-ic"><Illo name="i-l-lock" size={16} /></span><span>Your info is safely encrypted. We’ll email you when it’s ready.</span></p>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Shipped: delete, two ways (sheet) ---------- */}
+  {id === 'it-del-choice' && (
+    <div class="sheeted">
+      <div class="behind behind--grey"></div>
+      <div class="sheet it" role="dialog" aria-label="Delete your data">
+        <div class="sheet__head"><span></span><span class="nav__t" data-focus tabindex="-1">Delete your data</span><button class="b close it-ic" data-back aria-label="Close"><Illo name="i-l-close" size={20} /></button></div>
+        <button class="b choice is-on" data-go="it-clean">
+          <span class="choice__h"><span class="card__t it-row__t">Clean up your data</span><span class="new">New</span></span>
+          <span class="tile__d">Delete data you don’t need, like marketing or face scan data. Your account stays open.</span>
+        </button>
+        <button class="b choice" data-stub="Closing your account">
+          <span class="choice__h"><span class="card__t it-row__t">Delete your data and close this account</span></span>
+          <span class="tile__d">Once you delete this data, your account will be closed permanently.</span>
+        </button>
+        <button class="b link link--c" data-back>Cancel</button>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Shipped: the switch says what it uses ---------- */}
+  {id === 'it-deals' && (
+    <div class="plain plain--ground it">
+      <div class="nav it-nav"><button class="b back it-ic" data-back aria-label="Back"><Illo name="i-l-back" size={22} /></button></div>
+      <div class="pad it-pad">
+        <p class="title" data-focus tabindex="-1">Personalized deals and offers</p>
+        <p class="it-sub">Get offers from PayPal to save at your favorite online stores.</p>
+        <div class="card it-card">
+          <div class="switch-row switch-row--top">
+            <span><span class="it-card__t">Get personalized offers</span><span class="tile__d" data-switch-label data-on={IT_ON} data-off={IT_OFF}>{IT_ON}</span></span>
+            <button class="b switch" role="switch" aria-checked="true" aria-label="Get personalized offers" data-switch><i></i></button>
+          </div>
+          <p class="it-mini">What it uses</p>
+          <ul class="it-uses"><li>Where you’ve paid with PayPal</li><li>Stores you’ve visited in PayPal’s network</li></ul>
+          <button class="b link it-link" data-go="it-how">See an example</button>
+        </div>
+        <p class="it-never"><span class="it-ic"><Illo name="i-l-shield" size={16} /></span>We never sell your personal information.</p>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Shipped: the example ends on the switch ---------- */}
+  {id === 'it-how' && (
+    <div class="sheeted">
+      <div class="behind"></div>
+      <div class="sheet sheet--tall it" role="dialog" aria-label="How it works">
+        <button class="b close close--r it-ic" data-back aria-label="Close"><Illo name="i-l-close" size={20} /></button>
+        <p class="title" data-focus tabindex="-1">How it works</p>
+        <p class="it-h">Purchases through PayPal</p>
+        <p class="p">We know where you have used PayPal and can help you save at those same stores.</p>
+        <p class="it-h">Stores you have visited</p>
+        <p class="p">Participating stores within the PayPal network may ask PayPal to send you exclusive offers to save when you shop there.</p>
+        <p class="p">For example, you browse on abcshoes.com but don’t buy anything. ABCshoes may ask PayPal to send you a special offer for the next time you shop there and use PayPal.</p>
+        <div class="card it-card it-card--line">
+          <div class="switch-row switch-row--top">
+            <span><span class="it-card__t">Get personalized offers</span><span class="tile__d" data-switch-label data-on="On" data-off="Off">On</span></span>
+            <button class="b switch" role="switch" aria-checked="true" aria-label="Get personalized offers" data-switch><i></i></button>
+          </div>
+        </div>
+        <button class="b btn btn--foot" data-back>Done</button>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Shipped: the data request says where it is ---------- */}
+  {id === 'it-status' && (
+    <div class="plain it">
+      <div class="nav it-nav"><button class="b back it-ic" data-back aria-label="Back"><Illo name="i-l-back" size={22} /></button></div>
+      <div class="pad it-pad">
+        <p class="title" data-focus tabindex="-1">Your data request</p>
+        <p class="it-sub">Personal info, Financial info, Marketing, Xoom, Venmo, Honey · PDF</p>
+        <ol class="it-steps">
+          <li class="is-done"><span class="it-step__t">Requested</span><span class="tile__d">Today</span></li>
+          <li class="is-done"><span class="it-step__t">We confirmed it’s you</span><span class="tile__d">Today</span></li>
+          <li class="is-now"><span class="it-step__t">Gathering your data</span><span class="tile__d">We’ll email you when it’s ready.</span></li>
+          <li><span class="it-step__t">Ready to download</span><span class="tile__d">Here, and by email</span></li>
+        </ol>
+        <p class="it-keep"><span class="it-ic"><Illo name="i-l-lock" size={16} /></span><span>Your info is safely encrypted.</span></p>
+      </div>
+      <div class="foot foot--white">
+        <button class="b btn btn--line" data-stub="Cancelling a request">Cancel request</button>
+        <p class="it-foot">You can make a new request after this one finishes.</p>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Shipped: clean up says what it deletes and what PayPal keeps ---------- */}
+  {id === 'it-clean' && (
+    <div class="plain plain--ground plain--footed it" data-checks>
+      <div class="nav it-nav"><button class="b back it-ic" data-back aria-label="Back"><Illo name="i-l-back" size={22} /></button></div>
+      <div class="pad it-pad">
+        <p class="title" data-focus tabindex="-1">Clean up your data</p>
+        <p class="it-sub">Delete the data you don’t need. Your account stays open.</p>
+        <div class="count"><span class="xs dim" data-count aria-live="polite"></span><button class="b link" data-all>Select all</button></div>
+        <div class="list">
+          {itClean.map((r) => (
+            <button class="b list__row it-crow" role="checkbox" aria-checked={r.on ? 'true' : 'false'} data-check><span><span class="it-row__t">{r.t}</span><span class="tile__d">{r.d}</span></span><span class="box"></span></button>
+          ))}
+        </div>
+        <p class="it-keep it-keep--card"><span class="it-ic"><Illo name="i-l-info" size={16} /></span><span><span class="it-keep__t">What we keep.</span> We may retain some of your data to comply with legal and regulatory requirements, and to prevent fraud. <span class="link" data-stub="The retention policy">What and for how long</span></span></p>
+      </div>
+      <div class="foot"><button class="b btn" data-go="del-done" data-submit data-n="Delete # types of data">Delete 2 types of data</button><p class="it-foot">You can’t undo this.</p></div>
+    </div>
+  )}
+
+  {/* ---------- Shipped: in the offers, a question with its answer ---------- */}
+  {id === 'it-offers' && (
+    <div class="plain plain--ground plain--footed-app it">
+      <div class="pad">
+        <p class="title-sm title-sm--l" data-focus tabindex="-1">Exclusive offers just for you</p>
+        <div class="prods">
+          {products.map((p) => (
+            <div class="prod">
+              <div class="prod__art">{p.off && <span class="prod__off">{p.off}</span>}<Illo name={p.art} size={92} /></div>
+              <p class="xxs dim">{p.brand}</p>
+              <p class="sm">{p.price} {p.was && <s class="xxs dim">{p.was}</s>}</p>
+              <p class="xxs">{p.cash}</p>
+            </div>
+          ))}
+        </div>
+        <button class="b it-why" data-go="it-why">
+          <span><span class="it-row__t">Why these offers?</span><span class="tile__d">Based on where you’ve used PayPal</span></span>
+          <span class="it-chev" aria-hidden="true"><Illo name="i-l-chev" size={14} /></span>
+        </button>
+      </div>
+      <div class="legal-band"><p class="xxs">Select PayPal option at checkout to earn Cash Back. <span class="link">Terms apply. PayPal exclusions may apply.</span></p></div>
+      <div class="foot foot--app" aria-hidden="true">
+        <div class="btns"><span class="btn">Send</span><span class="btn">Request</span></div>
+        <div class="tabbar"><span class="is-on">Home</span><span>Deals</span><span>Menu</span><span>Finances</span><span>Payments</span></div>
+      </div>
+    </div>
+  )}
+
+  {/* ---------- Shipped: the answer, and the switch ---------- */}
+  {id === 'it-why' && (
+    <div class="sheeted">
+      <div class="behind behind--grey"></div>
+      <div class="sheet it" role="dialog" aria-label="Why you see these offers">
+        <div class="sheet__head"><span></span><span></span><button class="b close it-ic" data-back aria-label="Close"><Illo name="i-l-close" size={20} /></button></div>
+        <p class="title" data-focus tabindex="-1">Why you see these offers</p>
+        <ul class="it-uses it-uses--why">
+          <li>We feature deals, products, and stores that we think you’ll like, based on where you shop and what you buy.</li>
+          <li>Participating stores may ask PayPal to send you offers.</li>
+        </ul>
+        <div class="card it-card it-card--line">
+          <div class="switch-row switch-row--top">
+            <span><span class="it-card__t">Personalized offers</span><span class="tile__d" data-switch-label data-on="On" data-off="Off">On</span></span>
+            <button class="b switch" role="switch" aria-checked="true" aria-label="Personalized offers" data-switch><i></i></button>
+          </div>
+        </div>
+        <p class="sm dim center">Your info is securely encrypted. We never sell it, and won’t share it without your permission.</p>
+        <button class="b btn" data-back>Done</button>
+      </div>
+    </div>
+  )}
 </section>
 
 <style>
@@ -714,6 +1087,96 @@ const isSheet = sheets.includes(id);
   .done__body { flex: 1; display: grid; place-content: center; justify-items: center; gap: 8px; padding: 24px; text-align: center; }
   .foot--white { background: var(--pp-surface); box-shadow: none; }
   .foot--app { position: sticky; bottom: 0; margin-top: auto; }
+  /* The iteration: PayPal's type at regular weight for titles, rows and
+     cards (medium only on buttons and links), one line-icon set in ink,
+     inset grouped lists, values on the right. */
+  .it { color: var(--pp-ink); }
+  .it-ic { display: grid; place-items: center; color: var(--pp-ink); }
+  .it-nav { padding-block: 6px 0; }
+  .it-pad { padding-top: 2px; }
+  .it-sub { font-size: var(--pp-text-sm); color: var(--pp-ink-dim); margin: 4px 0 12px !important; }
+  .it-check { position: relative; padding: 12px 84px 12px 12px; border-radius: var(--pp-radius-field); background: var(--pp-surface); box-shadow: var(--pp-tile-shadow); margin-bottom: 4px; }
+  /* Card A, "Anniversary" (picked 2026-11-18): her "celebrate it like an
+     anniversary", as a small calendar marked 1 yr. */
+  .it-check__art { position: absolute; top: 8px; right: 8px; }
+  /* The answers sit a clear step below the words, full width under the art. */
+  .it-check .btns { margin: 14px -72px 0 0; }
+  .it-check[hidden] { display: none; }
+  .it-check__k { font-size: var(--pp-text-xs); color: var(--pp-ink-dim); }
+  .it-check__q { font-size: var(--pp-text-md); line-height: 1.3; margin: 4px 0 0 !important; }
+  .it-check .tile__d { margin-top: 4px !important; }
+  .btn--line { background: none; color: var(--pp-illo-deep); box-shadow: inset 0 0 0 1.5px var(--pp-illo-deep); }
+  .it-gh { font-size: var(--pp-text-md); margin: 16px 2px 8px !important; }
+  .it-list { background: var(--pp-surface); border-radius: var(--pp-radius-field); }
+  .it-list > :first-child { border-radius: var(--pp-radius-field) var(--pp-radius-field) 0 0; }
+  .it-list > :last-child { border-radius: 0 0 var(--pp-radius-field) var(--pp-radius-field); }
+  .it-list > :only-child { border-radius: var(--pp-radius-field); }
+  .it-row { width: 100%; display: grid; grid-template-columns: 20px 1fr auto 14px; gap: 10px; align-items: center; padding: 11px 12px; }
+  .it-row + .it-row { box-shadow: inset 0 1px 0 var(--pp-line); }
+  .it-row__t { display: block; font-size: var(--pp-text-sm); }
+  .it-row__v { font-size: var(--pp-text-xs); color: var(--pp-ink-dim); }
+  .it-chev { display: grid; color: var(--pp-ink-dim); }
+  /* Hover lifts the one card under the pointer: it stays white and gets a
+     deeper shadow, so it never melts into the app's ground (on request,
+     2026-11-18). Nothing else on the page changes. */
+  .it-row, .it-why, .it .list__row { position: relative; transition: box-shadow var(--dur-micro) var(--ease-out); }
+  .it-row:hover, .it-why:hover, .it .list__row:hover { z-index: 1; background: var(--pp-surface); box-shadow: var(--pp-tile-shadow-hover); }
+  .it-row + .it-row:hover { box-shadow: var(--pp-tile-shadow-hover); }
+  .it-card { margin-top: 4px; }
+  .it-card--line { box-shadow: inset 0 0 0 1px var(--pp-line); margin: 12px 0 4px; }
+  .it-card__t { display: block; font-size: var(--pp-text-md); margin-bottom: 2px; }
+  .it-mini { font-size: var(--pp-text-xs); color: var(--pp-ink-dim); margin: 14px 0 6px !important; }
+  .it-uses { list-style: disc; margin: 0; padding: 0 0 0 16px; display: grid; gap: 4px; font-size: var(--pp-text-sm); }
+  .it-uses--why { gap: 8px; margin: 6px 0 2px; color: var(--pp-ink); }
+  .it-link { margin-top: 12px; }
+  .it-never { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 18px !important; font-size: var(--pp-text-sm); color: var(--pp-ink-dim); }
+  .it-never .it-ic, .it-keep .it-ic { color: var(--pp-ink-dim); }
+  .it-h { font-size: var(--pp-text-md); margin-top: 12px !important; }
+  .it .title { margin-bottom: 0; }
+  .it-steps { list-style: none; margin: 6px 0 0; padding: 0; }
+  .it-steps li { position: relative; display: grid; padding: 0 0 14px 24px; }
+  .it-steps li::before { content: ''; position: absolute; left: 0; top: 3px; width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--pp-line); background: var(--pp-surface); }
+  .it-steps li.is-done::before { background: var(--pp-blue); box-shadow: none; }
+  .it-steps li.is-now::before { box-shadow: inset 0 0 0 3.5px var(--pp-blue); }
+  .it-steps li:not(:last-child)::after { content: ''; position: absolute; left: 5px; top: 18px; bottom: 2px; width: 2px; background: var(--pp-line); }
+  .it-step__t { font-size: var(--pp-text-sm); }
+  .it-keep { display: grid; grid-template-columns: 16px 1fr; gap: 8px; align-items: start; font-size: var(--pp-text-xs); color: var(--pp-ink-dim); margin-top: 6px !important; line-height: 1.45; }
+  .it-keep--card { padding: 10px 12px; margin-top: 10px !important; background: var(--pp-surface); border-radius: var(--pp-radius-field); }
+  .it-keep__t { color: var(--pp-ink); }
+  .it-foot { margin-top: 8px !important; text-align: center; font-size: var(--pp-text-xs); color: var(--pp-ink-dim); }
+  .it-crow { grid-template-columns: 1fr auto; }
+  /* The checkup (ck-*): a progress bar, a light band for the art, the
+     setting as it is, what it means, and two equal answers. */
+  .ck__nav { display: flex; justify-content: space-between; }
+  .ck__body { gap: 0; }
+  .ck__prog { display: flex; align-items: center; gap: 8px; margin: 2px 0 12px; }
+  .ck__bar { flex: 1; height: 4px; border-radius: var(--radius-pill); background: var(--pp-line); overflow: hidden; }
+  .ck__bar i { display: block; height: 100%; background: var(--pp-illo-deep); border-radius: inherit; }
+  .ck__hero { display: grid; place-items: center; height: 112px; border-radius: var(--pp-radius-field); background: var(--pp-illo-glow); margin-bottom: 12px; overflow: hidden; }
+  .ck__h { font-size: var(--pp-text-lg); margin-bottom: 8px !important; }
+  .ck__means { margin-top: 10px !important; padding: 9px 10px; border-radius: var(--pp-radius-field); background: var(--pp-ground); font-size: var(--pp-text-xs); line-height: 1.45; }
+  .ck__k { color: var(--pp-ink); font-weight: var(--pp-w-med); }
+  .ck__foot { background: var(--pp-ground); box-shadow: none; }
+  .ck__foot .link--c { display: block; margin: 10px auto 0 !important; }
+  .ck__done-art { display: grid; place-items: center; margin: 4px 0 8px; }
+  .ck__row { grid-template-columns: 16px 1fr auto 0; }
+  .ck__tick { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--pp-ok-ink); color: var(--pp-surface); }
+  /* Learn more: a strip that bleeds to the screen's edge and snaps per
+     card; white cards like the rows, her art as a band on top. */
+  .it-learn { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; margin: 0 -16px; padding: 2px 16px 18px; scrollbar-width: none; }
+  .it-learn::-webkit-scrollbar { display: none; }
+  .it-learn__card { flex: none; width: 148px; scroll-snap-align: start; display: flex; flex-direction: column; background: var(--pp-surface); border-radius: var(--pp-radius-field); box-shadow: var(--pp-tile-shadow); overflow: hidden; text-align: left; transition: box-shadow var(--dur-micro) var(--ease-out); }
+  .it-learn__card:hover { box-shadow: var(--pp-tile-shadow-hover); }
+  .it-learn__art { display: block; width: 100%; height: auto; aspect-ratio: 148 / 100; }
+  .it-learn__t { display: block; padding: 9px 10px 12px; font-size: var(--pp-text-sm); line-height: 1.3; }
+  .it-row--check { grid-template-columns: 1fr auto; }
+  .it-dtype { padding: 11px 12px; }
+  .it-dtype + .it-dtype { box-shadow: inset 0 1px 0 var(--pp-line); }
+  .it-dtype__h { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin-bottom: 2px; }
+  .it-keep--c { justify-content: center; margin-top: 10px !important; }
+  .it .choice .tile__d { padding-left: 0; }
+  .it-why { width: 100%; display: grid; grid-template-columns: 1fr 14px; gap: 8px; align-items: center; margin-top: 10px; padding: 10px 12px; background: var(--pp-surface); border-radius: var(--pp-radius-field); }
+
   @media (prefers-reduced-motion: reduce) {
     .switch, .switch i, .inc-btn__c { transition: none; }
     .b:active { transform: none; }

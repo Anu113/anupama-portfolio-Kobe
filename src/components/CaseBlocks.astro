@@ -245,6 +245,10 @@ const claimNum = blocks.map((b) =>
       </aside>
     )}
 
+    {block.kind === 'see' && (
+      <p class="see">{block.text} <a href={block.href}>{block.label}</a></p>
+    )}
+
     {block.kind === 'metrics' && (
       <div class="group">
         {block.label && <p class="u-label-mono group__label">{block.label}</p>}
@@ -497,6 +501,9 @@ const claimNum = blocks.map((b) =>
 
   /* --- aside: the gap, named mid-story ---------------------------------- */
   .aside { max-width: var(--measure); }
+  /* One line pointing elsewhere: the site's link style, nothing more. */
+  .see { max-width: var(--measure); margin: 0; font-size: var(--step-copy); color: var(--fg-dim); }
+  .see a { color: var(--fg); }
   .aside__label { margin: 0 0 0.6rem; }
   .aside__text {
     margin: 0;

@@ -165,6 +165,19 @@ export const work = [
     hoverState: 'case-study',
     tags: ['Ads & Personalization', 'Privacy & Data'], categories: ['fintech'],
     href: '/work/paypal-ads-consent', image: '/images/paypal-ads-consent/hero.webp', alt: 'The rebuilt PayPal ad consent screens: Data & Privacy, the ask, and Online ad preferences' },
+
+  // Split out of the Privacy case on request (2026-11-18): see
+  // `paypal-data-rights` in cases.ts. The cover is two of its coded
+  // screens on the PayPal hue. Its timeline and team are to confirm.
+  { company: 'PayPal', theme: 'lilac', device: 'phone',
+    title: 'Delete part of your data, keep the account',
+    tagline: 'Requests to see or delete your data, across PayPal, Venmo and Honey.',
+    summary: 'Deleting anything meant closing your PayPal account. I designed requests to get a copy of your data, or delete part of it and keep the account, saying plainly what the law keeps.',
+    role: 'Owned the design · Data requests and deletion',
+    impact: 'Data access 76% faster',
+    hoverState: 'case-study',
+    tags: ['Privacy & Data'], categories: ['fintech'],
+    href: '/work/paypal-data-rights', image: '/images/paypal-data-rights/hero.webp', alt: 'Get a copy of your data and Clean up your data, two PayPal screens' },
 ] as const;
 
 // The home page's "Selected work": four stacked cards (ProjectCard.astro),

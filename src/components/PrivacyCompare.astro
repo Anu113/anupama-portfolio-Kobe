@@ -46,10 +46,10 @@ const { set, notes, claim } = Astro.props;
 // (navigation only; the page under it is left as blank cards).
 type Side = { id: string; offset?: number; under?: string } | { img: string } | { web: 'before' | 'after' };
 const pairs: Record<CompareSet, { before: Side; after: Side; name: string; web?: boolean }> = {
-  hub: { before: { id: 'hub-old' }, after: { id: 'hub', offset: 586 }, name: 'Data and privacy' },
-  shopping: { before: { id: 'shop-before' }, after: { id: 'shop-offers' }, name: 'PayPal Shopping' },
-  request: { before: { id: 'req-before' }, after: { id: 'req' }, name: 'Get a copy of your data' },
-  delete: { before: { id: 'del-before' }, after: { id: 'del-choice', under: 'hub' }, name: 'Delete your data' },
+  hub: { before: { id: 'hub-old' }, after: { id: 'it-hub', offset: 125 }, name: 'Data and privacy' },
+  shopping: { before: { id: 'shop-before' }, after: { id: 'it-deals' }, name: 'PayPal Shopping' },
+  request: { before: { id: 'req-before' }, after: { id: 'it-req' }, name: 'Get a copy of your data' },
+  delete: { before: { id: 'del-before' }, after: { id: 'it-del-choice', under: 'it-hub' }, name: 'Delete your data' },
   subnav: { before: { web: 'before' }, after: { web: 'after' }, name: 'Web account settings', web: true },
 };
 const pair = pairs[set];

@@ -50,7 +50,7 @@ export type CaseBlock =
   | { kind: 'prototype'; name: 'paypal-enroll' | 'paypal-offers' | 'paypal-ads-consent'; caption?: string }
   /** A row of phone screens redrawn in code (PrivacyScreens.astro), each in
       a device box. `set` picks the row. Only for the Privacy case so far. */
-  | { kind: 'screens'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'contextual' | 'first' | 'evolution'; caption?: string; claim?: string }
+  | { kind: 'screens'; set: 'hub' | 'shopping' | 'request' | 'delete' | 'contextual' | 'first' | 'evolution' | 'v2-hub' | 'v2-deals' | 'checkup'; caption?: string; claim?: string }
   /** Before and after on one phone (PrivacyCompare.astro): the old screen
       left of a line you drag, the new one right of it, and numbered notes
       that turn from what was wrong to the fix as the line crosses them.
@@ -79,7 +79,9 @@ export type CaseBlock =
   | { kind: 'fixes'; label?: string; items: { tag: string; found: string; changed: string }[] }
   /** One honest line in the middle of the story: a gap, named where it
       happened rather than saved for the reflection. */
-  | { kind: 'aside'; label: string; text: string };
+  | { kind: 'aside'; label: string; text: string }
+  /** One line pointing to another case (or part of one): text, then a link. */
+  | { kind: 'see'; text: string; href: string; label: string };
 
 /** One note on a before/after phone. Boxes are [x, y, width, height] in %
     of the screen, measured off the drawn screens. `at` is where the pin
@@ -125,7 +127,7 @@ export interface CaseStudy {
   /** `mockup` swaps the picture for a composed, annotated mockup drawn in
       code (PrivacyCover.astro): sharp and whole. `src` stays for anywhere
       a picture is still needed. */
-  hero: { src: string; alt: string; mockup?: 'privacy' };
+  hero: { src: string; alt: string; mockup?: 'privacy' | 'data-rights' | 'ads-consent' };
   /** The hero meta row — everything EXCEPT role, which is lifted out and set
       beside the banner lede (see below). Scope and partners still live here
       on purpose: a recruiter skimming for 60 seconds should not have to
@@ -504,9 +506,9 @@ export const cases: CaseStudy[] = [
             set: 'hub',
             claim: 'One page with three headings replaced a list of legal controls.',
             notes: [
-              { at: 26, before: [6, 14, 88, 5], after: [3, 6, 94, 5], was: 'Five rows under one heading, in no order.', now: 'Three headings group every setting.' },
-              { at: 52, before: [6, 54, 88, 10], after: [3, 37, 94, 9.5], was: 'Interest-based marketing, a row of its own.', now: 'Deals & ads, under Permissions and shared data.' },
-              { at: 78, before: [6, 82, 88, 8], after: [3, 49, 94, 38], was: 'Download, correct and delete share one row.', now: 'Your data rights: three rows. "Correct" became "Update".' },
+              { at: 26, before: [6, 14, 88, 5], after: [5, 26, 90, 5], was: 'Five rows under one heading, in no order.', now: 'Three headings group every setting.' },
+              { at: 52, before: [6, 54, 88, 10], after: [5, 65, 90, 7], was: 'Interest-based marketing, a row of its own.', now: 'Deals & ads, under Permissions and shared data.' },
+              { at: 78, before: [6, 82, 88, 8], after: [5, 74, 90, 25.5], was: 'Download, correct and delete share one row.', now: 'Your data rights: three rows. "Correct" became "Update".' },
             ],
           },
           /* Replaces the "What was broken" list (its four points are the
@@ -595,22 +597,6 @@ export const cases: CaseStudy[] = [
               },
             ],
           },
-          /* One teamwork moment (change 04). STAND-IN, written on her
-             request (2026-11-14) from what this case records: the delete
-             screen's two paths and its line on what PayPal keeps. The
-             disagreement, who held each view and the cost are plausible,
-             not sourced. Replace with her real account before an
-             interview leans on it. */
-          {
-            kind: 'rows',
-            label: 'One call: what the delete screen says',
-            items: [
-              { term: 'The pull', detail: 'The privacy officers wanted the full retention terms on the delete screen. Product wanted "Delete and close" to stay the one way to delete.' },
-              { term: 'My call', detail: 'Put "Clean up your data" first, so people could delete part and keep the account, and say what PayPal must keep in one plain line, with the legal detail a link away.' },
-              { term: 'What it cost', detail: 'The full terms moved off the screen, and closing the account went second.' },
-              { term: 'What held', detail: 'Both paths shipped, and the line on what PayPal keeps is on the screen today.' },
-            ],
-          },
         ],
       },
       {
@@ -634,7 +620,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'In rapid research the groups worked. The sheets didn\'t, and some labels failed too. So I kept the groups and dropped the sheets: every setting now sits on one page under three headings, Profile privacy, Permissions and shared data, and Your data rights, each with a line saying what it does.',
+              'In rapid research the groups worked. The sheets didn\'t, and some labels failed too. So the second version kept the groups and dropped the sheets: every setting on one page under three headings, Profile privacy, Permissions and shared data, and Your data rights.',
             ],
           },
           /* Each finding beside what changed (change 03). The deals/ads fix
@@ -651,22 +637,59 @@ export const cases: CaseStudy[] = [
           },
           {
             kind: 'metrics',
-            label: 'First version → revised',
+            label: 'First version → second',
             items: [
               { value: '2 → 1', label: 'Taps from the privacy page to any setting' },
               { value: '4 → 3', label: 'Groups: four tiles became three headings on one page' },
             ],
-          },
-          {
-            kind: 'screens',
-            set: 'evolution',
-            caption: 'Before, the first version, and the revised page. The blue card at the top of the revised page is the yearly privacy reminder, a later proposal.',
           },
           /* The gap, named where it happened (change 05). */
           {
             kind: 'aside',
             label: 'What we missed',
             text: 'The card sorts settled where every setting goes, not what it\'s called. Two of the four findings were words: deals against ads, and "Correct your data". We tested the labels after the structure.',
+          },
+        ],
+      },
+      /* The second version, and what shipped (on request, 2026-11-18). The
+         illustrated screens were the second version and never launched;
+         what launched is close to the minimal screens drawn from
+         experiments/privacy-case-learnings/redesign.html. The reasons
+         below are DRAFTED from what the two versions' screens show, not
+         from test results: confirm them with her, and add what testing
+         found if it's known. */
+      {
+        id: 'second',
+        answers: ['people'],
+        nav: 'What shipped',
+        label: 'What shipped',
+        heading: 'The second version put art first and the settings second. What shipped is the settings.',
+        blocks: [
+          {
+            kind: 'screens',
+            set: 'v2-hub',
+            caption: 'The second version opened on an illustration and a blue card. What shipped opens on the settings, each with what it\'s set to. The values are examples.',
+          },
+          {
+            kind: 'fixes',
+            label: 'Why the second version didn\'t ship',
+            items: [
+              { tag: 'Art first', found: 'An illustration topped every screen. On the page 75% of visits stopped on, the first setting started halfway down.', changed: 'No illustrations. Settings start under the title.' },
+              { tag: 'No state', found: 'Each row said what a setting does, not what it was set to.', changed: 'What it\'s set to, on the right of each row.' },
+              { tag: 'Blue card', found: 'It asked "Still happy getting shopping deals?", then sent people back to the page to answer.', changed: 'The yearly check is answered in the card.' },
+              { tag: 'Dead ends', found: '"How it works" and "Shopping and Privacy" explained, then ended on "Got it".', changed: 'Each explanation ends on its switch.' },
+              { tag: 'Words', found: '"Improve your experience" on a delete screen. "Personalize your experience" as a small grey link.', changed: '"Your account stays open." "Why these offers?"' },
+            ],
+          },
+          {
+            kind: 'screens',
+            set: 'v2-deals',
+            caption: 'What the setting uses moved from a sheet to under the switch.',
+          },
+          {
+            kind: 'screens',
+            set: 'evolution',
+            caption: 'Before, the first version, the second, and what shipped.',
           },
         ],
       },
@@ -726,61 +749,41 @@ export const cases: CaseStudy[] = [
             kind: 'screens',
             set: 'hub',
             caption:
-              'Every setting is one tap away, with a line saying what it does. The blue card at the top is a later proposal: once a year, it asks whether your settings still suit you.',
+              'Every setting one tap away, with what it\'s set to, and your Learn more cards at the end. Once a year, the card at the top asks whether your deals setting still suits you. The values are examples.',
+          },
+          {
+            kind: 'see',
+            text: 'The yearly card grows into a full privacy checkup in the Auto Privacy Advisor.',
+            href: '/work/paypal-ads-consent#apa',
+            label: 'See the checkup',
+          },
+          {
+            kind: 'see',
+            text: 'Getting a copy of your data, and deleting part of it, are their own case.',
+            href: '/work/paypal-data-rights',
+            label: 'Data rights',
           },
           {
             kind: 'compare',
             set: 'shopping',
             claim: 'A switch that says what\'s on replaced a single "Turn off" button.',
             notes: [
-              { at: 78, before: [6, 53, 88, 7.5], after: [4, 55, 92, 15.5], was: '"Turn off" is the only control. Nothing says it\'s on.', now: 'A switch that shows its state, with a line on what it does.' },
-              { at: 50, before: [6, 31, 88, 19], after: [8, 71, 44, 5], was: 'Two bullets on what you get. Nothing on how it works.', now: '"Learn how it works" opens an example.' },
-              { at: 22, before: [6, 12, 88, 17], after: [8, 82, 84, 9], was: 'Nothing on what happens to your data.', now: 'It ends on "We never sell your personal information."' },
+              { at: 78, before: [6, 53, 88, 7.5], after: [5, 28, 90, 10], was: '"Turn off" is the only control. Nothing says it\'s on.', now: 'A switch that shows its state, with a line on what it does.' },
+              { at: 50, before: [6, 31, 88, 19], after: [9, 53, 32, 4], was: 'Two bullets on what you get. Nothing on how it works.', now: '"See an example" opens one.' },
+              { at: 22, before: [6, 12, 88, 17], after: [5, 61, 90, 4], was: 'Nothing on what happens to your data.', now: 'It ends on "We never sell your personal information."' },
             ],
           },
           {
             kind: 'screens',
             set: 'shopping',
-            caption: 'The new screens. Flip the switch, or open "Learn how it works".',
-          },
-          {
-            kind: 'compare',
-            set: 'request',
-            claim: 'Grouped data types replaced one long checklist.',
-            notes: [
-              { at: 50, before: [5, 39, 90, 27], after: [4, 43, 92, 15], was: 'A checkbox for every item: six before Usage info.', now: 'One tick per data type, with a line on what it\'s for.' },
-              { at: 22, before: [10, 40, 66, 11], after: [8, 52, 34, 4.5], was: 'Every item listed up front.', now: 'Each type\'s items fold under "What\'s included".' },
-              { at: 84, before: [68, 28, 28, 4.5], after: [4, 38, 92, 4.5], was: '"Unselect all", with no count.', now: '"Select all", and a count: 6 of 7 selected.' },
-            ],
-          },
-          {
-            kind: 'screens',
-            set: 'request',
-            caption:
-              'Connected apps (Xoom, Venmo, Honey) are listed too, and the request ends on a note that your info is encrypted.',
-          },
-          {
-            kind: 'compare',
-            set: 'delete',
-            claim: '"Clean up your data" now comes before "Delete and close".',
-            notes: [
-              { at: 22, before: [5, 12, 90, 9.5], after: [4, 54, 92, 5.5], was: 'One path: delete everything and close the account.', now: 'Two ways to delete.' },
-              { at: 50, before: [5, 55, 90, 14], after: [4, 60, 92, 14.5], was: 'Closing the account is the only way to delete anything.', now: 'Clean up first: delete parts, keep the account.' },
-              { at: 80, before: [5, 26, 90, 17], after: [4, 76, 92, 13], was: 'What closing means is spread over paragraphs.', now: 'Closing is still there, second, in one line.' },
-            ],
-          },
-          {
-            kind: 'screens',
-            set: 'delete',
-            caption:
-              'Face scan, marketing, package tracking and third-party profile data can each go on their own, each saying what you lose.',
+            caption: 'Flip the switch, or open "See an example".',
           },
           {
             kind: 'screens',
             set: 'contextual',
             claim: 'Privacy is explained where the question comes up, not only in settings.',
             caption:
-              'Offers carry a "Personalize your experience" link, and a Shopping and Privacy card explains why you see these deals: "We never sell it, and won\'t share it without your permission."',
+              '"Why these offers?" sits under the offers. Its answer ends on the switch: "We never sell it, and won\'t share it without your permission."',
           },
           {
             kind: 'compare',
@@ -790,60 +793,6 @@ export const cases: CaseStudy[] = [
               { at: 86, before: [0, 23.3, 100, 14.2], after: [0, 23.3, 100, 20], was: 'Blue on blue: in baseline testing, many people never saw it.', now: 'White, set apart from the global navigation.' },
               { at: 47.5, before: [8, 24, 44, 12], after: [6, 24, 66, 18], was: 'Small type: Account, Security, Payments, Notifications.', now: 'Larger type: Personal info, Financial settings, Privacy and security, Communications.' },
               { at: 13, before: [9, 33, 8, 5], after: [4, 39, 13, 5], was: 'A small notch marks the current page.', now: 'A clear marker under the current page.' },
-            ],
-          },
-        ],
-      },
-      // Folded in from the old `paypal-data-access` case, on request. That
-      // case guessed the project was internal data access and was all
-      // brackets; her files show it was customer data rights (GDPR data
-      // access requests, and erasing part of your data). Sources: the
-      // "Partial data delete" file's user story, entry points and edge
-      // cases, and her APA-file screenshots (storyboard, the DSR process,
-      // the erasure journey). Its persona and touch-point frames read as
-      // pasted chat output and aren't used.
-      {
-        id: 'data-rights',
-        answers: ['law'],
-        nav: 'What the law keeps',
-        label: 'What the law keeps',
-        heading: 'Get a copy of your data, or delete part of it and keep the account, and see plainly what PayPal can\'t delete.',
-        blocks: [
-          {
-            kind: 'figure',
-            src: '/images/paypal-privacy/data-rights-storyboard.webp',
-            alt: 'A three-panel storyboard: Samantha worries about her online privacy, decides to request a copy of her data from PayPal, then chooses the type of data from a clear list',
-            caption: 'The storyboard the data request flow was built around: someone worried about her privacy, who wants to see what PayPal holds and pick what to ask for.',
-            ratio: '1635 / 480',
-            wide: true,
-          },
-          {
-            kind: 'rows',
-            label: 'Every request passes through six steps',
-            items: [
-              { term: 'Intake', detail: 'The request comes in through the intake portal.' },
-              { term: 'Verification', detail: 'PayPal confirms it\'s really the customer asking.' },
-              { term: 'Validation', detail: 'The requester is a PayPal customer, or a guest account holder.' },
-              { term: 'Eligibility', detail: 'The request meets the criteria.' },
-              { term: 'Fulfilment', detail: 'The data is gathered, or erased.' },
-              { term: 'Communication', detail: 'The customer hears the outcome.' },
-            ],
-          },
-          {
-            kind: 'prose',
-            text: [
-              'The customer gets status updates along the way, and a confirmation when it\'s done.',
-              'Deletion had to work in parts. People asked to erase specific kinds of data, like face scan, marketing, package tracking and third-party profile data, and keep using their account. Regulation decides what PayPal must keep, so the flow says what will be deleted and what can\'t be.',
-            ],
-          },
-          {
-            kind: 'points',
-            label: 'Cases the flow had to handle',
-            items: [
-              { title: 'Erasing only part', body: 'Delete marketing data, keep transaction history and the account.' },
-              { title: 'A request left halfway', body: 'Someone starts and doesn\'t finish, and gets a reminder to complete it.' },
-              { title: 'A second request', body: 'A new request arrives while the first is still processing.' },
-              { title: 'What the law keeps', body: 'Data PayPal must retain is named, not silently left behind.' },
             ],
           },
         ],
@@ -860,7 +809,6 @@ export const cases: CaseStudy[] = [
             label: 'After launch in early 2023',
             items: [
               { value: '60%', label: 'Fewer support calls about privacy settings' },
-              { value: '76%', label: 'Faster data access time' },
               { value: '4.7/5', label: 'Average rating of the new settings, from 150 users' },
             ],
           },
@@ -892,8 +840,181 @@ export const cases: CaseStudy[] = [
         ],
       },
     ],
+    next: 'paypal-data-rights',
+  },
+
+  // ==========================================================
+  // Split out of `paypal-privacy` on request (2026-11-18, the proposal in
+  // experiments/privacy-case-learnings/checkup.html): the data-rights part
+  // of that case (itself folded in from the old `paypal-data-access`
+  // case), with its compares and screens, the six-step request, the edge
+  // cases, the delete screen's one call and the 76%. Her resume names this
+  // work on its own: "streamlining of data deletion and request processes
+  // across PayPal, Honey, and Venmo platforms". TO CONFIRM with her: the
+  // timeline (set to the Privacy case's), the team line, and one more
+  // number to stand beside the 76%.
+  {
+    slug: 'paypal-data-rights',
+    company: 'PayPal',
+    theme: 'lilac',
+    eyebrow: 'PayPal · Data rights · 2021–2023',
+    title: 'Delete part of your data and keep the account',
+    hero: {
+      src: '/images/paypal-data-rights/hero.webp',
+      alt: 'Clean up your data in a phone, with three pieces beside it: a Personal info data type with a tick, a request\'s status, and Clean up your data marked New',
+      mockup: 'data-rights',
+    },
+    description:
+      'Deleting anything meant closing your PayPal account. I designed requests to get a copy of your data, or delete part of it and keep the account, across PayPal, Venmo and Honey, saying plainly what the law keeps.',
+    meta: [
+      { label: 'Platforms', value: 'PayPal, Venmo and Honey' },
+      { label: 'Timeline', value: '2021–2023' },
+    ],
+    thread: { people: 'People', law: 'GDPR and CCPA' },
+    role: 'Owned the design · Data requests and deletion',
+    sections: [
+      {
+        id: 'situation',
+        answers: ['people', 'law'],
+        nav: 'The situation',
+        label: 'The situation',
+        heading: 'The only way to delete anything was to close the account.',
+        blocks: [
+          {
+            kind: 'compare',
+            set: 'delete',
+            claim: '"Clean up your data" now comes before "Delete and close".',
+            notes: [
+              { at: 22, before: [5, 12, 90, 9.5], after: [5, 60, 90, 4], was: 'One path: delete everything and close the account.', now: 'Two ways to delete.' },
+              { at: 50, before: [5, 55, 90, 14], after: [5, 65.5, 90, 12], was: 'Closing the account is the only way to delete anything.', now: 'Clean up first: delete parts, keep the account.' },
+              { at: 80, before: [5, 26, 90, 17], after: [5, 78.5, 90, 12], was: 'What closing means is spread over paragraphs.', now: 'Closing is still there, second, in one line.' },
+            ],
+          },
+          {
+            kind: 'figure',
+            src: '/images/paypal-privacy/data-rights-storyboard.webp',
+            alt: 'A three-panel storyboard: Samantha worries about her online privacy, decides to request a copy of her data from PayPal, then chooses the type of data from a clear list',
+            caption: 'The storyboard the data request flow was built around: someone worried about her privacy, who wants to see what PayPal holds and pick what to ask for.',
+            ratio: '1635 / 480',
+            wide: true,
+          },
+        ],
+      },
+      {
+        id: 'scope',
+        answers: ['people', 'law'],
+        nav: 'My scope',
+        label: 'My scope',
+        heading: 'I owned the design of both requests, from the storyboard to the edge cases.',
+        blocks: [
+          {
+            kind: 'rows',
+            items: [
+              { term: 'What I owned', detail: 'The data request and partial delete flows, across PayPal, Venmo and Honey.' },
+              { term: 'Who I worked with', detail: 'The data and privacy officers, and the engineers behind each step of a request.' },
+              { term: 'The constraint', detail: 'GDPR and CCPA decide what must be honoured, and what PayPal must keep.' },
+            ],
+          },
+          /* One teamwork moment (change 04). STAND-IN, written on her
+             request (2026-11-14) from what this case records: the delete
+             screen's two paths and its line on what PayPal keeps. The
+             disagreement, who held each view and the cost are plausible,
+             not sourced. Replace with her real account before an
+             interview leans on it. */
+          {
+            kind: 'rows',
+            label: 'One call: what the delete screen says',
+            items: [
+              { term: 'The pull', detail: 'The privacy officers wanted the full retention terms on the delete screen. Product wanted "Delete and close" to stay the one way to delete.' },
+              { term: 'My call', detail: 'Put "Clean up your data" first, so people could delete part and keep the account, and say what PayPal must keep in one plain line, with the legal detail a link away.' },
+              { term: 'What it cost', detail: 'The full terms moved off the screen, and closing the account went second.' },
+              { term: 'What held', detail: 'Both paths shipped, and the line on what PayPal keeps is on the screen today.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'process',
+        answers: ['law'],
+        nav: 'How a request works',
+        label: 'How a request works',
+        heading: 'Six steps behind every request, and four ways one can go wrong.',
+        blocks: [
+          {
+            kind: 'rows',
+            label: 'Every request passes through six steps',
+            items: [
+              { term: 'Intake', detail: 'The request comes in through the intake portal.' },
+              { term: 'Verification', detail: 'PayPal confirms it\'s really the customer asking.' },
+              { term: 'Validation', detail: 'The requester is a PayPal customer, or a guest account holder.' },
+              { term: 'Eligibility', detail: 'The request meets the criteria.' },
+              { term: 'Fulfilment', detail: 'The data is gathered, or erased.' },
+              { term: 'Communication', detail: 'The customer hears the outcome.' },
+            ],
+          },
+          {
+            kind: 'points',
+            label: 'Cases the flow had to handle',
+            items: [
+              { title: 'Erasing only part', body: 'Delete marketing data, keep transaction history and the account.' },
+              { title: 'A request left halfway', body: 'Someone starts and doesn\'t finish, and gets a reminder to complete it.' },
+              { title: 'A second request', body: 'A new request arrives while the first is still processing.' },
+              { title: 'What the law keeps', body: 'Data PayPal must retain is named, not silently left behind.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'craft',
+        answers: ['people', 'law'],
+        nav: 'The craft',
+        label: 'The craft',
+        heading: 'Pick the data, see where the request is, and see what stays.',
+        blocks: [
+          {
+            kind: 'compare',
+            set: 'request',
+            claim: 'Grouped data types replaced one long checklist.',
+            notes: [
+              { at: 50, before: [5, 39, 90, 27], after: [5, 25.5, 90, 14], was: 'A checkbox for every item: six before Usage info.', now: 'One tick per data type, with a line on what it\'s for.' },
+              { at: 22, before: [10, 40, 66, 11], after: [9, 35, 31, 3], was: 'Every item listed up front.', now: 'Each type\'s items fold under "What\'s included".' },
+              { at: 84, before: [68, 28, 28, 4.5], after: [5, 21.5, 90, 3.5], was: '"Unselect all", with no count.', now: '"Select all", and a count: 6 of 7 selected.' },
+            ],
+          },
+          {
+            kind: 'screens',
+            set: 'request',
+            caption:
+              'Connected apps (Xoom, Venmo, Honey) are listed too. After the request, its status shows where it is.',
+          },
+          {
+            kind: 'screens',
+            set: 'delete',
+            caption:
+              'Face scan, marketing, package tracking and profile data from other companies can each go on their own, each saying what you lose, and the screen says what PayPal keeps.',
+          },
+        ],
+      },
+      {
+        id: 'impact',
+        answers: ['people', 'law'],
+        nav: 'Impact',
+        label: 'Impact',
+        heading: 'Data access 76% faster.',
+        blocks: [
+          {
+            kind: 'metrics',
+            label: 'After launch',
+            items: [
+              { value: '76%', label: 'Faster data access time' },
+            ],
+          },
+        ],
+      },
+    ],
     next: 'walmart-scan-go',
   },
+
 
   // ==========================================================
   // Written from the original 51-slide deck (Google Slides, "Scan & Go"),
@@ -2551,7 +2672,8 @@ export const cases: CaseStudy[] = [
     title: 'Privacy-first ad personalization',
     hero: {
       src: '/images/paypal-ads-consent/hero.webp',
-      alt: 'Three screens from the rebuilt ad consent flow: Data & Privacy with a privacy checkup card, the ask with equal Allow and Not now buttons, and Online ad preferences with its switch',
+      alt: 'A step of the yearly privacy checkup in a phone, with three pieces beside it: the ask with equal Allow and Not now, the yearly card that opens the checkup, and Online ad preferences with its switch',
+      mockup: 'ads-consent',
     },
     description:
       'PayPal interest-based ads: moving ad data sharing from opted in by default to asking first, plus the Auto Privacy Advisor, a proposed checkup that brings privacy settings to people.',
@@ -2690,13 +2812,15 @@ export const cases: CaseStudy[] = [
               'Settings only help people who go looking for them, and about 1% did. The Auto Privacy Advisor (APA) is a proposal that turns this around. Every so often it compares a customer\'s settings with recommended practice, then offers a short, guided checkup: one step at a time, a progress bar, and a clear line on what each change does.',
             ],
           },
+          /* The checkup drawn as screens (on request, 2026-11-18, from
+             experiments/privacy-case-learnings/checkup.html), in place of
+             Google's screenshot: card A on the Privacy case's hub opens it.
+             Values are examples. */
           {
-            kind: 'figure',
-            src: '/images/paypal-ads-consent/privacy-checkup.webp',
-            alt: 'Google Account Privacy Checkup: Review your privacy suggestions, with cards for auto-deleting Web & App Activity and YouTube history, one card at a time',
-            caption: 'From the competitor review: Google\'s Privacy Checkup offers one suggestion at a time, each with a single action and a "Not now".',
-            ratio: '860 / 315',
-            wide: true,
+            kind: 'screens',
+            set: 'checkup',
+            claim: 'Once a year, the card on Data and privacy opens a checkup.',
+            caption: 'After Google\'s Privacy Checkup: one setting a step, what it means in a line, two equal answers and "Not now". Start from the first phone.',
           },
           {
             kind: 'rows',

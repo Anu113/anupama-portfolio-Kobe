@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayPal Privacy — what other privacy case studies teach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-18. Public privacy / ad-controls case studies (Meta, Facebook,
+  Google, PayPal 2016–18, a CHI 2023 study, a GDPR UX report) read in full and
+  compared with the PayPal Privacy case in src/data/cases.ts.
+  Nothing in src/ is changed. Every fact about her work comes from cases.ts;
+  [X] marks what she has to supply. No accent (her rule for mocks and cases);
+  "proposed" is marked in blue, like the case's own after-pins.
+  Serve from the repo root (case-v2-mockup in launch.json):
+  /experiments/privacy-case-learnings/index.html
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070;
+    --card: color-mix(in srgb, #262626 3%, #fcfcfc);
+    --card-2: color-mix(in srgb, #262626 6%, #fcfcfc);
+    --hue: #e0d6ef;                 /* PayPal lilac */
+    --blue: #2f6fd6;                /* the case's after-pin blue, for "proposed" */
+    --blue-wash: color-mix(in srgb, #2f6fd6 9%, #fcfcfc);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f0efec; color: var(--fg); font: 600 13px/1.6 var(--font-sans); }
+  .doc { max-width: 1320px; margin: 0 auto; padding: 56px 32px 160px; }
+  h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 10px; letter-spacing: -0.01em; }
+  em { font-style: italic; }
+  .dek { color: var(--dim); margin: 0 0 8px; max-width: 76ch; }
+  .lbl { font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .x { font: 400 11px/1 var(--font-mono); background: var(--card-2); padding: 2px 5px; white-space: nowrap; }
+  a { color: inherit; text-decoration: underline; text-decoration-color: rgb(38 38 38 / .45); text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; text-decoration-color: currentColor; }
+  section { margin: 72px 0 0; scroll-margin-top: 24px; }
+  h2 { font: 300 32px/1.15 var(--font-serif); margin: 6px 0 8px; }
+  h2 + p { color: var(--dim); margin: 0 0 24px; max-width: 76ch; }
+
+  /* Sources */
+  .sources { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @media (max-width: 1000px) { .sources { grid-template-columns: 1fr; } }
+  .src { background: var(--bg); padding: 20px 22px; border-radius: 20px; display: flex; flex-direction: column; gap: 6px; }
+  .src b { font: 300 20px/1.2 var(--font-serif); }
+  .src p { margin: 0; color: var(--dim); }
+  .rel { display: inline-flex; gap: 6px; align-items: center; font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+  .dots { letter-spacing: 2px; }
+
+  /* Master table */
+  .tablewrap { background: var(--bg); border-radius: 20px; padding: 8px; overflow-x: auto; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0 4px; min-width: 1100px; }
+  th { text-align: left; font: 400 10px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); padding: 12px 14px 6px; vertical-align: bottom; }
+  td { vertical-align: top; padding: 14px; background: var(--card); }
+  td:first-child { border-radius: 14px 0 0 14px; font: 400 11px/1.6 var(--font-mono); color: var(--dim); width: 36px; }
+  td:last-child { border-radius: 0 14px 14px 0; }
+  td.lesson b { display: block; font: 300 18px/1.25 var(--font-serif); margin-bottom: 4px; }
+  td.from { font: 400 11px/1.5 var(--font-mono); color: var(--dim); width: 150px; }
+  td.before { color: var(--dim); width: 22%; }
+  td.after { background: var(--blue-wash); width: 26%; }
+  td.where { font: 400 11px/1.5 var(--font-mono); width: 130px; }
+  .verdict { display: inline-block; font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; padding: 5px 8px; border-radius: 4px; white-space: nowrap; }
+  .v-apply { background: var(--blue); color: #fff; }
+  .v-say { background: var(--card-2); }
+  .v-have { background: transparent; box-shadow: inset 0 0 0 1px rgb(38 38 38 / .25); }
+  .v-skip { background: transparent; color: var(--dim); box-shadow: inset 0 0 0 1px rgb(38 38 38 / .12); }
+  tr.group td { background: transparent; padding: 22px 14px 4px; font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); }
+
+  /* Before / after pairs */
+  .change { background: transparent; }
+  .change__head { display: grid; grid-template-columns: 48px 1fr; gap: 0 12px; margin-bottom: 20px; }
+  .change__n { font: 400 11px/2.2 var(--font-mono); color: var(--dim); }
+  .change__head h2 { margin-top: 0; }
+  .change__head p { margin: 0; color: var(--dim); max-width: 78ch; }
+  .change__head .from { margin-top: 8px; font: 400 11px/1.6 var(--font-mono); color: var(--dim); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pair--wide { grid-template-columns: 1fr 1.5fr; }
+  @media (max-width: 960px) { .pair, .pair--wide { grid-template-columns: 1fr; } }
+  .panel { background: var(--bg); padding: 32px; border-radius: 20px; }
+  .tag { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin-bottom: 24px; display: flex; gap: 8px; align-items: center; }
+  .tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--dim); }
+  .panel--new .tag { color: var(--fg); }
+  .panel--new .tag::before { background: var(--blue); }
+
+  /* Case type, as on /work/[slug] */
+  .opener { display: flex; gap: 14px; font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin: 0 0 12px; }
+  .opener b { font-weight: 400; color: var(--fg); }
+  .shead { font: 300 22px/1.25 var(--font-serif); margin: 0 0 16px; }
+  .body { margin: 0 0 14px; max-width: 60ch; }
+  .muted { color: var(--dim); }
+  .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .side { background: var(--card); border-radius: 28px; padding: 22px; }
+  .side h4 { font: 300 18px/1.25 var(--font-serif); margin: 8px 0 10px; }
+  .side ul { margin: 0; padding-left: 18px; color: var(--dim); }
+  .side li + li { margin-top: 4px; }
+  .side--focus { background: var(--blue-wash); }
+
+  /* 01 policy to pixels */
+  .map { display: grid; grid-template-columns: 1fr; gap: 6px; }
+  .maprow { display: grid; grid-template-columns: 1.05fr 18px 1.4fr 72px; gap: 14px; align-items: center; background: var(--card); border-radius: 16px; padding: 12px 14px; }
+  .maprow .rule b { display: block; }
+  .maprow .rule span { font: 400 10px/1.4 var(--font-mono); color: var(--dim); text-transform: uppercase; letter-spacing: .04em; }
+  .maprow .arrow { color: var(--dim); font: 400 13px/1 var(--font-mono); }
+  .maprow .pix { color: var(--fg); }
+  .maprow .pix q { quotes: '“' '”'; }
+  .thumb { width: 72px; height: 72px; border-radius: 12px; background: var(--hue) center/cover no-repeat; }
+  .thumb--none { background: var(--card-2); display: grid; place-items: center; font: 400 9px/1.2 var(--font-mono); color: var(--dim); text-align: center; padding: 6px; }
+
+  /* 02 anatomy */
+  .anat { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 700px) { .anat { grid-template-columns: 1fr; } }
+  .phone { border-radius: 32px; background: #111; padding: 8px; }
+  .phone img { width: 100%; display: block; border-radius: 25px; }
+  .slots { counter-reset: s; display: grid; gap: 6px; }
+  .slot { counter-increment: s; display: grid; grid-template-columns: 26px 1fr; gap: 10px; background: var(--card); border-radius: 14px; padding: 12px 14px; }
+  .slot::before { content: counter(s); width: 22px; height: 22px; border-radius: 50%; background: var(--blue); color: #fff; display: grid; place-items: center; font: 400 10px/1 var(--font-mono); }
+  .slot b { display: block; font: 400 10px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+
+  /* 03 order */
+  .order { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .order li { display: grid; grid-template-columns: 30px 1fr; gap: 8px; padding: 9px 12px; border-radius: 12px; background: var(--card); }
+  .order li i { font: 400 10px/1.9 var(--font-mono); font-style: normal; color: var(--dim); }
+  .order li.moved { background: var(--blue-wash); }
+  .order li.small { color: var(--dim); }
+  .order li small { display: block; font: 400 10px/1.5 var(--font-mono); color: var(--dim); }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .duo figure { margin: 0; }
+  .duo img { width: 100%; border-radius: 16px; background: var(--hue); display: block; }
+  .duo figcaption { font: 400 10px/1.5 var(--font-mono); color: var(--dim); margin-top: 6px; }
+
+  /* metrics */
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .num { background: var(--card); border-radius: 28px; padding: 18px 20px; }
+  .num b { display: block; font: 300 30px/1 var(--font-serif); margin-bottom: 6px; }
+  .num span { font: 400 10px/1.4 var(--font-mono); color: var(--dim); text-transform: uppercase; }
+  .newline { background: var(--blue-wash); border-radius: 14px; padding: 12px 14px; margin: 0 0 14px; }
+
+  /* questions */
+  .qs { display: grid; gap: 6px; }
+  .q { background: var(--card); border-radius: 16px; padding: 14px 16px; font: 300 19px/1.3 var(--font-serif); }
+  .q small { display: block; font: 400 10px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--dim); margin-top: 6px; }
+  .quote { font: 300 22px/1.3 var(--font-serif); margin: 0 0 6px; }
+
+  .note { margin-top: 12px; font: 400 11px/1.6 var(--font-mono); color: var(--dim); max-width: 90ch; }
+  .keep { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @media (max-width: 900px) { .keep { grid-template-columns: 1fr; } }
+  .keep div { background: var(--bg); border-radius: 20px; padding: 20px; }
+  .keep b { display: block; font: 300 20px/1.2 var(--font-serif); margin-bottom: 6px; }
+  .keep p { margin: 0; color: var(--dim); }
+</style>
+</head>
+<body>
+<main class="doc">
+
+  <p class="lbl">Experiment · PayPal Privacy case · 2026-11-18</p>
+  <h1>What other privacy case studies do, and <em>what ours should take</em></h1>
+  <p class="dek">Six public pieces on privacy settings and ad controls (Meta, Facebook, Google, an earlier PayPal settings redesign, a CHI 2023 study, a GDPR design report), read in full and set against the Privacy case as it is now. Ranked by how much each one would change what a hiring manager takes away. Nothing on the site has changed yet.</p>
+  <p class="dek">Blue is proposed. <span class="x">[X]</span> is something only you can supply; nothing about your work is invented.</p>
+
+  <!-- ============ SOURCES ============ -->
+  <section id="sources">
+    <p class="lbl">What was read</p>
+    <h2>Six sources, and how close each is to your case</h2>
+    <p>No public case study shows a full Google or Facebook privacy redesign with process, screens and numbers together. The design-led ones are summaries or visuals; the deep ones are research.</p>
+    <div class="sources">
+      <div class="src">
+        <span class="rel"><span class="dots">●●●</span> Closest</span>
+        <b><a href="https://medium.com/kianlavi/privacy-center-5ae01a5e48f0">Meta Privacy Center</a></b>
+        <p>Kian Lavi, 2021. One place to learn and manage privacy across Facebook, Instagram, WhatsApp. Framed by real worries in people's words; "Guides" pair explanation with the control; success measured by trust and agency, not growth.</p>
+      </div>
+      <div class="src">
+        <span class="rel"><span class="dots">●●●</span> Closest</span>
+        <b><a href="https://medium.com/designatmeta/designing-for-privacy-on-facebook-5b62e3f8e631">Designing for Privacy on Facebook</a></b>
+        <p>Charlie Deets, 2014. "A design failure if we have to send someone to a settings page": controls come to you in the moment. Protective defaults (Friends, not Public). The first Privacy Checkup.</p>
+      </div>
+      <div class="src">
+        <span class="rel"><span class="dots">●●●</span> Closest</span>
+        <b><a href="https://medium.com/@imjane/less-is-not-more-improving-findability-and-actionability-of-privacy-controls-for-online-behavioral-32844387784b">Less is Not More</a></b>
+        <p>Im, Cranor, Schaub et al., CHI 2023. Facebook ad settings tested with 110 people. Findability depends on the entry point and on links straight to the setting; that raised findability by up to 41%. Warns against minimalism that hides controls.</p>
+      </div>
+      <div class="src">
+        <span class="rel"><span class="dots">●●○</span> Same company</span>
+        <b><a href="https://eric-tomlinson.squarespace.com/paypal-settings">PayPal Settings redesign</a></b>
+        <p>Eric Tomlinson, lead designer, 2016–18 (the page now 404s; read via search). No IA, and GDPR needed privacy settings easy to find. Built GDPR features as one flexible pattern so engineers didn't recode them per screen.</p>
+      </div>
+      <div class="src">
+        <span class="rel"><span class="dots">●●○</span> The law side</span>
+        <b><a href="https://superbloom.design/learning/blog/from-policy-to-pixels-strategic-ux-design-and-user-support-for-gdpr-implementation/">From Policy to Pixels</a></b>
+        <p>Superbloom for Berkeley CLTC, 2023. Teams discuss GDPR in legal language, not in usable screens. Withdrawing consent should be as easy as giving it (Art. 7(3)).</p>
+      </div>
+      <div class="src">
+        <span class="rel"><span class="dots">●○○</span> Adjacent</span>
+        <b>Google Privacy+ and My Ad Center</b>
+        <p><a href="https://alexwright.com/project/google-privacy">Alex Wright</a> (Results About You, one-paragraph summary), <a href="https://zuhengyin.com/?p=882">Zuheng Yin</a> (visual system, no UX reasoning), <a href="https://gupta-shubhangi.github.io/case-studies/Ads%20Safety.html">Shubhangi Gupta</a> (research, findings confidential). Thin on decisions; used only where noted.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MASTER TABLE ============ -->
+  <section id="table">
+    <p class="lbl">The comparison</p>
+    <h2>Every lesson, against the case as it is, <em>most relevant first</em></h2>
+    <p>"Apply" changes the page. "Say it" is for the interview, not the page. "Have it" means the case already does this, often better than the source. "Skip" has a reason.</p>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Lesson</th><th>From</th><th>Our case now</th><th>Proposed</th><th>Where</th><th>Verdict</th></tr>
+        </thead>
+        <tbody>
+          <tr class="group"><td colspan="7">Change the page</td></tr>
+          <tr>
+            <td>01</td>
+            <td class="lesson"><b>Show the law turning into screens</b>Each rule, then the exact thing on screen that meets it.</td>
+            <td class="from">Policy to Pixels; Tomlinson (GDPR as one pattern)</td>
+            <td class="before">The GDPR and CCPA side is three needs in words ("Honour requests to see or delete data"). The screens that meet them come much later, apart.</td>
+            <td class="after">A "rule → on screen" map in the situation, seven rows, each with a thumbnail: access → Download your data; rectification → "Update your data"; erasure → Clean up your data; what must be kept → the one line on the delete screen; and so on.</td>
+            <td class="where">The situation, replacing the law card's list</td>
+            <td><span class="verdict v-apply">Apply</span></td>
+          </tr>
+          <tr>
+            <td>02</td>
+            <td class="lesson"><b>Draw the pattern every setting follows</b>The five questions as a template, on one real setting.</td>
+            <td class="from">Tomlinson (one GDPR pattern); Meta "Guides" (explanation + control together)</td>
+            <td class="before">"Each setting answered five questions…" is one sentence of prose in The hard call.</td>
+            <td class="after">The Deals &amp; ads screen beside five numbered slots: what we collect, where from, why, shared or not, what you control. Filled from the case where it's known, <span class="x">[X]</span> where not.</td>
+            <td class="where">The hard call, after the first prose block</td>
+            <td><span class="verdict v-apply">Apply</span></td>
+          </tr>
+          <tr>
+            <td>03</td>
+            <td class="lesson"><b>Settings come to people</b>Lead the craft with privacy in the moment, then the yearly checkup.</td>
+            <td class="from">Deets (Facebook); CHI 2023 (entry points in the feed and in ads)</td>
+            <td class="before">Contextual privacy is a two-line point in How the work got made, and the last screens of The craft. The yearly reminder appears only in captions as "a later proposal".</td>
+            <td class="after">One beat of its own at the start of The craft: "Most privacy questions start somewhere else." The offer's "Personalize your experience" link and the Shopping and Privacy card, then the yearly reminder as the settings coming to you.</td>
+            <td class="where">The craft, first; the point leaves How the work got made</td>
+            <td><span class="verdict v-apply">Apply</span></td>
+          </tr>
+          <tr>
+            <td>04</td>
+            <td class="lesson"><b>Say why this is the measure</b>Privacy isn't a growth metric; name what you measured instead.</td>
+            <td class="from">Lavi (Meta: "couldn't be growth-hacked")</td>
+            <td class="before">Impact is three numbers with no line on why calls are the measure.</td>
+            <td class="after">One line above the numbers tying them to the situation: customer service heard the same questions again and again, so the measure was whether people still needed to ask.</td>
+            <td class="where">Impact, above the metrics</td>
+            <td><span class="verdict v-apply">Apply</span></td>
+          </tr>
+          <tr>
+            <td>05</td>
+            <td class="lesson"><b>Open on people's real questions</b>The top questions customer service heard, word for word.</td>
+            <td class="from">Lavi ("I'm freaked out by a creepy ad…")</td>
+            <td class="before">One research quote and one summarised question ("What is PayPal doing with my data…").</td>
+            <td class="after">The three most common privacy calls, in customers' words, before the bet. Only if you have them: <span class="x">[X]</span> ×3.</td>
+            <td class="where">The situation, the People card</td>
+            <td><span class="verdict v-apply">Apply if real</span></td>
+          </tr>
+
+          <tr class="group"><td colspan="7">Say it, don't print it</td></tr>
+          <tr>
+            <td>06</td>
+            <td class="lesson"><b>Findability is entry point × actionability</b>Your 2 → 1 taps is the same finding a CHI study made two years later.</td>
+            <td class="from">CHI 2023: links straight to a setting raised findability up to 41%; "caution against minimalism that hides controls"</td>
+            <td class="before">The hard call explains dropping the sheets in your own terms.</td>
+            <td class="after">Keep the page as is. In an interview: "We dropped the extra layer for the same reason the CMU study found: every hop to a setting costs people who are already worried."</td>
+            <td class="where">Interview</td>
+            <td><span class="verdict v-say">Say it</span></td>
+          </tr>
+          <tr>
+            <td>07</td>
+            <td class="lesson"><b>Protective defaults</b>Facebook started everyone at Friends, not Public.</td>
+            <td class="from">Deets (Facebook)</td>
+            <td class="before">Your Ads consent case flipped sharing to opt-in; the Privacy case doesn't point to it.</td>
+            <td class="after">Optional: Privacy's "Next" goes to Ads consent instead of Scan &amp; Go, so the two privacy cases read as one body of work.</td>
+            <td class="where">The case's next link</td>
+            <td><span class="verdict v-say">Your call</span></td>
+          </tr>
+
+          <tr class="group"><td colspan="7">Already doing, keep</td></tr>
+          <tr>
+            <td>08</td>
+            <td class="lesson"><b>Explanation sits beside the control</b></td>
+            <td class="from">Meta Guides</td>
+            <td class="before">"Learn how it works" beside the switch; "We never sell your personal information."</td>
+            <td class="after">No change. Yours does it in one line, theirs in a separate Guide.</td>
+            <td class="where">The craft</td>
+            <td><span class="verdict v-have">Have it</span></td>
+          </tr>
+          <tr>
+            <td>09</td>
+            <td class="lesson"><b>Evidence over adjectives</b></td>
+            <td class="from">All of them, by absence</td>
+            <td class="before">Before/after on one phone, the funnel, the 70% bar, findings beside fixes.</td>
+            <td class="after">No change. None of the six shows a before and after; this is where yours is already ahead.</td>
+            <td class="where">Throughout</td>
+            <td><span class="verdict v-have">Have it</span></td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td class="lesson"><b>An honest reflection</b></td>
+            <td class="from">Lavi ("more champions, fewer cooks")</td>
+            <td class="before">"Test the words with the groups"; "go rougher".</td>
+            <td class="after">No change. Lavi's is about team politics; yours is about craft, which suits the IC ask better.</td>
+            <td class="where">What I'd do differently</td>
+            <td><span class="verdict v-have">Have it</span></td>
+          </tr>
+
+          <tr class="group"><td colspan="7">Skip</td></tr>
+          <tr>
+            <td>11</td>
+            <td class="lesson"><b>Visual metaphors for data</b></td>
+            <td class="from">Zuheng Yin (My Ad Center)</td>
+            <td class="before">—</td>
+            <td class="after">Frosted glass and objects for data types are decoration; the brief rules that out.</td>
+            <td class="where">—</td>
+            <td><span class="verdict v-skip">Skip</span></td>
+          </tr>
+          <tr>
+            <td>12</td>
+            <td class="lesson"><b>Stories format, dashboard in the feed</b></td>
+            <td class="from">Lavi; CHI 2023</td>
+            <td class="before">—</td>
+            <td class="after">Not what you shipped. The CHI study also found the feed dashboard felt intrusive.</td>
+            <td class="where">—</td>
+            <td><span class="verdict v-skip">Skip</span></td>
+          </tr>
+          <tr>
+            <td>13</td>
+            <td class="lesson"><b>Methods and impact without the findings</b></td>
+            <td class="from">Gupta (Google Ads, confidential)</td>
+            <td class="before">—</td>
+            <td class="after">Not for Privacy, which can show its findings. Worth a look for the locked Okta case.</td>
+            <td class="where">Okta, later</td>
+            <td><span class="verdict v-skip">Elsewhere</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 01 ============ -->
+  <section id="c01" class="change">
+    <div class="change__head">
+      <span class="change__n">01</span>
+      <div>
+        <h2>Show the law turning into screens</h2>
+        <p>The case says it met GDPR and CCPA "on the same screens", but never shows which screen meets which rule. A hiring manager for a fintech or identity role reads this map as proof you can sit with legal and come out with a usable product. It's the senior skill in this case, and right now it's told, not shown.</p>
+        <p class="from">From: Policy to Pixels (legal language never reaches the screen) · Tomlinson (GDPR built as one pattern)</p>
+      </div>
+    </div>
+    <div class="pair pair--wide">
+      <div class="panel">
+        <div class="tag">Now · The situation</div>
+        <div class="sides">
+          <div class="side">
+            <span class="lbl">A PayPal customer</span>
+            <h4>What is PayPal doing with my data, and how do I change it?</h4>
+            <ul><li>Find any setting from the privacy page</li><li>See what it's set to, and what it does</li><li>Get a copy, or delete part, and keep the account</li></ul>
+          </div>
+          <div class="side">
+            <span class="lbl">GDPR and CCPA</span>
+            <h4>Is everything disclosed, and is what must be kept, kept?</h4>
+            <ul><li>Say what's collected, why, and whether it's shared</li><li>Honour requests to see or delete data</li><li>Name what PayPal must retain, not leave it silent</li></ul>
+          </div>
+        </div>
+        <p class="note">The screens that answer the right card are four sections further down, with no line back to it.</p>
+      </div>
+      <div class="panel panel--new">
+        <div class="tag">Proposed · the GDPR and CCPA card becomes a map</div>
+        <p class="opener"><b>GDPR and CCPA</b> · what the rule asks → what's on the screen</p>
+        <div class="map">
+          <div class="maprow">
+            <div class="rule"><b>Say what's collected, why, and if it's shared</b><span>GDPR Art. 13–14 · CCPA notice</span></div>
+            <div class="arrow">→</div>
+            <div class="pix">Every setting answers five questions, in one line under its name (see 02)</div>
+            <div class="thumb" style="background-image:url(../../public/images/paypal-privacy/hub-before.webp)" role="img" aria-label="Data and privacy page"></div>
+          </div>
+          <div class="maprow">
+            <div class="rule"><b>See your data</b><span>GDPR Art. 15 · CCPA right to know</span></div>
+            <div class="arrow">→</div>
+            <div class="pix">Download your data: one tick per data type, a count, 6 of 7 selected</div>
+            <div class="thumb" style="background-image:url(../../public/images/paypal-privacy/data-request.webp)" role="img" aria-label="Data request screen"></div>
+          </div>
+          <div class="maprow">
+            <div class="rule"><b>Fix your data</b><span>GDPR Art. 16</span></div>
+            <div class="arrow">→</div>
+            <div class="pix"><q>Correct your data</q> became <q>Update your data</q>, after people misread it</div>
+            <div class="thumb thumb--none">label<br>change</div>
+          </div>
+          <div class="maprow">
+            <div class="rule"><b>Delete your data</b><span>GDPR Art. 17 · CCPA right to delete</span></div>
+            <div class="arrow">→</div>
+            <div class="pix">Clean up your data: delete face scan, marketing or tracking data and keep the account</div>
+            <div class="thumb" style="background-image:url(../../public/images/paypal-privacy/data-delete.webp)" role="img" aria-label="Clean up your data screen"></div>
+          </div>
+          <div class="maprow">
+            <div class="rule"><b>Name what must be kept</b><span>GDPR Art. 17(3)</span></div>
+            <div class="arrow">→</div>
+            <div class="pix">One plain line on the delete screen; the legal detail a link away</div>
+            <div class="thumb" style="background-image:url(../../public/images/paypal-privacy/data-delete.webp);background-position:bottom" role="img" aria-label="Delete screen, retention line"></div>
+          </div>
+          <div class="maprow">
+            <div class="rule"><b>Withdraw as easily as you agreed</b><span>GDPR Art. 7(3) · Art. 21</span></div>
+            <div class="arrow">→</div>
+            <div class="pix">A switch that shows it's on, replacing a lone <q>Turn off</q> button</div>
+            <div class="thumb" style="background-image:url(../../public/images/paypal-privacy/shopping.webp)" role="img" aria-label="Deals and ads switch"></div>
+          </div>
+          <div class="maprow">
+            <div class="rule"><b>Say if data is sold</b><span>CCPA</span></div>
+            <div class="arrow">→</div>
+            <div class="pix"><q>We never sell your personal information.</q> at the end of the setting</div>
+            <div class="thumb" style="background-image:url(../../public/images/paypal-privacy/shopping.webp);background-position:bottom" role="img" aria-label="Never sell line"></div>
+          </div>
+        </div>
+        <p class="note">Built as a new block (`lawmap`), not prose. Check with you: show article numbers in mono as here, or plain names only? And is each pairing how the privacy officers saw it? <span class="x">[X]</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section id="c02" class="change">
+    <div class="change__head">
+      <span class="change__n">02</span>
+      <div>
+        <h2>Draw the pattern every setting follows</h2>
+        <p>The five questions are the system that let five designers and every product team add settings without a redesign. Systems thinking is what separates Staff from Senior, and it's currently one sentence. Drawn as a template on a real screen, it's seen in a glance.</p>
+        <p class="from">From: Tomlinson (GDPR features built once, reused) · Meta Guides (explanation and control together)</p>
+      </div>
+    </div>
+    <div class="pair">
+      <div class="panel">
+        <div class="tag">Now · The hard call</div>
+        <p class="opener"><b>03</b> The hard call</p>
+        <p class="shead">The first structure tested well and cost a tap. I kept the groups and dropped the extra layer.</p>
+        <p class="body muted">The first version came straight from the card sorts. Four tiles: Profile privacy, Feature preferences, Notifications, and Ads and data. Each tile opened a sheet of its settings. <span style="color:var(--fg)">Each setting answered five questions: what we collect, where it comes from, why, whether it's shared, and what you control.</span></p>
+        <p class="note">The pattern behind every screen is the last sentence of a paragraph about something else.</p>
+      </div>
+      <div class="panel panel--new">
+        <div class="tag">Proposed · its own block, after that paragraph</div>
+        <p class="opener"><b>One pattern</b> · every setting answers five questions</p>
+        <div class="anat">
+          <div class="phone"><img src="../../public/images/paypal-privacy/shopping.webp" alt="The Deals and ads setting"></div>
+          <div class="slots">
+            <div class="slot"><div><b>What we collect</b><span class="x">[X]</span> for Deals &amp; ads</div></div>
+            <div class="slot"><div><b>Where it comes from</b><span class="x">[X]</span></div></div>
+            <div class="slot"><div><b>Why</b>Deals and offers matched to what you shop for · <span class="x">[X] confirm wording</span></div></div>
+            <div class="slot"><div><b>Shared or not</b>"We never sell your personal information."</div></div>
+            <div class="slot"><div><b>What you control</b>A switch that shows its state, and "Learn how it works"</div></div>
+          </div>
+        </div>
+        <p class="note">Numbered dots in the case's after-pin blue, the same marks as the before/after compare, so it reads as one system.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section id="c03" class="change">
+    <div class="change__head">
+      <span class="change__n">03</span>
+      <div>
+        <h2>Settings come to people, so lead the craft with it</h2>
+        <p>Facebook's privacy team called it a design failure to send someone to a settings page. Your case already did this (explanations at the first visit, in shopping, mid-payment), but it reads as an afterthought: a two-line point in the process and the last screens of the craft. Moved to the front of the craft, it becomes the idea the rest of the page serves.</p>
+        <p class="from">From: Deets (Facebook) · CHI 2023 (entry points where people already are raised findability)</p>
+      </div>
+    </div>
+    <div class="pair">
+      <div class="panel">
+        <div class="tag">Now · order of The craft</div>
+        <ol class="order">
+          <li><i>1</i><span>The hub: every setting one tap away</span></li>
+          <li><i>2</i><span>Before / after: the Deals &amp; ads switch</span></li>
+          <li><i>3</i><span>Before / after: data request</span></li>
+          <li><i>4</i><span>Before / after: Clean up your data</span></li>
+          <li><i>5</i><span>Contextual screens: offers, Shopping and Privacy card</span></li>
+          <li><i>6</i><span>Before / after: white sub-navigation</span></li>
+        </ol>
+        <p class="note">Plus "Contextual privacy" as a point in How the work got made. The yearly reminder is only mentioned in two captions, as "a later proposal".</p>
+      </div>
+      <div class="panel panel--new">
+        <div class="tag">Proposed · order of The craft</div>
+        <ol class="order">
+          <li class="moved"><i>1</i><span>Privacy where the question comes up<small>"Most privacy questions start somewhere else." Offers' "Personalize your experience" link, the Shopping and Privacy card</small></span></li>
+          <li class="moved"><i>2</i><span>And once a year, the settings come to you<small>The reminder card, named as a proposal · <span class="x">[X] shipped or not?</span></small></span></li>
+          <li><i>3</i><span>The hub: every setting one tap away</span></li>
+          <li><i>4</i><span>Before / after: the Deals &amp; ads switch</span></li>
+          <li><i>5</i><span>Before / after: data request</span></li>
+          <li><i>6</i><span>Before / after: Clean up your data</span></li>
+          <li class="small"><i>7</i><span>Before / after: white sub-navigation</span></li>
+        </ol>
+        <div class="duo">
+          <figure><img src="../../public/images/paypal-privacy/contextual.webp" alt="Contextual privacy screens"><figcaption>In the moment</figcaption></figure>
+          <figure><img src="../../public/images/paypal-privacy/reminder.webp" alt="Yearly privacy reminder"><figcaption>Once a year</figcaption></figure>
+        </div>
+        <p class="note">The "Contextual privacy" point leaves How the work got made, so it's said once.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section id="c04" class="change">
+    <div class="change__head">
+      <span class="change__n">04</span>
+      <div>
+        <h2>Say why support calls are the measure</h2>
+        <p>Meta's Privacy Center team wrote that privacy "couldn't be growth-hacked". Without a line saying why, "60% fewer support calls" can look like the one number you happened to have. With it, the number answers the situation's first problem.</p>
+        <p class="from">From: Lavi (Meta Privacy Center)</p>
+      </div>
+    </div>
+    <div class="pair">
+      <div class="panel">
+        <div class="tag">Now · Impact</div>
+        <p class="opener"><b>07</b> Impact</p>
+        <p class="shead">60% fewer support calls about privacy, on settings now used by more than 80 million people.</p>
+        <div class="nums">
+          <div class="num"><b>60%</b><span>Fewer support calls about privacy settings</span></div>
+          <div class="num"><b>76%</b><span>Faster data access time</span></div>
+          <div class="num"><b>4.7/5</b><span>Average rating, 150 users</span></div>
+        </div>
+      </div>
+      <div class="panel panel--new">
+        <div class="tag">Proposed · one line above the numbers</div>
+        <p class="opener"><b>07</b> Impact</p>
+        <p class="shead">60% fewer support calls about privacy, on settings now used by more than 80 million people.</p>
+        <p class="newline">Privacy doesn't show up in sign-ups. The measure was whether people still had to call to ask what PayPal does with their data.</p>
+        <div class="nums">
+          <div class="num"><b>60%</b><span>Fewer support calls about privacy settings</span></div>
+          <div class="num"><b>76%</b><span>Faster data access time</span></div>
+          <div class="num"><b>4.7/5</b><span>Average rating, 150 users</span></div>
+        </div>
+        <p class="note">Draft wording; check it's how the team chose the measure. <span class="x">[X]</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section id="c05" class="change">
+    <div class="change__head">
+      <span class="change__n">05</span>
+      <div>
+        <h2>Open on people's real questions</h2>
+        <p>Meta's case opens on three worries in people's own words. Yours says customer service "heard the same privacy questions again and again" but never says which. Only worth doing with the real ones.</p>
+        <p class="from">From: Lavi (Meta Privacy Center)</p>
+      </div>
+    </div>
+    <div class="pair">
+      <div class="panel">
+        <div class="tag">Now · The situation</div>
+        <p class="body muted">Customer service heard the same privacy questions again and again.</p>
+        <p class="quote">"It's not explained clearly. I have to fill in the holes with my own prior knowledge."</p>
+        <p class="lbl">A participant in customer research</p>
+      </div>
+      <div class="panel panel--new">
+        <div class="tag">Proposed · the three most-asked, before the quote</div>
+        <p class="lbl" style="margin-bottom:10px">What customer service heard most</p>
+        <div class="qs">
+          <div class="q"><span class="x">[X]</span> question 1, in the customer's words<small>Answered by: <span class="x">[X]</span></small></div>
+          <div class="q"><span class="x">[X]</span> question 2<small>Answered by: <span class="x">[X]</span></small></div>
+          <div class="q"><span class="x">[X]</span> question 3<small>Answered by: <span class="x">[X]</span></small></div>
+        </div>
+        <p class="note">Each card names the screen that answers it, so the questions lead into the work. Leave it out if the call logs aren't to hand; the quote carries it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ KEEP ============ -->
+  <section id="keep">
+    <p class="lbl">Where yours is already ahead</p>
+    <h2>What none of the six does</h2>
+    <div class="keep">
+      <div><b>Before and after on one phone</b><p>None of the six shows the old screen beside the new one. Yours shows it four times.</p></div>
+      <div><b>The decision, with the cost</b><p>"What it cost: the full terms moved off the screen." No other case names what was given up.</p></div>
+      <div><b>A bar, and what failed it</b><p>Three prototypes against a 70% bar. The others report outcomes only, not the test that chose the design.</p></div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>
