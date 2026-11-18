@@ -720,6 +720,29 @@ walked back. Concretely, in the current implementation:
   `Mosaic`, the footer's variable-weight wordmark, the section watermark
   numerals) have been removed. `<Section theme="…">` still exists but every
   theme name resolves to the same colours.
+- **One passcode, and locks you can see before the click** (on request,
+  2026-11-18, mocks in `experiments/password-lock/`). `site.lock` in
+  `data/site.ts` holds the one passcode; every gate (`SiteGate`,
+  `LockedGate`, `CaseGate`) takes it, and typed once anywhere it unlocks
+  the site and every locked case on that browser for `rememberHours`
+  (`scripts/unlock.ts`; `data-unlocked` on `<html>`, set before paint in
+  `Base.astro`). There are no per-case passwords; read a case's lock
+  through `lockFor()` / `isCaseLocked()` in `cases.ts`, which follow
+  `site.lock.cases`: 'none' (now, on request 2026-11-18: "don't lock any
+  case studies now" — everything is open, Okta included; the designs
+  stay in the code for when she asks), 'marked' (cases with `locked`,
+  i.e. Okta) or 'all'. Don't lock anything without her asking. A locked case's card,
+  on the home page and /work, frosts on hover or focus with a 24px lock
+  and "Password protected" ("A · Frost", `LockFrost.astro`; at 52px the
+  lock read "too huge to be cute"), and still clicks through to its gate;
+  the small LockIcon stays at rest, the frost shows at rest on touch and
+  is gone once unlocked. `site.lock.site` puts the whole site behind
+  "C · Frosted home" (`SiteGate.astro`): the page frosted under one small
+  card with the passcode field and "Email me"; the frost clears on the
+  right passcode, and the preloader stands down while it's up. It is
+  off by default, on purpose: turn it on only while needed. All of it is
+  a soft gate (the pages ship in the HTML); real privacy is a host-level
+  password. Values under LOCK FROST in `tokens.css`.
 - Pixel (`AskBubble.astro`) was left out of that pass on request: it keeps
   its own palette and pins its old type (Roboto Mono, still loaded only for
   it) via the block at the end of `tokens.css`.

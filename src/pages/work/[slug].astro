@@ -52,7 +52,7 @@ import PrivacyCover from '../../components/PrivacyCover.astro';
 import CaseGate from '../../components/CaseGate.astro';
 import LockedGate from '../../components/LockedGate.astro';
 import LockIcon from '../../components/LockIcon.astro';
-import { cases, caseBySlug } from '../../data/cases';
+import { cases, caseBySlug, lockFor } from '../../data/cases';
 import { hueFor, labelsFor, work } from '../../data/work';
 import { site, gmailCompose } from '../../data/site';
 
@@ -69,8 +69,9 @@ const next = caseBySlug(study.next);
    container, revealed on a correct password. Partially gated (preview > 0)
    keeps the page itself, splitting its sections into what's free and what
    sits behind an inline CaseGate further down. */
-const fullyLocked = study.locked?.preview === 0;
-const previewCount = study.locked?.preview ?? study.sections.length;
+const lock = lockFor(study);   // site.lock.cases decides (data/site.ts)
+const fullyLocked = lock?.preview === 0;
+const previewCount = lock?.preview ?? study.sections.length;
 const openSections = study.sections.slice(0, previewCount);
 const gatedSections = study.sections.slice(previewCount);
 const gateId = `${study.slug}-gate-content`;
@@ -116,9 +117,8 @@ const headline = impactMetrics?.kind === 'metrics'
       caseTitle={study.title}
       company={study.company}
       role={study.role}
-      scope={study.locked!.scope}
-      outcome={study.locked!.outcome}
-      password={study.locked!.password}
+      scope={lock!.scope}
+      outcome={lock!.outcome}
       targetId={pageId}
     />
   )}
@@ -220,13 +220,12 @@ const headline = impactMetrics?.kind === 'metrics'
           </section>
         ))}
 
-        {study.locked && gatedSections.length > 0 && (
+        {lock && gatedSections.length > 0 && (
           <section class="cs" id={gateId} aria-label="Full case study">
             <Reveal still>
               <CaseGate
                 slug={study.slug}
                 caseTitle={study.title}
-                password={study.locked.password}
                 targetId={`${gateId}-content`}
               />
             </Reveal>
@@ -286,7 +285,7 @@ const headline = impactMetrics?.kind === 'metrics'
         <p class="u-label">Next</p>
         <a class="next" href={`/work/${next.slug}`} data-follow-hover>
           {next.title}
-          {next.locked && <LockIcon class="next__lock" size="0.55em" />}
+          {lockFor(next) && <LockIcon class="next__lock" size="0.55em" />}
           <span class="next__peek" aria-hidden="true" data-follow-pill>
             View case study
           </span>

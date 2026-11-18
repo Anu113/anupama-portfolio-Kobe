@@ -39,7 +39,8 @@ const start = () => {
     autoRaf: true,
     virtualScroll: ({ event }) =>
       !event.defaultPrevented && !document.querySelector('dialog:modal') &&
-      !('preloaderHold' in document.documentElement.dataset),
+      !('preloaderHold' in document.documentElement.dataset) &&
+      !('siteLock' in document.documentElement.dataset),
   });
 };
 

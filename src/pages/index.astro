@@ -13,6 +13,7 @@ import Now from '../components/Now.astro';
 
 import { site } from '../data/site';
 import { work, homeCards, labelsFor } from '../data/work';
+import { isCaseLocked } from '../data/cases';
 
 // The home cards (data/work.ts, `homeCards`), each filled in from the
 // `work` case it points at. Category filters live on /work.
@@ -107,6 +108,7 @@ const cards = homeCards.map((c) => {
           media={c.media}
           video={c.video}
           hue={c.hue}
+          locked={isCaseLocked(c.href.replace('/work/', ''))}
         />
       </div>
     ))}

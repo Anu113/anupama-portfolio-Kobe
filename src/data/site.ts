@@ -31,6 +31,32 @@ export const site = {
   coords: { lat: 12.9716, lon: 77.5946 },
   timezone: 'Asia/Kolkata',
 
+  // Password protection (on request, 2026-11-18; picks from the mocks in
+  // experiments/password-lock/). ONE passcode opens everything: typed once
+  // — on the whole-site gate, a locked case's page, or a case's inline
+  // gate — it unlocks the site and every locked case on that browser for
+  // `rememberHours` (scripts/unlock.ts).
+  //   site     — the whole site behind the frosted gate (SiteGate.astro).
+  //              Off by default; turn it on only while it's needed. The
+  //              page underneath still ships in the HTML.
+  //   cases    — which case studies are locked (lockFor() in cases.ts):
+  //              'none'   — nothing locked; the gates and frost stay in
+  //                         the code, unmounted (on request, 2026-11-18:
+  //                         "don't lock any case studies now")
+  //              'marked' — only cases with `locked` in cases.ts (Okta)
+  //              'all'    — every case study
+  //              Locked cards frost on hover (LockFrost.astro).
+  // A static site has nowhere to check a passcode but the browser, so
+  // this deters casual visitors; it is not confidentiality. For real
+  // privacy, password-protect the deployment at the host (Vercel/Netlify).
+  // [Placeholder passcode — replace before sharing the link.]
+  lock: {
+    passcode: 'okta2026',
+    site: false,
+    cases: 'none' as 'none' | 'marked' | 'all',
+    rememberHours: 12,
+  },
+
   // "Now" on the home page (Now.astro), in her words.
   now: {
     text: "Right now I'm thinking about trust: specifically, how much of it AI tools have actually earned versus assumed. Watching how background agents and parallel workflows are reshaping what engineering work even needs to be real-time anymore.",

@@ -38,7 +38,12 @@
    reads as a deliberate shingle where one card slides over the next.
    Only the phone is round (it's the device's, PHONE CARDS in
    tokens.css). Fixed height, so every row in the stack is the same
-   size whatever the copy; on narrow screens it stacks, stage first. */
+   size whatever the copy; on narrow screens it stacks, stage first.
+
+   A locked case (`locked`, from lockFor() in cases.ts) frosts its stage
+   on hover or focus with a small lock and "Password protected"
+   (LockFrost.astro, on request 2026-11-18), and still clicks through to
+   its gate; screen readers hear "password protected" after the title. */
 import EnrollPrototype from './EnrollPrototype.astro';
 import OffersPrototype from './OffersPrototype.astro';
 import { hueFor, type HomeMedia } from '../data/work';
@@ -46,6 +51,8 @@ import { workPlay, isPlay } from '../data/workPlay';
 import { layerHtml } from '../scripts/work-play-layer';
 import '../styles/work-play.css';
 import WorkGround from './WorkGround.astro';
+import LockFrost from './LockFrost.astro';
+import LockIcon from './LockIcon.astro';
 
 interface Props {
   index: number;
@@ -54,20 +61,21 @@ interface Props {
   media: HomeMedia;
   video?: { mp4: string; webm: string; poster: string };
   hue?: string;
+  locked?: boolean;
 }
-const { index, company, title, tagline, href, tags = [], media, video, hue } = Astro.props;
+const { index, company, title, tagline, href, tags = [], media, video, hue, locked = false } = Astro.props;
 const num = String(index).padStart(2, '0');
 const ground = workPlay[href] ? { kind: 'colour' as const } : undefined;
 // A 'play' card runs its /work tile's flow (data/workPlay.ts).
 const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[media.play] : null;
 ---
-<article class="pc">
+<article class="pc" data-locked={locked || undefined}>
   <div class="pc__body">
     <p class="pc__num" aria-hidden="true">{num}</p>
     {/* COMPANY · [domain] [discipline]… — after carlthomasiv.com; the
         chips come from labelsFor() in data/work.ts. */}
     <div class="pc__meta">
-      <p class="pc__co u-label-mono">{company}</p>
+      <p class="pc__co u-label-mono">{locked && <LockIcon class="pc__lock" size="1em" />}{company}</p>
       {tags.length > 0 && (
         <>
           <span class="pc__dot u-label-mono" aria-hidden="true">·</span>
@@ -77,7 +85,7 @@ const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[me
         </>
       )}
     </div>
-    <h3 class="pc__title"><a class="pc__link" href={href}>{title}</a></h3>
+    <h3 class="pc__title"><a class="pc__link" href={href}>{title}{locked && <span class="u-sr-only">, password protected</span>}</a></h3>
     <p class="pc__tagline">{tagline}</p>
     <span class="pc__cta" aria-hidden="true">View case study <span class="pc__arrow">→</span></span>
   </div>
@@ -115,6 +123,7 @@ const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[me
         </div>
       </div>
     )}
+    {locked && <LockFrost />}
   </div>
   {/* The settle dim (index.astro): a plain overlay whose opacity the
       stack script sets, instead of a brightness() filter on the whole
@@ -165,6 +174,12 @@ const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[me
   .pc__dot { color: var(--fg-dim); }
   .pc__co { color: var(--fg-dim); margin: 0; transition: color var(--dur-micro) var(--ease-out); }
   .pc:hover .pc__co { color: var(--fg); }
+  .pc__co :global(.pc__lock) { display: inline-block; margin-right: 0.4em; vertical-align: -0.1em; }
+  /* Locked: the frost is the hover, so the work holds still under it. */
+  @media (hover: hover) {
+    .pc[data-locked]:hover .pc__device,
+    .pc[data-locked]:hover .pc__desktop { transform: none; }
+  }
   /* Label chips: a hairline box, no fill, square. */
   .pc__tags { display: contents; list-style: none; margin: 0; padding: 0; }
   .pc__tags li {

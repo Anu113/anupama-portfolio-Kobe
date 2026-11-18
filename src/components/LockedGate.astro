@@ -28,7 +28,14 @@
    Copy chosen on request from the mock's copy bank.
 
    Same security model as CaseGate — static site, no server, so this is a
-   soft deterrent, not confidentiality. See cases.ts. */
+   soft deterrent, not confidentiality. See cases.ts.
+
+   It takes the site's one passcode (site.lock in data/site.ts, checked
+   and remembered by scripts/unlock.ts, on request 2026-11-18): the right
+   one here unlocks the whole site and every locked case, and a visitor
+   who already typed it anywhere never sees this page. A locked card
+   frosts on hover before the click (LockFrost.astro); this is where the
+   click lands. */
 import { gmailCompose } from '../data/site';
 import LockIcon from './LockIcon.astro';
 
@@ -39,13 +46,12 @@ interface Props {
   role: string;
   scope?: string;
   outcome?: string;
-  password: string;
   backHref?: string;
   targetId: string;
 }
 const {
   slug, caseTitle, company, role, scope, outcome,
-  password, backHref = '/work', targetId,
+  backHref = '/work', targetId,
 } = Astro.props;
 const mailHref = gmailCompose(`Passcode for "${caseTitle}"`);
 const facts = [
@@ -54,7 +60,7 @@ const facts = [
   { term: 'Outcome', detail: outcome },
 ].filter((f) => f.detail);
 ---
-<div class="locked" data-gate data-slug={slug} data-password={password} data-target={targetId}>
+<div class="locked" data-locked-gate data-slug={slug} data-target={targetId}>
   <div class="locked__col">
     <p class="u-label-mono locked__eyebrow">
       <LockIcon size="1.1em" />
@@ -247,14 +253,11 @@ const facts = [
 </style>
 
 <script>
-  // Identical logic to CaseGate.astro's script, duplicated rather than
-  // shared — every other component here owns its own inline script, and a
-  // ~30-line compare/reveal routine isn't worth a shared module for two
-  // call sites. Reveals the whole page (the caller wraps it in one hidden
-  // container) rather than one trailing section.
-  document.querySelectorAll<HTMLElement>('.locked[data-gate]').forEach((gate) => {
-    const slug = gate.dataset.slug!;
-    const password = gate.dataset.password ?? '';
+  import { passcodeMatches, unlock, onUnlocked } from '../scripts/unlock';
+
+  // The same compare/remember as every gate (scripts/unlock.ts). Reveals
+  // the whole page (the caller wraps it in one hidden container).
+  document.querySelectorAll<HTMLElement>('[data-locked-gate]').forEach((gate) => {
     const target = document.getElementById(gate.dataset.target!);
     const form = gate.querySelector<HTMLFormElement>('[data-gate-form]');
     const input = gate.querySelector<HTMLInputElement>('.locked__input');
@@ -262,20 +265,11 @@ const facts = [
     const peek = gate.querySelector<HTMLButtonElement>('[data-gate-peek]');
     if (!target || !form || !input) return;
 
-    const storeKey = `case-unlocked:${slug}`;
-
-    const reveal = () => {
+    onUnlocked(() => {
       target.hidden = false;
       gate.hidden = true;
       gate.setAttribute('aria-hidden', 'true');
-    };
-
-    try {
-      if (sessionStorage.getItem(storeKey) === '1') reveal();
-    } catch {
-      /* Storage can be unavailable — the form still works, it just won't
-         remember across a reload. */
-    }
+    });
 
     peek?.addEventListener('click', () => {
       const showing = peek.getAttribute('aria-pressed') === 'true';
@@ -292,16 +286,14 @@ const facts = [
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const ok = input.value.trim().toLowerCase() === password.trim().toLowerCase();
-      if (!ok) {
+      if (!passcodeMatches(input.value)) {
         err?.removeAttribute('hidden');
         input.setAttribute('aria-invalid', 'true');
         return;
       }
       err?.setAttribute('hidden', '');
       input.removeAttribute('aria-invalid');
-      try { sessionStorage.setItem(storeKey, '1'); } catch { /* see above */ }
-      reveal();
+      unlock();
     });
   });
 </script>

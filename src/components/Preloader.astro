@@ -40,6 +40,9 @@ const pages = ['/'];
 ---
 <script is:inline define:vars={{ pages }}>
   (() => {
+    // Stands down while the whole site is behind the passcode
+    // (SiteGate.astro): the frosted page is the first screen then.
+    if ('siteLock' in document.documentElement.dataset) return;
     try {
       const p = location.pathname.replace(/index\.html$/, '').replace(/(.)\/$/, '$1');
       if (!pages.includes(p)) return;
