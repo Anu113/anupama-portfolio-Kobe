@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+    <g>
+      <circle fill="#e3f0fb" cx="60" cy="63" r="50" />
+      <rect fill="#1f6bff" x="30" y="37" width="60" height="57" rx="10" />
+      <rect fill="#1040c8" x="30" y="37" width="60" height="17" rx="8" />
+      <rect fill="#001435" x="42" y="28" width="7" height="17" rx="3.5" /><rect fill="#001435" x="71" y="28" width="7" height="17" rx="3.5" />
+      <text font-family="Helvetica Neue, Arial" font-size="25" fill="#ffffff" x="60" y="83" text-anchor="middle">1 yr</text>
+      <path fill="#ffd140" d="M100 23l2.7 7 7 2.7-7 2.7-2.7 7-2.7-7-7-2.7 7-2.7z" />
+      <circle fill="#ffd140" cx="20" cy="33" r="3.3" /><circle fill="#1f6bff" cx="107" cy="80" r="3" /><circle fill="#60cdff" cx="17" cy="87" r="2.7" />
+    </g></svg>
