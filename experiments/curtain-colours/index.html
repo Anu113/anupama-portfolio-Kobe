@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Curtain colours — the preloader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Served from the repo root (launch config "sound-mockup") so Moss's
+     push clip comes from public/images/moss. */
+  :root { --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --font-sans: 'Manrope', system-ui, sans-serif; --font-serif: 'Crimson Pro', serif; --font-mono: 'Azeret Mono', monospace; --gutter: 2.5rem; }
+  :root[data-mode='dark'] { --paper: #1b1a19; --ink: #ecebe8; --ink-dim: #a09d98; --line: rgb(255 255 255 / 0.12); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 600; transition: background .3s, color .3s; }
+  .mono { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .bar { position: sticky; top: 0; z-index: 10; display: flex; gap: .75rem; align-items: center; padding: .9rem var(--gutter); background: var(--paper); border-bottom: 1px solid var(--line); }
+  .bar .name { font-size: .875rem; margin-right: auto; }
+  .pill { border: 1px solid var(--ink); background: none; border-radius: 999px; padding: .45rem .9rem; cursor: pointer; font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; }
+  .pill[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+  .intro { padding: 3rem var(--gutter) 1.5rem; max-width: 64rem; }
+  h1 { font-family: var(--font-serif); font-weight: 300; letter-spacing: -0.03em; margin: 0 0 .75rem; line-height: 1.05; font-size: 2.75rem; }
+  h1 em { font-style: italic; }
+  p { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); margin: 0 0 .5rem; max-width: 46rem; }
+  p b { color: var(--ink); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr)); gap: 2.5rem 2rem; padding: 1rem var(--gutter) 4rem; }
+  .card { cursor: pointer; }
+  .screen { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid var(--line); background: var(--paper); }
+  .screen .line { position: absolute; inset: 0 auto 0 0; width: 100%; display: grid; place-items: center; padding: 0 14%; text-align: center; font-family: var(--font-serif); font-weight: 300; font-size: 1.35rem; letter-spacing: -0.02em; line-height: 1.15; }
+  .screen .line em { font-style: italic; }
+  .screen .curtain { position: absolute; inset: 0; background: var(--c); translate: var(--edge, 52%) 0; }
+  /* Her screenshot's paper grain: fine noise, multiplied in */
+  .grain .screen .curtain::after { content: ''; position: absolute; inset: 0; opacity: .28; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .screen .moss { position: absolute; bottom: 12%; left: 0; height: 30%; aspect-ratio: 228 / 289; background: url(/public/images/moss/moss-push.webp) 0 0 / 1100% 800% no-repeat; }
+  .meta { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; margin-top: .75rem; }
+  .meta .t { font-size: .875rem; }
+  .meta .chips { display: flex; gap: .35rem; }
+  .chip { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--line); }
+  .card p { margin-top: .35rem; }
+  .card.pick .t::after { content: '  · my pick'; font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-dim); }
+</style>
+</head>
+<body class="grain">
+<div class="bar">
+  <span class="name">Curtain colours</span>
+  <button class="pill" id="grain" aria-pressed="true">Grain on</button>
+  <button class="pill" id="mode" aria-pressed="false">Dark mode</button>
+  <button class="pill" id="playAll">Play all</button>
+</div>
+
+<div class="intro">
+  <h1>What colour is the <em>curtain</em>?</h1>
+  <p>Each frame is the preloader halfway: the hero sentence on the page's ground, Moss pushing the curtain off to the right. Only the curtain's colour changes. Click a frame to play the push. <b>Grain</b> adds the paper texture from your screenshot; <b>Dark mode</b> shows the page's dark ground (the ink curtain re-inks light there, the others stay as they are).</p>
+  <p>The curtain carries no words, so contrast isn't a rule here, but Moss's edge against it is: very dark and very light curtains keep him easiest to read. The second dot under each name is a type colour that would go with it if the curtain ever carried words, like your screenshot's salmon; today it carries none, and the sentence stays in ink.</p>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+  const options = [
+    { name: '0 · Ink (now)', c: 'var(--ink)', type: '#fcfcfc', why: 'What runs today: the page\'s own ink, a hard black edge. Re-inks light in dark mode.' },
+    { name: '1 · Oxblood', c: '#3a0b09', type: '#e8654f', why: 'Your screenshot: a deep red-brown that reads as a theatre curtain without saying so. Warm against her watercolours; still dark enough that the page feels like it\'s opening, not flashing.', pick: true },
+    { name: '2 · Clay', c: '#b4482a', type: '#fcfcfc', why: 'The site\'s own accent, so no new colour comes in. Loud for a full screen: the accent is for marks, and this is the biggest mark the site could make.' },
+    { name: '3 · Forest', c: '#23301f', type: '#c9d8a8', why: 'Moss\'s colour, deepened: his curtain. Calm, a bit bookish. His green edge sits close to it, so he\'s a little harder to see.' },
+    { name: '4 · Midnight', c: '#18203a', type: '#a9b8e8', why: 'Deep blue, the hero\'s late-night scene in dark mode carried to the first screen. Cool against the warm page.' },
+    { name: '5 · Plum', c: '#33192c', type: '#e3a6c4', why: 'Close to oxblood but cooler. Reads more "evening" than "theatre".' },
+    { name: '6 · Tobacco', c: '#3d2a1c', type: '#e8b77a', why: 'Warm brown, like an old wooden stage. The softest of the darks against the off-white page.' },
+    { name: '7 · Crayon yellow', c: '#f8b800', type: '#262626', why: 'Her footer smiley\'s yellow. Cheerful and very loud; Moss\'s dark outline reads well on it, but it\'s the furthest from the site\'s calm first screen.' },
+  ];
+  const grid = document.getElementById('grid');
+  const PF = { start: 12, contact: 28, loopA: 35, loopB: 55, cols: 11, rows: 8 };
+  const pos = (n) => `${(n % PF.cols) * 100 / (PF.cols - 1)}% ${Math.floor(n / PF.cols) * 100 / (PF.rows - 1)}%`;
+
+  options.forEach((o) => {
+    const card = document.createElement('div');
+    card.className = 'card' + (o.pick ? ' pick' : '');
+    card.tabIndex = 0;
+    card.innerHTML = `
+      <div class="screen" style="--c:${o.c}">
+        <div class="line"><span><em>Hi, I'm Anupama,</em> a Staff Product Designer. I ship, I nudge, I craft, from systems and strategy to the last stubborn pixel.</span></div>
+        <div class="curtain"></div>
+        <div class="moss"></div>
+      </div>
+      <div class="meta"><span class="t">${o.name}</span><span class="chips"><span class="chip" style="background:${o.c}"></span><span class="chip" style="background:${o.type}"></span></span></div>
+      <p>${o.why}</p>`;
+    grid.append(card);
+    const screen = card.querySelector('.screen'), moss = card.querySelector('.moss'), cur = card.querySelector('.curtain');
+    const place = (k, n) => { // k: 0–1 across
+      const W = screen.clientWidth, mw = moss.offsetWidth, edge = W * k;
+      cur.style.translate = `${edge}px 0`;
+      moss.style.translate = `${edge - mw * .95}px 0`;
+      moss.style.backgroundPosition = pos(n);
+    };
+    requestAnimationFrame(() => place(.52, 44));
+    let busy = false;
+    card.play = () => {
+      if (busy) return; busy = true;
+      const t0 = performance.now(), dur = 2600, from = .22; let i = PF.loopA, acc = 0, last = t0;
+      const tick = (now) => {
+        const t = now - t0; acc += now - last; last = now;
+        while (acc > 45) { acc -= 45; i = i >= PF.loopB ? PF.loopA : i + 1; }
+        let k = from + (1.02 - from) * Math.min(1, t / dur);
+        if (t > dur * .45 && t < dur * .45 + 300) k = from + (1.02 - from) * .45;
+        place(k, i);
+        if (t < dur + 400) requestAnimationFrame(tick); else { busy = false; place(.52, 44); }
+      };
+      requestAnimationFrame(tick);
+    };
+    card.onclick = card.play;
+    card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.play(); } };
+  });
+  addEventListener('resize', () => {});
+
+  const g = document.getElementById('grain');
+  g.onclick = () => { const on = document.body.classList.toggle('grain'); g.setAttribute('aria-pressed', on); g.textContent = on ? 'Grain on' : 'Grain off'; };
+  const m = document.getElementById('mode');
+  m.onclick = () => { const dark = document.documentElement.dataset.mode !== 'dark'; document.documentElement.dataset.mode = dark ? 'dark' : 'light'; m.setAttribute('aria-pressed', dark); };
+  document.getElementById('playAll').onclick = () => document.querySelectorAll('.card').forEach((c) => c.play());
+</script>
+</body>
+</html>

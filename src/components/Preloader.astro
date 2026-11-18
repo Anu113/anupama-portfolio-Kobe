@@ -1,61 +1,41 @@
 ---
-/* Preloader — the first-paint loader. On the home page only, every time
+/* Preloader — the first-paint loader, "Pixel blinds" (on request,
+   2026-11-18, "F · Pixel blinds" of experiments/curtain-pixel/, after
+   mariavasilyeva.com's cover; it replaced Moss pushing a curtain, which
+   is parked in PreloaderMoss.astro). On the home page only, every time
    it's opened or refreshed (on request); not when arriving from another
    page of the site, and not on back/forward.
 
-   What it shows (on request, after huyml.co; take 2 of the mocks in
-   experiments/preloader-moss/, page "B · soft focus", Moss "2 · peeks
-   up"): first the whole screen is a flat curtain in the ink colour (no
-   shadow, a hard edge); after a beat it draws back to open a strip on
-   the left, showing the page's ground with only the hero sentence on
-   it, centred, under the curtain. Moss strolls in with his cup and
-   raises his paw just as he reaches the curtain; while his paw is up,
-   the curtain's edge is on it. He pushes it across as the page loads
-   (how far he's got is the progress; there's no number), with one
-   pause halfway. It leaves the screen just as his paw comes down, and
-   he strolls out, smiling, at the pace he came in. As the curtain
-   leaves (not after he's gone: that wait made the text far too late,
-   2026-11-16) the ground clears, the sentence glides from the middle to
-   its place in the hero, the rest of the hero comes into focus one
-   piece after another (nav, location line, subtext, buttons, portrait,
-   scroll cue) while he strolls off, and once he's off screen Moss
-   peeks up from behind his books, his "Psst…" card last.
-   Timing, at 1440 x 900 with the page loaded: the curtain is gone by
-   ~5s and the hero is all in by ~6.5s (huyml.co's: ~4s and ~6.5s). It
-   was ~9s and ~13.5s before.
-   Its reason: the one screen with nothing else to show; it puts the
-   sentence first, alone, and hands the visitor to the page, and to
-   Moss.
+   What it shows: first the whole screen is flat ink (no shadow, a hard
+   edge) over the hero. After a beat the ink is cut into horizontal slats
+   that pull back to the left in whole-pixel steps, top first, each
+   trailing one loose pixel, so the hero shows through from the top
+   down. One pixel is the last to go, on the word "pixel" in the hero
+   sentence; it holds a moment, then pops. Then the layer is gone and
+   the hero is simply there.
+   Its reason: the one screen with nothing else to show; it opens on her
+   sentence and says its last word, "pixel", once, without a word.
 
-   His frames are her clip of him pushing an invisible wall, cut by
-   scripts/moss-push-sprite.py into public/images/moss/moss-push.webp
-   (every 2nd frame of 24fps, 11 x 8 cells of 228 x 289). The cues below
-   (PF) were read off the clip: his paw rises from frame 20, meets the
-   curtain at 28 and leaves it at 72; the paw-tip positions (PAW) were
-   measured frame by frame, so the edge sits on his paw, not near it.
+   Pacing: it never runs faster than its own pace (--dur-preloader-blinds),
+   and never further than the page has loaded — its real (non-lazy)
+   images and the hero portrait's sprite (`hero-scrub:ready`). While the
+   page is still loading, the slats clear only in proportion, and the last
+   pixel (or the last slats) waits until it's ready. After
+   --dur-preloader-max it lets go regardless and the page shows as it is.
 
-   Pacing: the curtain never goes further than the page has loaded —
-   its real (non-lazy) images and the hero portrait's sprite
-   (`hero-scrub:ready`); images still out after --dur-preloader-max
-   count as in. If the load runs ahead, he still walks and pushes at his
-   own pace, so it always reads as him doing it.
-
-   It always lands on the hero (on request, 2026-11-17): the page is
-   put at the top and held there under the curtain (no scroll
-   restoration on a refresh, no scrolling until it ends).
+   It always lands on the hero (on request, 2026-11-17): the page is put
+   at the top and held there under the curtain (no scroll restoration on
+   a refresh, no scrolling until it ends).
 
    It never holds the page hostage: any deliberate key, click, tap or
    real scroll (after --dur-preloader-skip-grace, and never a shortcut
-   like Cmd+R) ends it at once: the layer fades and the hero shows,
-   faster. A CSS failsafe hides it after --dur-preloader-failsafe even
-   if the script never runs; when it ends it removes itself from the
-   DOM. Decorative, so aria-hidden: screen readers get the page straight
-   away. Under reduced motion there's no Moss and no glide: the curtain
-   simply fades when the page is in.
+   like Cmd+R) ends it at once: the layer fades. A CSS failsafe hides it
+   after --dur-preloader-failsafe even if the script never runs; when it
+   ends it removes itself from the DOM. Decorative, so aria-hidden: screen
+   readers get the page straight away. Under reduced motion there are no
+   slats: the ink simply fades when the page is in.
 
-   Values: PRELOADER in tokens.css. The walking loader (Loader.astro) is
-   parked, not deleted; the terracotta "dot that went for a walk" loader
-   this replaced is in git history. */
+   Values: PRELOADER in tokens.css. */
 const pages = ['/'];
 ---
 <script is:inline define:vars={{ pages }}>
@@ -90,9 +70,7 @@ const pages = ['/'];
   })();
 </script>
 <div class="preloader" aria-hidden="true" data-preloader-root>
-  <div class="preloader__words" data-preloader-words></div>
-  <div class="preloader__curtain" data-preloader-curtain></div>
-  <div class="preloader__moss" data-preloader-moss></div>
+  <canvas class="preloader__canvas" data-preloader-canvas></canvas>
 </div>
 
 <script>
@@ -103,44 +81,46 @@ const pages = ['/'];
   }
 
   const html = document.documentElement;
-  const SPRITE = '/images/moss/moss-push.webp';
-  const num = (name: string) => parseFloat(getComputedStyle(html).getPropertyValue(name));
+  const num = (name: string, fallback: number) => {
+    const v = parseFloat(getComputedStyle(html).getPropertyValue(name));
+    return Number.isFinite(v) ? v : fallback;
+  };
+  const clamp = (t: number) => Math.min(1, Math.max(0, t));
+  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const hash = (n: number) => { const s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); };
 
-  // Cues read off her clip (frame numbers in the sprite):
-  //   0-19 walks with his cup · 20-27 paw rising · 28 paw meets the curtain
-  //   35-55 one full pushing stride (loops; 55 -> 35 is seamless)
-  //   56-72 pushing on · 73-82 paw comes down · then 15-21, 7-14 (loops): strolls on
-  const PF = { start: 12, contact: 28, loopA: 35, loopB: 55, release: 72, down: [73, 82], walkOn: [15, 21], walkLoop: [7, 14], feetY: 0.975, cols: 11, rows: 8 };
-  // His paw tip, as a share of the cell's width, frames 0-28 (measured);
-  // from 28 to the release it's flat on the curtain.
-  const PAW = [.763, .772, .781, .789, .798, .807, .816, .82, .829, .833, .842, .846, .851, .855, .86, .86, .86, .864, .873, .882, .89, .899, .908, .921, .943, .947, .952, .961, .965];
-  const pawAt = (i: number) => (i < PAW.length ? PAW[i] : i <= PF.release ? 0.965 : 0.9);
-  // At his first step his back is this share of his width in from the left edge.
-  const CONTACT_X = 0.1;
-
-  // What comes into focus after the sentence lands, in order.
-  // The portrait first: it's the biggest thing on the page, and it comes
-  // up beside the sentence while that is still gliding.
-  const FOCUS = ['.hero__portrait-cell', '#site-nav', '.hero__eyebrow', '.hero__more', '.intro__links', '.hero__cue'];
+  // Where the word "pixel" sits in the hero sentence, on screen (its centre).
+  function wordCentre(): [number, number] | null {
+    const h1 = document.querySelector('.hero__line');
+    if (!h1) return null;
+    const walker = document.createTreeWalker(h1, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      const at = (n.textContent ?? '').lastIndexOf('pixel');
+      if (at < 0) continue;
+      const range = document.createRange();
+      range.setStart(n, at);
+      range.setEnd(n, at + 5);
+      const r = range.getBoundingClientRect();
+      if (!r.width || r.bottom < 0 || r.top > innerHeight) return null;
+      return [r.left + r.width / 2, r.top + r.height / 2];
+    }
+    return null;
+  }
 
   function run(root: HTMLElement) {
-    const words = root.querySelector<HTMLElement>('[data-preloader-words]')!;
-    const curtain = root.querySelector<HTMLElement>('[data-preloader-curtain]')!;
-    const walker = root.querySelector<HTMLElement>('[data-preloader-moss]')!;
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-preloader-canvas]')!;
+    const cx = canvas.getContext('2d');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const inputs = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
     const t0 = window.__preloaderT0 ?? performance.now();
     const maxDur = cssMs('--dur-preloader-max', 4000);
     let ended = false;
     let raf = 0;
-    // While Moss strolls out over the page (the hand-over has begun), the
-    // layer stays until he's off screen; `settle` removes it then.
-    let strolling = false;
-    let settle: (() => void) | null = null;
 
     const finish = () => {
       cancelAnimationFrame(raf);
       inputs.forEach((e) => removeEventListener(e, skip, true));
+      removeEventListener('resize', size);
       root.remove();
       delete html.dataset.preloader;
       delete html.dataset.preloaderHold;
@@ -169,126 +149,17 @@ const pages = ['/'];
       return parts.reduce((a, b) => a + b, 0) / parts.length;
     };
 
-    // ---- the sentence, alone and centred: a copy of the hero's, the same
-    // width (so it breaks into the same lines), each word its own span so
-    // each line can glide to its place later.
-    const h1 = document.querySelector<HTMLElement>('.hero__line');
-    let lines: HTMLElement[][] = [];
-    if (h1 && !reduce) {
-      const copy = h1.cloneNode(true) as HTMLElement;
-      copy.removeAttribute('id');
-      copy.querySelectorAll('[data-pixel-break]').forEach((n) => n.removeAttribute('data-pixel-break'));
-      copy.querySelectorAll('canvas').forEach((n) => n.remove());   // PixelBreak's dots, if it has run
-      const walk = (node: Node) => {
-        [...node.childNodes].forEach((c) => {
-          if (c.nodeType === Node.TEXT_NODE) {
-            const frag = document.createDocumentFragment();
-            (c.textContent ?? '').split(/([ \n\t]+)/).forEach((part) => {
-              if (!part) return;
-              if (/^[ \n\t]+$/.test(part)) frag.append(' ');
-              else { const w = document.createElement('span'); w.className = 'preloader__word'; w.textContent = part; frag.append(w); }
-            });
-            c.replaceWith(frag);
-          } else walk(c);
-        });
-      };
-      walk(copy);
-      copy.classList.add('preloader__sentence');
-      // the hero's own type, exactly (its size depends on where it sits)
-      const cs = getComputedStyle(h1);
-      Object.assign(copy.style, {
-        width: `${h1.getBoundingClientRect().width}px`,
-        fontFamily: cs.fontFamily, fontSize: cs.fontSize, fontWeight: cs.fontWeight,
-        lineHeight: cs.lineHeight, letterSpacing: cs.letterSpacing, wordSpacing: cs.wordSpacing,
-      });
-      words.append(copy);
-    }
-    const measureLines = () => {
-      const ws = [...words.querySelectorAll<HTMLElement>('.preloader__word')];
-      const byTop = new Map<number, HTMLElement[]>();
-      // by where each word sits on screen ("pixel" has its own positioned wrapper)
-      ws.forEach((w) => { const k = Math.round(w.getBoundingClientRect().top); byTop.set(k, [...(byTop.get(k) ?? []), w]); });
-      lines = [...byTop.entries()].sort((a, b) => a[0] - b[0]).map((e) => e[1]);
-    };
-
-    // ---- the hand-over: the sentence glides to its place, the layer goes,
-    // the hero comes into focus, Moss peeks up.
-    // It starts as the curtain leaves the screen, while Moss is still
-    // strolling out (exitMs: how long he has left): the ground goes clear,
-    // the sentence glides over the page, and the hero's pieces wait hidden
-    // (fill: backwards) for their turn.
-    const handOver = (fast: boolean, exitMs = 0) => {
-      const real = h1?.getBoundingClientRect();
-      const inView = real && real.bottom > 0 && real.top < innerHeight;
-      if (!fast && !reduce && inView) measureLines();
-      const glide = !fast && !reduce && inView && lines.length > 0;
-      const glideMs = glide ? cssMs('--dur-preloader-glide', 800) : 0;
-      if (glide && h1) {
-        root.classList.add('is-clear');
-        h1.style.visibility = 'hidden';   // the copy stands in for it until it lands
-      }
-      if (glide && real) {
-        const copyTop = words.firstElementChild!.getBoundingClientRect().top;
-        lines.forEach((line) => {
-          const left = Math.min(...line.map((w) => w.getBoundingClientRect().left));
-          const dx = real.left - left, dy = real.top - copyTop;
-          line.forEach((w) => { w.style.left = `${dx}px`; w.style.top = `${dy}px`; });
-        });
-      }
-      {
-        const focusMs = fast ? cssMs('--dur-preloader-skip', 600) : cssMs('--dur-preloader-focus', 700);
-        const stepMs = fast ? 0 : cssMs('--dur-preloader-focus-step', 100);
-        const blur = getComputedStyle(html).getPropertyValue('--preloader-focus-blur').trim() || '10px';
-        const focusEase = getComputedStyle(html).getPropertyValue('--ease-preloader-focus').trim() || 'ease-out';
-        // starts during the glide, not after it, so the page is never blank
-        let at = glideMs * Math.min(1, Math.max(0, num('--preloader-focus-overlap') || 0));
-        if (!reduce) {
-          FOCUS.forEach((q) => {
-            const el = document.querySelector<HTMLElement>(q);
-            if (!el) return;
-            el.animate([{ opacity: 0, filter: `blur(${blur})` }, { opacity: 1, filter: 'blur(0px)' }],
-              { duration: focusMs, delay: at, easing: focusEase, fill: 'backwards' });
-            at += stepMs;
-          });
-          // Moss peeks up from behind his books: he rises, clipped at the
-          // line his feet stand on, with a small overshoot.
-          const moss = document.querySelector<HTMLElement>('.pixel-launcher__moss');
-          const card = document.querySelector<HTMLElement>('.pixel-launcher__card');
-          if (moss) {
-            const h = moss.offsetHeight, from = h * 0.95, feet = h * 0.046;
-            // never while the pushing Moss is still on screen: one Moss at a time
-            const peekAt = fast ? 0 : Math.max(at + focusMs * 0.4, Number.isFinite(exitMs) ? exitMs + 150 : 0);
-            moss.animate([
-              { translate: `0 ${from}px`, clipPath: `inset(0 0 ${from + feet}px 0)` },
-              { translate: '0 0', clipPath: `inset(0 0 ${feet}px 0)` },
-            ], { duration: fast ? focusMs : cssMs('--dur-preloader-peek', 900), delay: peekAt, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', fill: 'backwards' });
-            card?.animate([{ opacity: 0, translate: '0 4px' }, { opacity: 1, translate: '0 0' }],
-              { duration: 500, delay: peekAt + (fast ? 0 : 650), easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'backwards' });
-          }
-        }
-      }
-      if (fast || !glide) {
-        // skipped, or the hero isn't on screen: the layer fades
-        root.classList.add('is-fading');
-        setTimeout(finish, (reduce ? cssMs('--dur-preloader-fade', 450) : cssMs('--dur-preloader-skip', 600)) + 50);
-        return;
-      }
-      setTimeout(() => {
-        h1!.style.visibility = '';
-        words.remove();
-        if (strolling) settle = finish; else finish();
-      }, glideMs);
-    };
-
-    const end = (fast: boolean, exitMs = 0) => {
+    const end = (fast: boolean) => {
       if (ended) return;
       ended = true;
-      if (!strolling) cancelAnimationFrame(raf);
+      cancelAnimationFrame(raf);
       inputs.forEach((e) => removeEventListener(e, skip, true));
-      if (fast) walker.style.visibility = 'hidden';
       scrollTo(0, 0);   // whatever happened under the curtain, it lands on the hero
       delete html.dataset.preloaderHold;
-      handOver(fast, exitMs);
+      if (!fast) { finish(); return; }
+      // skipped, reduced motion, or no canvas: the layer fades
+      root.classList.add('is-fading');
+      setTimeout(finish, (reduce ? cssMs('--dur-preloader-fade', 450) : cssMs('--dur-preloader-skip', 600)) + 50);
     };
 
     // Only a deliberate input skips it (see the header).
@@ -301,135 +172,66 @@ const pages = ['/'];
     };
     inputs.forEach((e) => addEventListener(e, skip, { capture: true, passive: true }));
 
-    // ---- reduced motion: no Moss, no glide; the curtain fades once the page is in
-    if (reduce) {
-      const wait = () => { if (ended) return; if (progress() >= 1) end(false); else raf = requestAnimationFrame(wait); };
+    // ---- reduced motion (or no canvas): no slats; the ink fades once the page is in
+    if (reduce || !cx) {
+      const wait = () => { if (ended) return; if (progress() >= 1) end(true); else raf = requestAnimationFrame(wait); };
       raf = requestAnimationFrame(wait);
       return;
     }
 
-    // ---- Moss: stroll in, push, stroll out
-    const fps = num('--preloader-fps') || 14;
-    const pushFps = num('--preloader-push-fps') || 1.8;
-    const strollRate = num('--preloader-stroll') || 0.6;
-    const pushRate = num('--preloader-push') || 0.42;
-    const pauseAt = num('--preloader-pause-at') || 0.5;
-    const pauseMs = cssMs('--dur-preloader-pause', 300);
-    const floor = num('--preloader-floor') || 0.86;
-    const frameMs = 1000 / fps;
-    const walkIn = (PF.contact - PF.start) * frameMs;
-    // His size, and everything that hangs off it, is measured when he
-    // starts (measure(), in start() below), not here: if the styles
-    // weren't applied yet he measured 0 wide, his pace came out 0 and his
-    // exit time infinite, and the hand-over threw half way (2026-11-17).
-    let ww = 0, wh = 0, stroll = 0, startEdge = 0, x = 0, edge = 0;
-    const measure = () => {
-      ww = walker.offsetWidth || innerHeight * 0.2;
-      wh = walker.offsetHeight || ww * 289 / 228;
-      stroll = (ww * strollRate) / 1000;                     // px per ms
-      startEdge = ww * (CONTACT_X + pawAt(PF.contact));      // the strip: room to stroll in, fully on screen
-      x = ww * CONTACT_X - stroll * walkIn;                  // so he arrives as his paw meets the curtain
-      edge = startEdge;
-    };
-    let i = PF.start, acc = 0, last = 0, t = 0, phase: 'wait' | 'in' | 'push' | 'final' | 'exit' = 'wait', exitStep = 0;
-    let paused = false, pauseUntil = 0, finalSpeed = 0;
-    curtain.style.translate = '0px 0';   // first, the whole screen is the curtain
+    // ---- the pixel blinds
+    const ink = getComputedStyle(root).backgroundColor;
+    const across = num('--preloader-pixels', 28);
+    const waitAt = num('--preloader-wait-at', 0.8);
+    const holdMs = cssMs('--dur-preloader-black', 400);
+    const durMs = cssMs('--dur-preloader-blinds', 1600);
+    const GRID_END = 0.78;   // the slats are gone by here; the last pixel has the rest
+    let W = 0, H = 0, S = 0, slats = 0, word: [number, number] | null = null;
+    function size() {
+      const d = Math.min(2, devicePixelRatio || 1);
+      W = innerWidth; H = innerHeight;
+      canvas.width = Math.round(W * d); canvas.height = Math.round(H * d);
+      cx!.setTransform(d, 0, 0, d, 0, 0);
+      S = Math.max(W, H * 1.4) / across;   // the pixel: not too fine on a tall phone
+      slats = Math.max(4, Math.round(H / S / 2));
+      word = wordCentre();
+    }
+    size();
+    addEventListener('resize', size);
 
-    const frame = (n: number) => {
-      walker.style.backgroundPosition = `${(n % PF.cols) * 100 / (PF.cols - 1)}% ${Math.floor(n / PF.cols) * 100 / (PF.rows - 1)}%`;
+    const draw = (p: number) => {
+      cx.clearRect(0, 0, W, H);
+      cx.fillStyle = ink;
+      const g = p / GRID_END, sh = H / slats;
+      for (let i = 0; i < slats; i++) {
+        const q = clamp((g - (i / slats) * 0.45) / 0.55);
+        const len = Math.ceil((W * (1 - ease(q))) / S) * S;   // pulls back in whole pixels
+        if (len > 0) cx.fillRect(0, i * sh, len, sh + 0.5);
+        if (q > 0 && q < 1) cx.fillRect(len + S * 0.25, i * sh + (hash(i) > 0.5 ? 0 : sh - S * 0.5), S * 0.5, S * 0.5);
+      }
+      // the last pixel, on the word: holds, then a small pop and it's gone
+      if (word) {
+        const k = clamp((p - 0.88) / 0.12);
+        const s = S * (1 - k * k) * (1 + 0.25 * Math.sin(k * Math.PI));
+        if (s > 0) cx.fillRect(word[0] - s / 2, word[1] - s / 2, s, s);
+      }
     };
+
+    let p = 0, last = 0;
     const tick = (now: number) => {
-      if (ended && !strolling) return;
-      const W = innerWidth, endEdge = W + 1, y = innerHeight * floor - wh * PF.feetY;
-      const pushPx = (W * pushRate) / 1000;
-      const finalMs = ((PF.release - PF.loopB) * frameMs) / pushFps;
-      const dt = last ? Math.min(250, now - last) : 0;
-      last = now; t += dt;
-      const target = startEdge + (endEdge - startEdge) * progress();
-
-      // frames; the ending is decided only at the stride's seam, so it never jumps
-      const fMs = phase === 'push' || phase === 'final' ? frameMs / pushFps : frameMs;
-      acc += dt;
-      while (acc >= fMs) {
-        acc -= fMs;
-        if (phase === 'in') { i++; if (i >= PF.contact) phase = 'push'; }
-        else if (phase === 'push') {
-          if (i >= PF.loopB) {
-            const left = endEdge - edge;
-            if (progress() >= 1 && left <= pushPx * 1.6 * finalMs) { phase = 'final'; finalSpeed = left / finalMs; i++; }
-            else i = PF.loopA;
-          } else i++;
-        } else if (phase === 'final') {
-          i++;
-          if (i > PF.release) {
-            phase = 'exit'; edge = endEdge;
-            // the curtain is off: hand over now, while he strolls out
-            strolling = true;
-            end(false, Math.max(0, W + 10 - x) / stroll);
-          }
-        }
-        else if (phase === 'exit') {
-          if (exitStep === 0) { if (i < PF.down[1]) i++; else { exitStep = 1; i = PF.walkOn[0]; } }
-          else if (exitStep === 1) { if (i < PF.walkOn[1]) i++; else { exitStep = 2; i = PF.walkLoop[0]; } }
-          else i = i >= PF.walkLoop[1] ? PF.walkLoop[0] : i + 1;
-        }
-      }
-
-      if (phase === 'in') {
-        x += stroll * dt;
-        edge = Math.max(startEdge, x + ww * pawAt(i));        // the paw never pokes into it
-      } else if (phase === 'push') {
-        if (!paused && edge >= W * pauseAt) { paused = true; pauseUntil = t + pauseMs; }
-        // never further than the page has loaded; always leave a last stretch to push
-        const cap = Math.min(target, endEdge - pushPx * 0.5 * finalMs);
-        if (!(paused && t < pauseUntil) && edge < cap) x += Math.min(pushPx * dt, cap - edge);
-        edge = x + ww * pawAt(i);
-      } else if (phase === 'final') {
-        x += finalSpeed * dt;
-        edge = Math.min(endEdge, x + ww * pawAt(i));
-      } else if (phase === 'exit') {
-        x += stroll * dt;                                       // paw down, curtain gone: a calm stroll out
-      }
-      frame(i);
-      walker.style.translate = `${x}px ${y}px`;
-      curtain.style.translate = `${Math.min(edge, endEdge)}px 0`;
-      if (phase === 'exit' && x > W + 10) {
-        strolling = false;
-        walker.style.visibility = 'hidden';
-        settle?.();
-        return;
-      }
+      if (ended) return;
+      const dt = last ? Math.min(100, now - last) : 0;
+      last = now;
+      const l = progress();
+      // never further than the page has loaded; the last part waits for ready
+      const target = l >= 1 ? 1 : Math.min(waitAt, l * waitAt);
+      if (now - t0 >= holdMs) p = Math.min(target, p + dt / durMs);
+      draw(p);
+      root.classList.add('is-drawn');   // the canvas carries the ink from here
+      if (p >= 1) { end(false); return; }
       raf = requestAnimationFrame(tick);
     };
-
-    // He starts once his frames are in; until then the curtain just waits.
-    const sprite = new Image();
-    sprite.src = SPRITE;
-    // Two steps: the screen is all curtain for a beat, then it draws back
-    // to open the strip, and only then does Moss walk in.
-    const holdMs = cssMs('--dur-preloader-black', 400), openMs = cssMs('--dur-preloader-open', 500);
-    const start = () => {
-      if (ended) return;
-      measure();
-      const wait = Math.max(0, holdMs - (performance.now() - t0));
-      setTimeout(() => {
-        if (ended) return;
-        curtain.animate([{ translate: '0px 0' }, { translate: `${startEdge}px 0` }],
-          { duration: openMs, easing: getComputedStyle(html).getPropertyValue('--ease-preloader-open').trim() || 'ease' });
-        curtain.style.translate = `${startEdge}px 0`;
-        setTimeout(() => {
-          if (ended) return;
-          walker.classList.add('is-in');
-          phase = 'in';
-          raf = requestAnimationFrame(tick);
-        }, openMs);
-      }, wait);
-    };
-    sprite.decode().then(start, () => {
-      // no Moss: the curtain fades once the page is in
-      const wait = () => { if (ended) return; if (progress() >= 1) end(true); else raf = requestAnimationFrame(wait); };
-      raf = requestAnimationFrame(wait);
-    });
+    raf = requestAnimationFrame(tick);
   }
 
   const root = document.querySelector<HTMLElement>('[data-preloader-root]');
@@ -444,86 +246,36 @@ const pages = ['/'];
      wheel or key never lands somewhere else. */
   :global(:root[data-preloader-hold]) { overflow: hidden; }
 
+  /* Flat ink from the first paint, before the script runs; the canvas
+     takes over once it has drawn (is-drawn). */
   :global(:root[data-preloader]) .preloader {
     display: block;
     position: fixed;
     inset: 0;
     z-index: var(--z-loader);
     overflow: hidden;
-    background: var(--preloader-ground);
+    background: var(--preloader-curtain);
     /* Failsafe: if the script never runs, get out of the way anyway. */
     animation: preloader-failsafe 0s var(--dur-preloader-failsafe) forwards;
   }
+  :global(:root[data-preloader]) .preloader:global(.is-drawn) { background: transparent; }
 
-  /* The sentence, alone and centred (a copy of the hero's, built by the
-     script). Each word is its own box so its line can glide to the
-     hero. */
-  .preloader__words {
+  .preloader__canvas {
     position: absolute;
     inset: 0;
-    display: grid;
-    place-items: center;
-    padding-bottom: 8vh;   /* sits a little above the middle, clear of Moss's path */
-  }
-  .preloader__words :global(.preloader__sentence) {
-    margin: 0;
-    max-width: none;
-    text-align: center;
-    color: var(--fg);
-  }
-  /* Plain inline words moved by relative offset: unlike inline-blocks
-     they add no break points, so the lines stay the hero's. */
-  .preloader__words :global(.preloader__word) {
-    position: relative;
-    left: 0;
-    top: 0;
-    transition: left var(--dur-preloader-glide) var(--ease-preloader-glide), top var(--dur-preloader-glide) var(--ease-preloader-glide);
-  }
-
-  /* The curtain: flat ink, a hard edge, no shadow. Moved by the script
-     (its left edge sits on Moss's paw). */
-  .preloader__curtain {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
     width: 100%;
-    background: var(--preloader-curtain);
-    translate: 0 0;   /* the whole screen, until the script opens the strip */
-  }
-
-  /* Moss, from his sprite; hidden until it has loaded. */
-  .preloader__moss {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: var(--preloader-moss-h);
-    aspect-ratio: 228 / 289;
-    background: url('/images/moss/moss-push.webp') 0 0 / 1100% 800% no-repeat;
-    visibility: hidden;
-    pointer-events: none;
-  }
-  .preloader__moss:global(.is-in) { visibility: visible; }
-
-  /* The hand-over: the curtain is gone, the ground clears so the page
-     comes into focus under the gliding sentence while Moss strolls out. */
-  /* Scoped under :root[data-preloader] like the rule that paints the
-     ground, or that rule wins on specificity: the layer stayed opaque,
-     the hero focused in unseen under it, and then appeared all at once
-     when the layer was removed (2026-11-17). */
-  :global(:root[data-preloader]) .preloader:global(.is-clear) {
-    background: transparent;
+    height: 100%;
     pointer-events: none;
   }
 
-  /* Skipped, reduced motion, or the hero off screen: the layer fades. */
+  /* Skipped or reduced motion: the layer fades. */
   :global(:root[data-preloader]) .preloader:global(.is-fading) {
     pointer-events: none;
     opacity: 0;
     transition: opacity var(--dur-preloader-skip) var(--ease-fade);
   }
   @media (prefers-reduced-motion: reduce) {
-    .preloader__moss { display: none; }
+    .preloader__canvas { display: none; }
     :global(:root[data-preloader]) .preloader:global(.is-fading) { transition-duration: var(--dur-preloader-fade); }
   }
 

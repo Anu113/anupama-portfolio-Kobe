@@ -1103,21 +1103,17 @@
 }
 
 /* ============================================================
-   PRELOADER — the first-paint loader (Preloader.astro), on request,
-   after huyml.co, chosen from the mocks in experiments/preloader-moss/
-   (take 2, page B "soft focus", Moss 2 "peeks up"). The page's ground
-   with only the hero sentence on it, centred, under a flat curtain in
-   the ink colour (no shadow, a hard edge): first the whole screen, then
-   it draws back to open a strip on the left.
-   Moss strolls in with his cup and raises his paw as he reaches the
-   curtain; while his paw is up the curtain's edge is on it. He pushes
-   it across as the page loads (the progress), with one pause halfway;
-   it leaves the screen just as his paw comes down, and he strolls out,
-   smiling. Then the sentence glides to its place, the rest of the hero
-   comes into focus, and Moss peeks up from behind his books.
-   His frames: public/images/moss/moss-push.webp, cut from her clip by
-   scripts/moss-push-sprite.py. The frame cues (when his paw rises,
-   meets the curtain, comes down) are in Preloader.astro.
+   PRELOADER — the first-paint loader (Preloader.astro), "Pixel blinds"
+   since 2026-11-18, on request ("F · Pixel blinds" of
+   experiments/curtain-pixel/): flat ink over the hero, then slats pull
+   back to the left in whole-pixel steps, top first, and one last pixel
+   holds on the word "pixel" before it pops. It moves only as far as the
+   page has loaded (--preloader-wait-at), never faster than
+   --dur-preloader-blinds.
+   The Moss values below (moss, floor, fps, push, stroll, pause, open,
+   glide, focus, peek) belong to the parked PreloaderMoss.astro: Moss
+   pushing the curtain, after huyml.co, from experiments/preloader-moss/.
+   Kept so he can come back.
    ============================================================ */
 :root {
   --preloader-ground: var(--bg);
