@@ -607,6 +607,7 @@
    soft" in experiments/work-colour-blocks/okta-style.html). */
 :root {
   --ground-mint: #cfe7d8;   /* PayPal Debit Card */
+  --ground-apricot: #f6dcc6; /* PayPal Ads consent, as its case cover */
 }
 
 /* ============================================================

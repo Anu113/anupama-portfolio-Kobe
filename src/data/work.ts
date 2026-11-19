@@ -61,33 +61,21 @@
 // No AI, Infrastructure or Leadership labels: not her field, and the ask
 // is an IC role, not a management one.
 export const work = [
-  { company: 'Okta', theme: 'coral', device: 'desktop',
-    title: 'Rebuilding IAM for enterprise admins',
-    tagline: 'A ground-up rebuild of the admin console, shipped under live tenants.',
-    summary: 'Admins ran identity for thousands of employees through a console built for a smaller company. I owned the design of the core administrative surfaces — entitlements, role management, the OIN publishing flow and developer onboarding — through a rebuild that shipped underneath live tenants, with no migration freeze.',
-    role: 'Staff Product Designer · IAM + Developer Tools · Led 6 designers',
-    impact: 'Admin task time down 32% across the four highest-volume flows',
+  // Order on /work, on request (2026-11-19): Ads consent first, Chase Pay
+  // second, the rest as they were.
+  // Interest-based ads and the Auto Privacy Advisor, one case on request —
+  // see `paypal-ads-consent` in cases.ts. Its role, hard call and outcome
+  // were written as stand-ins on request (2026-11-14), for her to confirm;
+  // the ads screens are still a coded rebuild until she exports them.
+  { company: 'PayPal', theme: 'sage', device: 'phone',
+    title: 'Privacy-first ad personalization',
+    tagline: 'Ad data sharing moved from opted in by default to asking first.',
+    summary: 'PayPal shared customer data with ad partners by default, and only about 1% of people ever opted out. When compliance moved the default to opted out, I designed how PayPal asks for consent, and proposed the Auto Privacy Advisor: a checkup that brings privacy settings to people.',
+    role: 'Owned the design · Ads consent and privacy settings',
+    impact: '41% opted in once PayPal asked first',
     hoverState: 'case-study',
-    tags: ['Product Strategy', 'Design Systems'], categories: ['identity'],
-    href: '/work/okta-iam', image: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" },
-  { company: 'PayPal', theme: 'lilac', device: 'phone',
-    title: 'Privacy settings people can read',
-    tagline: 'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.',
-    summary: 'PayPal\'s privacy settings had grown into a list of legal controls with no structure, and 75% of visitors stopped on the first page. I owned the research and design of a new structure, tested it through card sorts and unmoderated prototypes, and it launched in early 2023 to more than 80 million people, under GDPR and CCPA.',
-    role: 'Owned the design · PayPal app and web · Research through delivery',
-    impact: 'Privacy support calls down 60%',
-    hoverState: 'case-study',
-    tags: ['Privacy & Data', 'Information Architecture'], categories: ['fintech'],
-    href: '/work/paypal-privacy', image: '/images/paypal-privacy/hero.webp', alt: 'Redesigned PayPal Data and privacy screens' },
-  { company: 'Walmart Labs', theme: 'sage', device: 'phone',
-    title: 'Scan & Go, in-store',
-    tagline: 'Scan as you shop, pay on your phone, skip the line. Research to store pilot in a year.',
-    summary: 'Walmart had no answer to the checkout queue, and in 2020 the queue became a health question. I designed Scan & Go end to end inside the Walmart app — scanning, cart, payment and exit — tested it in stores, and took it to a pilot that grew basket size 25%.',
-    role: 'Product designer · End-to-end flows · Team of 11',
-    impact: 'Basket size up 25% in the first pilot',
-    hoverState: 'case-study',
-    tags: ['0→1', 'Research'], categories: ['retail'],
-    href: '/work/walmart-scan-go', image: '/images/scan-go/hero.webp', alt: 'Scan & Go screens: scanning, cart and self-checkout' },
+    tags: ['Ads & Personalization', 'Privacy & Data'], categories: ['fintech'],
+    href: '/work/paypal-ads-consent', image: '/images/paypal-ads-consent/hero.webp', alt: 'The rebuilt PayPal ad consent screens: Data & Privacy, the ask, and Online ad preferences' },
 
   { company: 'Walmart Labs', theme: 'ink', device: 'phone',
     title: 'Chase Pay inside Walmart Pay',
@@ -108,6 +96,37 @@ export const work = [
              poster: '/images/chase-pay/prototype-poster.jpg',
              alt: 'Screen recording of the Chase Pay prototype: setting up Walmart Pay, choosing Add Chase Pay from the payment types, and completing the handoff to Chase and back' },
     mediaRatio: '600 / 1066' },
+
+  { company: 'Okta', theme: 'coral', device: 'desktop',
+    title: 'Rebuilding IAM for enterprise admins',
+    tagline: 'A ground-up rebuild of the admin console, shipped under live tenants.',
+    summary: 'Admins ran identity for thousands of employees through a console built for a smaller company. I owned the design of the core administrative surfaces — entitlements, role management, the OIN publishing flow and developer onboarding — through a rebuild that shipped underneath live tenants, with no migration freeze.',
+    role: 'Staff Product Designer · IAM + Developer Tools · Led 6 designers',
+    impact: 'Admin task time down 32% across the four highest-volume flows',
+    hoverState: 'case-study',
+    tags: ['Product Strategy', 'Design Systems'], categories: ['identity'],
+    href: '/work/okta-iam', image: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" },
+
+  { company: 'PayPal', theme: 'lilac', device: 'phone',
+    title: 'Privacy settings people can read',
+    tagline: 'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.',
+    summary: 'PayPal\'s privacy settings had grown into a list of legal controls with no structure, and 75% of visitors stopped on the first page. I owned the research and design of a new structure, tested it through card sorts and unmoderated prototypes, and it launched in early 2023 to more than 80 million people, under GDPR and CCPA.',
+    role: 'Owned the design · PayPal app and web · Research through delivery',
+    impact: 'Privacy support calls down 60%',
+    hoverState: 'case-study',
+    tags: ['Privacy & Data', 'Information Architecture'], categories: ['fintech'],
+    href: '/work/paypal-privacy', image: '/images/paypal-privacy/hero.webp', alt: 'Redesigned PayPal Data and privacy screens' },
+
+  { company: 'Walmart Labs', theme: 'sage', device: 'phone',
+    title: 'Scan & Go, in-store',
+    tagline: 'Scan as you shop, pay on your phone, skip the line. Research to store pilot in a year.',
+    summary: 'Walmart had no answer to the checkout queue, and in 2020 the queue became a health question. I designed Scan & Go end to end inside the Walmart app — scanning, cart, payment and exit — tested it in stores, and took it to a pilot that grew basket size 25%.',
+    role: 'Product designer · End-to-end flows · Team of 11',
+    impact: 'Basket size up 25% in the first pilot',
+    hoverState: 'case-study',
+    tags: ['0→1', 'Research'], categories: ['retail'],
+    href: '/work/walmart-scan-go', image: '/images/scan-go/hero.webp', alt: 'Scan & Go screens: scanning, cart and self-checkout' },
+
   // The flagship. Appended rather than reordered to the front so the
   // hand-tuned five-slot `layout` array on /work.astro stays untouched —
   // this sixth tile falls back to /work.astro's documented full-width
@@ -151,20 +170,6 @@ export const work = [
     hoverState: 'case-study',
     tags: ['Research', 'Privacy & Data'], categories: ['identity', 'fintech'],
     href: '/work/paypal-id-proofing', image: '/images/paypal-id-proofing/hero.webp', alt: 'PayPal ID verification screens: Verify your ID easily in just 2 steps, and Scan your photo ID' },
-
-  // Interest-based ads and the Auto Privacy Advisor, one case on request —
-  // see `paypal-ads-consent` in cases.ts. Its role, hard call and outcome
-  // were written as stand-ins on request (2026-11-14), for her to confirm;
-  // the ads screens are still a coded rebuild until she exports them.
-  { company: 'PayPal', theme: 'sage', device: 'phone',
-    title: 'Privacy-first ad personalization',
-    tagline: 'Ad data sharing moved from opted in by default to asking first.',
-    summary: 'PayPal shared customer data with ad partners by default, and only about 1% of people ever opted out. When compliance moved the default to opted out, I designed how PayPal asks for consent, and proposed the Auto Privacy Advisor: a checkup that brings privacy settings to people.',
-    role: 'Owned the design · Ads consent and privacy settings',
-    impact: '41% opted in once PayPal asked first',
-    hoverState: 'case-study',
-    tags: ['Ads & Personalization', 'Privacy & Data'], categories: ['fintech'],
-    href: '/work/paypal-ads-consent', image: '/images/paypal-ads-consent/hero.webp', alt: 'The rebuilt PayPal ad consent screens: Data & Privacy, the ask, and Online ad preferences' },
 
   // Split out of the Privacy case on request (2026-11-18): see
   // `paypal-data-rights` in cases.ts. The cover is two of its coded
@@ -214,15 +219,19 @@ export type HomeMedia =
 // (on request, 2026-11-17, "Company + soft" from
 // experiments/work-colour-blocks/okta-style.html); /work keeps its mixed
 // grounds for now.
-export const homeCards: { href: string; title?: string; tagline?: string; hue?: 'mint'; media: HomeMedia }[] = [
+export const homeCards: { href: string; title?: string; tagline?: string; hue?: 'mint' | 'apricot'; media: HomeMedia }[] = [
   { href: '/work/okta-iam',
     media: { type: 'desktop', image: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" } },
   { href: '/work/paypal-privacy',
     // The same flow as its /work tile: Shopping, a tap on the reminder, the Data and privacy hub, a swipe down it.
     media: { type: 'play', play: '/work/paypal-privacy',
       alt: 'The PayPal app: Shopping, a tap on the reminder to review privacy settings, then the redesigned Data and privacy screen, scrolled down' } },
-  { href: '/work/walmart-chase-pay',
-    media: { type: 'video', alt: 'Screen recording of the Chase Pay prototype: setting up Walmart Pay, choosing Add Chase Pay from the payment types, and completing the handoff to Chase and back' } },
+  // Ads consent in Chase Pay's place, on request (2026-11-19); Chase Pay
+  // is on /work. Its own apricot ground, as its case cover, so it doesn't
+  // share Privacy's lilac.
+  { href: '/work/paypal-ads-consent', hue: 'apricot',
+    media: { type: 'play', play: '/work/paypal-ads-consent',
+      alt: 'The PayPal app playing by itself: Data and Privacy, the privacy checkup asking about ads, then Online ad preferences' } },
   { href: '/work/paypal-debit-card', hue: 'mint',
     media: { type: 'prototype', name: 'paypal-enroll', alt: 'The PayPal Debit Card sign-up prototype running by itself: value prop, Balance account, confirming identity, shipping address, and the card marked Ordered' } },
 ];
