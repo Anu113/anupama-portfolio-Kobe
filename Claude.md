@@ -595,7 +595,12 @@ walked back. Concretely, in the current implementation:
   and links make no sound on hover or click (removed on request,
   2026-11-13); don't add one back. Since 2026-11-17, on request, six
   more, picked from `experiments/sound/`, all in `sound.ts`: a harp
-  string per /work archive row on hover or focus (the one hover sound),
+  string per /work archive line (the one hover sound; since 2026-11-18,
+  on request, "A · Catch" of `experiments/archive-strings/`, the
+  hairlines are the strings: a line catches the pointer crossing it,
+  bends up to `--string-pull`, slips off and rings straight, its note
+  playing as it lets go; fine pointers with motion allowed only,
+  otherwise the plain borders and a pluck per row),
   soft key clicks as Moss types (panel and field), a click as the
   Privacy before/after line crosses a pin under the visitor's hand (its
   sway is silent), a sand scatter and settle on "pixel" (silent since PixelBreak was parked, 2026-11-17), a metal detent

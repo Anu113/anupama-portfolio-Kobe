@@ -17,9 +17,12 @@
 //
 // Six more, chosen on request (2026-11-17) from experiments/sound/, and the
 // only other places with sound — any more would be overdoing it:
-//   pluck   — /work archive rows on hover or focus (ArchiveList): a harp
-//             string per row, a major pentatonic falling down the list, so a
-//             sweep is a run that never clashes ("A · Harp")
+//   pluck   — /work archive lines (ArchiveList): a harp string per
+//             hairline, a major pentatonic falling down the list, so a
+//             sweep is a run that never clashes ("A · Harp"). Since
+//             2026-11-18 it plays as a line the pointer pulled lets go,
+//             louder the further it was pulled; on focus too
+//             ("A · Catch", experiments/archive-strings/)
 //   key     — Moss typing a reply (AskBubble, AskMoss): a muted key click
 //             every second letter ("C · Soft keys")
 //   pin     — the Privacy before/after line crossing a pin under the
@@ -202,8 +205,9 @@ function stringBuffer(a: AudioContext, freq: number) {
 
 const PENTA = [0, 2, 4, 7, 9];
 let lastPluck = 0;
-/** Archive row `index` of `count`: newest highest, oldest lowest. */
-export function playPluck(index: number, count: number) {
+/** Archive line `index` of `count`: newest highest, oldest lowest.
+ *  `strength` 0–1: how far the line was pulled (softer and duller when less). */
+export function playPluck(index: number, count: number, strength = 1) {
   const a = ready(); if (!a) return;
   const now = performance.now();
   if (now - lastPluck < 45) return;   // a fast sweep is a run, not a buzz
@@ -212,8 +216,9 @@ export function playPluck(index: number, count: number) {
   const midi = 57 + Math.floor(step / 5) * 12 + PENTA[step % 5];
   const s = a.createBufferSource();
   s.buffer = stringBuffer(a, hz(midi));
-  const f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 5000;
-  const g = a.createGain(); g.gain.value = 0.2;
+  const k = Math.min(1, Math.max(0, strength));
+  const f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 2500 + 2500 * k;
+  const g = a.createGain(); g.gain.value = 0.06 + 0.14 * k;
   s.connect(f); f.connect(g);
   if (a.createStereoPanner) {
     const pan = a.createStereoPanner();

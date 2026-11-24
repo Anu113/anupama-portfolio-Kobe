@@ -291,6 +291,16 @@
   --pb-c7: #ab4aba;        /* violet */
 
   /* --- COMPONENT TOKENS ---------------------------------- */
+  /* Archive strings (ArchiveList.astro, /work), on request 2026-11-18,
+     "A · Catch" of experiments/archive-strings/: the hairlines between
+     archive rows catch the pointer as it crosses, bend with it up to
+     --string-pull, then slip off and ring back to straight. Unitless
+     ring speed (Hz) and damping ratio; lower damping rings longer. The
+     line keeps the --rule colour. */
+  --string-pull: 14px;
+  --string-hz: 9;
+  --string-damping: 0.07;
+
   /* Nav (Nav.astro). One line: the name on the left; the links, a
      hairline and the theme button, together on the right. */
   --nav-pad-block: 1.5rem;
