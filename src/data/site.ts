@@ -43,7 +43,9 @@ export const site = {
   //              'none'   — nothing locked; the gates and frost stay in
   //                         the code, unmounted (on request, 2026-11-18:
   //                         "don't lock any case studies now")
-  //              'marked' — only cases with `locked` in cases.ts (Okta)
+  //              'marked' — only cases with `locked` in cases.ts (Okta;
+  //                         on now, on request 2026-11-23: "lock this
+  //                         case study for now")
   //              'all'    — every case study
   //              Locked cards frost on hover (LockFrost.astro).
   // A static site has nowhere to check a passcode but the browser, so
@@ -53,7 +55,7 @@ export const site = {
   lock: {
     passcode: 'okta2026',
     site: false,
-    cases: 'none' as 'none' | 'marked' | 'all',
+    cases: 'marked' as 'none' | 'marked' | 'all',
     rememberHours: 12,
   },
 

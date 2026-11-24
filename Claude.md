@@ -728,10 +728,9 @@ walked back. Concretely, in the current implementation:
   (`scripts/unlock.ts`; `data-unlocked` on `<html>`, set before paint in
   `Base.astro`). There are no per-case passwords; read a case's lock
   through `lockFor()` / `isCaseLocked()` in `cases.ts`, which follow
-  `site.lock.cases`: 'none' (now, on request 2026-11-18: "don't lock any
-  case studies now" — everything is open, Okta included; the designs
-  stay in the code for when she asks), 'marked' (cases with `locked`,
-  i.e. Okta) or 'all'. Don't lock anything without her asking. A locked case's card,
+  `site.lock.cases`: 'none' (everything open, as from 2026-11-18),
+  'marked' (cases with `locked`, i.e. Okta IAM; on now, on request
+  2026-11-23: "lock this case study for now") or 'all'. Don't lock anything without her asking. A locked case's card,
   on the home page and /work, frosts on hover or focus with a 24px lock
   and "Password protected" ("A · Frost", `LockFrost.astro`; at 52px the
   lock read "too huge to be cute"), and still clicks through to its gate;
