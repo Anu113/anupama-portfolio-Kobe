@@ -1,0 +1,22 @@
+---
+/* PillPair.astro — andreas.vision's button, on request (2026-11-24): an
+   ink pill with the label beside a round arrow (.btn--pair in
+   global.css, PILL PAIR in tokens.css). On hover the pill grows a hair
+   and the arrow slides out as a fresh one slides in: the arrow says
+   "this goes somewhere", the swap answers the pointer.
+
+   href → a link. No href → a plain <span> (aria-hidden), for a label
+   inside something that is already a link, such as a project card,
+   which then drives the hover from its own. size="sm" is the smaller
+   36px pair. Extra classes go on the root via `class`. */
+interface Props { href?: string; label: string; size?: 'sm'; class?: string; target?: string; rel?: string }
+const { href, label, size, class: cls, target, rel } = Astro.props;
+const Tag = href ? 'a' : 'span';
+---
+<Tag class:list={['btn--pair', size === 'sm' && 'btn--pair--sm', cls]} href={href} target={target} rel={rel} aria-hidden={href ? undefined : 'true'}>
+  <span class="btn--pair__pill">{label}</span>
+  <span class="btn--pair__arrow" aria-hidden="true">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+  </span>
+</Tag>

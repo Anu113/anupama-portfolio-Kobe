@@ -1,0 +1,143 @@
+<!doctype html>
+<!-- Hero portrait, round 2: her eyes follow the cursor, every frame.
+
+     Round 1 (index.html) picked one of five looks out of her clip, so she
+     held still between them, blinked to change, and waited on a short
+     hold: it tracked in jumps. Her clip can't do better — it has five
+     looks, not a sweep.
+
+     Here she is one still picture (frame 56 of the 96, eyes on you) with
+     her irises cut out (eyes/cut-eyes.py): the whites are repainted under
+     them, and each iris is drawn back inside its own eye opening at an
+     offset, so the lids clip it. The offset follows the direction from
+     her face to the cursor, eased per frame (time-based, as the site's
+     frame-loop), with sub-pixel steps: no poses, no holds, no blinks.
+     Self-contained: the pictures are inlined so the file opens anywhere. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero portrait — eyes that follow the cursor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#fcfcfc; --fg:#262626; --dim:#707070; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font: 600 12px/1.8 Manrope, system-ui, sans-serif; min-height: 100vh; }
+  .top { padding: 24px 48px 0; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .mono { font: 400 11px/1.4 'Azeret Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em; }
+  button { font: 400 11px/1 'Azeret Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em;
+    background: transparent; color: var(--fg); border: 1px solid var(--fg); border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .readout { color: var(--dim); }
+  .hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; align-items: end; padding: 48px 48px 0; min-height: calc(100vh - 80px); }
+  .hero h1 { font: 300 50px/1.15 'Crimson Pro', Georgia, serif; margin: 0 0 96px; max-width: 18ch; align-self: center; }
+  .hero h1 em { font-style: italic; }
+  canvas { display: block; width: 100%; aspect-ratio: 700 / 980; }
+  .zoom { position: fixed; right: 24px; top: 24px; width: 280px; aspect-ratio: 2 / 1; border: 1px solid var(--fg); background: #fff; display: none; image-rendering: auto; }
+  body.show-zoom .zoom { display: block; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <button type="button" id="zoomBtn" aria-pressed="false">Zoom on her eyes</button>
+    <span class="mono readout" id="readout">move the cursor</span>
+  </div>
+  <section class="hero">
+    <h1><em>Hi, I’m Anupama,</em> a Staff Product Designer. I ship, I nudge, I craft, from systems and strategy to the last stubborn pixel.</h1>
+    <canvas id="c" width="1400" height="1960" aria-label="Illustrated portrait of Anupama at her laptop"></canvas>
+  </section>
+  <canvas class="zoom" id="zoom" width="560" height="280" aria-hidden="true"></canvas>
+
+<script>
+  const SRC = __SRC__;
+  const GEO = __GEO__;
+
+  // How far the irises travel, in picture px (the frame is 700 wide).
+  // Sideways the whites leave room; up there's almost none (the iris
+  // already touches the upper lid), down a little.
+  const MAX_X = 6.5, MAX_UP = 0.8, MAX_DOWN = 3.2;
+  const REACH = 260;     // screen px from her face where the look is ~3/4 of the way out
+  const FOLLOW = 0.32;   // share of the gap closed per 60fps frame: quick, never a jump
+  const FACE = { x: 321 / 700, y: 181 / 980 };   // between her eyes, in the frame
+  const REST = { x: 0.6, y: 2.4 };   // pointer gone: eyes back down to the laptop
+
+  const load = (src) => new Promise((ok) => { const im = new Image(); im.onload = () => ok(im); im.src = src; });
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const zoom = document.getElementById('zoom').getContext('2d');
+  const readout = document.getElementById('readout');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const S = canvas.width / 700;   // drawing scale
+
+  Promise.all([load(SRC.plate), load(SRC.irisL), load(SRC.irisR), load(SRC.maskL), load(SRC.maskR)]).then(([plate, irisL, irisR, maskL, maskR]) => {
+    const eyes = [
+      { g: GEO.L, iris: irisL, mask: maskL },
+      { g: GEO.R, iris: irisR, mask: maskR },
+    ].map((e) => {
+      const [x0, y0, x1, y1] = e.g.box;
+      const c = document.createElement('canvas');
+      c.width = (x1 - x0) * S; c.height = (y1 - y0) * S;
+      return { ...e, c, x: c.getContext('2d') };
+    });
+
+    let tx = REST.x, ty = REST.y, ox = tx, oy = ty;   // target and shown offset
+    const aim = (px, py) => {
+      const r = canvas.getBoundingClientRect();
+      const dx = px - (r.left + r.width * FACE.x);
+      const dy = py - (r.top + r.height * FACE.y);
+      // A soft limit (tanh): small moves near her move the eyes most,
+      // far away they settle at the edge instead of stopping dead.
+      tx = MAX_X * Math.tanh(dx / REACH);
+      const v = Math.tanh(dy / REACH);
+      ty = v < 0 ? MAX_UP * v : MAX_DOWN * v;
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(plate, 0, 0, canvas.width, canvas.height);
+      for (const e of eyes) {
+        const [x0, y0] = e.g.box;
+        const [sx, sy, size] = e.g.sprite;
+        e.x.globalCompositeOperation = 'source-over';
+        e.x.clearRect(0, 0, e.c.width, e.c.height);
+        e.x.drawImage(e.iris, (sx - x0 + ox) * S, (sy - y0 + oy) * S, size * S, size * S);
+        e.x.globalCompositeOperation = 'destination-in';
+        e.x.drawImage(e.mask, 0, 0, e.c.width, e.c.height);
+        ctx.drawImage(e.c, x0 * S, y0 * S);
+      }
+      zoom.clearRect(0, 0, 560, 280);
+      zoom.drawImage(canvas, 255 * S, 150 * S, 130 * S, 65 * S, 0, 0, 560, 280);
+    };
+
+    let last = performance.now(), raf = 0;
+    const tick = (now) => {
+      const dt = Math.min(50, now - last); last = now;
+      const k = 1 - Math.pow(1 - FOLLOW, dt / (1000 / 60));
+      ox += (tx - ox) * k; oy += (ty - oy) * k;
+      const settled = Math.abs(tx - ox) < 0.01 && Math.abs(ty - oy) < 0.01;
+      if (settled) { ox = tx; oy = ty; }
+      draw();
+      readout.textContent = `eyes ${ox.toFixed(2)}, ${oy.toFixed(2)} px`;
+      raf = settled ? 0 : requestAnimationFrame(tick);
+    };
+    const wake = () => { if (!raf) { last = performance.now() - 16; raf = requestAnimationFrame(tick); } };
+
+    draw();
+    if (reduce) return;
+    // The whole window, not just the hero: wherever the cursor is, she
+    // looks at it.
+    addEventListener('pointermove', (e) => { aim(e.clientX, e.clientY); wake(); }, { passive: true });
+    document.documentElement.addEventListener('pointerleave', () => { tx = REST.x; ty = REST.y; wake(); });
+    addEventListener('scroll', () => wake(), { passive: true });
+  });
+
+  document.getElementById('zoomBtn').addEventListener('click', (e) => {
+    const on = document.body.classList.toggle('show-zoom');
+    e.currentTarget.setAttribute('aria-pressed', String(on));
+  });
+</script>
+</body>
+</html>

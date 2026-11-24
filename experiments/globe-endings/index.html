@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Globe endings</title>
+<!--
+  How the globe story (src/components/GlobeStory.astro) ends into the
+  page, on request (2026-11-23: "what I still don't like very much is how
+  it ends on the page"). This plays only the story's last stretch — the
+  small globe, the closing line — and then the handover to Selected work
+  (stand-in cards). Five endings (?end=):
+    a  Skyline (as now): white pixel steps rise, then a hard edge.
+    b  Pixel dissolve: the wood breaks up tile by tile from the bottom.
+    c  Blinds: the wood pulls away in slats, each leading one loose pixel
+       (the preloader's language).
+    d  Rounded edge: the wood stage ends like a card with the page's 28px
+       curve, and scrolls away whole.
+    e  Into a pixel: the globe shrinks to one square and lands as the full
+       stop after "Selected work", while the wood clears.
+  Colours are the GLOBE STORY tokens' values.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600&family=Crimson+Pro:ital,wght@0,300;1,300&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#fcfcfc;--ink:#262626;--grey:#707070;--wood:#eccaa6;--rim:#e0b88f;--shelf:#f5dcc2;--land:#9e6743;--landR:#b9805a;--line:#5a3520;--text:#2f1c10;--acc:#9d2f16;
+    --serif:'Crimson Pro',Georgia,serif;--sans:'Manrope',system-ui,sans-serif;--mono:'Azeret Mono',monospace;--gutter:clamp(20px,6vw,88px)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:600 14px/1.6 var(--sans)}
+  .intro{height:60vh;display:grid;place-items:center;color:var(--grey);font:400 12px var(--mono);text-transform:uppercase;letter-spacing:.08em}
+  .story{position:relative;height:420vh}
+  .stage{position:sticky;top:0;height:100vh;overflow:hidden;background:var(--bg)}
+  .stage.round{border-radius:0 0 28px 28px}
+  canvas{position:absolute;inset:0;width:100%;height:100%}
+  .line{position:absolute;left:var(--gutter);right:var(--gutter);bottom:18vh;display:flex;justify-content:space-between;align-items:flex-start;gap:2rem;color:var(--text);transition:opacity .5s}
+  .line h2{font:300 clamp(2.25rem,4.2vw,3.75rem)/1.02 var(--serif)}
+  .line h2 em{font-style:italic;color:var(--acc)}
+  .line p{max-width:30rem;font-size:14px}
+  .work{position:relative;z-index:2;background:var(--bg);padding:6rem var(--gutter) 8rem}
+  .work h2{text-align:center;font:300 40px/1 var(--serif);margin-bottom:3rem}
+  .work h2 em{font-style:italic}
+  .stop{display:inline-block;width:.16em;height:.16em;background:var(--land);margin-left:.05em;opacity:0;transition:opacity .3s}
+  .stop.on{opacity:1}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:1100px;margin:0 auto}
+  .card{border-radius:28px;background:color-mix(in srgb,var(--ink) 3%,var(--bg));height:340px;display:grid;place-items:center;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(92,23,18,.3)}
+  .card.wide{grid-column:1/-1;height:420px}
+  .card img{max-width:80%;max-height:78%;border-radius:10px;box-shadow:0 20px 40px -18px rgba(0,0,0,.25)}
+  .bar{flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99;display:flex;gap:2px;background:#111;border-radius:999px;padding:4px;font:500 12px/1 system-ui;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+  .bar a{color:#bbb;padding:9px 12px;border-radius:999px;text-decoration:none;white-space:nowrap}
+  .bar a[aria-current="true"]{background:#fff;color:#000}
+</style>
+</head>
+<body>
+<nav class="bar" id="bar"></nav>
+<div class="intro">… the story so far: the globe has pulled back and turned …</div>
+<section class="story" id="story">
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="line" id="line">
+      <h2>Built to <em>untangle</em></h2>
+      <p>Ten years of complicated systems made usable: payments, privacy and identity. One desk in Bangalore, products used around the world.</p>
+    </div>
+  </div>
+</section>
+<section class="work" id="work">
+  <h2>Selected <em>work</em><span class="stop" id="stop"></span></h2>
+  <div class="cards">
+    <div class="card wide"><img src="../../public/images/work-play/okta-desk.webp" alt=""></div>
+    <div class="card"><img src="../../public/images/work-play/pv-hub.webp" alt="" style="max-width:40%"></div>
+    <div class="card"><img src="../../public/images/work-play/ads-prefs.webp" alt="" style="max-width:40%"></div>
+  </div>
+</section>
+<div style="height:40vh"></div>
+
+<script type="module">
+const Q = new URLSearchParams(location.search);
+const END = 'abcdefghij'.includes(Q.get('end') || '') && Q.get('end') ? Q.get('end') : 'f';
+document.getElementById('bar').innerHTML = [['f', 'F Fade'], ['g', 'G Gradient'], ['h', 'H Settle'], ['i', 'I Carry on'], ['j', 'J Soft step'], ['a', 'A Skyline'], ['b', 'B Dissolve'], ['d', 'D Rounded'], ['e', 'E Pixel']]
+  .map(([k, l]) => `<a href="?end=${k}" aria-current="${k === END}">${l}</a>`).join('');
+const story = document.getElementById('story'), stage = document.getElementById('stage'), cv = document.getElementById('cv');
+let g = cv.getContext('2d');
+const line = document.getElementById('line'), stop = document.getElementById('stop');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C = { wood: css('--wood'), rim: css('--rim'), shelf: css('--shelf'), land: css('--land'), landR: css('--landR'), bg: css('--bg') };
+const RAD = Math.PI / 180, clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v)), lerp = (a, b, t) => a + (b - a) * t;
+const sm = t => { t = clamp(t); return t * t * (3 - 2 * t); };
+const hash = (x, y) => { const v = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return v - Math.floor(v); };
+const BAY = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + .5) / 16);
+
+// land
+const img = new Image(); img.src = '../../public/images/globe/land.png';
+await new Promise(r => img.onload = r);
+const mc = document.createElement('canvas'); mc.width = img.width; mc.height = img.height; const mx = mc.getContext('2d'); mx.drawImage(img, 0, 0);
+const md = mx.getImageData(0, 0, mc.width, mc.height).data, MW = mc.width, MH = mc.height;
+const isLand = (lo, la) => md[(Math.min(MH - 1, Math.max(0, Math.floor((90 - la) / 180 * MH))) * MW + Math.floor(((lo + 180) % 360 + 360) % 360 / 360 * MW)) * 4] > 127;
+const unproject = (x, y, l0, p0) => { const yy = -y, rho = Math.hypot(x, yy); if (rho > 1) return null;
+  const c = Math.asin(rho), sc = Math.sin(c), cc = Math.cos(c), sp = Math.sin(p0 * RAD), cp = Math.cos(p0 * RAD);
+  const lat = rho ? Math.asin(cc * sp + yy * sc * cp / rho) : p0 * RAD; return [(l0 * RAD + Math.atan2(x * sc, rho * cp * cc - yy * sp * sc)) / RAD, lat / RAD, cc]; };
+function globe(cx, cy, R, l0, p0, alpha = 1) {
+  const cell = Math.max(3, Math.min(30, R / 34)), n = Math.ceil(R / cell); g.globalAlpha = alpha;
+  for (let j = -n; j < n; j++) for (let i = -n; i < n; i++) {
+    const u = unproject((i + .5) * cell / R, (j + .5) * cell / R, l0, p0); if (!u) continue;
+    const [lo, la, cc] = u, near = isLand(lo + 2, la) || isLand(lo - 2, la) || isLand(lo, la + 2) || isLand(lo, la - 2);
+    g.fillStyle = isLand(lo, la) ? (cc < .3 ? C.landR : C.land) : near ? C.shelf : cc < .35 ? C.rim : C.wood;
+    if (cell < 9) { g.fillRect(Math.floor(cx + i * cell), Math.floor(cy + j * cell), Math.ceil(cell) + .5, Math.ceil(cell) + .5); continue; } // small pixels: solid, no mesh
+    const gap = Math.max(.5, cell * .1); g.beginPath(); g.roundRect(cx + i * cell + gap / 2, cy + j * cell + gap / 2, cell - gap, cell - gap, cell * .26); g.fill();
+  }
+  g.globalAlpha = 1;
+}
+let W, H;
+const size = () => { W = stage.clientWidth; H = stage.clientHeight; const d = Math.min(2, devicePixelRatio); cv.width = W * d; cv.height = H * d; g.setTransform(d, 0, 0, d, 0, 0); };
+size(); addEventListener('resize', size);
+if (END === 'd') stage.classList.add('round');
+// I and J: the wood carries on behind the "Selected work" heading and softens into the page there
+const work = document.getElementById('work');
+if (END === 'i') work.style.background = `linear-gradient(${C.wood} 0, ${C.wood} 18%, ${C.bg} 62%)`;
+if (END === 'j') work.style.background = `linear-gradient(#f3dcc1 0, ${C.bg} 260px)`;
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, t) => { const A = hex(a), B = hex(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',')})`; };
+
+function draw(p) {
+  // the first 35%: the closing frame as the story ends it; then the ending
+  const e = clamp((p - .35) / .6), R = Math.min(190, W * .26), cx = W / 2, cy = H * .4, l0 = -34, p0 = 58;
+  g.clearRect(0, 0, W, H);
+  line.style.opacity = 1 - clamp(e * 2.5);
+  stop.classList.toggle('on', END === 'e' && p >= .98);
+  if (END === 'f') { // fade: the wood eases to the page's white; the globe stays put, a touch smaller
+    g.fillStyle = mix(C.wood, C.bg, sm(e)); g.fillRect(0, 0, W, H); globe(cx, cy, R * (1 - e * .12), l0, p0); return;
+  }
+  if (END === 'g') { // gradient: the page's white rises from the bottom as a soft gradient, no edge
+    g.fillStyle = C.wood; g.fillRect(0, 0, W, H); globe(cx, cy, R, l0, p0);
+    const top = H - sm(e) * H * 1.5, gr = g.createLinearGradient(0, top, 0, top + H * .5);
+    gr.addColorStop(0, C.bg + '00'); gr.addColorStop(1, C.bg); g.fillStyle = gr; g.fillRect(0, top, W, H * 2); return;
+  }
+  if (END === 'h') { // settle: the wood fades and the globe settles small just above where "Selected work" comes in
+    g.fillStyle = mix(C.wood, C.bg, sm(e)); g.fillRect(0, 0, W, H);
+    const k = sm(e); globe(cx, lerp(cy, H * .8, k), lerp(R, R * .32, k), l0, p0); return;
+  }
+  if (END === 'i') { // carry on: nothing changes here; the wood simply continues into the next section and softens there
+    g.fillStyle = C.wood; g.fillRect(0, 0, W, H); globe(cx, cy, R, l0, p0); return;
+  }
+  if (END === 'j') { // soft step: one row of low steps in a lighter wood, then that tone fades into the page
+    g.fillStyle = C.wood; g.fillRect(0, 0, W, H); globe(cx, cy, R, l0, p0);
+    const cell = 24, up = sm(e); g.fillStyle = '#f3dcc1';
+    for (let i = 0; i < W / cell; i++) { const hh = Math.round((1 + (hash(i, 3) > .6 ? 1 : 0)) * up); for (let j = 0; j < hh; j++) g.fillRect(i * cell, H - (j + 1) * cell, cell, cell); }
+    if (up > .9) { g.fillRect(0, H - cell, W, cell); }
+    return;
+  }
+  if (END === 'a') { // as now
+    g.fillStyle = C.wood; g.fillRect(0, 0, W, H); globe(cx, cy - e * H * .25, R, l0, p0);
+    const cell = 24, up = e; g.fillStyle = C.bg;
+    for (let i = 0; i < W / cell; i++) { const hh = Math.floor((hash(i, 3) * 2 + 2) * up + up * 1.2); for (let j = 0; j < hh; j++) g.fillRect(i * cell, H - (j + 1) * cell, cell, cell); }
+    return;
+  }
+  if (END === 'd') { // the stage is a card with rounded corners; nothing else changes, it simply scrolls away
+    g.fillStyle = C.wood; g.fillRect(0, 0, W, H); globe(cx, cy - e * 40, R, l0 + e * 30, p0); return;
+  }
+  if (END === 'b') { // ordered dissolve from the bottom, in the globe's own tiles
+    g.fillStyle = C.wood; g.fillRect(0, 0, W, H); globe(cx, cy, R * (1 - e * .2), l0, p0, 1 - sm((e - .55) / .45));
+    const cell = 24, cols = Math.ceil(W / cell), rows = Math.ceil(H / cell);
+    g.fillStyle = C.bg;
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+      const from = 1 - j / rows, th = BAY[(j & 3) * 4 + (i & 3)];
+      const k = clamp(e * 1.6 - from * .9 - th * .35);
+      if (k <= 0) continue; const s = Math.ceil(cell * Math.min(1, k * 3) / 4) * 4 + (k >= .34 ? 1 : 0);
+      g.beginPath(); g.roundRect(i * cell + (cell - s) / 2, j * cell + (cell - s) / 2, s, s, k >= .34 ? 0 : s * .26); g.fill();
+    }
+    return;
+  }
+  if (END === 'c') { // blinds: slats of wood (with the globe on them) pull away left in whole-pixel steps, bottom first, each leading one loose pixel
+    const off = draw.off || (draw.off = document.createElement('canvas')), ox = off.getContext('2d'), d = cv.width / W;
+    if (off.width !== cv.width) { off.width = cv.width; off.height = cv.height; }
+    const keep = g; ox.setTransform(d, 0, 0, d, 0, 0); ox.fillStyle = C.wood; ox.fillRect(0, 0, W, H);
+    g = ox; globe(cx, cy, R, l0, p0); g = keep;
+    const S = 48, n = Math.ceil(H / S);
+    for (let i = 0; i < n; i++) {
+      const k = sm(clamp(e * 1.3 - (n - 1 - i) / n * .3)), w = Math.floor((1 - k) * (W + S) / S) * S;
+      if (w <= 0) continue;
+      const ww = Math.min(w, W); g.drawImage(off, 0, i * S * d, ww * d, (S + 1) * d, 0, i * S, ww, S + 1);
+      if (w < W) { g.fillStyle = C.land; g.fillRect(w + S * .25, i * S + S * .25, S * .5, S * .5); }
+    }
+    return;
+  }
+  if (END === 'e') { // the globe shrinks to one square and drops into the full stop; the wood clears from the edges in
+    const sr = stop.getBoundingClientRect(), st = stage.getBoundingClientRect();
+    const tx = sr.left - st.left + sr.width / 2, ty = sr.top - st.top + sr.height / 2;
+    // the wood closes in on the globe like an iris, until it is only the globe; then the globe shrinks and drops
+    const close = sm(e / .45), far = Math.hypot(W, H);
+    const k = sm((e - .3) / .7), R2 = lerp(R, Math.max(2, sr.width / 2), k);
+    if (close < 1) { g.fillStyle = C.wood; g.beginPath(); g.arc(cx, cy, lerp(far, R + 2, close), 0, Math.PI * 2); g.fill(); }
+    const x = lerp(cx, tx, sm((e - .5) / .5)), y = lerp(cy, Math.min(ty, H + 50), sm((e - .5) / .5));
+    if (R2 > 14) globe(x, y, R2, l0 + e * 60, p0);
+    else if (p < .98) { g.fillStyle = C.land; g.fillRect(x - R2, y - R2, R2 * 2, R2 * 2); }
+  }
+}
+let sp = 0, last = performance.now();
+(function tick(now) {
+  const r = story.getBoundingClientRect(), tgt = clamp(-r.top / (r.height - innerHeight));
+  sp = reduce ? tgt : sp + (tgt - sp) * (1 - Math.exp(-(now - last) / 280)); last = now;
+  if (r.bottom > 0 && r.top < innerHeight) draw(sp);
+  requestAnimationFrame(tick);
+})(last);
+</script>
+</body>
+</html>

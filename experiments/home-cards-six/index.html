@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selected work · six cards, four placements</title>
+<!--
+  On request (2026-11-25): the home page's Selected work with Scan & Go
+  added (six cases), in a few placements, one of them after the reference
+  (andreas.vision's home: big cases stacked in a wide left column, the
+  rest as small tiles two across on the right).
+  The cards themselves are the live ones (HOME CARDS, 2026-11-24): paper,
+  28px corners, the work on its own hue, no line at rest; on hover or
+  focus a faint oxblood line, a 3px rise on a soft shadow, the work grows
+  to 1.035 and "View case study" fades up as the pill pair. One curve,
+  cubic-bezier(.16,1,.3,1), 500ms.
+    ?layout=
+      wides     A · Two wides: Okta wide, a pair, Scan & Go wide (words on
+                the right, mirrored), a pair. The live grid plus one row.
+      reference B · Like the reference: Okta, Privacy and Scan & Go big on
+                the left; Ads, Debit Card and Chase Pay as tiles two across
+                on the right, the fourth slot "View all work".
+      bento     C · Bento: rows of two-thirds and a third, alternating
+                sides, then a pair.
+      threes    D · Three across: six equal cards, two rows.
+  Scan & Go's ground is a pale sage (new; Chase Pay already has Walmart's
+  butter). Phones show each flow's first screen; on the site they'd play
+  their /work flows as the current cards do.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600&family=Crimson+Pro:ital,wght@0,300;1,300&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#fcfcfc;--ink:#262626;--grey:#707070;--ox:#5c1712;--land:#9e6743;
+    --serif:'Crimson Pro',Georgia,serif;--sans:'Manrope',system-ui,sans-serif;--mono:'Azeret Mono',monospace;
+    --gutter:clamp(20px,6vw,88px);--ease:cubic-bezier(.16,1,.3,1);--dur:.5s;--gap:1.5rem;
+    --line:color-mix(in srgb,var(--ox) 16%,transparent);
+    --shadow:0 1px 2px rgb(38 38 38/.04),0 8px 16px -6px rgb(38 38 38/.07),0 28px 48px -18px rgb(38 38 38/.14)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:600 14px/1.6 var(--sans)}
+  .label{font:400 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  .work{padding:6rem var(--gutter) 8rem}
+  .work > h2{text-align:center;font:300 40px/1 var(--serif);margin-bottom:3rem}
+  .work > h2 em{font-style:italic}
+  .work > h2 i{display:inline-block;width:.12em;height:.12em;background:var(--land);margin-left:.05em}
+  .grid{max-width:1180px;margin:0 auto;display:grid;gap:var(--gap)}
+
+  /* ---- the card (the live one) ---- */
+  .card{position:relative;border-radius:28px;background:var(--bg);padding:1.5rem 1.5rem 1.75rem;display:flex;flex-direction:column;gap:1.25rem;
+    box-shadow:inset 0 0 0 1px transparent;transition:box-shadow var(--dur) var(--ease),transform var(--dur) var(--ease)}
+  .card:is(:hover,:focus-within){box-shadow:inset 0 0 0 1px var(--line),var(--shadow);transform:translateY(-3px)}
+  .card a.cover{position:absolute;inset:0;border-radius:inherit;z-index:1}
+  .card a.cover:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .stage{height:30rem;display:grid;place-items:center;border-radius:20px;overflow:hidden;background:var(--g)}
+  .stage > *{transition:transform .7s var(--ease)}
+  .card:is(:hover,:focus-within) .stage > *{transform:scale(1.035)}
+  .stage img.desk{max-width:80%;border-radius:8px;box-shadow:0 30px 50px -30px rgba(0,0,0,.35)}
+  .phone{width:200px;aspect-ratio:9/19.5;border-radius:34px;background:#111;padding:7px;box-shadow:0 30px 50px -28px rgba(0,0,0,.4),inset 0 0 0 2px #cfd0d3}
+  .phone div{width:100%;height:100%;border-radius:28px;overflow:hidden;background:#fff}
+  .phone img{width:100%;display:block}
+  .meta{color:var(--grey)}
+  .card h3{font:600 18px/1.3 var(--sans);margin-top:6px}
+  .card p{color:var(--grey);font-size:12px;line-height:1.8;margin-top:4px;max-width:46ch}
+  .pills{display:inline-flex;gap:8px;color:var(--bg);font:600 14px/1 var(--sans);margin-top:16px;position:relative;z-index:2;pointer-events:none;
+    opacity:0;transform:translateY(6px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+  .card:is(:hover,:focus-within) .pills{opacity:1;transform:none}
+  @media (hover:none){.pills{opacity:1;transform:none}}
+  .pills .pill{height:36px;padding:0 15px;font-size:13px;display:inline-flex;align-items:center;border-radius:999px;background:var(--ink);transition:transform .1s ease-out}
+  .pills .arrow{width:36px;height:36px;border-radius:50%;background:var(--ink);position:relative;overflow:hidden;flex:none}
+  .pills .arrow svg{position:absolute;inset:0;margin:auto;width:16px;height:16px;transition:transform .6s cubic-bezier(.77,0,.175,1)}
+  .pills .arrow svg + svg{transform:translateX(-200%)}
+  .card:is(:hover,:focus-within) .pills .pill{transform:scale(1.015)}
+  .card:is(:hover,:focus-within) .pills .arrow svg:first-child{transform:translateX(200%)}
+  .card:is(:hover,:focus-within) .pills .arrow svg + svg{transform:none}
+  a.pills{pointer-events:auto;opacity:1;transform:none;text-decoration:none;margin:0}
+  a.pills .pill{height:42px;padding:0 18px;font-size:14px}a.pills .arrow{width:42px;height:42px}
+  a.pills:hover .pill,a.pills:focus-visible .pill{transform:scale(1.015)}
+  a.pills:hover .arrow svg:first-child,a.pills:focus-visible .arrow svg:first-child{transform:translateX(200%)}
+  a.pills:hover .arrow svg + svg,a.pills:focus-visible .arrow svg + svg{transform:none}
+  a.pills:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:999px}
+  .more{display:flex;justify-content:center;margin-top:3rem}
+
+  /* Scan & Go's scan, from src/styles/work-play.css (end state at rest; plays while .is-live) */
+  .sg{position:relative;container-type:inline-size;height:100%}
+  .sg > img:first-child{height:100%;object-fit:cover;object-position:top}
+  .sg-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+  .sg-band{position:absolute;overflow:hidden;border-radius:1.5cqw;--c:rgb(255 255 255/.95);
+    background:linear-gradient(var(--c),var(--c)) top left/7.6cqw .8cqw no-repeat,linear-gradient(var(--c),var(--c)) top left/.8cqw 7.6cqw no-repeat,
+      linear-gradient(var(--c),var(--c)) top right/7.6cqw .8cqw no-repeat,linear-gradient(var(--c),var(--c)) top right/.8cqw 7.6cqw no-repeat,
+      linear-gradient(var(--c),var(--c)) bottom left/7.6cqw .8cqw no-repeat,linear-gradient(var(--c),var(--c)) bottom left/.8cqw 7.6cqw no-repeat,
+      linear-gradient(var(--c),var(--c)) bottom right/7.6cqw .8cqw no-repeat,linear-gradient(var(--c),var(--c)) bottom right/.8cqw 7.6cqw no-repeat}
+  .sg-band::after{content:'';position:absolute;left:0;right:0;top:0;height:.8cqw;border-radius:1cqw;background:#ffc220;box-shadow:0 0 4cqw 1.3cqw rgb(255 194 32/.65);opacity:0}
+  .sg-hit{position:absolute;border:.8cqw solid #2a8703;border-radius:1.5cqw;box-shadow:0 0 0 1cqw rgb(42 135 3/.28)}
+  .sg-flash{position:absolute;inset:0;background:#fff;opacity:0}
+  .sg.is-live .sg-band::after{animation:sg-sweep 1500ms ease-in-out 200ms both}
+  .sg.is-live .sg-hit{animation:sg-hit 420ms cubic-bezier(.2,.9,.3,1.2) 1650ms both}
+  .sg.is-live .sg-flash{animation:sg-flash 380ms ease-out 1650ms both}
+  .sg.is-live .sg-sheet{animation:sg-rise 560ms cubic-bezier(.32,.72,0,1) 2050ms both}
+  .sg.is-live .sg-bar{animation:sg-fade 300ms ease-out 2400ms both}
+  @keyframes sg-sweep{0%{top:0;opacity:0}8%{opacity:1}55%{top:calc(100% - .8cqw)}92%{top:62%;opacity:1}100%{top:62%;opacity:0}}
+  @keyframes sg-hit{from{opacity:0;transform:scale(1.35)}}
+  @keyframes sg-flash{0%{opacity:0}30%{opacity:.5}100%{opacity:0}}
+  @keyframes sg-rise{from{transform:translateY(40%);opacity:0}30%{opacity:1}}
+  @keyframes sg-fade{from{opacity:0}}
+
+  /* words beside the work (wide cards) */
+  .beside{display:grid;grid-template-columns:.8fr 1.6fr;align-items:center;gap:2rem}
+  .beside .words{order:-1;padding-left:1rem}
+  .beside.flip{grid-template-columns:1.6fr .8fr}
+  .beside.flip .words{order:0;padding:0 1rem 0 0}
+  .beside h3{font:300 32px/1.1 var(--serif)}
+  .beside .stage{height:28rem}
+  /* two phones side by side, with air above and below them (~2rem each way) */
+  .pair{display:flex;gap:24px}
+  .pair .phone{width:176px}
+
+  /* A · Two wides */
+  .l-wides{grid-template-columns:1fr 1fr}
+  .l-wides .wide{grid-column:1/-1}
+
+  /* B · Like the reference: a wide left column of big cases, tiles two across on the right */
+  .l-reference{grid-template-columns:1.62fr 1fr;align-items:start}
+  .l-reference .col{display:grid;gap:var(--gap);align-content:start}
+  .l-reference .tiles{grid-template-columns:1fr 1fr;position:sticky;top:2rem}
+  .l-reference .big .stage{height:34rem}
+  .l-reference .big h3{font:300 32px/1.1 var(--serif)}
+  .tile{padding:.75rem .75rem 1rem;gap:.75rem;border-radius:22px}
+  .tile .stage{height:auto;aspect-ratio:3/2;border-radius:14px;place-items:end center}
+  .tile .phone{width:62%;transform-origin:50% 100%;margin-bottom:-58%;border-radius:22px;padding:5px}
+  .tile .phone div{border-radius:18px}
+  .card.tile:is(:hover,:focus-within) .stage > .phone{transform:translateY(-6%) scale(1.035)}
+  .tile h3{font-size:14px;line-height:1.35;margin-top:4px}
+  .tile .meta{font-size:10px}
+  .tile p,.tile .pills{display:none}
+  .tile.all{justify-content:center;align-items:flex-start;background:color-mix(in srgb,var(--ink) 3%,var(--bg));padding:1.25rem;aspect-ratio:auto}
+  .tile.all h3{font:300 26px/1.1 var(--serif);margin:0 0 10px}
+  .tile.all h3 em{font-style:italic}
+  .tile.all .pills{display:inline-flex;margin-top:6px;white-space:nowrap}
+  .tile .meta{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+  /* C · Bento: two-thirds and a third, alternating, then a pair */
+  .l-bento{grid-template-columns:repeat(6,1fr)}
+  .l-bento .s2{grid-column:span 4}.l-bento .s1{grid-column:span 2}.l-bento .s3{grid-column:span 3}
+  .l-bento .s1 .phone{width:180px}
+  .l-bento .s1 .stage{height:30rem}
+
+  /* D · Three across */
+  .l-threes{grid-template-columns:repeat(3,1fr)}
+  .l-threes .stage{height:26rem}
+  .l-threes .phone{width:176px}
+  .l-threes .stage img.desk{max-width:none;width:150%;margin-left:42%;border-radius:8px}
+
+  @media (max-width:1100px){
+    .l-reference{grid-template-columns:1fr}.l-reference .tiles{position:static;grid-template-columns:repeat(4,1fr)}
+    .l-bento{grid-template-columns:1fr 1fr}.l-bento .s2,.l-bento .s1,.l-bento .s3{grid-column:auto}.l-bento .s2{grid-column:1/-1}
+    .l-threes{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:860px){
+    .grid,.l-wides,.l-bento,.l-threes{grid-template-columns:1fr}
+    .l-wides .wide,.l-bento .s2{grid-column:auto}
+    .l-reference .tiles{grid-template-columns:1fr 1fr}
+    .beside,.beside.flip{grid-template-columns:1fr}.beside .words,.beside.flip .words{order:0;padding:0}
+    .stage,.beside .stage,.l-reference .big .stage{height:22rem}.phone{width:150px}.pair{gap:14px}.pair .phone{width:140px}
+  }
+  @media (prefers-reduced-motion:reduce){.card,.stage > *,.pills,.pills *{transition:none!important}.card:is(:hover,:focus-within){transform:none}.card:is(:hover,:focus-within) .stage > *{transform:none!important}}
+
+  /* the option bar */
+  .bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99;display:flex;gap:2px;flex-wrap:wrap;justify-content:center;background:#111;border-radius:999px;padding:4px;font:500 12px/1 system-ui;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+  .bar span{color:#777;padding:9px 6px 9px 10px}
+  .bar a{color:#bbb;padding:9px 11px;border-radius:999px;text-decoration:none;white-space:nowrap}
+  .bar a[aria-current="true"]{background:#fff;color:#000}
+</style>
+</head>
+<body>
+<nav class="bar" id="bar" aria-label="Layouts"></nav>
+<section class="work">
+  <h2>Selected <em>work</em><i></i></h2>
+  <div class="grid" id="grid"></div>
+  <div class="more" id="more"></div>
+</section>
+
+<script type="module">
+const LAYOUTS = [['wides', 'A · Two wides'], ['reference', 'B · Like the reference'], ['bento', 'C · Bento'], ['threes', 'D · Three across']];
+const q = new URLSearchParams(location.search).get('layout');
+const L = LAYOUTS.some(([k]) => k === q) ? q : 'wides';
+document.getElementById('bar').innerHTML = '<span>Layout</span>' + LAYOUTS.map(([k, l]) => `<a href="?layout=${k}" aria-current="${k === L}">${l}</a>`).join('');
+
+const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+const pillA = (label) => `<a class="pills" href="#"><span class="pill">${label}</span><span class="arrow">${ARROW}${ARROW}</span></a>`;
+const I = '../../public/images/work-play/';
+const phone = (src) => `<div class="phone"><div><img src="${I}${src}" alt=""></div></div>`;
+
+// Words from src/data/work.ts and the live home cards.
+const C = {
+  okta: { g: '#c9dcf2', co: 'Okta', tags: 'Identity & security · Design systems', title: 'Rebuilding IAM for enterprise admins', line: 'A ground-up rebuild of the admin console, shipped under live tenants.', media: `<img class="desk" src="${I}okta-desk.webp" alt="">` },
+  privacy: { g: '#e0d6ef', co: 'PayPal', tags: 'Fintech · Privacy & data', title: 'Privacy settings people can read', line: 'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.', media: phone('pv-hub.webp') },
+  ads: { g: '#f6dcc6', co: 'PayPal', tags: 'Fintech · Ads & personalization', title: 'Privacy-first ad personalization', line: 'Ad data sharing moved from opted in by default to asking first.', media: phone('ads-privacy.webp') },
+  debit: { g: '#cfe7d8', co: 'PayPal', tags: 'Fintech · Growth', title: 'A debit card people finish signing up for', line: 'Card enrollment and cash back rebuilt inside the PayPal app.', media: phone('debit-intro.webp') },
+  chase: { g: '#f4dc9c', co: 'Walmart Labs', tags: 'Fintech · Growth · Research', title: 'Chase Pay inside Walmart Pay', line: 'Brought Chase Pay into Walmart Pay, validated with real customers in-store.', media: phone('ch-setup.webp') },
+  scango: { g: '#dde5cc', co: 'Walmart Labs', tags: 'Retail · 0→1 · Research', title: 'Scan & Go, in-store', line: 'Scan as you shop, pay on your phone, skip the line. Research to store pilot in a year.',
+    // One phone, its scan screen only, playing the /work tile's scan (work-play.css, positions from workPlay.ts):
+    // the line sweeps the frame, the jar's barcode catches green, the item card rises; holds, then again.
+    media: `<div class="phone"><div class="sg">
+      <img src="${I}sg-scan-base.webp" alt="">
+      <span class="sg-band" style="left:22.65%;top:24.765%;width:54.2%;height:30.63%"></span>
+      <span class="sg-hit" style="left:15.01%;top:43.43%;width:20.36%;height:6.34%"></span>
+      <span class="sg-flash"></span>
+      <img class="sg-layer sg-sheet" src="${I}sg-scan-sheet.webp" alt="">
+      <img class="sg-layer sg-bar" src="${I}sg-scan-bar.webp" alt="">
+    </div></div>` },
+};
+// Its wide card: the scanning phone beside the cart.
+const scangoWide = `<div class="pair">${C.scango.media}${phone('sg-cart.webp')}</div>`;
+
+const card = (k, cls = '', media) => { const c = C[k]; return `
+  <article class="card ${cls}">
+    <div class="stage" style="--g:${c.g}">${media || c.media}</div>
+    <div class="words">
+      <span class="label meta">${c.co} · ${c.tags}</span>
+      <h3>${c.title}</h3>
+      <p>${c.line}</p>
+      <span class="pills" aria-hidden="true"><span class="pill">View case study</span><span class="arrow">${ARROW}${ARROW}</span></span>
+    </div>
+    <a class="cover" href="#" aria-label="${c.title}, view case study"></a>
+  </article>`; };
+
+const grid = document.getElementById('grid'), more = document.getElementById('more');
+grid.classList.add('l-' + L);
+grid.innerHTML = {
+  wides: card('okta', 'wide beside') + card('privacy') + card('ads') + card('scango', 'wide beside flip', scangoWide) + card('debit') + card('chase'),
+  reference: `<div class="col">${card('okta', 'big')}${card('privacy', 'big')}${card('scango', 'big', scangoWide)}</div>
+    <div class="col tiles">${card('ads', 'tile')}${card('debit', 'tile')}${card('chase', 'tile')}
+      <div class="card tile all"><h3>More <em>on Work</em></h3>${pillA('View all work')}</div></div>`,
+  bento: card('okta', 's2') + card('privacy', 's1') + card('ads', 's1') + card('scango', 's2', scangoWide) + card('debit', 's3') + card('chase', 's3'),
+  threes: card('okta') + card('privacy') + card('scango') + card('ads') + card('debit') + card('chase'),
+}[L];
+more.innerHTML = L === 'reference' ? '' : pillA('View all work');
+
+// Scan & Go's scan: plays on its own (as the home phones do), restarting every 6.5s; still under reduced motion.
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const loop = () => document.querySelectorAll('.sg').forEach(s => { s.classList.remove('is-live'); void s.offsetWidth; s.classList.add('is-live'); });
+  loop(); setInterval(loop, 6500);
+}
+</script>
+</body>
+</html>

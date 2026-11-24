@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound, round 12 — real recordings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* Served from the repo root (launch config "sound-mockup") so her
+     pieces come straight from public/images. A rough copy of the
+     playground wall: columns that rise with the page's scroll, each at
+     its own speed, eased. */
+  :root {
+    --paper: #fcfcfc; --ink: #262626; --ink-dim: #707070; --line: rgb(0 0 0 / 0.1);
+    --font-sans: 'Manrope', system-ui, sans-serif; --font-serif: 'Crimson Pro', serif; --font-mono: 'Azeret Mono', monospace;
+    --gutter: 2.5rem;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 600; }
+  .mono { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .bar { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; gap: .5rem; align-items: center; padding: .75rem var(--gutter); background: var(--paper); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .bar .name { font-size: .875rem; margin-right: auto; }
+  .pill { border: 1px solid var(--ink); background: none; border-radius: 999px; padding: .4rem .8rem; cursor: pointer; font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; }
+  .pill[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+  .sep { width: 1px; height: 1.2rem; background: var(--line); margin: 0 .5rem; }
+  input[type=range] { accent-color: var(--ink); width: 6rem; }
+  .intro { padding: 7rem var(--gutter) 3rem; max-width: 64rem; }
+  h1 { font-family: var(--font-serif); font-weight: 300; letter-spacing: -0.03em; margin: 0 0 .75rem; line-height: 1.05; font-size: 2.75rem; }
+  h1 em { font-style: italic; }
+  p { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); margin: 0 0 .5rem; max-width: 46rem; }
+  p b { color: var(--ink); }
+  .scroller { height: 520vh; position: relative; }
+  .stage { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+  .cols { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2.5rem; padding: 0 var(--gutter); }
+  .col { display: flex; flex-direction: column; gap: 2.5rem; padding-top: 70vh; will-change: transform; }
+  .col img { width: 100%; height: auto; display: block; }
+  .col:nth-child(odd) img { width: 82%; }
+  .col:nth-child(3n) img { margin-left: auto; }
+  .heading { position: absolute; left: 0; right: 0; top: 34vh; text-align: center; font-family: var(--font-serif); font-weight: 300; font-size: 2.75rem; letter-spacing: -0.03em; pointer-events: none; }
+  .heading em { font-style: italic; }
+  .meter { position: fixed; left: var(--gutter); bottom: 1.25rem; z-index: 10; display: flex; gap: .75rem; align-items: center; }
+  .meter i { display: block; width: 8rem; height: 2px; background: var(--line); position: relative; }
+  .meter i b { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--ink); }
+  .outro { padding: 4rem var(--gutter) 6rem; max-width: 64rem; }
+  .bar .group { display: contents; }
+  .pill.ref { border-style: dashed; }
+  .opts { display: grid; grid-template-columns: 9rem 1fr; gap: .4rem 1.25rem; max-width: 52rem; margin-top: 1rem; }
+  .opts h2 { grid-column: 1 / -1; font-family: var(--font-serif); font-weight: 300; font-size: 1.375rem; margin: 1rem 0 .25rem; color: var(--ink); }
+  .opts dt { font-family: var(--font-mono); font-weight: 400; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); padding-top: .2rem; }
+  .opts dd { margin: 0; font-size: .75rem; line-height: 1.8; color: var(--ink-dim); }
+  .try { margin-left: .5rem; border: 1px solid var(--line); background: none; border-radius: 999px; padding: .1rem .55rem; cursor: pointer; font-family: var(--font-mono); font-weight: 400; font-size: .625rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+  .rules { margin: 1rem 0 0; padding: 0; list-style: none; max-width: 46rem; }
+  .rules li { font-size: .75rem; line-height: 1.8; color: var(--ink-dim); margin-bottom: .4rem; }
+  .rules a { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="name">Sound, round 12 · real recordings</span>
+  <button class="pill" id="master" aria-pressed="false">Sound off</button>
+  <span class="sep"></span>
+  <span data-group="v" class="group">
+    <button class="pill ref" aria-pressed="false" data-v="L">Live now</button>
+    <button class="pill" aria-pressed="true" data-v="A">A · Pencil</button>
+    <button class="pill" aria-pressed="false" data-v="B">B · Marimba</button>
+    <button class="pill" aria-pressed="false" data-v="C">C · Piano settle</button>
+    <button class="pill" aria-pressed="false" data-v="D">D · Pencil + settle</button>
+  </span>
+</div>
+
+<div class="intro">
+  <h1>Real <em>recordings</em></h1>
+  <p>Every sound before this round was made in the browser out of plain tones and noise. These are real recordings, trimmed to a moment, the treble softened, and played the way the site would play them (no echo, the site's level). They come from the University of Iowa's instrument recordings (free for any use) and a public-domain recording of a pencil on paper.</p>
+  <dl class="opts">
+    <dt>Live now</dt><dd>The detent the site plays today, for comparison. <button class="try" data-try="L">Play</button></dd>
+    <dt>A · Pencil</dt><dd>One short pencil stroke on paper as each piece crosses the middle of the screen. No two in a row are the same stroke. <button class="try" data-try="A">Play</button></dd>
+    <dt>B · Marimba</dt><dd>A soft yarn-mallet marimba note as pieces pass, at most about three a second, wandering through a five-note scale. <button class="try" data-try="B">Play</button></dd>
+    <dt>C · Piano settle</dt><dd>Silent while you scroll. When you stop, a real piano, played very softly, gives one warm chord (D, A, D, F♯). <button class="try" data-try="C">Play</button></dd>
+    <dt>D · Pencil + settle</dt><dd>The pencil while you move, the piano when you land. <button class="try" data-try="D">Play</button></dd>
+  </dl>
+  <p style="margin-top:1rem">Press <b>Sound off</b> so it reads <b>Sound on</b>, pick one, and scroll down slowly, then fast, then stop. The Play buttons act out one short scroll.</p>
+  <p class="mono" id="status">Loading recordings…</p>
+  <p class="mono">Scroll ↓</p>
+</div>
+
+<div class="scroller" id="scroller">
+  <div class="stage">
+    <div class="heading">A place for <em>endless</em> experimentation</div>
+    <div class="cols" id="cols"></div>
+  </div>
+</div>
+
+<div class="meter mono" aria-hidden="true">Speed <i><b id="speed"></b></i></div>
+
+<div class="outro">
+  <p><b>My pick:</b> C · Piano settle. It's the softest and the rarest, and a real piano played quietly is about as close to universally pleasant as a sound gets. D is the one if you want the wall to answer your hand as well.</p>
+  <p class="mono">Sources: University of Iowa Electronic Music Studios (piano pp, marimba yarn pp), Wikimedia Commons "Pencil scratchings.ogg" (public domain).</p>
+</div>
+
+<script src="snd/data.js"></script>
+<script>
+  let ac = null, on = false;
+  const ctx = () => ac ||= new (window.AudioContext || window.webkitAudioContext)();
+  const ready = () => (on && ac && ac.state === 'running') ? ac : null;
+  const BUF = {};
+  let M = null;
+  async function load() {
+    const a = ctx();
+    // embedded in snd/data.js so the page also works opened straight from disk
+    M = window.SND_MANIFEST;
+    const names = [...M.pencil, ...M.marimba, ...M.piano];
+    const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
+    await Promise.all(names.map(async (n) => { BUF[n] = await new Promise((ok, no) => a.decodeAudioData(bytes(window.SND_DATA[n]), ok, no)); }));
+    document.getElementById('status').textContent = names.length + ' recordings loaded';
+  }
+  load().catch((e) => { document.getElementById('status').textContent = 'Could not load recordings: ' + e.message; });
+
+  function play(name, gain, delay = 0, rate = 1) {
+    const a = ready(); if (!a || !BUF[name]) return;
+    const s = a.createBufferSource(), g = a.createGain();
+    s.buffer = BUF[name]; s.playbackRate.value = rate; g.gain.value = gain;
+    s.connect(g); g.connect(a.destination); s.start(a.currentTime + delay);
+  }
+  // the live detent, as src/scripts/sound.ts plays it
+  function env(a, peak, att, rel, t) { const g = a.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att); g.gain.exponentialRampToValueAtTime(.0001, t + att + rel); g.connect(a.destination); return g; }
+  let NB = null;
+  function detent(k) {
+    const a = ready(); if (!a) return;
+    const lvl = .5 + .5 * k, t = a.currentTime, o = a.createOscillator();
+    o.frequency.setValueAtTime(1300 + k * 500, t); o.frequency.exponentialRampToValueAtTime(700, t + .025);
+    o.connect(env(a, .18 * lvl, .001, .03, t)); o.start(t); o.stop(t + .05);
+    if (!NB) { NB = a.createBuffer(1, a.sampleRate, a.sampleRate); const d = NB.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const n = a.createBufferSource(); n.buffer = NB; const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 4200; f.Q.value = 3;
+    n.connect(f); f.connect(env(a, .08 * lvl, .001, .012, t)); n.start(t, Math.random() * .5); n.stop(t + .05);
+  }
+
+  let lastPencil = -1, lastTickAt = 0, lastNoteAt = 0, mi = 2, dir = 1;
+  function pencil(k) {
+    const now = performance.now(); if (now - lastTickAt < 70) return; lastTickAt = now;
+    let i; do { i = Math.floor(Math.random() * M.pencil.length); } while (M.pencil.length > 1 && i === lastPencil);
+    lastPencil = i; play(M.pencil[i], .35 + .35 * k, 0, .94 + Math.random() * .12);
+  }
+  function marimba(k) {
+    const now = performance.now(); if (now - lastNoteAt < 300) return; lastNoteAt = now;
+    mi = Math.max(0, Math.min(M.marimba.length - 1, mi + dir * (Math.random() < .2 ? -1 : 1)));
+    if (mi === 0 || mi === M.marimba.length - 1) dir = -dir;
+    play(M.marimba[mi], .3 + .25 * k);
+  }
+  function settle() { M.piano.forEach((n, i) => play(n, .28 - i * .03, i * .055)); }
+  let moving = false, stillFor = 0, movedFor = 0;
+  function lander(k, dt) {
+    if (k > .06) { stillFor = 0; movedFor += dt; moving = true; }
+    else if (k < .02 && moving) { stillFor += dt; if (stillFor > 160) { moving = false; if (movedFor > 250) settle(); movedFor = 0; } }
+  }
+  // a piece crossed the middle of the screen
+  function crossing(k) {
+    if (!ready() || !M) return;
+    if (pick === 'L') { const now = performance.now(); if (now - lastTickAt >= 30) { lastTickAt = now; detent(k); } }
+    if (pick === 'A' || pick === 'D') pencil(k);
+    if (pick === 'B') marimba(k);
+  }
+  function drive(k, dt) { if (ready() && M && (pick === 'C' || pick === 'D')) lander(k, dt); }
+
+  const btn = document.getElementById('master');
+  function setOn(v) { on = v; btn.setAttribute('aria-pressed', on); btn.textContent = on ? 'Sound on' : 'Sound off'; return on ? ctx().resume() : Promise.resolve(); }
+  btn.onclick = () => setOn(!on);
+  let pick = 'A';
+  const choose = (v) => { pick = v; moving = false; document.querySelectorAll('[data-v]').forEach((x) => x.setAttribute('aria-pressed', x.dataset.v === v)); };
+  document.querySelector('[data-group]').addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (b) choose(b.dataset.v); });
+  // Play: act out a short scroll — speed, a crossing every ~240ms, then a stop
+  let fake = null;
+  document.querySelectorAll('[data-try]').forEach((b) => b.onclick = async () => {
+    if (!on) await setOn(true);
+    choose(b.dataset.try); fake = performance.now();
+    [0, 240, 480, 720, 960, 1200].forEach((ms) => setTimeout(() => crossing(.6), ms));
+  });
+  function fakeSpeed(now) {
+    const s = (now - fake) / 1000;
+    if (s > 2.6) { fake = null; return 0; }
+    return s < 1.4 ? .6 : s < 1.8 ? .6 * (1.8 - s) / .4 : 0;
+  }
+  // ---------- the wall (as rounds 8–9) ----------
+  const files = ['play-three', 'play-porch', 'play-reading', 'play-earrings', 'play-care', 'play-green-eyes', 'play-sage', 'play-hermione', 'play-cup', 'play-bears', 'play-blue-sari', 'play-late-desk'];
+  const colsEl = document.getElementById('cols'), N = 5, SPEEDS = [.92, 1.08, 1, 1.12, .88];
+  const cols = [];
+  for (let c = 0; c < N; c++) {
+    const col = document.createElement('div'); col.className = 'col';
+    for (let k = 0; k < 30; k++) { const img = document.createElement('img'); img.src = `../../public/images/${files[(c * 3 + k * 5) % files.length]}.jpg`; img.alt = ''; col.append(img); }
+    colsEl.append(col); cols.push({ el: col, y: 0, imgs: [...col.children] });
+  }
+  const scroller = document.getElementById('scroller'), speedEl = document.getElementById('speed');
+  let eased = 0, prevEased = 0, last = performance.now(), smoothSpeed = 0;
+  function frame(now) {
+    const dt = Math.min(64, now - last); last = now;
+    const target = Math.max(0, scrollY - scroller.offsetTop) * .8;
+    eased += (target - eased) * (1 - Math.exp(-dt / 120));
+    const mid = innerHeight / 2;
+    cols.forEach((c, ci) => {
+      const before = c.y; c.y = -eased * SPEEDS[ci]; c.el.style.transform = `translateY(${c.y}px)`;
+      c.imgs.forEach((img) => { const ctr = img.offsetTop + img.offsetHeight / 2, p = ctr + before, q = ctr + c.y; if ((p - mid) * (q - mid) < 0) crossing(Math.min(1, Math.abs(q - p) / 12)); });
+    });
+    const v = Math.abs(eased - prevEased) / Math.max(1, dt); prevEased = eased;
+    smoothSpeed += (v - smoothSpeed) * (1 - Math.exp(-dt / 80));
+    let k = Math.min(1, smoothSpeed / 2.5);
+    if (fake !== null) k = Math.max(k, fakeSpeed(now));
+    speedEl.style.width = k * 100 + '%';
+    drive(k < .01 ? 0 : k, dt);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

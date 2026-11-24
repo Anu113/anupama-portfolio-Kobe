@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Globe palettes</title>
+<!--
+  Palette sheet for the "like the reference" globe (2026-11-23). She liked
+  Soft blue (#c8d8f0, from her blue card) but finds it too pale, and a
+  brighter blue turns into andreas.vision's azure (#4aa8f5 / #00aaff),
+  which we don't want. These are light colours with more life than Soft
+  blue that stay clear of his blue: each a ground, the globe's sea a step
+  darker, its land, and an accent for "untangle". Pick here; then they go
+  into the page as colourways.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Crimson+Pro:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#1f1b18;--grey:#6d665f;--sans:'Geist',system-ui,sans-serif;--serif:'Crimson Pro',Georgia,serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#faf9f7;color:var(--ink);font:400 14px/1.5 var(--sans);padding:56px clamp(20px,5vw,72px) 80px}
+  h1{font:italic 400 44px/1.05 var(--serif);letter-spacing:-.02em}
+  .dek{color:var(--grey);margin-top:10px;max-width:720px}
+  .refs{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--grey)}
+  .refs span{display:inline-flex;gap:6px;align-items:center}
+  .refs i{width:18px;height:18px;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px;margin-top:36px}
+  .card{border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+  .scene{position:relative;aspect-ratio:16/10;display:grid;grid-template-columns:1fr 1.1fr;align-items:center;padding:0 22px;gap:10px}
+  .scene canvas{width:100%;aspect-ratio:1;image-rendering:pixelated}
+  .scene h3{font:500 25px/1.05 var(--sans);letter-spacing:-.01em}
+  .scene p{font-size:11.5px;line-height:1.45;margin-top:8px;opacity:.8}
+  .meta{padding:14px 18px 18px}
+  .meta b{font:500 15px/1.3 var(--sans);display:block}
+  .meta b span{display:inline-block;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;text-align:center;line-height:22px;margin-right:8px}
+  .meta p{color:var(--grey);margin-top:4px;font-size:13px}
+  .sw{display:flex;gap:4px;margin-top:10px;flex-wrap:wrap}
+  .sw span{display:inline-flex;gap:5px;align-items:center;font:400 11px/1 ui-monospace,'SF Mono',monospace;color:var(--grey);padding:4px 6px 4px 4px;border-radius:6px;background:#f4f2ef}
+  .sw i{width:14px;height:14px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+</style>
+</head>
+<body>
+<h1>Light colours, a little brighter</h1>
+<p class="dek">Each is a step livelier than Soft blue and stays clear of his azure. The card shows the colour behind the globe with the closing line, as it would sit on the page. Tell me the numbers you like and I'll put them into the page.</p>
+<div class="refs">
+  <span><i style="background:#c8d8f0"></i>Soft blue (yours, too pale)</span>
+  <span><i style="background:#4aa8f5"></i>His blue (to avoid)</span>
+</div>
+<div class="grid" id="grid"></div>
+
+<script type="module">
+// [name, ground, sea (a step darker), land, accent, text, note]
+const P = [
+  ['Periwinkle', '#bccbf6', '#a9bbf0', '#ffffff', '#9d2f16', '#1e2547', 'Soft blue with a little violet in it: brighter, but nowhere near his azure. Rust from your sweater for the accent.'],
+  ['Cornflower mist', '#b3c9f2', '#9fb9ec', '#ffffff', '#24356b', '#18213f', 'The closest to Soft blue, one step brighter. Navy accent.'],
+  ['Periwinkle + coral', '#c3cff8', '#afbff3', '#ffffff', '#e6614e', '#1e2547', 'Periwinkle with the coral from your maroon reference: blue and coral are opposites, so they lift each other.'],
+  ['Lilac', '#d4c6f4', '#c4b3ee', '#ffffff', '#5b3aa0', '#241a3d', 'A brighter take on the PayPal lilac. Soft, but not grey.'],
+  ['Aqua', '#bfe7e3', '#a9ddd8', '#ffffff', '#0f6b66', '#12302e', 'Seafoam rather than sky, so it can’t read as his blue. Deep teal accent.'],
+  ['Mint', '#c6ead2', '#b0e0c1', '#ffffff', '#1f6b45', '#16301f', 'Fresh and light. Green accent.'],
+  ['Pistachio', '#dcecb8', '#cde3a0', '#ffffff', '#5a6b12', '#252c0c', 'Warmer green, a little sunnier.'],
+  ['Butter', '#f6e4a3', '#efd88a', '#ffffff', '#9d2f16', '#2c2410', 'The Walmart butter, brighter. Rust accent from your sweater.'],
+  ['Apricot', '#f9cfb0', '#f4bf99', '#ffffff', '#9d2f16', '#2e1a10', 'Warm and close to your painting’s skin and table tones.'],
+  ['Rose', '#f6c9d2', '#f0b6c2', '#ffffff', '#9d2f16', '#2e1419', 'A clear pink, lighter than Blush and less grey.'],
+  ['Coral wash', '#f8c4b4', '#f3b09c', '#ffffff', '#b5361f', '#2e140c', 'A light coral: the maroon reference’s coral, softened to a ground.'],
+  ['Sky + rust', '#bdd3f3', '#a8c4ee', '#fbeee6', '#9d2f16', '#1a2238', 'A bluer Soft blue with cream land and your sweater’s rust, tying it to the painting.'],
+];
+const grid = document.getElementById('grid');
+grid.innerHTML = P.map(([n, bg, sea, land, acc, text, note], i) => `
+  <article class="card">
+    <div class="scene" style="background:${bg};color:${text}">
+      <canvas width="44" height="44" data-i="${i}"></canvas>
+      <div><h3>Built to <span style="color:${acc}">untangle</span></h3><p>Ten years of complicated systems made usable: payments, privacy and identity.</p></div>
+    </div>
+    <div class="meta"><b><span>${i + 1}</span>${n}</b><p>${note}</p>
+      <div class="sw">${[['ground', bg], ['sea', sea], ['land', land], ['accent', acc], ['text', text]].map(([k, c]) => `<span><i style="background:${c}"></i>${k} ${c}</span>`).join('')}</div>
+    </div>
+  </article>`).join('');
+
+// a small pixel globe on each, from the real world map, centred on India
+const [{ feature }, topo] = await Promise.all([
+  import('https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm'),
+  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/land-110m.json').then(r => r.json()),
+]);
+const MW = 720, MH = 360, mc = document.createElement('canvas'); mc.width = MW; mc.height = MH;
+const mx = mc.getContext('2d'); mx.fillStyle = '#fff';
+for (const f of feature(topo, topo.objects.land).features) {
+  const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+  for (const poly of polys) { mx.beginPath(); for (const ring of poly) ring.forEach(([lo, la], k) => { const x = (lo + 180) / 360 * MW, y = (90 - la) / 180 * MH; k ? mx.lineTo(x, y) : mx.moveTo(x, y); }); mx.fill('evenodd'); }
+}
+const md = mx.getImageData(0, 0, MW, MH).data;
+const land = (lo, la) => md[(Math.min(MH - 1, Math.max(0, Math.floor((90 - la) / 180 * MH))) * MW + Math.floor(((lo + 180) % 360 + 360) % 360 / 360 * MW)) * 4] > 127;
+const RAD = Math.PI / 180, l0 = 70, p0 = 22;
+document.querySelectorAll('canvas[data-i]').forEach(cv => {
+  const [, bg, sea, ld] = P[+cv.dataset.i], x = cv.getContext('2d'), N = 44;
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+    const X = (i + .5) / N * 2 - 1, Y = -((j + .5) / N * 2 - 1), rho = Math.hypot(X, Y); if (rho > 1) continue;
+    const c = Math.asin(rho), sc = Math.sin(c), cc = Math.cos(c);
+    const la = Math.asin(cc * Math.sin(p0 * RAD) + (rho ? Y * sc * Math.cos(p0 * RAD) / rho : 0)) / RAD;
+    const lo = l0 + Math.atan2(X * sc, rho * Math.cos(p0 * RAD) * cc - Y * Math.sin(p0 * RAD) * sc) / RAD;
+    x.fillStyle = land(lo, la) ? ld : (cc < .35 ? sea : sea);
+    x.fillRect(i, j, 1, 1);
+  }
+});
+</script>
+</body>
+</html>

@@ -178,7 +178,7 @@
   const cols = [];
   for (let c = 0; c < N; c++) {
     const col = document.createElement('div'); col.className = 'col';
-    for (let k = 0; k < 30; k++) { const img = document.createElement('img'); img.src = `/public/images/${files[(c * 3 + k * 5) % files.length]}.jpg`; img.alt = ''; col.append(img); }
+    for (let k = 0; k < 30; k++) { const img = document.createElement('img'); img.src = `../../public/images/${files[(c * 3 + k * 5) % files.length]}.jpg`; img.alt = ''; col.append(img); }
     colsEl.append(col); cols.push({ el: col, y: 0, imgs: [...col.children] });
   }
   const scroller = document.getElementById('scroller'), speedEl = document.getElementById('speed');

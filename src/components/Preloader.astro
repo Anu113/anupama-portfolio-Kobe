@@ -18,7 +18,7 @@
 
    Pacing: it never runs faster than its own pace (--dur-preloader-blinds),
    and never further than the page has loaded — its real (non-lazy)
-   images and the hero portrait's sprite (`hero-scrub:ready`). While the
+   images and the hero portrait's first frame (`hero-scrub:ready`; not the 4.6MB sheet, which loads after). While the
    page is still loading, the slats clear only in proportion, and the last
    pixel (or the last slats) waits until it's ready. After
    --dur-preloader-max it lets go regardless and the page shows as it is.
@@ -116,7 +116,7 @@ const pages = ['/'];
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const inputs = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
     const t0 = window.__preloaderT0 ?? performance.now();
-    const maxDur = cssMs('--dur-preloader-max', 4000);
+    const maxDur = cssMs('--dur-preloader-max', 2500);
     let ended = false;
     let raf = 0;
 

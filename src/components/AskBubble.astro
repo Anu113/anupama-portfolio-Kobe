@@ -51,6 +51,19 @@
      edge facing it, and a contact pool under his feet on the book, all
      night. The script follows the lamp's `cursor-lamp` event.
 
+   PILL — once he's scrolled up out of view on the books, Moss shows
+     again in the bottom-right corner (the corner his panel opens in):
+     his still frame beside a light message, "Moss" over "Short on time?
+     Let Moss help." (her earlier launcher line), white on a hairline and
+     a soft shadow, mono, the tail toward him. The first time it shows,
+     the line types itself in behind a blinking bar caret, once. Hidden
+     over the black footer (its icons sit in that corner) and while the
+     panel is open. One button; it opens the same panel and focus comes
+     back to it. Static, full line, no caret blink under reduced motion.
+     Chosen on request (2026-11-19): round 3 of experiments/moss-cta/,
+     "Paper" + bar + types once + Moss beside. The hero card above keeps
+     its own words and behaviour, on request. Moved to <body> on load.
+
    PANEL — opens on click (not hover: it's a dialog with a scrim), fixed
      bottom-right, full-width bottom sheet under 640px. Moved to <body> on
      load so no transformed ancestor can trap its position:fixed. Dark and
@@ -100,6 +113,22 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
       <span class="pixel-launcher__first">Psst<span class="pixel-launcher__dots"><i></i><i></i><i></i></span></span>
       <span class="pixel-launcher__text"><span>Want the short version?</span></span>
     </span>
+  </button>
+</div>
+
+<!-- The pill: Moss again, bottom-right, once the hero (and him on the
+     books) has scrolled away. Moved to <body> by the script. The line is
+     here in full for no-JS and reduced motion; the script types it in. -->
+<div class="pixel-dock" data-pixel-dock>
+  <button class="pixel-dock__btn" type="button" aria-label="Short on time? Let Moss help. Ask Moss about Anupama’s work" aria-expanded="false" aria-controls="pixel-panel" aria-haspopup="dialog">
+    <span class="pixel-dock__msg" aria-hidden="true">
+      <span class="pixel-dock__who">Moss</span>
+      <span class="pixel-dock__line">
+        <span class="pixel-dock__ghost">Short on time? Let Moss help.<span class="pixel-dock__caret"></span></span>
+        <span class="pixel-dock__typed"><span data-pixel-dock-text>Short on time? Let Moss help.</span><span class="pixel-dock__caret"></span></span>
+      </span>
+    </span>
+    <span class="pixel-dock__moss" aria-hidden="true"></span>
   </button>
 </div>
 
@@ -315,6 +344,60 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
   .pixel-launch.is-below .pixel-launcher__card { left: auto; right: 4%; top: 108%; justify-items: end; }
   .pixel-launch.is-below .pixel-launcher__card::before { left: auto; right: 1rem; top: calc(var(--ask-card-tail) / -2 - 1px); transform: rotate(135deg); }
 
+  /* ================= the pill, after the hero ================= */
+  /* "Paper" + bar caret + types once + Moss beside, from round 3 of
+     experiments/moss-cta/. A light message from him in the corner his
+     panel opens in: "Moss" small and dim over "Short on time? Let Moss
+     help." in mono, white on a hairline and a soft shadow, the tail at
+     the bottom-right pointing at him; his still watercolour (frame 0)
+     stands beside it. Shown only once the books have scrolled up out of
+     view, hidden over the black footer (its icons sit in this corner)
+     and while the panel is open. The first time it shows, the line types
+     itself in behind a blinking bar (the accent: a mark, like the
+     panel's caret); it never types again. Role colours, so it re-inks
+     in dark mode. Values under ASK DOCK in tokens.css. */
+  .pixel-dock {
+    position: fixed; right: var(--ask-dock-inset); bottom: var(--ask-dock-inset); z-index: var(--z-ask-dock);
+    opacity: 0; transform: translateY(var(--ask-dock-rise)) scale(0.94); transform-origin: 100% 100%;
+    visibility: hidden; pointer-events: none;
+    transition: opacity var(--dur-ask-dock) var(--ease-out), transform var(--dur-ask-dock) var(--ease-out), visibility 0s var(--dur-ask-dock);
+  }
+  .pixel-dock.is-shown { opacity: 1; transform: none; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+  .pixel-dock__btn {
+    display: flex; align-items: flex-end; gap: var(--ask-dock-gap);
+    padding: 0; border: 0; background: none; color: var(--fg); cursor: pointer; text-align: left;
+    font-family: var(--font-mono);
+  }
+  .pixel-dock__btn[aria-expanded='true'] { opacity: 0; pointer-events: none; }
+  .pixel-dock__btn:focus-visible { outline: none; }
+  .pixel-dock__btn:focus-visible .pixel-dock__msg { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .pixel-dock__msg {
+    display: grid; gap: var(--ask-dock-who-gap);
+    max-width: var(--ask-dock-max); margin-bottom: var(--ask-dock-lift);
+    padding: var(--ask-dock-pad-y) var(--ask-dock-pad-x);
+    border: 1px solid var(--rule); border-radius: var(--ask-dock-radius) var(--ask-dock-radius) var(--ask-dock-tail-radius) var(--ask-dock-radius);
+    background: var(--bg); box-shadow: var(--ask-card-shadow);
+    transition: transform var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+  }
+  .pixel-dock__who { font: 500 var(--ask-launch-step-2)/1.2 var(--font-mono); color: var(--fg-dim); }
+  /* the full line holds the size while the typed copy fills over it,
+     so the bubble doesn't grow letter by letter */
+  .pixel-dock__line { display: grid; font: 600 var(--ask-dock-step)/1.35 var(--font-mono); }
+  .pixel-dock__ghost, .pixel-dock__typed { grid-area: 1 / 1; }
+  .pixel-dock__ghost { visibility: hidden; }
+  .pixel-dock__caret {
+    display: inline-block; width: var(--ask-dock-caret-w); height: 1.05em; margin-left: 2px; vertical-align: -0.15em;
+    background: var(--accent); animation: pixel-dock-blink var(--dur-ask-caret) steps(1) infinite;
+  }
+  @keyframes pixel-dock-blink { 50% { opacity: 0; } }
+  .pixel-dock__moss {
+    flex: none; width: var(--ask-dock-moss); aspect-ratio: 188 / 223;
+    background: url('/images/moss/moss-idle.webp') 0 0 / 100% 100% no-repeat;
+    transform-origin: 53% 96%; transition: transform var(--dur-hover) var(--ease-out);
+  }
+  .pixel-dock__btn:hover .pixel-dock__msg, .pixel-dock__btn:focus-visible .pixel-dock__msg { transform: translateY(-2px); border-color: var(--fg-dim); }
+  .pixel-dock__btn:hover .pixel-dock__moss, .pixel-dock__btn:focus-visible .pixel-dock__moss { transform: translateY(-3px) scale(1.05); }
+
   /* ================= panel ================= */
   .pixel-scrim {
     position: fixed; inset: 0; z-index: 1000; background: var(--pixel-scrim);
@@ -435,6 +518,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
 
   @media (prefers-reduced-motion: reduce) {
     .pixel-launcher, .pixel-launcher__card, .pixel-launcher__text, .pixel-launcher__dots, .pixel-scrim, .pixel-panel,
+    .pixel-dock, .pixel-dock *,
     .pixel-panel *, .pixel-cat, .pixel-cat * { animation: none !important; transition: none !important; }
     .pixel-shimmer { color: var(--pixel-dim); background: none; }
   }
@@ -442,6 +526,7 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
 
 <script>
   import { playKey } from '../scripts/sound';
+  import { cssMs } from '../scripts/css-time';
   interface Card { label: string; title: string; sub: string; href: string }
   interface Exit { label: string; href: string; external?: boolean }
   interface Node { q: string; say: string[]; cards?: Card[]; exits?: Exit[]; next?: string[] }
@@ -493,6 +578,9 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
     const reach = () => lamp.radius * ((parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lamp-reach')) || 70) / 100);
     const rimW = () => (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hero-rim-w')) || 3) * 0.7;
     const light = () => {
+      // Lamp off and nothing to clear (always, in light mode): skip the
+      // layout read, which ran on every scroll frame.
+      if (!lamp.on && !wasNear) return;
       const r = moss.getBoundingClientRect();
       const R = reach();
       const x = lamp.x - r.left, y = lamp.y - r.top;
@@ -689,25 +777,71 @@ const bodyCat = `<span class="pixel-cat is-asleep"><img src="/images/moss/moss-s
       await say('start', id);
     }
 
+    // Two buttons open him: Moss on the books, and the pill once the hero
+    // has gone. Focus goes back to whichever one was pressed.
+    const dock = document.querySelector<HTMLElement>('[data-pixel-dock]');
+    const dockBtn = dock?.querySelector<HTMLButtonElement>('.pixel-dock__btn') ?? null;
+    const openers = [launcher, dockBtn].filter((b): b is HTMLButtonElement => !!b);
+    let opener: HTMLButtonElement = launcher;
+
     const isOpen = () => panel.classList.contains('is-open');
-    function open() {
+    function open(e?: Event) {
+      opener = (e?.currentTarget as HTMLButtonElement) ?? launcher!;
       panel!.classList.add('is-open');
       scrim!.classList.add('is-open');
-      launcher!.setAttribute('aria-expanded', 'true');
+      openers.forEach((b) => b.setAttribute('aria-expanded', 'true'));
       closeBtn.focus({ preventScroll: true });
       if (!started) start();
     }
     function close() {
       panel!.classList.remove('is-open');
       scrim!.classList.remove('is-open');
-      launcher!.setAttribute('aria-expanded', 'false');
+      openers.forEach((b) => b.setAttribute('aria-expanded', 'false'));
       run++;
       started = false;   // next open starts fresh, asleep
       setAsleep(head);
-      launcher!.focus({ preventScroll: true });
+      opener.focus({ preventScroll: true });
     }
 
-    launcher.addEventListener('click', open);
+    openers.forEach((b) => b.addEventListener('click', open));
+
+    // The pill: shown once Moss on the books has scrolled up out of view,
+    // hidden again over the footer. Types its line once, the first time.
+    if (dock && dockBtn) {
+      document.body.append(dock);
+      const launch = launcher.closest<HTMLElement>('.pixel-launch') ?? launcher;
+      // The footer is sticky under the page, so it always counts as "in
+      // view"; what matters is the page's curved end (<main>'s bottom)
+      // rising into the window and uncovering it.
+      const main = document.querySelector('main');
+      const textEl = dock.querySelector<HTMLElement>('[data-pixel-dock-text]')!;
+      const line = textEl.textContent ?? '';
+      const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let passed = false, overFooter = false, typed = still;
+      const charMs = cssMs('--dur-ask-type-char', 42);
+      const typeIn = () => {
+        typed = true;
+        textEl.textContent = '';
+        let i = 0;
+        const step = () => { textEl.textContent = line.slice(0, ++i); if (i < line.length) setTimeout(step, charMs); };
+        setTimeout(step, cssMs('--dur-ask-dock', 520));
+      };
+      if (!still) textEl.textContent = '';
+      const sync = () => {
+        const show = passed && !overFooter;
+        dock.classList.toggle('is-shown', show);
+        if (show && !typed) typeIn();
+      };
+      new IntersectionObserver(([e]) => { passed = !e.isIntersecting && e.boundingClientRect.top < 0; sync(); }).observe(launch);
+      if (main) {
+        let raf = 0;
+        const check = () => { raf = 0; const over = main.getBoundingClientRect().bottom < innerHeight; if (over !== overFooter) { overFooter = over; sync(); } };
+        const queue = () => { if (!raf) raf = requestAnimationFrame(check); };
+        addEventListener('scroll', queue, { passive: true });
+        addEventListener('resize', queue);
+        check();
+      }
+    }
     scrim.addEventListener('click', close);
     closeBtn.addEventListener('click', close);
     panel.querySelector('[data-pixel-reset]')!.addEventListener('click', () => { start(); });

@@ -291,7 +291,9 @@ const { segments = 12, lineWidth = 6.5 } = Astro.props;
     addEventListener('mousemove', onMove, { passive: true });
     document.documentElement.addEventListener('mouseleave', onLeave);
     // A scroll moves the bands under a stationary cursor.
-    addEventListener('scroll', () => recolour(mouse.y), { passive: true });
+    // Only while it's drawn: off the page it would read every band's box
+    // on each scroll frame for nothing.
+    addEventListener('scroll', () => { if (visible) recolour(mouse.y); }, { passive: true });
     // Day/night flips every band's palette under a stationary cursor too.
     addEventListener('theme:changed', () => recolour(mouse.y));
   })();

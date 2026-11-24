@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Line and cards</title>
+<!--
+  Two explorations on request (2026-11-24), from her screenshots: the
+  globe story's closing screen ("Built to untangle" on the wood), and the
+  Selected work cards under it. Switches: ?line= and ?cards=.
+  Line
+    l1 As now — heading left, paragraph right, a wide empty middle.
+    l2 Under the globe — the small globe, then the heading and one line
+       centred under it, as a caption to the picture.
+    l3 Numbers — the heading with three facts the site already states,
+       in mono, instead of a paragraph (a recruiter reads them at a glance).
+    l4 One sentence — the heading becomes the line itself: "One desk in
+       Bangalore. Products used around the world."
+    l5 Beside the globe — globe on the left half, the words on the right.
+  Cards
+    c1 As now — soft cards, oxblood hairline, words centred under the work.
+    Colours (?colour=paper|live): paper, or each card's work on a lit
+    colour block in its own hue, as on the live (committed) site: Okta
+    sky, Privacy lilac, Ads consent apricot (new; not on the live site
+    yet), Debit Card mint, Chase Pay butter.
+    Wide card (?wide=below|beside): the Okta card's words under the work,
+    or beside it on the left.
+    Border (?border=on|hover|off; hover = no line until pointed at): every card style with the oxblood hairline or
+    without it (a plain soft card whose ground deepens a little on hover).
+    c2 Outcome first — the result as a mono line over the title, words
+       left-aligned under the work.
+    c3 Project hue — each card's stage on its company's hue (Okta sky,
+       PayPal lilac, Walmart butter), the words on paper below.
+    c4 Wood carries on — the first card picks up the globe's wood, the
+       rest stay paper, so the story hands straight into the work.
+    c5 Words beside — the wide card puts its words on the left and the
+       work on the right; the pairs stay as they are.
+  Numbers and lines come from data/work.ts (impact, tagline).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600&family=Crimson+Pro:ital,wght@0,300;1,300&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#fcfcfc;--ink:#262626;--grey:#707070;--wood:#eccaa6;--woodL:#f3dcc1;--land:#9e6743;--rim:#e0b88f;--shelf:#f5dcc2;--landR:#b9805a;--text:#2f1c10;--acc:#9d2f16;
+    --ox:#5c1712;--fill:color-mix(in srgb,var(--ink) 3%,var(--bg));--okta:#c9dcf2;--paypal:#e0d6ef;--walmart:#f4dc9c;
+    --serif:'Crimson Pro',Georgia,serif;--sans:'Manrope',system-ui,sans-serif;--mono:'Azeret Mono',monospace;--gutter:clamp(20px,6vw,88px)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:600 14px/1.6 var(--sans)}
+  .label{font:400 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  /* ---- the closing screen ---- */
+  .close{position:relative;height:100vh;min-height:560px;background:var(--wood);color:var(--text);overflow:hidden}
+  .close canvas{position:absolute}
+  .close h2{font:300 clamp(2.25rem,4.2vw,3.75rem)/1.04 var(--serif);letter-spacing:-.01em}
+  .close h2 em{font-style:italic;color:var(--acc)}
+  .close p{font-size:14px;line-height:1.6;max-width:30rem}
+  .close a{font:400 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text);text-decoration:underline;text-underline-offset:3px;display:inline-block;margin-top:14px}
+  .l1 .words{position:absolute;left:var(--gutter);right:var(--gutter);bottom:18vh;display:flex;justify-content:space-between;align-items:flex-start;gap:2rem}
+  .l2 .words{position:absolute;left:0;right:0;top:calc(40% + 220px);text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .l3 .words{position:absolute;left:var(--gutter);right:var(--gutter);bottom:16vh;display:flex;justify-content:space-between;align-items:flex-end;gap:2rem}
+  .l3 .facts{display:flex;gap:44px}
+  .l3 .facts b{display:block;font:300 44px/1 var(--serif);letter-spacing:-.02em;margin-bottom:6px}
+  .l4 .words{position:absolute;left:0;right:0;bottom:15vh;text-align:center;display:flex;flex-direction:column;align-items:center}
+  .l4 h2{max-width:22ch}
+  .l5 .words{position:absolute;left:52%;right:var(--gutter);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:18px}
+  /* ---- the cards ---- */
+  .work{padding:7rem var(--gutter) 8rem}
+  .work > h2{text-align:center;font:300 40px/1 var(--serif);margin-bottom:3rem}
+  .work > h2 em{font-style:italic}
+  .work > h2 i{display:inline-block;width:.12em;height:.12em;background:var(--land);margin-left:.05em}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:1180px;margin:0 auto}
+  .card{border-radius:28px;background:var(--fill);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ox) 32%,transparent);padding:1.5rem 1.5rem 1.75rem;display:flex;flex-direction:column;gap:1.25rem;transition:box-shadow .5s cubic-bezier(.16,1,.3,1)}
+  .card:hover{box-shadow:inset 0 0 0 1px var(--ox)}
+  .card.wide{grid-column:1/-1}
+  .stage{height:30rem;display:grid;place-items:center;border-radius:18px;overflow:hidden}
+  .wide .stage{height:26rem}
+  .stage img.desk{max-width:78%;border-radius:8px;box-shadow:0 30px 50px -30px rgba(0,0,0,.35)}
+  .phone{width:200px;aspect-ratio:9/19.5;border-radius:34px;background:#111;padding:7px;box-shadow:0 30px 50px -28px rgba(0,0,0,.4),inset 0 0 0 2px #cfd0d3}
+  .phone div{width:100%;height:100%;border-radius:28px;overflow:hidden;background:#fff}
+  .phone img{width:100%;display:block}
+  .words-c{text-align:center}
+  .meta{color:var(--grey)}
+  .card h3{font:600 18px/1.3 var(--sans);margin-top:6px}
+  .card p{color:var(--grey);font-size:12px;line-height:1.8;margin-top:4px}
+  .out{display:none;font:400 11px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+  /* border off: the plain soft card, no hairline, at rest or on hover */
+  .noline .card,.noline .card:hover{box-shadow:none}
+  .noline .card:hover{background:color-mix(in srgb,var(--ink) 5%,var(--bg))}
+  /* live colours: each card's work on a lit colour block in its own hue, as on the live site
+     (WorkGround 'colour': a pale lit corner, the hue, a slightly deeper far corner, a soft glow) */
+  .live .stage{background:radial-gradient(42% 46% at 50% 46%,rgba(255,255,255,.55),transparent 72%),radial-gradient(60% 55% at 12% 0%,rgba(255,255,255,.6),transparent 70%),linear-gradient(155deg,color-mix(in oklab,var(--g),#fff 55%) 0%,var(--g) 50%,color-mix(in oklab,var(--g),#3d4f86 16%) 100%)}
+  /* border on hover: no line at rest; the oxblood line comes in when you point at a card */
+  .hoverline .card{box-shadow:inset 0 0 0 1px transparent}
+  .hoverline .card:hover,.hoverline .card:focus-within{box-shadow:inset 0 0 0 1px var(--ox)}
+  /* words beside the work on the wide card (any card style) */
+  .wbeside .card.wide{display:grid;grid-template-columns:.8fr 1.6fr;align-items:center;gap:2rem}
+  .wbeside .card.wide .words-c{text-align:left;order:-1;padding-left:1rem}
+  .wbeside .card.wide h3{font:300 32px/1.1 var(--serif)}
+  @media (max-width:860px){.wbeside .card.wide{grid-template-columns:1fr}.wbeside .card.wide .words-c{order:0;padding-left:0}}
+  /* c2 outcome first */
+  .c2 .words-c{text-align:left}
+  .c2 .out{display:block;margin-bottom:8px}
+  .c2 .out::before{content:"";display:inline-block;width:8px;height:8px;background:var(--land);margin-right:8px;vertical-align:0}
+  /* c3 project hue */
+  .c3 .card{background:var(--bg)}
+  .c3 [data-hue=okta] .stage{background:var(--okta)} .c3 [data-hue=paypal] .stage{background:var(--paypal)} .c3 [data-hue=walmart] .stage{background:var(--walmart)}
+  /* c4 the wood carries on into the first card */
+  .c4 .card.wide{background:var(--woodL);box-shadow:none}
+  .c4 .card.wide .meta,.c4 .card.wide p{color:#6b5040}
+  /* c5 words beside on the wide card */
+  .c5 .card.wide{display:grid;grid-template-columns:.8fr 1.6fr;align-items:center;gap:2rem}
+  .c5 .card.wide .words-c{text-align:left;order:-1;padding-left:1rem}
+  .c5 .card.wide h3{font:300 32px/1.1 var(--serif)}
+  .c5 .card.wide .out{display:block;margin-top:16px}
+  .bars{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99;display:flex;flex-direction:column;gap:4px;align-items:center}
+  .bars__toggle{all:unset;cursor:pointer;background:#111;color:#fff;font:500 12px/1 system-ui;padding:10px 16px;border-radius:999px;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+  .bars:not(.open) .bar{display:none}
+  .bar{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;background:#111;border-radius:999px;padding:4px;font:500 12px/1 system-ui;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+  .bar span{color:#777;padding:9px 6px 9px 10px}
+  .bar a{color:#bbb;padding:9px 11px;border-radius:999px;text-decoration:none;white-space:nowrap}
+  .bar a[aria-current="true"]{background:#fff;color:#000}
+  @media (max-width:860px){.stage{height:20rem}.wide .stage{height:16rem}.phone{width:140px}.grid{grid-template-columns:1fr}.l1 .words,.l3 .words{flex-direction:column;align-items:flex-start}.l5 .words{left:var(--gutter);top:auto;bottom:10vh;transform:none}.c5 .card.wide{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bars" id="bars"><button class="bars__toggle" type="button" aria-expanded="false">Options</button><nav class="bar" id="barL"></nav><nav class="bar" id="barC"></nav></div>
+
+<section class="close" id="close">
+  <canvas id="cv" aria-hidden="true"></canvas>
+  <div class="words" id="words"></div>
+</section>
+
+<section class="work" id="work">
+  <h2>Selected <em>work</em><i></i></h2>
+  <div class="grid" id="grid"></div>
+</section>
+
+<script type="module">
+const Q = new URLSearchParams(location.search);
+const LINE = ['l1', 'l2', 'l3', 'l4', 'l5'].includes(Q.get('line')) ? Q.get('line') : 'l2';
+const CARDS = ['c1', 'c2', 'c3', 'c4', 'c5'].includes(Q.get('cards')) ? Q.get('cards') : 'c1';
+const BORDER = ['on', 'off', 'hover'].includes(Q.get('border')) ? Q.get('border') : 'hover';
+const WIDE = Q.get('wide') === 'below' ? 'below' : 'beside';
+const COLOUR = Q.get('colour') === 'live' ? 'live' : 'paper';
+const link = (o) => '?' + new URLSearchParams({ line: LINE, cards: CARDS, border: BORDER, colour: COLOUR, wide: WIDE, ...o });
+document.getElementById('barL').innerHTML = '<span>Line</span>' + [['l1', 'As now'], ['l2', 'Under the globe'], ['l3', 'Numbers'], ['l4', 'One sentence'], ['l5', 'Beside the globe']]
+  .map(([k, l]) => `<a href="${link({ line: k })}" aria-current="${k === LINE}">${l}</a>`).join('');
+document.getElementById('barC').innerHTML = '<span>Cards</span>' + [['c1', 'As now'], ['c2', 'Outcome first'], ['c3', 'Project hue'], ['c4', 'Wood carries on'], ['c5', 'Words beside']]
+  .map(([k, l]) => `<a href="${link({ cards: k })}" aria-current="${k === CARDS}">${l}</a>`).join('')
+  + '<span>Wide card</span>' + [['below', 'Words below'], ['beside', 'Words beside']].map(([k, l]) => `<a href="${link({ wide: k })}" aria-current="${k === WIDE}">${l}</a>`).join('')
+  + '<span>Border</span>' + [['on', 'With border'], ['hover', 'Border on hover'], ['off', 'No border']].map(([k, l]) => `<a href="${link({ border: k })}" aria-current="${k === BORDER}">${l}</a>`).join('')
+  + '<span>Colours</span>' + [['paper', 'Paper'], ['live', 'Live colours']].map(([k, l]) => `<a href="${link({ colour: k })}" aria-current="${k === COLOUR}">${l}</a>`).join('');
+
+{ const b = document.getElementById('bars'), t = b.querySelector('.bars__toggle');
+  t.onclick = () => { const o = b.classList.toggle('open'); t.setAttribute('aria-expanded', o); t.textContent = o ? 'Close' : 'Options'; }; }
+// ---- the closing screen
+const close = document.getElementById('close'), words = document.getElementById('words');
+close.classList.add(LINE);
+const H2 = '<h2>Built to <em>untangle</em></h2>', P = '<p>Ten years of complicated systems made usable: payments, privacy and identity. One desk in Bangalore, products used around the world.</p>', A = '<a href="#">About me →</a>';
+words.innerHTML = {
+  l1: `${H2}<div>${P}${A}</div>`,
+  l2: `${H2}<p style="text-align:center">One desk in Bangalore, products used around the world.</p>${A}`,
+  l3: `${H2}<div><div class="facts"><div><b>10+</b><span class="label">years</span></div><div><b>80M+</b><span class="label">people on one launch</span></div><div><b>60%</b><span class="label">fewer privacy calls</span></div></div>${A}</div>`,
+  l4: `<h2>One desk in Bangalore. <em>Products used around the world.</em></h2>${A}`,
+  l5: `${H2}${P}${A}`,
+}[LINE];
+
+// a small pixel globe, drawn from the site's land map
+const img = new Image(); img.src = '../../public/images/globe/land.png'; await new Promise(r => img.onload = r);
+const mc = document.createElement('canvas'); mc.width = img.width; mc.height = img.height; mc.getContext('2d').drawImage(img, 0, 0);
+const md = mc.getContext('2d').getImageData(0, 0, mc.width, mc.height).data, MW = mc.width, MH = mc.height, RAD = Math.PI / 180;
+const isLand = (lo, la) => md[(Math.min(MH - 1, Math.max(0, Math.floor((90 - la) / 180 * MH))) * MW + Math.floor(((lo + 180) % 360 + 360) % 360 / 360 * MW)) * 4] > 127;
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+function drawGlobe() {
+  const W = close.clientWidth, H = close.clientHeight, R = Math.min(190, W * .24);
+  const at = { l1: [W / 2, H * .38], l2: [W / 2, H * .36], l3: [W / 2, H * .36], l4: [W / 2, H * .36], l5: [W * .27, H * .5] }[LINE];
+  const d = Math.min(2, devicePixelRatio); cv.width = W * d; cv.height = H * d; cv.style.cssText = `left:0;top:0;width:${W}px;height:${H}px`; g.setTransform(d, 0, 0, d, 0, 0);
+  const cell = Math.max(5, R / 30), n = Math.ceil(R / cell), l0 = -36, p0 = 58, sp = Math.sin(p0 * RAD), cp = Math.cos(p0 * RAD);
+  for (let j = -n; j < n; j++) for (let i = -n; i < n; i++) {
+    const x = (i + .5) * cell / R, y = -((j + .5) * cell / R), rho = Math.hypot(x, y); if (rho > 1) continue;
+    const c = Math.asin(rho), sc = Math.sin(c), cc = Math.cos(c), la = Math.asin(cc * sp + (rho ? y * sc * cp / rho : 0)) / RAD, lo = l0 + Math.atan2(x * sc, rho * cp * cc - y * sp * sc) / RAD;
+    const near = isLand(lo + 2, la) || isLand(lo - 2, la) || isLand(lo, la + 2) || isLand(lo, la - 2);
+    g.fillStyle = isLand(lo, la) ? (cc < .3 ? '#b9805a' : '#9e6743') : near ? '#f5dcc2' : cc < .35 ? '#e0b88f' : '#eccaa6';
+    const gap = cell * .1; g.beginPath(); g.roundRect(at[0] + i * cell + gap / 2, at[1] + j * cell + gap / 2, cell - gap, cell - gap, cell * .26); g.fill();
+  }
+}
+drawGlobe(); addEventListener('resize', drawGlobe);
+
+// ---- the cards
+const I = '../../public/images/';
+const C = [
+  { wide: true, g: '#c9dcf2', hue: 'okta', co: 'Okta', tags: 'Identity & security · Product strategy · Design systems', title: 'Rebuilding IAM for enterprise admins', line: 'A ground-up rebuild of the admin console, shipped under live tenants.', out: 'Admin task time down 32%', media: `<img class="desk" src="${I}work-play/okta-desk.webp" alt="">` },
+  { g: '#e0d6ef', hue: 'paypal', co: 'PayPal', tags: 'Fintech · Privacy & data', title: 'Privacy settings people can read', line: 'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.', out: 'Privacy support calls down 60%', media: `<div class="phone"><div><img src="${I}work-play/pv-hub.webp" alt=""></div></div>` },
+  { g: '#f6dcc6', hue: 'paypal', co: 'PayPal', tags: 'Fintech · Ads & personalization', title: 'Privacy-first ad personalization', line: 'Ad data sharing moved from opted in by default to asking first.', out: '41% opted in once PayPal asked first', media: `<div class="phone"><div><img src="${I}work-play/ads-privacy.webp" alt=""></div></div>` },
+  { g: '#cfe7d8', hue: 'paypal', co: 'PayPal', tags: 'Fintech · Growth', title: 'A debit card people finish signing up for', line: 'Card enrollment and cash back rebuilt inside the PayPal app.', out: 'Applications 20% faster', media: `<div class="phone"><div><img src="${I}work-play/debit-intro.webp" alt=""></div></div>` },
+  { g: '#f4dc9c', hue: 'walmart', co: 'Walmart Labs', tags: 'Fintech · Growth', title: 'Chase Pay inside Walmart Pay', line: 'Brought Chase Pay into Walmart Pay, validated with real customers in-store.', out: 'Shipped on iOS and Android, 2020', media: `<div class="phone"><div><img src="${I}work-play/ch-setup.webp" alt=""></div></div>` },
+];
+const grid = document.getElementById('grid'); grid.classList.add(CARDS); if (BORDER === 'off') grid.classList.add('noline'); if (BORDER === 'hover') grid.classList.add('hoverline'); if (WIDE === 'beside') grid.classList.add('wbeside'); if (COLOUR === 'live') grid.classList.add('live');
+grid.innerHTML = C.map(c => `
+  <article class="card${c.wide ? ' wide' : ''}" data-hue="${c.hue}" style="--g:${c.g}">
+    <div class="stage">${c.media}</div>
+    <div class="words-c">
+      <span class="out">${c.out}</span>
+      <span class="label meta">${c.co} · ${c.tags}</span>
+      <h3>${c.title}</h3>
+      <p>${c.line}</p>
+    </div>
+  </article>`).join('');
+</script>
+</body>
+</html>

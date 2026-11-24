@@ -1,0 +1,284 @@
+<!doctype html>
+<!-- Hero portrait, round 3: her head turns to the cursor trail.
+
+     What the sites that do this well have in common (round 3 research):
+     they never slide the pupils on a frozen face (round 2: scary). Either
+     a grid of pictures of the head turned every way (face_looker), or a
+     rigged 2.5D character (Rive avatars): the head turns about the neck,
+     the face's features move further than its outline (they're nearer
+     you), the hair behind moves a little the other way, the body stays.
+     The eyes go with the head, so she looks where her face points.
+
+     This is that rig, built on one picture of her, no new art:
+       - her full-resolution frame (1040 x 1456, straight from her clip
+         through scripts/hero-sprite.py's matte; the site's sprite is 700)
+         on a fine WebGL mesh (one vertex every 4px of the 700 frame);
+       - HEAD: everything above the shoulders rotates about her neck and
+         shifts toward the look, fading to nothing at the collar, so the
+         jumper and the hair over it don't tear;
+       - FACE: inside the face, features slide further than the outline,
+         most at the centre, so the far side compresses — a turn, not a
+         slide; the nose a touch more again;
+       - HAIR BEHIND: the ring of hair round the face slides a little
+         against the turn, for depth.
+     She looks at the tip of the cursor trail (the site's spring chain,
+     same constants), on a spring of her own, so she trails it slightly
+     like a head would, and never stops while it moves.
+
+     Built by build-rig.py into rig.html with the picture inlined, so the
+     file opens anywhere. Rig numbers are in RIG below, in 700-frame px. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero portrait — her head follows the cursor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#fcfcfc; --fg:#262626; --dim:#707070; --accent:#b4482a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font: 600 12px/1.8 Manrope, system-ui, sans-serif; min-height: 100vh; overflow-x: clip; }
+  .top { padding: 24px 48px 0; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; position: relative; z-index: 2; }
+  .mono { font: 400 11px/1.4 'Azeret Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em; }
+  button { font: 400 11px/1 'Azeret Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em;
+    background: transparent; color: var(--fg); border: 1px solid var(--fg); border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .readout { color: var(--dim); }
+  .hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; align-items: end; padding: 48px 48px 0; min-height: calc(100vh - 80px); }
+  .hero h1 { font: 300 50px/1.15 'Crimson Pro', Georgia, serif; margin: 0 0 96px; max-width: 18ch; align-self: center; }
+  .hero h1 em { font-style: italic; }
+  .stage { position: relative; aspect-ratio: 700 / 980; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .stage img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .stage canvas + img { display: none; }
+  .trail { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10; opacity: 0; transition: opacity 350ms; }
+  .trail.is-visible { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .trail { display: none; } }
+</style>
+</head>
+<body>
+  <div class="top">
+    <button type="button" id="meshBtn" aria-pressed="false">Show the rig</button>
+    <span class="mono readout" id="readout">move the cursor</span>
+  </div>
+  <section class="hero">
+    <h1><em>Hi, I’m Anupama,</em> a Staff Product Designer. I ship, I nudge, I craft, from systems and strategy to the last stubborn pixel.</h1>
+    <div class="stage" id="stage">
+      <canvas id="c" role="img" aria-label="Illustrated portrait of Anupama at her laptop"></canvas>
+    </div>
+  </section>
+  <canvas class="trail" id="trail" aria-hidden="true"></canvas>
+
+<script>
+  const BASE = __BASE__;
+
+  // ---- the rig, in 700 x 980 frame px ---------------------------------
+  const RIG = {
+    neck:   [318, 296],              // the head turns about this
+    head:   { c: [310, 150], r: [172, 150], soft: 0.38 },   // hair + face
+    collar: [246, 300],              // head weight fades out between these y
+    face:   { c: [322, 183], r: [80, 80], core: 0.2 },      // skin oval
+    nose:   { c: [322, 212], r: 24 },
+    turn:   4.5,                     // degrees of tilt at full look
+    shift:  [9, 6],                  // whole head, px at full look
+    feat:   [17, 11],                 // features beyond the head move
+    noseX:  [5, 2],  
+    back:   [-5, -3],                // hair round the face, against the turn
+  };
+  const REACH = [430, 330];          // screen px from her face to ~3/4 of a full look
+  const FOLLOW = 0.11;               // her spring, share per 60fps frame: a head, not a needle
+  const REST = [0.12, 0.55];         // nothing to look at: back to her laptop
+
+  // ---- WebGL ------------------------------------------------------------
+  const VS = `
+    attribute vec2 a_p;
+    uniform vec2 u_look;
+    varying vec2 v_uv;
+    const vec2 SIZE = vec2(700.0, 980.0);
+    uniform vec2 u_neck, u_hc, u_hr, u_collar, u_fc, u_fr, u_nc, u_shift, u_feat, u_nose, u_back;
+    uniform float u_hsoft, u_fcore, u_nr, u_turn;
+    void main() {
+      vec2 p = a_p;
+      float hd = length((p - u_hc) / u_hr);
+      float wH = (1.0 - smoothstep(1.0, 1.0 + u_hsoft, hd)) * (1.0 - smoothstep(u_collar.x, u_collar.y, p.y));
+      float a = radians(u_turn) * u_look.x;
+      vec2 q = p - u_neck;
+      vec2 turned = vec2(cos(a) * q.x - sin(a) * q.y, sin(a) * q.x + cos(a) * q.y) + u_neck + u_shift * u_look;
+      float fd = length((p - u_fc) / u_fr);
+      float wF = 1.0 - smoothstep(u_fcore, 1.0, fd);
+      float wN = 1.0 - smoothstep(0.0, u_nr, length(p - u_nc));
+      float wB = wH * smoothstep(1.05, 1.5, fd);
+      vec2 o = mix(p, turned, wH) + (u_feat * wF + u_nose * wN + u_back * wB) * u_look;
+      v_uv = p / SIZE;
+      vec2 clip = o / SIZE * 2.0 - 1.0;
+      gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
+    }`;
+  const FS = `
+    precision mediump float;
+    varying vec2 v_uv;
+    uniform sampler2D u_tex;
+    uniform float u_mesh;
+    void main() {
+      vec4 c = texture2D(u_tex, v_uv);
+      gl_FragColor = mix(c, vec4(0.09, 0.45, 0.85, 1.0) * 0.55, u_mesh);
+    }`;
+
+  const canvas = document.getElementById('c');
+  const stage = document.getElementById('stage');
+  const readout = document.getElementById('readout');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const gl = canvas.getContext('webgl2', { premultipliedAlpha: true, antialias: true })
+          || canvas.getContext('webgl', { premultipliedAlpha: true, antialias: true });
+
+  const shader = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS));
+  gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  const U = (n) => gl.getUniformLocation(prog, n);
+
+  // Mesh: a vertex every STEP px; finer than any feature the warp bends.
+  const STEP = 4, NX = 700 / STEP + 1, NY = 980 / STEP + 1;
+  const verts = new Float32Array(NX * NY * 2);
+  for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) { verts[(j * NX + i) * 2] = i * STEP; verts[(j * NX + i) * 2 + 1] = j * STEP; }
+  const tris = new Uint32Array((NX - 1) * (NY - 1) * 6);
+  // The overlay draws every 4th mesh line (16px), so it can be read.
+  const lineList = [];
+  let t = 0;
+  for (let j = 0; j < NY - 1; j++) for (let i = 0; i < NX - 1; i++) {
+    const a = j * NX + i, b = a + 1, c = a + NX, d = c + 1;
+    tris.set([a, b, c, b, d, c], t); t += 6;
+    if (j % 4 === 0) lineList.push(a, b);
+    if (i % 4 === 0) lineList.push(a, c);
+  }
+  const lines = new Uint32Array(lineList);
+  const ui32 = !!(gl instanceof WebGL2RenderingContext || gl.getExtension('OES_element_index_uint'));
+  const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'a_p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const tb = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tb); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, tris, gl.STATIC_DRAW);
+  const lb = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, lb); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, lines, gl.STATIC_DRAW);
+
+  gl.uniform2f(U('u_neck'), ...RIG.neck);
+  gl.uniform2f(U('u_hc'), ...RIG.head.c); gl.uniform2f(U('u_hr'), ...RIG.head.r); gl.uniform1f(U('u_hsoft'), RIG.head.soft);
+  gl.uniform2f(U('u_collar'), ...RIG.collar);
+  gl.uniform2f(U('u_fc'), ...RIG.face.c); gl.uniform2f(U('u_fr'), ...RIG.face.r); gl.uniform1f(U('u_fcore'), RIG.face.core);
+  gl.uniform2f(U('u_nc'), ...RIG.nose.c); gl.uniform1f(U('u_nr'), RIG.nose.r);
+  gl.uniform1f(U('u_turn'), RIG.turn);
+  gl.uniform2f(U('u_shift'), ...RIG.shift); gl.uniform2f(U('u_feat'), ...RIG.feat);
+  gl.uniform2f(U('u_nose'), ...RIG.noseX); gl.uniform2f(U('u_back'), ...RIG.back);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+  let showMesh = false;
+  let look = [...REST], want = [...REST];
+
+  const size = () => {
+    const r = stage.getBoundingClientRect(), dpr = Math.min(3, devicePixelRatio || 1);
+    canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  };
+  const render = () => {
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform2f(U('u_look'), look[0], look[1]);
+    gl.uniform1f(U('u_mesh'), 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tb);
+    gl.drawElements(gl.TRIANGLES, tris.length, ui32 ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT, 0);
+    if (showMesh) {
+      gl.uniform1f(U('u_mesh'), 1);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, lb);
+      gl.drawElements(gl.LINES, lines.length, ui32 ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT, 0);
+    }
+  };
+
+  const img = new Image();
+  img.onload = () => {
+    const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    const mip = gl instanceof WebGL2RenderingContext;
+    if (mip) gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mip ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    if (mip) { const af = gl.getExtension('EXT_texture_filter_anisotropic'); if (af) gl.texParameterf(gl.TEXTURE_2D, af.TEXTURE_MAX_ANISOTROPY_EXT, 4); }
+    size(); render();
+    new ResizeObserver(() => { size(); render(); }).observe(stage);
+    if (!reduce) wake();
+  };
+  img.src = BASE;
+
+  // ---- where she looks ---------------------------------------------------
+  const aimAt = (x, y) => {
+    const r = stage.getBoundingClientRect();
+    const fx = r.left + r.width * RIG.face.c[0] / 700, fy = r.top + r.height * RIG.face.c[1] / 980;
+    want = [Math.tanh((x - fx) / REACH[0]), Math.tanh((y - fy) / REACH[1])];
+  };
+
+  // ---- the site's cursor trail (CursorTrail.astro, same constants) ----
+  const tc = document.getElementById('trail'), tx = tc.getContext('2d');
+  const N = 12, HEAD_LERP = 0.16, TAIL_LERP = 0.28, CURL = 4, IDLE_SPEED = 0.4, WIDTH = 6.5;
+  const pts = Array.from({ length: N }, () => ({ x: 0, y: 0 }));
+  let mouse = { x: 0, y: 0 }, speed = 0, seeded = false, trailOn = false;
+  const ease = (k, dt) => 1 - Math.pow(1 - k, dt / (1000 / 60));
+  const tsize = () => { const d = devicePixelRatio || 1; tc.width = innerWidth * d; tc.height = innerHeight * d; tx.setTransform(d, 0, 0, d, 0, 0); };
+  tsize(); addEventListener('resize', tsize);
+
+  const stepTrail = (dt) => {
+    speed *= Math.pow(0.9, dt / (1000 / 60));
+    const hk = ease(HEAD_LERP, dt);
+    pts[0].x += (mouse.x - pts[0].x) * hk; pts[0].y += (mouse.y - pts[0].y) * hk;
+    const curl = speed > IDLE_SPEED ? CURL * Math.min(speed / 16, 1) ** 1.5 : 0;
+    for (let i = 1; i < N; i++) {
+      const k = ease(TAIL_LERP - (i / N) * 0.06, dt), p = pts[i - 1];
+      let gx = p.x, gy = p.y;
+      if (curl > 0) { const dx = p.x - pts[i].x, dy = p.y - pts[i].y, len = Math.hypot(dx, dy) || 1, b = curl * (i / N); gx += -dy / len * b; gy += dx / len * b; }
+      pts[i].x += (gx - pts[i].x) * k; pts[i].y += (gy - pts[i].y) * k;
+    }
+    tx.clearRect(0, 0, innerWidth, innerHeight);
+    if (!trailOn) return false;
+    tx.beginPath(); tx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < N - 2; i++) tx.quadraticCurveTo(pts[i].x, pts[i].y, (pts[i].x + pts[i + 1].x) / 2, (pts[i].y + pts[i + 1].y) / 2);
+    tx.quadraticCurveTo(pts[N - 2].x, pts[N - 2].y, pts[N - 1].x, pts[N - 1].y);
+    tx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+    tx.lineWidth = WIDTH; tx.lineCap = 'round'; tx.lineJoin = 'round'; tx.stroke();
+    return speed > IDLE_SPEED || pts.some((p) => Math.hypot(p.x - mouse.x, p.y - mouse.y) > 0.3);
+  };
+
+  // ---- one loop for both, like the site's frame-loop --------------------
+  let raf = 0, last = 0;
+  const frame = (now) => {
+    const dt = Math.min(50, now - last); last = now;
+    const trailBusy = reduce ? false : stepTrail(dt);
+    if (trailOn) aimAt(pts[0].x, pts[0].y);   // she watches the trail's tip
+    const k = ease(FOLLOW, dt);
+    look[0] += (want[0] - look[0]) * k; look[1] += (want[1] - look[1]) * k;
+    const settled = Math.abs(want[0] - look[0]) < 0.0005 && Math.abs(want[1] - look[1]) < 0.0005;
+    render();
+    readout.textContent = `look ${look[0].toFixed(2)}, ${look[1].toFixed(2)}`;
+    raf = (trailBusy || !settled) ? requestAnimationFrame(frame) : 0;
+  };
+  function wake() { if (!raf) { last = performance.now() - 16; raf = requestAnimationFrame(frame); } }
+
+  if (!reduce) {
+    addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+      if (!seeded) { for (const p of pts) { p.x = e.clientX; p.y = e.clientY; } seeded = true; }
+      speed = Math.hypot(e.clientX - mouse.x, e.clientY - mouse.y);
+      mouse = { x: e.clientX, y: e.clientY };
+      trailOn = true; tc.classList.add('is-visible'); wake();
+    }, { passive: true });
+    document.documentElement.addEventListener('pointerleave', () => {
+      trailOn = false; tc.classList.remove('is-visible'); want = [...REST]; wake();
+    });
+    addEventListener('scroll', () => wake(), { passive: true });
+  }
+
+  document.getElementById('meshBtn').addEventListener('click', (e) => {
+    showMesh = !showMesh; e.currentTarget.setAttribute('aria-pressed', String(showMesh)); render();
+  });
+</script>
+</body>
+</html>

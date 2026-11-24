@@ -536,6 +536,16 @@ export const cases: CaseStudy[] = [
               { at: 78, before: [6, 82, 88, 8], after: [5, 74, 90, 25.5], was: 'Download, correct and delete share one row.', now: 'Your data rights: three rows. "Correct" became "Update".' },
             ],
           },
+          /* The person on the "People" side, before the two sides are set
+             out (on request, 2026-11-18). PayPal's own photo with its
+             shield, cropped 16:10 from her 1500px square; a stand-in, like
+             the /work grounds, until licensed or replaced. */
+          {
+            kind: 'figure',
+            src: '/images/paypal-privacy/people.webp',
+            alt: 'A woman holding her phone, with the PayPal logo on a white shield beside her',
+            ratio: '1500 / 938',
+          },
           /* Replaces the "What was broken" list (its four points are the
              two sides' needs, below). */
           {

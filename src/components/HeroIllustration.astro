@@ -655,9 +655,14 @@ const { alt, size = 480 } = Astro.props;
       lampWasNear = lampNear();
     };
 
-    // Tells the first-paint loader (Preloader.astro) the hero is complete,
-    // so it can lift onto her rather than an empty box.
+    // Tells the first-paint loader (Preloader.astro) she's on screen, so
+    // it can lift onto her rather than an empty box. That's frame 0 (the
+    // 157KB idle picture), not the 4.6MB sheet: the loader used to wait
+    // for the sheet and held the page for seconds. Once only.
+    let announced = false;
     const announce = () => {
+      if (announced) return;
+      announced = true;
       document.documentElement.dataset.heroReady = '';
       dispatchEvent(new CustomEvent('hero-scrub:ready'));
     };
@@ -666,7 +671,7 @@ const { alt, size = 480 } = Astro.props;
       ready = true;
       sizeCanvas();
       draw(0);
-      if (!full) announce();
+      announce();
     }).catch(() => {
       figure.classList.add('no-js-scrub');
       announce();

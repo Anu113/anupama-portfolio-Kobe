@@ -63,7 +63,7 @@ const pvHub = (down) => screen(PP + ';--ui-bg:#faf8f5', `<div style="background:
     <div class="pvhub"><div class="pvhub__scroll${down ? ' is-down' : ''}">
       <div class="pvhub__head">${art('pv-hero', 150)}<p class="h1" style="margin-top:12px">Data and privacy</p><p class="sub" style="margin-top:6px;font-size:17px">Set your privacy controls and manage your data.</p></div>
       <div class="pvhub__body">
-        <div class="pvcard"><div><p class="pvcard__t">You haven’t accessed privacy settings in the past year.</p><p class="pvcard__s">Are you still happy getting shopping deals?</p><p class="pvcard__l">Review your settings</p></div>${art('pv-card-shield', 58, 'mix-blend-mode:normal;align-self:flex-end')}</div>
+        <div class="pvcard"><div><p class="pvcard__t">You haven’t accessed privacy settings in the past year.</p><p class="pvcard__s">Are you still happy getting shopping deals?</p><p class="pvcard__l">Review your settings</p></div>${art('pv-card-shield-cut', 56, 'mix-blend-mode:normal')}</div>
         <p class="pvhub__h">Profile privacy</p>
         ${pvRow('pv-r-search', 'Search privacy', 'Manage how someone finds your profile on PayPal.')}
         ${pvRow('pv-r-blocked', 'Blocked profiles', 'Manage who can find you on PayPal.')}
