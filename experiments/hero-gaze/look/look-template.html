@@ -1,0 +1,189 @@
+<!doctype html>
+<!-- Hero portrait, round 4: the "Turn Images into Interactive Heroes"
+     workflow (Higgsfield Seedance + a frame scrubber), fitted to her.
+
+     The frames are every frame of a clip of her looking around (build.py,
+     through the site's own cut-out). The guide's scrubber maps cursor x
+     straight onto the clip's time; that only works if the clip is one
+     clean sweep. Here every frame carries where her head points (measured
+     by build.py), the page eases a direction toward the cursor trail's
+     tip, and shows the frame that points that way — so a clip that looks
+     left, up-left, right, down-right... in any order still tracks, in both
+     axes. A small cost for jumping far along the clip keeps her on the
+     nearest run of frames, so she moves through real in-betweens.
+
+     Built into look.html with the frames inlined; opens from Finder. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero portrait — looks where the cursor is</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#fcfcfc; --fg:#262626; --dim:#707070; --accent:#b4482a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font: 600 12px/1.8 Manrope, system-ui, sans-serif; min-height: 100vh; overflow-x: clip; }
+  .top { padding: 24px 48px 0; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .mono { font: 400 11px/1.4 'Azeret Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em; }
+  .readout { color: var(--dim); }
+  .hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; align-items: end; padding: 48px 48px 0; min-height: calc(100vh - 80px); }
+  .hero h1 { font: 300 50px/1.15 'Crimson Pro', Georgia, serif; margin: 0 0 96px; max-width: 18ch; align-self: center; }
+  .hero h1 em { font-style: italic; }
+  .stage { position: relative; aspect-ratio: 700 / 980; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .trail { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10; opacity: 0; transition: opacity 350ms; }
+  .trail.is-visible { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .trail { display: none; } }
+</style>
+</head>
+<body>
+  <div class="top"><span class="mono readout" id="readout">move the cursor</span></div>
+  <section class="hero">
+    <h1><em>Hi, I’m Anupama,</em> a Staff Product Designer. I ship, I nudge, I craft, from systems and strategy to the last stubborn pixel.</h1>
+    <div class="stage" id="stage"><canvas id="c" role="img" aria-label="Illustrated portrait of Anupama at her laptop"></canvas></div>
+  </section>
+  <canvas class="trail" id="trail" aria-hidden="true"></canvas>
+
+<script>
+  const FRAMES = __FRAMES__;
+  const MAP = __MAP__;
+
+  const REACH = [420, 320];   // screen px from her face to ~3/4 of her widest look
+  const FOLLOW = 0.14;        // direction spring, share per 60fps frame
+  const STAY = 0.35;          // cost of jumping a whole clip-length away, vs a full look
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+  const stage = document.getElementById('stage'), readout = document.getElementById('readout');
+  let frames = [], shown = 0, target = 0, stepAcc = 0, dir = [0, 0], want = [0, 0];
+  const PLAY = 0.35;          // share of the frames between her and the target played per 60fps frame
+
+  const size = () => { const r = stage.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1);
+    canvas.width = Math.round(r.width * d); canvas.height = Math.round(r.height * d); draw(); };
+  function draw() { if (!frames.length) return; ctx.imageSmoothingQuality = 'high';
+    ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(frames[shown], 0, 0, canvas.width, canvas.height); }
+
+  // The frame whose head points closest to `dir`, preferring frames near
+  // the one on screen so she plays through real in-betweens.
+  // Mid-blink frames are never a resting place (MAP.shut); she only passes
+  // through them while turning, as people blink mid-turn.
+  const SHUT = MAP.shut || [];
+  // Her distinct open-eyed poses, ranked left to right (near-duplicates,
+  // like a held pose, dropped). The cursor's place across her reach picks a
+  // rank, so every bit of cursor movement changes her pose: no dead zone
+  // where the clip happens to have few frames (or a blink).
+  const RANKED = (() => {
+    const open = MAP.look.map((l, i) => [l[0], i]).filter(([, i]) => !SHUT[i]).sort((a, b) => a[0] - b[0]);
+    const out = [];
+    for (const [x, i] of open) if (!out.length || x - MAP.look[out[out.length - 1]][0] > 0.03) out.push(i);
+    return out;
+  })();
+  const rankPick = () => {
+    if (MAP.look.every((l) => l[1] === 0)) {          // a one-axis clip: rank by x
+      const u = (dir[0] + 1) / 2;
+      return RANKED[Math.max(0, Math.min(RANKED.length - 1, Math.round(u * (RANKED.length - 1))))];
+    }
+    return pick();
+  };
+  const pick = () => {
+    let best = target, bestCost = Infinity;
+    for (let i = 0; i < MAP.count; i++) {
+      if (SHUT[i]) continue;
+      const [lx, ly] = MAP.look[i];
+      let gap = Math.abs(i - shown); gap = Math.min(gap, MAP.count - gap) / MAP.count;
+      const cost = (lx - dir[0]) ** 2 + (ly - dir[1]) ** 2 + STAY * gap * gap;
+      if (cost < bestCost) { bestCost = cost; best = i; }
+    }
+    return best;
+  };
+
+  // Frame 0 first, so she's on the page at once; the rest decode after.
+  const load = (src) => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
+  load(FRAMES[0]).then((first) => {
+    frames = [first]; size(); new ResizeObserver(size).observe(stage);
+    return Promise.all(FRAMES.map(load));
+  }).then((all) => {
+    // Start on the open-eyed frame closest to looking straight out.
+    frames = all; target = rankPick(); shown = target; draw();
+    readout.textContent = 'move the cursor';
+  })
+    .catch(() => { readout.textContent = 'couldn\'t load her frames'; });
+
+  const aimAt = (x, y) => {
+    const r = stage.getBoundingClientRect();
+    const fx = r.left + r.width * MAP.face[0] / MAP.w, fy = r.top + r.height * MAP.face[1] / MAP.h;
+    want = [Math.tanh((x - fx) / REACH[0]), Math.tanh((y - fy) / REACH[1])];
+  };
+
+  // ---- the site's cursor trail (CursorTrail.astro, same constants) ----
+  const tc = document.getElementById('trail'), tx = tc.getContext('2d');
+  const N = 12, HEAD_LERP = 0.16, TAIL_LERP = 0.28, CURL = 4, IDLE_SPEED = 0.4, WIDTH = 6.5;
+  const pts = Array.from({ length: N }, () => ({ x: 0, y: 0 }));
+  let mouse = { x: 0, y: 0 }, speed = 0, seeded = false, trailOn = false;
+  const ease = (k, dt) => 1 - Math.pow(1 - k, dt / (1000 / 60));
+  const tsize = () => { const d = devicePixelRatio || 1; tc.width = innerWidth * d; tc.height = innerHeight * d; tx.setTransform(d, 0, 0, d, 0, 0); };
+  tsize(); addEventListener('resize', tsize);
+  const stepTrail = (dt) => {
+    speed *= Math.pow(0.9, dt / (1000 / 60));
+    const hk = ease(HEAD_LERP, dt);
+    pts[0].x += (mouse.x - pts[0].x) * hk; pts[0].y += (mouse.y - pts[0].y) * hk;
+    const curl = speed > IDLE_SPEED ? CURL * Math.min(speed / 16, 1) ** 1.5 : 0;
+    for (let i = 1; i < N; i++) {
+      const k = ease(TAIL_LERP - (i / N) * 0.06, dt), p = pts[i - 1];
+      let gx = p.x, gy = p.y;
+      if (curl > 0) { const dx = p.x - pts[i].x, dy = p.y - pts[i].y, len = Math.hypot(dx, dy) || 1, b = curl * (i / N); gx += -dy / len * b; gy += dx / len * b; }
+      pts[i].x += (gx - pts[i].x) * k; pts[i].y += (gy - pts[i].y) * k;
+    }
+    tx.clearRect(0, 0, innerWidth, innerHeight);
+    if (!trailOn) return false;
+    tx.beginPath(); tx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < N - 2; i++) tx.quadraticCurveTo(pts[i].x, pts[i].y, (pts[i].x + pts[i + 1].x) / 2, (pts[i].y + pts[i + 1].y) / 2);
+    tx.quadraticCurveTo(pts[N - 2].x, pts[N - 2].y, pts[N - 1].x, pts[N - 1].y);
+    tx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+    tx.lineWidth = WIDTH; tx.lineCap = 'round'; tx.lineJoin = 'round'; tx.stroke();
+    return speed > IDLE_SPEED || pts.some((p) => Math.hypot(p.x - mouse.x, p.y - mouse.y) > 0.3);
+  };
+
+  // ---- one loop for both ------------------------------------------------
+  let raf = 0, last = 0;
+  const tick = (now) => {
+    const dt = Math.min(50, now - last); last = now;
+    const busy = stepTrail(dt);
+    if (trailOn) aimAt(pts[0].x, pts[0].y);
+    const k = ease(FOLLOW, dt);
+    dir[0] += (want[0] - dir[0]) * k; dir[1] += (want[1] - dir[1]) * k;
+    if (frames.length === MAP.count) {
+      target = rankPick();
+      // Walk through the real in-between frames toward the target, quickly
+      // when far, one by one when close, so a turn is never a jump cut.
+      const gap = target - shown;
+      if (gap) {
+        stepAcc += Math.max(1, Math.abs(gap) * PLAY) * dt / (1000 / 60);
+        const n = Math.min(Math.abs(gap), Math.floor(stepAcc));
+        if (n) { stepAcc -= n; shown += Math.sign(gap) * n; draw(); }
+      } else stepAcc = 0;
+    }
+    const settled = Math.abs(want[0] - dir[0]) < 0.002 && Math.abs(want[1] - dir[1]) < 0.002 && shown === target;
+    readout.textContent = `look ${dir[0].toFixed(2)}, ${dir[1].toFixed(2)} · frame ${shown + 1}/${MAP.count}`;
+    raf = (busy || !settled) ? requestAnimationFrame(tick) : 0;
+  };
+  function wake() { if (!raf) { last = performance.now() - 16; raf = requestAnimationFrame(tick); } }
+
+  if (!reduce) {
+    addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+      if (!seeded) { for (const p of pts) { p.x = e.clientX; p.y = e.clientY; } seeded = true; }
+      speed = Math.hypot(e.clientX - mouse.x, e.clientY - mouse.y);
+      mouse = { x: e.clientX, y: e.clientY };
+      trailOn = true; tc.classList.add('is-visible'); wake();
+    }, { passive: true });
+    document.documentElement.addEventListener('pointerleave', () => {
+      trailOn = false; tc.classList.remove('is-visible'); want = [0, 0]; wake();
+    });
+    addEventListener('scroll', () => wake(), { passive: true });
+  }
+</script>
+</body>
+</html>

@@ -21,7 +21,7 @@
    The home page's Privacy card plays the same flow in its own phone,
    with no hover: `autoPlay` starts and stops it on the card's
    phone:play / phone:pause (ProjectCard.astro), and it loops while on. */
-import { layerHtml } from './work-play-layer';
+import { layerHtml, srcsetFor } from './work-play-layer';
 import { cssMs } from './css-time';
 import type { Play, PlayStep } from '../data/workPlay';
 
@@ -31,6 +31,11 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // The flow inside `scr` (the element that holds the screen layers), with start and stop.
 function flow(scr: HTMLElement, play: Play, dots: HTMLElement[] = []) {
   const steps = play.steps;
+  const sizes = scr.dataset.wpSizes;   // the home card's screens come at its own size (work-play-layer.ts)
+  const fetchOne = (u: string) => {
+    const im = new Image();
+    if (sizes) { im.sizes = sizes; im.srcset = srcsetFor(u); } else im.src = u;
+  };
   const T = {
     first: cssMs('--work-first', 600), read: cssMs('--work-read', 1300), hold: cssMs('--work-hold', 1800),
     push: cssMs('--dur-work-push', 420), sheet: cssMs('--dur-work-sheet', 460),
@@ -42,7 +47,7 @@ function flow(scr: HTMLElement, play: Play, dots: HTMLElement[] = []) {
   new IntersectionObserver((es, io) => {
     if (!es.some((e) => e.isIntersecting)) return;
     io.disconnect();
-    for (const s of steps) for (const u of [s.src, s.over, s.bar, s.scan?.sheet, s.scan?.bar]) if (u) new Image().src = u;
+    for (const s of steps) for (const u of [s.src, s.over, s.bar, s.scan?.sheet, s.scan?.bar]) if (u) fetchOne(u);
   }, { rootMargin: '400px' }).observe(scr);
 
   const top = () => [...scr.querySelectorAll<HTMLElement>('.wp-layer')].pop()!;
@@ -50,7 +55,7 @@ function flow(scr: HTMLElement, play: Play, dots: HTMLElement[] = []) {
 
   function lay(s: PlayStep, kind: string | null) {
     const old = top();
-    scr.insertAdjacentHTML('beforeend', layerHtml(s, true));
+    scr.insertAdjacentHTML('beforeend', layerHtml(s, true, sizes));
     const host = top();
     const mine = ++turn;
     const done = () => { if (mine === turn) scr.querySelectorAll('.wp-layer').forEach((l) => l !== host && l.remove()); };

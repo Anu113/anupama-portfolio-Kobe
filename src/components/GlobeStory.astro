@@ -1,0 +1,328 @@
+---
+/* GlobeStory.astro — the globe sequence between the hero and Selected
+   work, on request (2026-11-23): andreas.vision's globe, step for step,
+   mocked in experiments/espresso-page and picked there as "Like the
+   reference" in "Table wood", "Alive, turning", "Smooth", "Rounded".
+
+   As the hero scrolls away, the top of a huge pixel globe comes up under
+   it like a planet. It fills the screen and closes in on Bangalore, where
+   Moss stands with a tag; it pulls back to the whole globe and shrinks;
+   it tips north and turns while lines run from Bangalore to where her
+   companies are from (PayPal San Jose, Okta San Francisco, Walmart
+   Bentonville — their head offices, not where she sat), Moss travelling
+   along them, the globe moving to the left half; "Built to untangle"
+   comes in beside it on the right ("Beside the globe" of
+   experiments/home-explore, 2026-11-24, with andreas.vision's pill
+   pair for "More about me"); then the wood closes in on
+   the globe like an iris, the globe shrinks to one square and drops into
+   the page, where it is the full stop of "Selected work." ("E · Into a
+   pixel" of experiments/globe-endings, picked 2026-11-24 over a skyline,
+   fades, gradients and blinds).
+
+   UX reason: one picture of the range (one desk in Bangalore, products
+   used across the world) instead of a paragraph about it, and it hands
+   the eye to the work.
+
+   How it's drawn: one canvas in a sticky stage. The land is a real map
+   (public/images/globe/land.png, Natural Earth, made by
+   scripts/globe-land.py), looked up per pixel through an orthographic
+   projection, so nothing is loaded from elsewhere. Pixels are rounded
+   tiles, and each fades to its new colour as the globe turns, so it
+   moves without flashing. The story eases after the scroll
+   (--globe-follow).
+   Runs on frame-loop.ts and sleeps when off screen.
+
+   Reduced motion: no stage and no scroll story; the globe and the line
+   are drawn once, still, and the full stop is simply there. The canvas is decorative
+   (aria-hidden); the heading and its paragraph are real text. Values
+   under GLOBE STORY in tokens.css. */
+import PillPair from './PillPair.astro';
+---
+<section class="globe" id="globe" aria-labelledby="globe-h" data-land="/images/globe/land.png" data-moss="/images/moss/moss-sm.webp">
+  <div class="globe__stage">
+    <canvas class="globe__canvas" aria-hidden="true"></canvas>
+    <div class="globe__tags" aria-hidden="true"></div>
+    <div class="globe__line u-shell">
+      <h2 class="globe__h" id="globe-h">Built to <em>untangle</em></h2>
+      <div class="globe__copy">
+        <p>Ten years of complicated systems made usable: payments, privacy and identity. One desk in Bangalore, products used around the world.</p>
+        <PillPair href="/about" label="More about me" class="globe__more" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .globe { position: relative; height: var(--globe-story-h); background: var(--bg); }
+  .globe__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--bg); }
+  .globe.is-wood .globe__stage { background: var(--globe-ground); }
+  .globe__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .globe__tags { position: absolute; inset: 0; pointer-events: none; }
+  .globe__tags :global(.globe__tag) {
+    position: absolute; display: flex; gap: 0.375rem; align-items: center; white-space: nowrap;
+    background: var(--globe-chip); color: var(--globe-chip-ink); border-radius: 6px;
+    padding: 0.375rem 0.5625rem 0.375rem 0.375rem;
+    font: 500 var(--step-label) / 1 var(--font-sans); box-shadow: 0 2px 10px rgb(0 0 0 / 0.14);
+    opacity: 0; transform: translate(-50%, -50%) scale(0.92);
+    transition: opacity 0.7s var(--ease-out), transform 0.9s var(--ease-out);
+  }
+  .globe__tags :global(.globe__tag.is-on) { opacity: 1; transform: translate(-50%, -50%); }
+  .globe__tags :global(.globe__tag i) {
+    width: 0.875rem; height: 0.875rem; border-radius: 3px; background: var(--globe-chip-ink); color: var(--globe-chip);
+    font: 600 0.5rem / 0.875rem var(--font-sans); text-align: center; font-style: normal;
+  }
+  .globe__line {
+    position: absolute; inset-inline: 0; bottom: 18vh; display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem;
+    color: var(--globe-text); opacity: 0; transform: translateY(16px); transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+  }
+  .globe.is-line .globe__line { opacity: 1; transform: none; }
+  .globe__h { margin: 0; font: 300 var(--globe-step-h) / 1.02 var(--font-serif); letter-spacing: -0.01em; }
+  .globe__h em { font-style: italic; color: var(--globe-accent); }
+  .globe__copy { max-width: var(--globe-copy-max); }
+  .globe__copy p { margin: 0 0 1rem; font-size: var(--step-body); line-height: 1.6; }
+  /* "More about me" in the wood's own ink (PILL PAIR, re-inked) */
+  .globe__copy :global(.globe__more) { --pair-bg: var(--globe-text); --pair-fg: var(--globe-ground); }
+  /* Wide: the words beside the globe, on the right half. */
+  @media (min-width: 861px) {
+    .globe__line {
+      left: var(--globe-line-left); right: 0; bottom: auto; top: 50%; translate: 0 -50%;
+      flex-direction: column; justify-content: center; gap: 1.125rem;
+      padding-inline: 0 var(--gutter);
+    }
+  }
+  @media (max-width: 860px) {
+    .globe__line { flex-direction: column; gap: 1rem; bottom: 12vh; }
+  }
+  /* reduced motion: a still closing frame, no scroll story */
+  @media (prefers-reduced-motion: reduce) {
+    .globe { height: auto; }
+    .globe__stage { position: relative; height: 100vh; }
+    .globe__line { transition: none; opacity: 1; transform: none; }
+    .globe__tags :global(.globe__tag) { transition: none; }
+  }
+</style>
+
+<script>
+  import { wake } from '../scripts/frame-loop';
+  import { cssMs } from '../scripts/css-time';
+
+  const sec = document.querySelector<HTMLElement>('.globe');
+  if (sec) start(sec);
+
+  function start(sec: HTMLElement) {
+    const stage = sec.querySelector<HTMLElement>('.globe__stage')!;
+    const cv = sec.querySelector<HTMLCanvasElement>('.globe__canvas')!;
+    const g = cv.getContext('2d')!;
+    const tagsEl = sec.querySelector<HTMLElement>('.globe__tags')!;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const RAD = Math.PI / 180;
+
+    // colours come from tokens; a canvas normalises each (the minifier rewrites
+    // colour tokens, so they are never parsed by hand)
+    const norm = document.createElement('canvas').getContext('2d')!;
+    const rgb = (prop: string) => {
+      norm.fillStyle = '#000';
+      norm.fillStyle = getComputedStyle(sec).getPropertyValue(prop).trim() || '#000';
+      const h = String(norm.fillStyle);
+      if (h.startsWith('#')) return [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+      return (h.match(/[\d.]+/g) || ['0', '0', '0']).slice(0, 3).map(Number);
+    };
+    let C: Record<string, number[]> = {};
+    const readColours = () => {
+      C = { ground: rgb('--globe-ground'), sea: rgb('--globe-sea'), rim: rgb('--globe-sea-rim'), shelf: rgb('--globe-shelf'),
+        land: rgb('--globe-land'), landRim: rgb('--globe-land-rim'), line: rgb('--globe-line') };
+    };
+    const css = (c: number[]) => `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
+    const FOLLOW = cssMs('--globe-follow', 280, sec);
+    const FADE = cssMs('--globe-cell-fade', 220, sec);
+
+    // places: home, then where her companies are from (head offices)
+    const HOME = { lon: 77.59, lat: 12.97, name: 'Bangalore, IN' };
+    const NEXT = [
+      { lon: -121.89, lat: 37.34, name: 'PayPal' },
+      { lon: -122.42, lat: 37.77, name: 'Okta' },
+      { lon: -94.21, lat: 36.37, name: 'Walmart' },
+    ];
+    tagsEl.innerHTML = [HOME, ...NEXT].map((s) => `<span class="globe__tag"><i>${s.name[0]}</i>${s.name}</span>`).join('');
+    const tags = [...tagsEl.children] as HTMLElement[];
+    const tag = (i: number, x: number, y: number, on: boolean) => {
+      tags[i].style.left = `${x}px`; tags[i].style.top = `${y}px`; tags[i].classList.toggle('is-on', on);
+    };
+
+    // the land, as a lookup
+    let MASK: Uint8Array | null = null, MW = 0, MH = 0;
+    const landImg = new Image();
+    landImg.onload = () => {
+      const c = document.createElement('canvas'); MW = c.width = landImg.naturalWidth; MH = c.height = landImg.naturalHeight;
+      const x = c.getContext('2d')!; x.drawImage(landImg, 0, 0);
+      const d = x.getImageData(0, 0, MW, MH).data; MASK = new Uint8Array(MW * MH);
+      for (let i = 0; i < MASK.length; i++) MASK[i] = d[i * 4] > 127 ? 1 : 0;
+      kick();
+    };
+    landImg.src = sec.dataset.land!;
+    const isLand = (lon: number, lat: number) => {
+      if (!MASK) return 0;
+      const x = Math.floor((((lon + 180) % 360 + 360) % 360) / 360 * MW), y = Math.min(MH - 1, Math.max(0, Math.floor((90 - lat) / 180 * MH)));
+      return MASK[y * MW + x];
+    };
+    const moss = new Image(); moss.src = sec.dataset.moss!;
+
+    // orthographic projection: screen disc (x right, y down, in radii) <-> lon/lat
+    const unproject = (x: number, y: number, l0: number, p0: number) => {
+      const yy = -y, rho = Math.hypot(x, yy); if (rho > 1) return null;
+      const c = Math.asin(rho), sc = Math.sin(c), cc = Math.cos(c), sp = Math.sin(p0 * RAD), cp = Math.cos(p0 * RAD);
+      const lat = rho ? Math.asin(cc * sp + yy * sc * cp / rho) : p0 * RAD;
+      const lon = l0 * RAD + Math.atan2(x * sc, rho * cp * cc - yy * sp * sc);
+      return [lon / RAD, lat / RAD, cc];
+    };
+    const project = (lon: number, lat: number, l0: number, p0: number): [number, number, boolean] => {
+      const l = (lon - l0) * RAD, p = lat * RAD, q = p0 * RAD;
+      const cosc = Math.sin(q) * Math.sin(p) + Math.cos(q) * Math.cos(p) * Math.cos(l);
+      return [Math.cos(p) * Math.sin(l), -(Math.cos(q) * Math.sin(p) - Math.sin(q) * Math.cos(p) * Math.cos(l)), cosc > 0];
+    };
+
+    let W = 0, H = 0;
+    const size = () => {
+      W = stage.clientWidth; H = stage.clientHeight; const dpr = Math.min(2, devicePixelRatio || 1);
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cells.clear();
+    };
+
+    // each cell remembers its colour and fades to the new one
+    const cells = new Map<number, number[]>();
+    let fadeK = 1;
+    const tile = (x: number, y: number, s: number, c: number[]) => {
+      const gap = Math.max(1, s * 0.1), r = s * 0.26;
+      g.fillStyle = css(c); g.beginPath(); g.roundRect(x + gap / 2, y + gap / 2, s - gap, s - gap, r); g.fill();
+    };
+    function paintEarth(cx: number, cy: number, R: number, l0: number, p0: number) {
+      const cell = Math.max(5, Math.min(30, R / 34)), n = Math.ceil(R / cell);
+      const i0 = Math.max(-n, Math.floor(-cx / cell)), i1 = Math.min(n, Math.ceil((W - cx) / cell));
+      const j0 = Math.max(-n, Math.floor(-cy / cell)), j1 = Math.min(n, Math.ceil((H - cy) / cell));
+      const sh = 2.2 / Math.max(1, R / 300);
+      for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) {
+        const u = unproject((i + 0.5) * cell / R, (j + 0.5) * cell / R, l0, p0); if (!u) continue;
+        const [lon, lat, cc] = u;
+        let t: number[];
+        if (isLand(lon, lat)) t = cc < 0.3 ? C.landRim : C.land;
+        else {
+          const near = isLand(lon + sh, lat) || isLand(lon - sh, lat) || isLand(lon, lat + sh) || isLand(lon, lat - sh);
+          t = near ? C.shelf : cc < 0.35 ? C.rim : C.sea;
+        }
+        const key = (i + 400) * 1000 + (j + 400), cur = cells.get(key);
+        let col = t;
+        if (cur) { for (let q = 0; q < 3; q++) cur[q] += (t[q] - cur[q]) * fadeK; col = cur; } else cells.set(key, [...t]);
+        tile(Math.round(cx + i * cell), Math.round(cy + j * cell), cell, col);
+      }
+    }
+    // a great-circle line from a to b, drawn up to `upto` (0..1), on the near side only
+    function arc(a: typeof HOME, b: typeof HOME, upto: number, cx: number, cy: number, R: number, l0: number, p0: number) {
+      const v = (lo: number, la: number) => [Math.cos(la * RAD) * Math.cos(lo * RAD), Math.cos(la * RAD) * Math.sin(lo * RAD), Math.sin(la * RAD)];
+      const A = v(a.lon, a.lat), B = v(b.lon, b.lat), w = Math.acos(Math.min(1, A[0] * B[0] + A[1] * B[1] + A[2] * B[2]));
+      const pts: ([number, number] | null)[] = []; let tip: [number, number] | null = null;
+      for (let s = 0; s <= upto + 1e-6; s += 0.01) {
+        const f1 = Math.sin((1 - s) * w) / Math.sin(w), f2 = Math.sin(s * w) / Math.sin(w), p = [0, 1, 2].map((i) => f1 * A[i] + f2 * B[i]);
+        const [x, y, vis] = project(Math.atan2(p[1], p[0]) / RAD, Math.asin(p[2]) / RAD, l0, p0);
+        const pt: [number, number] | null = vis ? [cx + x * R, cy + y * R] : null; pts.push(pt); if (pt) tip = pt;
+      }
+      for (const [wd, col] of [[5, C.rim], [2.4, C.line]] as [number, number[]][]) {
+        g.strokeStyle = css(col); g.lineWidth = wd; g.lineCap = 'round'; g.beginPath(); let on = false;
+        for (const p of pts) { if (!p) { on = false; continue; } if (on) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); on = true; }
+        g.stroke();
+      }
+      return tip;
+    }
+
+    const sm = (t: number) => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    
+    function draw(p: number) {
+      // the camera: [at, centre lon, centre lat, radius, centre x, centre y]
+      // where the globe settles: the left half on wide screens, the words beside it ("Beside the globe")
+      const side = W > 860, SX = side ? W * 0.27 : W / 2, SY = side ? H * 0.5 : H * 0.4;
+      const K: [number, number, number, number, number, number][] = [
+        [0,    76, 22, W * 0.95, W / 2, H * 0.18 + W * 0.95],    // a planet's top, coming up under the hero
+        [0.16, HOME.lon, HOME.lat, W * 2.6, W / 2, H * 0.5],     // in, on home
+        [0.26, HOME.lon, HOME.lat, W * 2.6, W / 2, H * 0.5],     // a hold, with the tag
+        [0.4,  HOME.lon - 10, 20, H * 0.46, W / 2, H * 0.5],     // back out to the whole globe
+        [0.52, HOME.lon - 30, 30, 190, W / 2, H * 0.4],          // small, in the middle
+        [0.72, -25, 58, 200, SX, SY],                            // tipped north: Bangalore and California both in view
+        [1,    -40, 58, 200, SX, SY],                            // still turning a little as the story closes
+      ];
+      let a = K[0], b = K[K.length - 1];
+      for (let i = 0; i < K.length - 1; i++) if (p >= K[i][0] && p <= K[i + 1][0]) { a = K[i]; b = K[i + 1]; break; }
+      const t = sm((p - a[0]) / Math.max(1e-6, b[0] - a[0]));
+      const R = Math.exp(lerp(Math.log(a[3]), Math.log(b[3]), t)), l0 = lerp(a[1], b[1], t), p0 = lerp(a[2], b[2], t);
+      const cx = lerp(a[4], b[4], t), cy = lerp(a[5], b[5], t);
+
+      // the ending ("E · Into a pixel" of experiments/globe-endings, on request 2026-11-24):
+      // the wood closes in on the globe like an iris until only the globe is left, then the
+      // globe shrinks to one square and drops into the page, where it is the full stop of
+      // "Selected work."
+      const close = sm((p - 0.8) / 0.09), shrink = sm((p - 0.86) / 0.12), drop = sm((p - 0.9) / 0.1);
+      const wood = p > 0.12 && close <= 0;
+      sec.classList.toggle('is-wood', wood);
+      g.clearRect(0, 0, W, H);
+      if (wood) { g.fillStyle = css(C.ground); g.fillRect(0, 0, W, H); }
+      else if (p > 0.12 && close < 1) { g.fillStyle = css(C.ground); g.beginPath(); g.arc(cx, cy, lerp(Math.hypot(W, H), R + 2, close), 0, Math.PI * 2); g.fill(); }
+      const stopEl = document.querySelector<HTMLElement>('[data-globe-stop]');
+      if (shrink > 0) {
+        const sr = stopEl?.getBoundingClientRect(), stR = Math.max(2, (sr?.width || 6) / 2);
+        const R2 = lerp(R, stR, shrink), X = lerp(cx, sr ? sr.left + stR : cx, drop), Y = lerp(cy, H + 40, drop);
+        stopEl?.classList.toggle('is-on', p >= 0.985);
+        tags.forEach((el) => el.classList.remove('is-on'));
+        sec.classList.remove('is-line');
+        if (R2 > 14) { fadeK = 1; paintEarth(X, Y, R2, l0, p0); } // its grid changes size as it shrinks: no fading, or the land smears
+        else if (p < 0.985) { g.fillStyle = css(C.land); g.fillRect(Math.round(X - R2), Math.round(Y - R2), Math.ceil(R2 * 2), Math.ceil(R2 * 2)); }
+        return;
+      }
+      stopEl?.classList.remove('is-on');
+      paintEarth(cx, cy, R, l0, p0);
+
+      // the lines from home, drawn as you go; Moss travels the newest
+      const [hx, hy, hv] = project(HOME.lon, HOME.lat, l0, p0), HX = cx + hx * R, HY = cy + hy * R;
+      let mx = HX, my = HY;
+      const lines = Math.min(1, Math.max(0, (p - 0.54) / 0.24));
+      NEXT.forEach((s, i) => {
+        const u = Math.min(1, Math.max(0, lines * NEXT.length - i));
+        if (u > 0) {
+          const tip = arc(HOME, s, u, cx, cy, R, l0, p0); if (tip && u < 1) { mx = tip[0]; my = tip[1]; }
+          const [sx, sy, sv] = project(s.lon, s.lat, l0, p0); tag(i + 1, cx + sx * R + 40, cy + sy * R, sv && u >= 1 && p < 0.97);
+        } else tag(i + 1, 0, 0, false);
+      });
+      if (lines >= 1) { const s = NEXT[NEXT.length - 1], [sx, sy] = project(s.lon, s.lat, l0, p0); mx = cx + sx * R; my = cy + sy * R; }
+      if (hv && p > 0.1 && moss.complete && moss.naturalWidth) {
+        const ms = Math.min(64, Math.max(26, R / 6));
+        g.drawImage(moss, Math.round(mx - ms / 2), Math.round(my - ms * 0.95), ms, ms * moss.naturalHeight / moss.naturalWidth);
+      }
+      tag(0, HX + 50, HY + 12, hv && p > 0.14 && p < 0.97);
+      sec.classList.toggle('is-line', p > 0.66 && p < 0.82);
+
+    }
+
+    // the scroll, followed softly
+    let sp = 0, visible = false;
+    const target = () => { const r = sec.getBoundingClientRect(); return Math.min(1, Math.max(0, -r.top / (r.height - innerHeight))); };
+    const step = (dt: number) => {
+      if (!visible) return false;
+      const k = 1 - Math.exp(-dt / FOLLOW);
+      const goal = target(); sp += (goal - sp) * k; if (Math.abs(goal - sp) < 0.0004) sp = goal;
+      fadeK = 1 - Math.exp(-dt / FADE);
+      draw(sp);
+      return true;
+    };
+    const kick = () => { if (visible && !reduce) wake(step); };
+
+    readColours(); size();
+    addEventListener('resize', () => { size(); if (reduce) draw(0.75); });
+    new MutationObserver(readColours).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+
+    if (reduce) { // one still closing frame
+      sec.classList.add('is-line');
+      const still = () => { fadeK = 1; draw(0.75); sec.classList.add('is-line'); document.querySelector('[data-globe-stop]')?.classList.add('is-on'); };
+      if (landImg.complete) still(); else landImg.addEventListener('load', still, { once: true });
+      return;
+    }
+    new IntersectionObserver((es) => { visible = es[0].isIntersecting; if (visible) { sp = target(); kick(); } }).observe(sec);
+  }
+</script>

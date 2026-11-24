@@ -323,7 +323,12 @@ const letters = (text: string) => {
       }
     };
     pick();
-    addEventListener('scroll', pick, { passive: true });
+    // Once per frame at most: Lenis scrolls every frame, and each pick
+    // reads every band's box.
+    let pickRaf = 0;
+    addEventListener('scroll', () => {
+      if (!pickRaf) pickRaf = requestAnimationFrame(() => { pickRaf = 0; pick(); });
+    }, { passive: true });
     addEventListener('resize', pick);
     addEventListener('theme:changed', pick);
   }
@@ -333,13 +338,15 @@ const letters = (text: string) => {
     // A few px of hysteresis so trackpad jitter doesn't flicker it.
     let lastY = scrollY;
     const follow = () => {
+      // Read before writing, so the class changes don't force a layout.
       const y = scrollY;
+      const h = nav.offsetHeight;
       const dy = y - lastY;
       nav.classList.toggle('is-solid', y > 0);
-      if (y <= nav.offsetHeight) nav.classList.remove('is-hidden');
+      if (y <= h) nav.classList.remove('is-hidden');
       else if (dy > 4) nav.classList.add('is-hidden');
       else if (dy < -4) nav.classList.remove('is-hidden');
-      if (Math.abs(dy) > 4 || y <= nav.offsetHeight) lastY = y;
+      if (Math.abs(dy) > 4 || y <= h) lastY = y;
     };
     follow();
     addEventListener('scroll', follow, { passive: true });

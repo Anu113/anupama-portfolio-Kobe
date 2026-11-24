@@ -93,9 +93,9 @@ effect:
   pixel is the last to go, on the word "pixel" in the hero sentence,
   holds a moment and pops. Then the hero is simply there: no glide, no
   focus-in, no peek. It moves only as far as the page has loaded
-  (images, and the hero sprite via `hero-scrub:ready`): while loading,
+  (images, and the hero's first frame via `hero-scrub:ready`, not her 4.6MB sheet): while loading,
   the slats clear in proportion and the last pixel waits; at 4s it lets
-  go regardless and the page shows as it is (asked about, 2026-11-18;
+  go regardless and the page shows as it is (2.5s since 2026-11-19, was 4s;
   never a frozen black screen). ~2s on a loaded page. Home page only,
   every time it's opened or refreshed (on request); not when arriving
   from another page of the site, nor on back/forward. A deliberate key,
@@ -216,6 +216,19 @@ effect:
   - A11y, as built: focus moves in and stays in, Escape closes and returns
     focus, replies go to screen readers once through a live region (the
     typewriter is visual only), everything static under reduced motion.
+  - Pill after the hero (on request, 2026-11-19, round 3 of
+    `experiments/moss-cta/`, after gauravi.design's "ask AI" pill, picked
+    because the hero card alone was missable): once Moss on the books
+    has scrolled out of view, his still frame stands in the bottom-right
+    corner (where his panel opens) beside a light message, "Moss" over
+    "Short on time? Let Moss help." (her earlier launcher line), mono,
+    white on a hairline and soft shadow ("Paper"). The first time it
+    shows, the line types itself in once behind a blinking accent bar
+    caret (a mark, like the panel's). Hidden over the black footer and
+    while the panel is open; same panel, focus returns to it. Static
+    under reduced motion. Values under ASK DOCK in `tokens.css`. The
+    hero card keeps its words and behaviour, on request. It's the same
+    Moss following the visitor, not a second chat.
   Keep it to one character with one voice; don't give it idle animation on
   the hero beyond the breathing ellipsis, and don't add a second chat or
   mascot elsewhere. One second place for him is approved, on request:
@@ -339,8 +352,35 @@ effect:
   Wet paint, scroll pull, window light and hover-only were mocked and
   passed over. Values under PLAY DEPTH in `tokens.css`.
 
-Outside those eight moments — hero shader, first-paint loader, the reused
-hover system, `CursorTrail`, `CursorLamp`, Pixel, BeyondWork, the playground wall — the old rule still applies at full strength:
+- **`GlobeStory`, approved on request** (2026-11-23; andreas.vision's
+  globe sequence step for step, mocked in `experiments/espresso-page`
+  and picked there as "Like the reference", "Table wood", "Smooth",
+  "Rounded"). Between the hero and Selected work: as the hero scrolls
+  away the top of a huge pixel globe comes up under it, fills the
+  screen and closes in on Bangalore (Moss standing there, a tag),
+  pulls back, tips north while lines run to PayPal, Okta and Walmart
+  (their head offices, not where she sat) with Moss travelling them
+  and the globe moving to the left half, then "Built to *untangle*"
+  beside it on the right with a "More about me" pill pair ("Beside the
+  globe" of `experiments/home-explore`, 2026-11-24; under 861px the
+  globe stays centred and the words sit under it); it ends ("E · Into a pixel" of
+  `experiments/globe-endings`, 2026-11-24) with the wood closing in on
+  the globe like an iris, the globe shrinking to one square that drops
+  into the page and is the full stop of "Selected work." (in the
+  globe's land colour; hidden until it lands, simply there under
+  reduced motion). A real
+  map (`public/images/globe/land.png`, Natural Earth, made by
+  `scripts/globe-land.py`), nothing loaded from elsewhere. Rounded
+  pixel tiles that fade to each new colour, so it moves without
+  flashing (flashing was turned down). Colours are her painting's
+  table, light, and belong to the object like project hues; "untangle"
+  is in her sweater's rust, her pick. Static closing frame under
+  reduced motion. Values under GLOBE STORY in `tokens.css`. Its reason:
+  one picture of the range (one desk in Bangalore, products used
+  around the world), handing the eye to the work.
+
+Outside those nine moments — hero shader, first-paint loader, the reused
+hover system, `CursorTrail`, `CursorLamp`, Pixel, BeyondWork, the playground wall, the globe story — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,
@@ -595,7 +635,12 @@ walked back. Concretely, in the current implementation:
   and links make no sound on hover or click (removed on request,
   2026-11-13); don't add one back. Since 2026-11-17, on request, six
   more, picked from `experiments/sound/`, all in `sound.ts`: a harp
-  string per /work archive row on hover or focus (the one hover sound),
+  string per /work archive line (the one hover sound; since 2026-11-18,
+  on request, "A · Catch" of `experiments/archive-strings/`, the
+  hairlines are the strings: a line catches the pointer crossing it,
+  bends up to `--string-pull`, slips off and rings straight, its note
+  playing as it lets go; fine pointers with motion allowed only,
+  otherwise the plain borders and a pluck per row),
   soft key clicks as Moss types (panel and field), a click as the
   Privacy before/after line crosses a pin under the visitor's hand (its
   sway is silent), a sand scatter and settle on "pixel" (silent since PixelBreak was parked, 2026-11-17), a metal detent
@@ -715,11 +760,6 @@ walked back. Concretely, in the current implementation:
   with ink redaction bars and the hairlines were removed; don't bring
   them back. Its corners are a requested exception to the square
   `--radius` rule, this page only.
-- The old night mode, the named theme palettes, tints/swatches, and the one-off
-  effect components (`OneWord`, `CaseDoodle`, `Testimonials`, `Marquee`,
-  `Mosaic`, the footer's variable-weight wordmark, the section watermark
-  numerals) have been removed. `<Section theme="…">` still exists but every
-  theme name resolves to the same colours.
 - **One passcode, and locks you can see before the click** (on request,
   2026-11-18, mocks in `experiments/password-lock/`). `site.lock` in
   `data/site.ts` holds the one passcode; every gate (`SiteGate`,
@@ -742,6 +782,11 @@ walked back. Concretely, in the current implementation:
   off by default, on purpose: turn it on only while needed. All of it is
   a soft gate (the pages ship in the HTML); real privacy is a host-level
   password. Values under LOCK FROST in `tokens.css`.
+- The old night mode, the named theme palettes, tints/swatches, and the one-off
+  effect components (`OneWord`, `CaseDoodle`, `Testimonials`, `Marquee`,
+  `Mosaic`, the footer's variable-weight wordmark, the section watermark
+  numerals) have been removed. `<Section theme="…">` still exists but every
+  theme name resolves to the same colours.
 - Pixel (`AskBubble.astro`) was left out of that pass on request: it keeps
   its own palette and pins its old type (Roboto Mono, still loaded only for
   it) via the block at the end of `tokens.css`.
@@ -859,7 +904,8 @@ walked back. Concretely, in the current implementation:
   at a time, stops when the tab is hidden; nothing moves under reduced
   motion. Its reason: one personal detail she can share in a press,
   the way the paintings share hers.
-- The home page is now: hero → "Selected *work*" head + project cards →
+- The home page is now: hero → the globe story (`GlobeStory`) →
+  "Selected *work*" head + six project cards →
   "Beyond *work*" ring → one-line playground pointer → Small talk →
   Now → footer (which carries contact). The hero is the screen minus
   `--hero-peek`, so the "Selected work" heading line shows at the
@@ -890,26 +936,50 @@ walked back. Concretely, in the current implementation:
   an accent ring and over a deeper ground) — don't add a ring back.
   Values under SMALL TALK in `tokens.css`. Its reason: the first-call
   questions answered in a line each, without leaving the page.
-- **The project cards are stacked phone cards** (`ProjectCard.astro`,
-  on request): four full-width rows that pin and stack as you scroll
-  (sticky rows and the settle effect in `index.astro`), text on the
-  left, and on the right a stage on the project hue where, after
-  daneden.me, a phone runs the flow on its own — the Chase Pay
-  recording, Privacy's /work flow playing on its own (the same redrawn
-  screens, touch marks and arrivals as its /work tile, on request
-  2026-11-17: the old cuts from her boards were blurry and cropped), and the coded Debit Card sign-up
-  prototype on autopilot (`autoplay` prop). The phone is daneden.me's
-  device, an iPhone 17 Pro in silver, whole and centred (on request,
-  2026-11-17, option C of `experiments/device-daneden/`; his crop off
-  the card's bottom edge was passed over): a CSS aluminium band, its
-  buttons and the Dynamic Island round the black glass. Okta IAM shows its
-  screenshot instead. Four cards only, on request: the list is
-  `homeCards` in `data/work.ts`; the rest live on /work. Phones move
-  only on screen and with motion allowed. There is no pause control
-  (removed on request, knowing WCAG 2.2.2 asks for one on motion over
-  five seconds) and no Screens/Prototype label on the stage. Its reason: a skimming
-  recruiter sees the product working, not a thumbnail. Sizes and
-  timing under PHONE CARDS in `tokens.css`.
+- **The project cards are paper cards on the project's hue, one wide
+  then two pairs** (`ProjectCard.astro`, grid in `index.astro`; on
+  request, 2026-11-24, from `experiments/home-explore/inspired.html`,
+  after andreas.vision's cards: "Project hue", "Words beside", "Border
+  on hover", "Faint line", "Both", "Pill on hover"; it replaced the
+  oxblood-ringed soft cards of 2026-11-19, whose mocks are in
+  `experiments/home-outline-cards/`). Six cards (`homeCards` in
+  `data/work.ts`), "A · Two wides" of `experiments/home-cards-six/` (on
+  request, 2026-11-25): Okta IAM wide, then Privacy and Ads consent, then
+  Scan & Go wide with its words on the right (`flip`), then Debit Card
+  and Chase Pay. Scan & Go's card holds two phones, a little smaller
+  than one alone so its sage ground shows above and below them: its scan
+  looping (the first screen of its /work flow only) beside the cart
+  (`pair` media). Each is a paper card, 28px corners, its work
+  on its own hue (`ground` in `homeCards`: Okta sky, Privacy lilac, Ads
+  consent apricot, Scan & Go sage, Debit Card mint, Chase Pay butter). The words sit left
+  under the work; on the wide card they sit beside it on the left, its
+  title in the serif heading. No line at rest; on hover or focus a faint
+  oxblood line comes in (16%), the card rises 3px on a soft layered
+  shadow, the work inside grows to 1.035 and "View case study" fades up
+  as the pill pair (below), all on `--ease-out` over 500ms (always shown
+  on touch). The oxblood is a mark only, never text; the 28px corners
+  are a requested exception to the square `--radius` rule, these cards
+  only. Values under HOME CARDS in `tokens.css`. After daneden.me, a phone runs each flow on its own:
+  Privacy's, Ads consent's and Chase Pay's /work flows playing on their
+  own (the same redrawn screens, touch marks and arrivals as their /work
+  tiles), and the coded Debit Card sign-up prototype on autopilot
+  (`autoplay` prop). The phone is daneden.me's device, an iPhone 17 Pro
+  in silver, whole and centred (option C of `experiments/device-daneden/`):
+  a CSS aluminium band, its buttons and the Dynamic Island round the
+  black glass. Okta IAM shows its screenshot instead.
+  Phones move only on screen and with motion allowed. There is no pause
+  control (removed on request, knowing WCAG 2.2.2 asks for one on motion
+  over five seconds). Its reason: a skimming recruiter sees the product
+  working, not a thumbnail. Phone sizes and timing under PHONE CARDS in
+  `tokens.css`.
+- **The pill pair** (`PillPair.astro`, `.btn--pair` in `global.css`,
+  PILL PAIR in `tokens.css`; on request, 2026-11-24: "I really like the
+  button style of the inspiration"), measured off andreas.vision: an ink
+  pill 42px tall beside a round 42px arrow, 8px apart; on hover the pill
+  grows 1.5% and the arrow slides out as a fresh one slides in. Ink,
+  never the accent. Used for "View all work", the home cards' "View case
+  study" and the globe's "More about me" (re-inked in the wood's brown).
+  Don't spread it to the hero's Resume/LinkedIn without asking.
 - **The /work tiles play their flow on hover** (`WorkStage.astro`,
   `scripts/work-play.ts`, `data/workPlay.ts`, WORK PLAY in
   `tokens.css`; on request, 2026-11-16, design N of
@@ -934,13 +1004,9 @@ walked back. Concretely, in the current implementation:
   dark wash (ID check, Ads consent, Chase Pay), the photo blurred to a
   soft texture (Privacy, Scan & Go) or the project hue as a lit colour
   block (Okta IAM, Debit Card); `ground` in `data/workPlay.ts`, WORK
-  GROUND in `tokens.css`. The home page's project cards don't: since
-  2026-11-17, on request, every home card stands on the Okta card's lit
-  colour block (`WorkGround.astro`, kind 'colour'), no photos, in its
-  company's hue, or its own GROUND HUES colour (`hue` in `homeCards`)
-  where two would match — Debit Card is mint ("Company + soft" in
-  `experiments/work-colour-blocks/okta-style.html`). /work is left as it
-  is for now, on request. The photos are stand-ins from PayPal's and
+  GROUND in `tokens.css`. The home page's project cards use plain
+  project hues instead (since 2026-11-24, see the cards above). /work is left as it is for now, on request. The photos are
+  stand-ins from PayPal's and
   Walmart's sites until licensed or her own ones replace them.
 - **On case studies, a phone sits in a device box** (`DeviceBox.astro`,
   `styles/device-box.css`, on request, measured off danield.design's

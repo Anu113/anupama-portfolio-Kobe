@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel hero, two lines</title>
+<!--
+  A hero from scratch (2026-11-20): no illustration, the headline centred,
+  pixels as the one picture. As you scroll, the pixels react and turn the
+  first headline into a second, after andreas.vision's "Designer who ships
+  with vision" → "Design ▪ Engineer who ships growth" — in her words, with
+  a square pixel set inside the second line.
+  Four ways the pixels behave (?v=):
+    1  Clouds condense — pixel clouds round the edges pull in and pack
+       into the one square that sits in the second line.
+    2  Through the pixel — the square full stop after "pixel" grows until
+       it is the screen; the second line is written inside it.
+    3  Grid gathers — a quiet dot grid swirls in to the middle and packs
+       into the square.
+    4  Words to words — the first line is made of pixels; they fly apart
+       and settle into the second line, the spare ones into the square.
+  Backgrounds (?b=): white, ox (oxblood), ink (near-black), maroon (her
+  reference: #330504 ground, coral #e6614e and white type, a faint grain)
+  and paper (the same pair on white). The second line of each headline
+  is in coral on those two.
+  The second line's words are a stand-in for hers.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Crimson+Pro:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#fff;--fg:#1d1210;--dim:rgba(29,18,16,.62);--sq:#5c1712;--ease:cubic-bezier(.16,1,.3,1);--sans:'Geist',system-ui,sans-serif;--serif:'Crimson Pro',Georgia,serif;--gutter:88px}
+  :root[data-b="ox"]{--bg:#5c1712;--fg:#fbeeea;--dim:rgba(251,238,234,.72);--sq:#f0a07c}
+  :root[data-b="ink"]{--bg:#1b1a19;--fg:#f3efe9;--dim:rgba(243,239,233,.66);--sq:#e0714f}
+  /* from her reference (2026-11-20): deep maroon, coral, white; and the same pair on white */
+  :root[data-b="maroon"]{--bg:#330504;--fg:#ffffff;--dim:rgba(230,97,78,.9);--sq:#e6614e;--acc:#e6614e}
+  :root[data-b="paper"]{--bg:#ffffff;--fg:#330504;--dim:rgba(51,5,4,.7);--sq:#e6614e;--acc:#e6614e}
+  .l2{color:var(--acc,inherit)}
+  :root[data-b="maroon"] .stage::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;opacity:.35;mix-blend-mode:overlay;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .story{position:relative;height:420vh}
+  .stage{position:sticky;top:0;height:100vh;overflow:hidden;background:var(--bg)}
+  canvas#cv{position:absolute;inset:0;z-index:1;pointer-events:none}
+  .head{position:absolute;inset:0;z-index:2;display:grid;place-items:center;text-align:center;pointer-events:none}
+  .head > div{grid-area:1/1;display:flex;flex-direction:column;align-items:center}
+  .head h1,.head h2{font:italic 400 clamp(64px,8.6vw,128px)/1.08 var(--serif);letter-spacing:-.04em}
+  .head p{font:400 19px/1.55 var(--sans);color:var(--dim);max-width:620px;margin-top:34px}
+  .stop{display:inline-block;width:.16em;height:.16em;background:currentColor;margin-left:.05em}
+  .px{display:inline-block;width:.62em;height:.62em;background:var(--sq);vertical-align:.02em;margin:0 .12em}
+  #one,#two{transition:opacity .5s}
+  #two{opacity:0}
+  .nav{position:fixed;top:24px;left:var(--gutter);right:var(--gutter);z-index:10;display:flex;justify-content:space-between;align-items:center}
+  .nav span{font:italic 400 22px/1 var(--serif)}
+  .nav a.pill{display:inline-flex;align-items:center;height:44px;padding:0 22px;border-radius:999px;background:var(--fg);color:var(--bg);font:500 15px/1 var(--sans)}
+  .after{padding:120px var(--gutter);color:var(--dim);background:var(--bg)}
+  .after h2{font:italic 300 56px/1 var(--serif);color:var(--fg);margin-bottom:12px}
+  .bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99;display:flex;gap:2px;align-items:center;background:#111;border-radius:999px;padding:4px;font:500 11.5px/1 var(--sans);box-shadow:0 8px 28px rgba(0,0,0,.25);white-space:nowrap}
+  .bar a{color:#bbb;padding:9px 11px;border-radius:999px;display:flex;gap:6px;align-items:center}
+  .bar a:hover{color:#fff}
+  .bar a[aria-current="true"]{background:#fff;color:#000}
+  .bar b{color:#777;font-weight:500;padding:0 6px 0 10px}
+  .bar i{width:12px;height:12px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+</style>
+</head>
+<body>
+<nav class="bar" id="bar" aria-label="Mock options"></nav>
+<header class="nav"><span>A.</span><a class="pill" href="#">Email me</a></header>
+
+<section class="story" id="story">
+  <div class="stage" id="stage">
+    <canvas id="cv" aria-hidden="true"></canvas>
+    <div class="head">
+      <div id="one">
+        <h1>Designer who<br><span class="l2">ships the last pixel<span class="stop" id="stop" aria-hidden="true"></span></span></h1>
+        <p>I&rsquo;m Anupama, a Staff Product Designer. Payments, privacy and identity at PayPal, Okta and Walmart Labs.</p>
+      </div>
+      <div id="two" aria-hidden="true">
+        <h2>Product <span class="px" id="px"></span> Designer<br><span class="l2">who ships trust</span></h2>
+        <p>Ten years of money, privacy and identity, from systems and strategy to the screen people finish on.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="after"><h2>Selected work</h2>The case cards and the rest of the page follow here.</section>
+
+<script>
+const Q = new URLSearchParams(location.search);
+const V = ['1', '2', '3', '4'].includes(Q.get('v')) ? +Q.get('v') : 1;
+const B = ['white', 'ox', 'ink', 'maroon', 'paper'].includes(Q.get('b')) ? Q.get('b') : 'white';
+document.documentElement.dataset.b = B;
+document.getElementById('bar').innerHTML = '<b>Version</b>' +
+  [['1', 'Clouds condense'], ['2', 'Through the pixel'], ['3', 'Grid gathers'], ['4', 'Words to words']].map(([k, l]) => `<a href="?v=${k}&b=${B}" aria-current="${+k === V}">${k} · ${l}</a>`).join('') +
+  '<b>Background</b>' + [['white', 'White', '#fff'], ['ox', 'Oxblood', '#5c1712'], ['ink', 'Near-black', '#1b1a19'], ['maroon', 'Maroon + coral', 'linear-gradient(135deg,#330504 55%,#e6614e 55%)'], ['paper', 'White + maroon, coral', 'linear-gradient(135deg,#fff 55%,#e6614e 55%)']]
+    .map(([k, l, c]) => `<a href="?v=${V}&b=${k}" aria-current="${k === B}"><i style="background:${c}"></i>${l}</a>`).join('');
+
+// pixel tones on each ground, lightest → darkest-against-ground
+const TONES = { white: ['#f3dfdb', '#e7c3bd', '#cf968f', '#93443a', '#5c1712'],
+                ox:    ['#7d2a20', '#93443a', '#c86a5e', '#f0a07c', '#fbeeea'],
+                ink:   ['#2e2422', '#4a2f29', '#93443a', '#c86a4d', '#f0a07c'],
+                maroon:['#4a0d0a', '#6b1a14', '#a8392b', '#e6614e', '#ffffff'],
+                paper: ['#fbe3de', '#f4b5a8', '#e6614e', '#8a1c12', '#330504'] }[B];
+document.getElementById('px').style.background = TONES[4]; // the square in the line is the pixel that arrives there
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hash = (x, y) => { const v = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return v - Math.floor(v); };
+const sm = t => t * t * (3 - 2 * t);
+function noise(x, y) { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  return a + (b - a) * sm(xf) + (c - a) * sm(yf) + (a - b - c + d) * sm(xf) * sm(yf); }
+const fbm = (x, y) => noise(x, y) * .55 + noise(x * 2.1, y * 2.1) * .3 + noise(x * 4.3, y * 4.3) * .15;
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+const story = document.getElementById('story'), stage = document.getElementById('stage');
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+const one = document.getElementById('one'), two = document.getElementById('two'), px = document.getElementById('px'), stop = document.getElementById('stop');
+let W, H, P = null;
+function size() {
+  W = innerWidth; H = innerHeight;
+  cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  g.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  P = null;
+}
+addEventListener('resize', size);
+const rectOf = el => { const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect(); return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height }; };
+
+/* the square in the second line, as a small grid of cells to pack pixels into */
+function squareSlots(n) {
+  const r = rectOf(px), out = [];
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) out.push({ x: r.x + i * r.w / n, y: r.y + j * r.h / n, s: r.w / n });
+  return out;
+}
+/* the reference's look: clouds of cells at the edges, a clear window for the words */
+function clouds(size = 30) {
+  const cols = Math.ceil(W / size), rows = Math.ceil(H / size), out = [];
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+    const dx = (i / cols - .5) / .5, dy = (j / rows - .5) / .46, e = Math.sqrt(dx * dx + dy * dy);
+    const v = fbm(i * .12, j * .18) + (e - .9) * 1.4;
+    if (v < .34) continue;
+    out.push({ x: i * size, y: j * size, s: size, c: TONES[v > .62 ? 4 : v > .52 ? 3 : v > .44 ? 2 : 1] });
+  }
+  return out;
+}
+function drawCells(list) { for (const c of list) { g.fillStyle = c.c; g.fillRect(Math.round(c.x), Math.round(c.y), Math.ceil(c.s), Math.ceil(c.s)); } }
+function fly(list, t, arc) {
+  for (const f of list) {
+    const k = ease(clamp((t - f.d) / Math.max(.1, 1 - f.d)));
+    g.globalAlpha = f.fade ? 1 - k : 1;
+    g.fillStyle = f.c;
+    const s = lerp(f.s0, f.s1, k);
+    g.fillRect(Math.round(lerp(f.x0, f.x1, k)), Math.round(lerp(f.y0, f.y1, k) - Math.sin(k * Math.PI) * arc * (f.a ?? 1)), Math.ceil(s), Math.ceil(s));
+  }
+  g.globalAlpha = 1;
+}
+/* swap the lines: the first goes as the pixels move, the second comes as they land */
+function lines(out, inn) { one.style.opacity = 1 - clamp(out); two.style.opacity = clamp(inn); px.style.opacity = inn >= .99 ? 1 : 0; }
+
+/* 1 · Clouds condense */
+function v1(p) {
+  if (!P) { const src = clouds(), slots = squareSlots(8);
+    P = src.map((c, i) => { const t = slots[i % slots.length]; return { x0: c.x, y0: c.y, s0: c.s, x1: t.x, y1: t.y, s1: t.s, c: c.c, d: hash(i, 3) * .4, fade: i >= slots.length }; }); }
+  const t = clamp((p - .1) / .6);
+  lines(t * 2.2, (t - .8) * 5);
+  if (t >= 1) return;
+  fly(P, t, 0);
+}
+/* 2 · Through the pixel: the full stop grows to the screen, the second line is written inside it */
+function v2(p) {
+  const r = rectOf(stop), grow = ease(clamp((p - .06) / .34)), shrink = ease(clamp((p - .6) / .3));
+  const target = rectOf(px), cover = Math.hypot(W, H) * 1.05, ground = getComputedStyle(document.documentElement).getPropertyValue('--bg');
+  one.style.opacity = grow > .05 ? 0 : 1;
+  let S, cx, cy;
+  if (shrink <= 0) { S = lerp(r.w, cover, grow); cx = lerp(r.x + r.w / 2, W / 2, grow); cy = lerp(r.y + r.h / 2, H / 2, grow); }
+  else { S = lerp(cover, target.w, shrink); cx = lerp(W / 2, target.x + target.w / 2, shrink); cy = lerp(H / 2, target.y + target.h / 2, shrink); }
+  g.fillStyle = TONES[4]; g.fillRect(cx - S / 2, cy - S / 2, S, S);
+  if (grow > .15 && grow < .97 && shrink <= 0) { // a pixel grid inside it as it grows, so it reads as a pixel, not a wipe
+    g.strokeStyle = 'rgba(0,0,0,.07)'; const step = S / 8;
+    for (let k = 1; k < 8; k++) { g.beginPath(); g.moveTo(cx - S / 2 + k * step, cy - S / 2); g.lineTo(cx - S / 2 + k * step, cy + S / 2); g.moveTo(cx - S / 2, cy - S / 2 + k * step); g.lineTo(cx + S / 2, cy - S / 2 + k * step); g.stroke(); }
+  }
+  // the second line is written on the pixel once it fills the screen, in the ground's colour,
+  // and goes back to its own colour once the pixel no longer sits behind it
+  const tw = two.querySelector('h2').getBoundingClientRect();
+  const behind = S > tw.width * 1.1;
+  two.style.opacity = grow < .97 ? 0 : behind ? clamp((p - .4) / .06) : (shrink >= .99 ? 1 : 0);
+  two.style.color = behind ? ground : ''; two.querySelector('p').style.color = behind ? ground : '';
+  two.style.zIndex = 3; px.style.opacity = shrink >= .99 ? 1 : 0;
+}
+/* 3 · Grid gathers: a quiet dot grid swirls in and packs into the square */
+function v3(p) {
+  if (!P) { const step = 22, slots = squareSlots(9), list = []; let i = 0;
+    for (let y = step / 2; y < H; y += step) for (let x = step / 2; x < W; x += step) {
+      const t = slots[i % slots.length], keep = i < slots.length * 1.0 || hash(x, y) > .82;
+      list.push({ x0: x - 2, y0: y - 2, s0: 4, x1: t.x, y1: t.y, s1: t.s, c: keep ? TONES[4] : TONES[1 + (i % 3)], d: (Math.hypot(x - W / 2, y - H / 2) / Math.hypot(W / 2, H / 2)) * .45 * (1 - hash(x, y) * .3), fade: !keep, ang: Math.atan2(y - H / 2, x - W / 2) });
+      i++;
+    }
+    // the closest dots fill the square first
+    P = list.sort((a, b) => a.d - b.d).map((f, k) => ({ ...f, c: k < slots.length ? TONES[4] : f.c, fade: k >= slots.length, x1: slots[k % slots.length].x, y1: slots[k % slots.length].y })); }
+  const t = clamp((p - .08) / .62);
+  lines(t * 2.4, (t - .82) * 6);
+  if (t >= 1) return;
+  // a swirl: each dot turns about the centre on its way in
+  for (const f of P) {
+    const k = ease(clamp((t - f.d) / Math.max(.1, 1 - f.d)));
+    const r0 = Math.hypot(f.x0 - W / 2, f.y0 - H / 2), r = lerp(r0, Math.hypot(f.x1 - W / 2, f.y1 - H / 2), k);
+    const a = lerp(f.ang, Math.atan2(f.y1 - H / 2, f.x1 - W / 2), k) + Math.sin(k * Math.PI) * 1.2;
+    const x = k > .92 ? lerp(W / 2 + Math.cos(a) * r, f.x1, (k - .92) / .08) : W / 2 + Math.cos(a) * r;
+    const y = k > .92 ? lerp(H / 2 + Math.sin(a) * r, f.y1, (k - .92) / .08) : H / 2 + Math.sin(a) * r;
+    g.globalAlpha = f.fade ? (1 - k) * .9 : 1;
+    g.fillStyle = f.c; const s = lerp(f.s0, f.s1, k); g.fillRect(Math.round(x), Math.round(y), Math.ceil(s), Math.ceil(s));
+  }
+  g.globalAlpha = 1;
+}
+/* 4 · Words to words: the first line in pixels flies apart and settles into the second */
+function textPixels(el, step) {
+  const r = rectOf(el), cs = getComputedStyle(el), c = document.createElement('canvas');
+  const pad = 60; c.width = Math.ceil(r.w) + pad * 2; c.height = Math.ceil(r.h); const x = c.getContext('2d');
+  x.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#000';
+  const lh = parseFloat(cs.lineHeight), rows = el.innerText.split('\n');
+  rows.forEach((t, i) => x.fillText(t.replace(/\s+$/, ''), pad + r.w / 2, lh * (i + .5)));
+  const d = x.getImageData(0, 0, c.width, c.height).data, out = [];
+  for (let y = 0; y < c.height; y += step) for (let xx = 0; xx < c.width; xx += step) if (d[(y * c.width + xx) * 4 + 3] > 128) out.push({ x: r.x + xx - pad, y: r.y + y });
+  return out;
+}
+function v4(p) {
+  if (!P) {
+    const step = 5, A = textPixels(one.querySelector('h1'), step);
+    two.style.visibility = 'hidden'; two.style.opacity = 1; const Bp = textPixels(two.querySelector('h2'), step); two.style.opacity = 0; two.style.visibility = '';
+    const slots = squareSlots(7), Bx = Bp.concat(slots.map(s => ({ x: s.x, y: s.y, sq: s.s })));
+    A.sort((a, b) => a.x - b.x || a.y - b.y); Bx.sort((a, b) => a.x - b.x || a.y - b.y);
+    const n = Math.max(A.length, Bx.length);
+    P = Array.from({ length: n }, (_, i) => { const a = A[Math.floor(i * A.length / n)], b = Bx[Math.floor(i * Bx.length / n)];
+      return { x0: a.x, y0: a.y, s0: step - 1, x1: b.x, y1: b.y, s1: b.sq || step - 1, c: b.sq ? TONES[4] : getComputedStyle(document.body).color, d: hash(i, 7) * .3, a: (hash(i, 9) - .5) * 2 }; });
+  }
+  const t = clamp((p - .08) / .62);
+  one.style.opacity = t > 0 ? 0 : 1;
+  two.style.opacity = t >= 1 ? 1 : 0; px.style.opacity = t >= 1 ? 1 : 0;
+  if (t <= 0 || t >= 1) return;
+  fly(P, t, 140);
+}
+
+function tick() {
+  const r = story.getBoundingClientRect();
+  if (r.bottom > 0 && r.top < innerHeight) {
+    const p = reduce ? 0 : clamp(-r.top / (r.height - innerHeight));
+    g.clearRect(0, 0, W, H);
+    if (V === 1 && p < .1) { one.style.opacity = 1; two.style.opacity = 0; if (!P) v1(.1); drawCells(P.map(f => ({ x: f.x0, y: f.y0, s: f.s0, c: f.c === TONES[4] ? f.c : f.c }))); }
+    else if (V === 3 && p < .08) { one.style.opacity = 1; two.style.opacity = 0; if (!P) v3(.08); for (const f of P) { g.fillStyle = TONES[1]; g.fillRect(f.x0, f.y0, f.s0, f.s0); } }
+    else ({ 1: v1, 2: v2, 3: v3, 4: v4 })[V](p);
+  }
+  requestAnimationFrame(tick);
+}
+size();
+document.fonts.ready.then(() => { P = null; tick(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Globe picker</title>
+<!--
+  Which globe sits on her table? Five candidates, each shown on the right
+  end of the table in her hero painting, beside Moss on the books (where he
+  sits on the site: feet at x 565, y 462 of the 700×980 frame). Only for
+  choosing; the scroll versions get built once she picks.
+  A Pixel globe — drawn in square pixels, like the andreas mock's.
+  B Dotted globe — a live WebGL dot globe (cobe, MIT; the style of
+    Vercel's and many SaaS homepages), dots in clay, Bangalore marked.
+  C 3D emoji globe — Microsoft Fluent Emoji "Globe showing Asia-Australia"
+    (MIT), loaded from its public repo.
+  D Painted desk globe — drawn here to sit in her watercolour: wooden
+    foot, brass meridian, soft painted sea.
+  E Ink line globe — meridians and parallels in thin ink, on a stand.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Crimson+Pro:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#fcfcfc;--ink:#262626;--grey:#707070;--sans:'Geist',system-ui,sans-serif;--serif:'Crimson Pro',Georgia,serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font:400 14px/1.5 var(--sans);padding:56px clamp(20px,5vw,72px) 80px}
+  h1{font:italic 400 44px/1.05 var(--serif);letter-spacing:-.02em}
+  .dek{color:var(--grey);margin-top:10px;max-width:640px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:28px;margin-top:40px}
+  .card{border:1px solid rgba(0,0,0,.08);border-radius:20px;overflow:hidden;background:#fff}
+  /* the scene: x 300..740, y 250..620 of her 700×980 painting */
+  .scene{position:relative;aspect-ratio:440/370;overflow:hidden;background:#fff}
+  .scene > .art{position:absolute;width:159.1%;left:-68.2%;top:-67.6%}
+  .moss{position:absolute;left:60.2%;bottom:42.7%;width:24%;transform:translateX(-53%) translateY(4.6%)}
+  .globe{position:absolute;left:83%;bottom:19.5%;width:21%;transform:translateX(-50%)}
+  .globe > *{display:block;width:100%;height:auto}
+  .meta{padding:16px 20px 20px}
+  .meta b{font:500 15px/1.3 var(--sans)}
+  .meta b span{display:inline-block;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;text-align:center;line-height:22px;margin-right:8px}
+  .meta p{color:var(--grey);margin-top:6px;font-size:13px}
+  .meta small{display:block;margin-top:8px;font-size:12px;color:#999}
+  canvas.pix{image-rendering:pixelated}
+</style>
+</head>
+<body>
+<h1>Which globe sits on the table?</h1>
+<p class="dek">Each candidate on the right end of your table, next to Moss on the books. Once you pick one (and where it sits), I'll build the scroll versions with it.</p>
+
+<div class="grid">
+  <article class="card"><div class="scene" data-g="pixel"></div>
+    <div class="meta"><b><span>A</span>Pixel globe</b><p>Square pixels, like the andreas mock. Zooming in shows more pixels, which suits "the last pixel".</p><small>Drawn in code · ours</small></div></article>
+  <article class="card"><div class="scene" data-g="dots"></div>
+    <div class="meta"><b><span>B</span>Dotted globe</b><p>A live, turning globe of dots, with Bangalore marked. The tech-company look (Vercel, many SaaS homepages).</p><small>cobe library · MIT · loads from a CDN</small></div></article>
+  <article class="card"><div class="scene" data-g="emoji"></div>
+    <div class="meta"><b><span>C</span>3D emoji globe</b><p>Microsoft's 3D globe showing Asia. Soft and friendly, but it's an emoji others use too.</p><small>Fluent Emoji · MIT · Microsoft</small></div></article>
+  <article class="card"><div class="scene" data-g="paint"></div>
+    <div class="meta"><b><span>D</span>Painted desk globe</b><p>A desk globe made to sit in your watercolour: wooden foot, brass ring, soft sea. You could also paint one, which would match best.</p><small>Drawn here · or yours</small></div></article>
+  <article class="card"><div class="scene" data-g="ink"></div>
+    <div class="meta"><b><span>E</span>Ink line globe</b><p>Meridians and parallels in thin ink. Quiet, like a sketch or a diagram.</p><small>Drawn here</small></div></article>
+</div>
+
+<script type="module">
+const I = '../../public/images/';
+const STAND = (ring = '#a37b45') => `
+  <svg viewBox="0 0 100 112" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:auto;overflow:visible">
+    <path d="M14 50 A40 40 0 0 1 86 50" fill="none" stroke="${ring}" stroke-width="3.2" transform="rotate(-22 50 50)" opacity=".95"/>
+    <path d="M50 82 L50 100" stroke="#7a5532" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="50" cy="104" rx="22" ry="6.5" fill="#8a5f37"/><ellipse cx="50" cy="102" rx="22" ry="5" fill="#b58556"/>
+  </svg>`;
+const wrap = (inner, ring) => `<div style="position:relative;aspect-ratio:100/112">${inner}${STAND(ring)}</div>`;
+
+document.querySelectorAll('.scene').forEach(s => {
+  s.innerHTML = `<img class="art" src="${I}hero-idle.webp" alt=""><img class="moss" src="${I}moss/moss-idle.webp" alt=""><div class="globe"></div>`;
+  const g = s.querySelector('.globe'), kind = s.dataset.g;
+  const sphere = html => `<div style="position:absolute;left:10%;top:2%;width:80%;aspect-ratio:1">${html}</div>`;
+  if (kind === 'pixel') g.innerHTML = wrap(sphere('<canvas class="pix" width="24" height="24" style="width:100%;height:100%"></canvas>'));
+  if (kind === 'dots') g.innerHTML = wrap(sphere('<canvas width="400" height="400" style="width:100%;height:100%"></canvas>'));
+  if (kind === 'emoji') g.innerHTML = wrap(sphere(`<img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Globe%20showing%20asia-australia/3D/globe_showing_asia-australia_3d.png" alt="" style="width:100%">`));
+  if (kind === 'paint') g.innerHTML = wrap(sphere(`
+    <svg viewBox="0 0 100 100" style="width:100%;height:100%">
+      <defs>
+        <filter id="wc"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="3.2"/></filter>
+        <radialGradient id="sea" cx=".38" cy=".34" r=".75"><stop offset="0" stop-color="#cfe2df"/><stop offset=".6" stop-color="#94bcbd"/><stop offset="1" stop-color="#5f8f93"/></radialGradient>
+      </defs>
+      <g filter="url(#wc)">
+        <circle cx="50" cy="50" r="46" fill="url(#sea)"/>
+        <path d="M44 20c10-4 22 2 24 10s-6 10-4 18 10 8 6 16-14 8-16 2-2-12-8-14-14 0-14-8 6-10 6-16 0-6 6-8z" fill="#d8b98b" opacity=".92"/>
+        <path d="M22 54c6-2 12 2 12 8s-6 12-10 10-8-12-2-18z" fill="#d1ae7e" opacity=".9"/>
+        <path d="M70 70c6 0 10 4 8 8s-8 4-10 1 0-9 2-9z" fill="#d8b98b"/>
+        <circle cx="50" cy="50" r="46" fill="none" stroke="#6b4a33" stroke-width="1.4" opacity=".55"/>
+        <ellipse cx="36" cy="30" rx="12" ry="7" fill="#fff" opacity=".25" transform="rotate(-30 36 30)"/>
+      </g>
+    </svg>`), '#b8924f');
+  if (kind === 'ink') g.innerHTML = wrap(sphere(`
+    <svg viewBox="0 0 100 100" style="width:100%;height:100%" fill="none" stroke="#3a2a22" stroke-width="1.3">
+      <circle cx="50" cy="50" r="46" fill="#fff"/>
+      <ellipse cx="50" cy="50" rx="16" ry="46"/><ellipse cx="50" cy="50" rx="33" ry="46"/><path d="M50 4v92"/>
+      <path d="M4 50h92"/><path d="M10 30h80M10 70h80" /><circle cx="50" cy="50" r="46"/>
+      <circle cx="62" cy="52" r="2.6" fill="#b4482a" stroke="none"/>
+    </svg>`), '#3a2a22');
+});
+
+/* A: pixel sphere, 24×24 cells */
+{
+  const c = document.querySelector('[data-g=pixel] canvas'), x = c.getContext('2d');
+  const sea = ['#00aaff', '#4aa8f5', '#8dc8fb'], land = '#ffffff';
+  const h = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); };
+  for (let j = 0; j < 24; j++) for (let i = 0; i < 24; i++) {
+    const nx = (i + .5) / 12 - 1, ny = (j + .5) / 12 - 1, d = nx * nx + ny * ny; if (d > 1) continue;
+    const nz = Math.sqrt(1 - d), L = h(Math.floor(i / 3 + 2), Math.floor(j / 3)) > .55;
+    x.fillStyle = L ? (nz < .4 ? '#c4e3fd' : land) : (nz < .35 ? sea[0] : nz < .7 ? sea[1] : sea[2]);
+    x.fillRect(i, j, 1, 1);
+  }
+}
+
+/* B: cobe dotted globe, Bangalore marked */
+{
+  const c = document.querySelector('[data-g=dots] canvas');
+  import('https://cdn.jsdelivr.net/npm/cobe@0.6.3/+esm').then(({ default: createGlobe }) => {
+    let phi = 4.6;
+    createGlobe(c, {
+      devicePixelRatio: 2, width: 400, height: 400, phi, theta: .25, dark: 0, diffuse: 1.2,
+      mapSamples: 9000, mapBrightness: 5, baseColor: [1, .93, .9], markerColor: [.71, .28, .16], glowColor: [1, .95, .92],
+      markers: [{ location: [12.97, 77.59], size: .09 }],
+      onRender: s => { s.phi = phi; phi += .004; },
+    });
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scroll zoom stories</title>
+<!--
+  Four scroll-and-zoom stories, in place of andreas.vision's globe (his is
+  a globe pulling back to show the places he's lived). Each pins the screen
+  and zooms through two or three steps as you scroll. All drawn in pixels,
+  in the palette chosen in the bottom bar.
+  Z1 Globe on her desk: her desk in pixels → the globe on it, turning to
+     India → down into Bangalore's streets.
+  Z2 Into a pixel: one of her screens → zoom until one pixel fills the
+     screen → that pixel opens out into the next product.
+  Z3 Out from a phone: the Scan & Go screen → the aisle it's used in →
+     the city of stores.
+  Z4 Through the career: frames for each company fly past, Zomato to
+     Okta, ending on what she's looking for.
+  Under reduced motion each shows its last step, still.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Crimson+Pro:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{--ground:#fffaf5;--ink:#2a1d17;--t1:#fde6d6;--t2:#f9c9a9;--t3:#f0a07c;--t4:#d9744f;
+    --serif:'Crimson Pro',Georgia,serif;--sans:'Geist',system-ui,sans-serif;--gutter:clamp(20px,6vw,88px)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--ground);color:var(--ink);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+  .intro{padding:22vh var(--gutter) 14vh;max-width:900px}
+  .intro h1{font:italic 400 64px/1.02 var(--serif);letter-spacing:-.03em}
+  .intro p{font-size:17px;margin-top:20px;opacity:.75;max-width:560px}
+  .story{position:relative;height:420vh}
+  .stage{position:sticky;top:0;height:100vh;overflow:hidden;background:var(--ground)}
+  .stage canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;display:block}
+  .tag{position:absolute;top:24px;left:var(--gutter);z-index:6;font:500 12px/1.4 var(--sans);background:#111;color:#fff;padding:7px 11px;border-radius:999px}
+  .tag span{color:#aaa;font-weight:400}
+  .steps{position:absolute;left:var(--gutter);bottom:96px;z-index:5;width:min(520px,80vw)}
+  .step{position:absolute;left:0;bottom:0;opacity:0;transform:translateY(12px);transition:opacity .5s,transform .6s cubic-bezier(.16,1,.3,1)}
+  .step.on{opacity:1;transform:none}
+  .step small{display:block;font:500 12px/1 var(--sans);letter-spacing:.04em;opacity:.65;margin-bottom:10px}
+  .step p{font:italic 400 44px/1.04 var(--serif);letter-spacing:-.02em;background:var(--ground);display:inline;box-decoration-break:clone;-webkit-box-decoration-break:clone;padding:0 .14em}
+  .dots{position:absolute;right:var(--gutter);top:50%;transform:translateY(-50%);z-index:5;display:flex;flex-direction:column;gap:8px}
+  .dots i{width:8px;height:8px;background:var(--t2)}
+  .dots i.on{background:var(--ink)}
+  .chip{position:absolute;z-index:4;display:flex;gap:6px;align-items:center;background:var(--ground);color:var(--ink);font:500 12px/1 var(--sans);padding:6px 9px 6px 6px;box-shadow:0 0 0 2px var(--ink);white-space:nowrap;opacity:0;transform:translate(-50%,-140%) scale(.9);transition:opacity .35s,transform .45s cubic-bezier(.16,1,.3,1)}
+  .chip.on{opacity:1;transform:translate(-50%,-140%)}
+  .chip i{width:10px;height:10px;background:var(--t4)}
+  .chip::after{content:"";position:absolute;left:50%;bottom:-8px;width:4px;height:6px;background:var(--ink);transform:translateX(-50%)}
+
+  /* Z4 */
+  #z4 .stage{perspective:900px;perspective-origin:50% 45%}
+  .tunnel{position:absolute;left:50%;top:45%;transform-style:preserve-3d}
+  .frame{position:absolute;left:-290px;top:-190px;width:580px;height:380px;background:var(--ground);padding:28px;display:grid;grid-template-columns:1fr 200px;gap:24px;
+    box-shadow:0 0 0 4px var(--ink),8px 8px 0 4px var(--t3);will-change:transform,opacity}
+  .frame small{font:500 12px/1 var(--sans);opacity:.6}
+  .frame h3{font:italic 400 44px/1 var(--serif);margin:10px 0 14px;letter-spacing:-.02em}
+  .frame p{font-size:15px;line-height:1.5;opacity:.8}
+  .frame .shot{background:var(--t1);overflow:hidden;position:relative}
+  .frame .shot img{position:absolute;left:50%;top:14px;width:84%;transform:translateX(-50%);image-rendering:auto}
+  .frame .shot.wide img{width:180%;left:0;transform:none;top:30px}
+  .frame .shot.blank{background:repeating-linear-gradient(45deg,var(--t1) 0 8px,var(--t2) 8px 16px)}
+  .spark{position:absolute;width:10px;height:10px;background:var(--t3)}
+  .end{position:absolute;inset:0;display:grid;place-items:center;text-align:center;z-index:3;opacity:0;transition:opacity .6s}
+  .end.on{opacity:1}
+  .end h2{font:italic 400 64px/1.02 var(--serif);letter-spacing:-.03em}
+  .end p{margin-top:16px;font-size:17px;opacity:.75}
+  .gap{height:30vh;display:grid;place-items:center;font:500 12px/1 var(--sans);opacity:.45}
+  @media (prefers-reduced-motion:reduce){.step,.chip,.end{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="intro">
+  <h1>Scroll stories, in place of the globe</h1>
+  <p>Each pins the screen and zooms through two or three steps as you scroll. Pick the palette in the bar below.</p>
+</header>
+
+<!-- Z1 -->
+<section class="story" id="z1">
+  <div class="stage">
+    <p class="tag">Z1 · Globe on her desk <span>— desk → the globe on it → Bangalore's streets</span></p>
+    <canvas aria-hidden="true"></canvas>
+    <div class="chips"></div>
+    <div class="steps">
+      <div class="step"><small>1 / 3</small><p>A desk in Bangalore.</p></div>
+      <div class="step"><small>2 / 3</small><p>Products used around the world,</p></div>
+      <div class="step"><small>3 / 3</small><p>designed down to one street, one screen, one pixel.</p></div>
+    </div>
+    <div class="dots"><i></i><i></i><i></i></div>
+  </div>
+</section>
+<div class="gap">· · ·</div>
+
+<!-- Z2 -->
+<section class="story" id="z2">
+  <div class="stage">
+    <p class="tag">Z2 · Into a pixel <span>— a screen → one pixel fills the view → it opens onto the next product</span></p>
+    <canvas aria-hidden="true"></canvas>
+    <div class="steps">
+      <div class="step"><small>1 / 3</small><p>One screen, used by 80 million people.</p></div>
+      <div class="step"><small>2 / 3</small><p>Every decision on it comes down to a pixel.</p></div>
+      <div class="step"><small>3 / 3</small><p>And every pixel opens onto the next product.</p></div>
+    </div>
+    <div class="dots"><i></i><i></i><i></i></div>
+  </div>
+</section>
+<div class="gap">· · ·</div>
+
+<!-- Z3 -->
+<section class="story" id="z3">
+  <div class="stage">
+    <p class="tag">Z3 · Out from a phone <span>— the Scan &amp; Go screen → the aisle → the city of stores</span></p>
+    <canvas aria-hidden="true"></canvas>
+    <div class="chips"></div>
+    <div class="steps">
+      <div class="step"><small>1 / 3</small><p>One screen: Scan &amp; Go.</p></div>
+      <div class="step"><small>2 / 3</small><p>One aisle, and no queue at the end of it.</p></div>
+      <div class="step"><small>3 / 3</small><p>A city of shoppers who skipped the line.</p></div>
+    </div>
+    <div class="dots"><i></i><i></i><i></i></div>
+  </div>
+</section>
+<div class="gap">· · ·</div>
+
+<!-- Z4 -->
+<section class="story" id="z4" style="height:520vh">
+  <div class="stage">
+    <p class="tag">Z4 · Through the career <span>— each company flies past, Zomato to Okta</span></p>
+    <div class="tunnel" id="tunnel"></div>
+    <div class="end" id="z4end"><div><h2>Bangalore, now.</h2><p>Looking for a Staff or Lead Product Designer role.</p></div></div>
+  </div>
+</section>
+<div class="gap">end</div>
+
+<script type="module">
+import { pal, onPalette, mountSwitcher, fbm, hash, bayer, hexRgb, reduce } from './palette.js';
+mountSwitcher([['hero.html', 'Hero ideas', false], ['zoom.html', 'Scroll stories', true]]);
+let RGB = [];
+onPalette(p => { RGB = [p.ground, ...p.t].map(hexRgb); });
+const I = '../../public/images/';
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const progress = el => { const r = el.getBoundingClientRect(); return reduce ? 1 : clamp(-r.top / (r.height - innerHeight)); };
+const inView = el => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+function steps(sec, p, cuts) { // which caption / dot is on
+  const n = cuts.findIndex(c => p < c); const k = n === -1 ? cuts.length : n;
+  sec.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('on', i === k));
+  sec.querySelectorAll('.dots i').forEach((s, i) => s.classList.toggle('on', i === k));
+}
+function buffer(cv, w) { // a low-res buffer that fills the stage
+  const h = Math.round(w * cv.clientHeight / cv.clientWidth);
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  const ctx = cv.getContext('2d'); return { ctx, w, h, img: ctx.createImageData(w, h) };
+}
+const put = (d, i, tone) => { const c = RGB[tone]; d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255; };
+
+/* ---------- Z1 · Globe on her desk ---------- */
+{
+  const sec = document.getElementById('z1'), cv = sec.querySelector('canvas'), chipsEl = sec.querySelector('.chips');
+  const G = { x: 150, y: 96, r: 30 }, PIN = { lat: 13, lon: 77.6 };
+  const chips = [['Bangalore, IN', 0, 0, 'pin'], ['PayPal', -.55, -.35], ['Okta', .55, -.5], ['Walmart Labs', .45, .45]];
+  chipsEl.innerHTML = chips.map(c => `<span class="chip"><i></i>${c[0]}</span>`).join('');
+  const chipEls = [...chipsEl.children];
+  function scene(x, y, z, rot) {
+    // the globe
+    const dx = (x - G.x) / G.r, dy = (y - G.y) / G.r, d2 = dx * dx + dy * dy;
+    if (d2 < 1) {
+      const nz = Math.sqrt(1 - d2), lat = -Math.asin(dy) * 57.3, lon = Math.atan2(dx, nz) * 57.3 + rot;
+      const oct = z > 30 ? 6 : z > 8 ? 5 : 3;
+      let land = fbm((lon + 360) / 26, (lat + 90) / 20, oct);
+      const pd = Math.hypot(lon - PIN.lon, (lat - PIN.lat) * 1.2);
+      if (pd < 14) land = Math.max(land, .62 - pd * .006);
+      if (z > 14 && pd < 6) { // streets come up as you get close
+        const u = (lon - PIN.lon) * 9, v = (lat - PIN.lat) * 9, k = clamp((z - 14) / 40);
+        const road = (Math.abs(u - Math.round(u)) < .07 || Math.abs(v - Math.round(v)) < .07);
+        if (k > .2) { if (pd < .18) return 4; if (road) return 4; return hash(Math.floor(u), Math.floor(v)) > .7 ? 1 : (hash(Math.floor(u) + 9, Math.floor(v)) > .5 ? 2 : 3); }
+      }
+      if (land > .54) return nz < .3 ? 4 : (land > .6 ? 3 : 2);
+      return nz < .25 ? 2 : (bayer(x * 4 | 0, y * 4 | 0) > nz + .3 ? 2 : 1);
+    }
+    // the stand: a ring and a foot
+    if (Math.abs(Math.hypot(x - G.x, y - G.y) - G.r - 2.5) < 1 && x < G.x + 4) return 4;
+    if (Math.abs(x - G.x) < 1.2 && y > G.y + G.r && y < 138) return 4;
+    if (Math.abs(x - G.x) < 10 && y >= 136 && y < 140) return 4;
+    // table
+    if (y >= 140 && y < 145) return 3;
+    if (y >= 145) return (x > 30 && x < 35) || (x > 285 && x < 290) ? 3 : (bayer(x | 0, y | 0) > .7 ? 1 : 0);
+    // lamp (left)
+    if (x > 40 && x < 62 && y > 132 && y < 140) return 4;
+    if (Math.abs(x - 51 - (132 - y) * .35) < 1 && y > 78 && y < 132) return 4;
+    if (y > 64 && y < 80 && x > 60 - (y - 64) * .5 && x < 84 + (y - 64) * .5 && y > 64) return y < 70 ? 4 : 3;
+    if (y >= 80 && y < 140 && Math.abs(x - 72) < (y - 80) * .55 && bayer(x | 0, y | 0) > .75) return 1; // lamp light
+    // laptop
+    if (x > 205 && x < 252 && y > 104 && y < 136) return x > 208 && x < 249 && y > 107 && y < 134 ? 2 : 4;
+    if (x > 196 && x < 262 && y >= 136 && y < 140) return 4;
+    // books
+    const books = [[268, 112, 300, 120, 2], [264, 120, 304, 128, 3], [270, 128, 298, 140, 4], [272, 104, 294, 112, 3]];
+    for (const [a, b, c, d, t] of books) if (x > a && x < c && y > b && y < d) return (y - b) < 1 ? 1 : t;
+    // a window behind, with the evening
+    if (x > 92 && x < 128 && y > 18 && y < 70) return x < 94 || x > 126 || y < 20 || y > 68 || Math.abs(x - 110) < 1 ? 3 : (bayer(x | 0, y | 0) < (y - 20) / 60 ? 2 : 1);
+    return 0;
+  }
+  function frame() {
+    if (inView(sec)) {
+      const p = progress(sec); steps(sec, p, [.3, .66]);
+      const a = ease(clamp(p / .42)), b = ease(clamp((p - .55) / .45));
+      const rot = lerp(-60, PIN.lon, ease(clamp(p / .55)));
+      const pinY = G.y - G.r * Math.sin(PIN.lat / 57.3);
+      let z = Math.exp(lerp(Math.log(1), Math.log(3.6), a)); z = Math.exp(lerp(Math.log(z), Math.log(120), b));
+      let cx = lerp(160, G.x, a), cy = lerp(100, G.y, a); cx = lerp(cx, G.x, b); cy = lerp(cy, pinY, b);
+      const { ctx, w, h, img } = buffer(cv, 320), d = img.data, sx = 320 / w;
+      for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+        const x = cx + (i - w / 2) * sx / z, y = cy + (j - h / 2) * sx / z;
+        put(d, (j * w + i) * 4, scene(x, y, z, rot));
+      }
+      ctx.putImageData(img, 0, 0);
+      // chips: world → screen
+      const toScreen = (x, y) => [((x - cx) * z / sx + w / 2) / w * cv.clientWidth, ((y - cy) * z / sx + h / 2) / h * cv.clientHeight];
+      chips.forEach((c, i) => {
+        const el = chipEls[i];
+        const [X, Y] = c[3] ? toScreen(G.x, pinY) : toScreen(G.x + c[1] * G.r, G.y + c[2] * G.r);
+        el.style.left = X + 'px'; el.style.top = Y + 'px';
+        el.classList.toggle('on', c[3] ? p > .9 : (p > .34 && p < .62));
+      });
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ---------- Z2 · Into a pixel ---------- */
+{
+  const sec = document.getElementById('z2'), cv = sec.querySelector('canvas');
+  const A = new Image(), B = new Image(); A.src = I + 'work-play/pv-hub.webp'; B.src = I + 'work-play/okta-desk.webp';
+  let tA = null, tB = null;
+  function mostBlue(img, y0, y1) { // the pixel to zoom into: the most saturated blue
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, y0, img.width, y1 - y0).data; let best = -1, bi = 0;
+    const W4 = img.width * 4, sat = i => d[i + 2] - (d[i] + d[i + 1]) / 2;
+    // a blue pixel on the edge of a blue shape, so the zoom ends on blue meeting light
+    for (let i = W4 * 2; i < d.length - W4 * 2; i += 4) { const s = sat(i); if (s < 90) continue; const edge = Math.max(s - sat(i + 8), s - sat(i + W4 * 2)); const sc = s + edge * 2; if (sc > best) { best = sc; bi = i / 4; } }
+    return { x: bi % img.width + .5, y: y0 + Math.floor(bi / img.width) + .5, rgb: [d[bi * 4], d[bi * 4 + 1], d[bi * 4 + 2]] };
+  }
+  A.onload = () => tA = mostBlue(A, 300, 1300);
+  B.onload = () => tB = mostBlue(B, 0, B.height);
+  function phone(ctx, img, cx, cy, scale, crop) { // the phone at a scale, centred so that (cx,cy) in image px sits at screen centre
+    const W = cv.width, H = cv.height;
+    const x0 = W / 2 - cx * scale, y0 = H / 2 - cy * scale, iw = img.width * scale, ih = crop * scale;
+    const bz = 14 * scale;
+    ctx.fillStyle = `rgb(${RGB[4]})`; ctx.fillRect(x0 - bz, y0 - bz, iw + bz * 2, ih + bz * 2);
+    ctx.drawImage(img, 0, 0, img.width, crop, x0, y0, iw, ih);
+  }
+  function frame() {
+    if (inView(sec) && tA && tB) {
+      const p = progress(sec); steps(sec, p, [.25, .62]);
+      if (cv.width !== cv.clientWidth) { cv.width = cv.clientWidth; cv.height = cv.clientHeight; }
+      const ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
+      const W = cv.width, H = cv.height;
+      ctx.fillStyle = `rgb(${RGB[0]})`; ctx.fillRect(0, 0, W, H);
+      const crop = 1500, fitA = (H * .78) / crop, max = W * .28;
+      if (p < .6) {
+        const k = ease(clamp((p - .08) / .5));
+        const s = Math.exp(lerp(Math.log(fitA), Math.log(max), k));
+        const cx = lerp(A.width / 2, tA.x, Math.pow(k, .35)), cy = lerp(crop / 2, tA.y, Math.pow(k, .35));
+        phone(ctx, A, cx, cy, s, crop);
+        // the pixel grid shows once pixels are big
+        if (s > 24) { ctx.strokeStyle = 'rgba(0,0,0,.2)'; ctx.lineWidth = 1; const ox = (W / 2 - cx * s) % s, oy = (H / 2 - cy * s) % s; ctx.beginPath(); for (let x = ox; x < W; x += s) { ctx.moveTo(x, 0); ctx.lineTo(x, H); } for (let y = oy; y < H; y += s) { ctx.moveTo(0, y); ctx.lineTo(W, y); } ctx.stroke(); }
+      } else {
+        const k = ease(clamp((p - .62) / .34)), fitB = Math.min(W * .78 / B.width, H * .7 / B.height);
+        const s = Math.exp(lerp(Math.log(max), Math.log(fitB), k));
+        const cx = lerp(tB.x, B.width / 2, Math.pow(k, 2.2)), cy = lerp(tB.y, B.height / 2, Math.pow(k, 2.2));
+        const x0 = W / 2 - cx * s, y0 = H / 2 - cy * s;
+        ctx.fillStyle = `rgb(${RGB[4]})`; const bz = 10 * s; ctx.fillRect(x0 - bz, y0 - bz, B.width * s + bz * 2, B.height * s + bz * 2);
+        ctx.drawImage(B, x0, y0, B.width * s, B.height * s);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ---------- Z3 · Out from a phone ---------- */
+{
+  const sec = document.getElementById('z3'), cv = sec.querySelector('canvas'), chipsEl = sec.querySelector('.chips');
+  chipsEl.innerHTML = `<span class="chip"><i></i>+25% basket size, first pilot</span>`;
+  const chip = chipsEl.firstElementChild;
+  const SCR = new Image(); SCR.src = I + 'work-play/sg-cart.webp';
+  function scene(x, y) {
+    // the shopper, holding the phone (phone itself is drawn on top)
+    if (Math.hypot(x, y + 4.2) < 1.5) return 4;
+    if (x > -1.9 && x < 1.9 && y > -2.6 && y < 4) return 3;
+    // inside the store
+    if (x > -40 && x < 40 && y > -26 && y < 26) {
+      if (x > 30 && x < 36 && y > -18 && y < 18) return (y | 0) % 6 === 0 ? 2 : 4;       // checkout, empty
+      for (const sy of [-20, -11, 9, 18]) if (y > sy && y < sy + 3.5) return hash(Math.floor(x * 1.2), sy) > .6 ? 4 : (hash(Math.floor(x * 1.2) + 1, sy) > .5 ? 2 : 3); // shelves of goods
+      if (x < -38 || x > 38 || y < -24 || y > 24) return 4;                             // walls
+      return bayer(Math.floor(x * 2) & 3, Math.floor(y * 2) & 3) > .9 ? 1 : 0;            // floor
+    }
+    // the city: blocks and streets, the odd park and store
+    const B = 90, gx = Math.floor((x + 45) / B), gy = Math.floor((y + 45) / B), lx = ((x + 45) % B + B) % B, ly = ((y + 45) % B + B) % B;
+    if (lx < 10 || ly < 10) return (lx < 10 && ly < 10) ? 2 : 1;                         // streets
+    const hsh = hash(gx, gy);
+    if (hsh > .86) return bayer(x | 0, y | 0) > .5 ? 1 : 2;                              // park
+    if (hsh > .7 && lx > 30 && lx < 70 && ly > 30 && ly < 60) return 4;                  // another store
+    const sub = hash(Math.floor(lx / 20) + gx * 9, Math.floor(ly / 20) + gy * 9);
+    return sub > .66 ? 3 : sub > .33 ? 2 : (bayer(x | 0, y | 0) > .5 ? 2 : 1);
+  }
+  function frame() {
+    if (inView(sec)) {
+      const p = progress(sec); steps(sec, p, [.28, .62]);
+      const z = Math.exp(lerp(Math.log(95), Math.log(.18), ease(clamp((p - .05) / .9))));
+      const { ctx, w, h, img } = buffer(cv, 320), d = img.data, sx = 320 / w;
+      for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) put(d, (j * w + i) * 4, scene((i - w / 2) * sx / z, (j - h / 2) * sx / z));
+      ctx.putImageData(img, 0, 0);
+      // the phone: 1.3 × 2.6 world units at the centre
+      const ph = 2.6 * z / sx, pw = ph * .5;
+      if (SCR.complete && ph > 3) {
+        ctx.imageSmoothingEnabled = ph > 60;
+        ctx.fillStyle = `rgb(${RGB[4]})`; ctx.fillRect(w / 2 - pw / 2 - ph * .03, h / 2 - ph / 2 - ph * .03, pw + ph * .06, ph * 1.06);
+        ctx.drawImage(SCR, 0, 0, SCR.width, SCR.width * 2, w / 2 - pw / 2, h / 2 - ph / 2, pw, ph);
+      }
+      chip.style.left = '50%'; chip.style.top = (cv.clientHeight / 2) + 'px';
+      chip.classList.toggle('on', p > .72);
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ---------- Z4 · Through the career ---------- */
+{
+  const sec = document.getElementById('z4'), tunnel = document.getElementById('tunnel'), end = document.getElementById('z4end');
+  const C = [
+    ['Zomato', '[X] What she did there.', null],
+    ['Deloitte Digital', '[X] What she did there.', null],
+    ['Walmart Labs', 'Scan & Go from research to a store pilot. Chase Pay inside Walmart Pay.', 'work-play/sg-cart.webp'],
+    ['PayPal', 'Privacy settings for 80M+ people. ID checks, the debit card, data rights.', 'work-play/pv-hub.webp'],
+    ['Okta', 'Staff Product Designer on IAM. Led a team of six.', 'work-play/okta-desk.webp', true],
+  ];
+  const GAP = 1500;
+  tunnel.innerHTML = C.map(([co, line, img, wide], i) => `
+    <article class="frame" data-i="${i}">
+      <div><small>0${i + 1} / 05</small><h3>${co}</h3><p>${line}</p></div>
+      <div class="shot ${img ? (wide ? 'wide' : '') : 'blank'}">${img ? `<img src="${I}${img}" alt="">` : ''}</div>
+    </article>`).join('') +
+    Array.from({ length: 70 }, (_, i) => `<i class="spark" data-z="${-hash(i, 1) * GAP * 5.4}" style="left:${(hash(i, 2) - .5) * 2400}px;top:${(hash(i, 3) - .5) * 1500}px"></i>`).join('');
+  const frames = [...tunnel.querySelectorAll('.frame')], sparks = [...tunnel.querySelectorAll('.spark')];
+  function frame() {
+    if (inView(sec)) {
+      const p = progress(sec), cam = p * GAP * (C.length - .1);
+      frames.forEach((f, i) => {
+        const z = -i * GAP + cam;
+        f.style.transform = `translateZ(${z}px) rotateY(${(i % 2 ? -1 : 1) * 4}deg)`;
+        f.style.opacity = z > 500 ? 0 : z > 200 ? 1 - (z - 200) / 300 : z < -4200 ? 0 : 1;
+        f.style.visibility = (z > 500 || z < -4500) ? 'hidden' : 'visible';
+      });
+      sparks.forEach(s => { const z = +s.dataset.z + cam; s.style.transform = `translateZ(${z}px)`; s.style.opacity = z > 600 ? 0 : 1; });
+      end.classList.toggle('on', p > .93);
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+</script>
+</body>
+</html>

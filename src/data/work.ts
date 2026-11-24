@@ -211,29 +211,41 @@ export type HomeMedia =
   // A /work tile's flow (data/workPlay.ts, keyed by its case's href), playing on its own.
   | { type: 'play'; play: string; alt: string }
   | { type: 'prototype'; name: 'paypal-enroll' | 'paypal-offers'; alt: string }
-  | { type: 'desktop'; image: string; alt: string };
+  | { type: 'desktop'; image: string; alt: string }
+  // Two phones on one wide card: the first plays only the first screen of a
+  // /work flow (Scan & Go's scan, on a loop), the second holds a still screen.
+  | { type: 'pair'; play: string; still: string; alt: string };
 
-// `hue`: the card's own colour block (GROUND HUES in tokens.css) where
-// it would otherwise share its company's hue with another home card.
-// Every home card stands on the Okta card's lit colour block, no photos
-// (on request, 2026-11-17, "Company + soft" from
-// experiments/work-colour-blocks/okta-style.html); /work keeps its mixed
-// grounds for now.
-export const homeCards: { href: string; title?: string; tagline?: string; hue?: 'mint' | 'apricot'; media: HomeMedia }[] = [
-  { href: '/work/okta-iam',
+// The home cards stand on the About page's soft card with no colour block
+// behind the work ("G · About + line", on request 2026-11-19; HOME CARDS in
+// tokens.css).
+// `ground` is the colour behind the card's work: its company's hue, or a
+// GROUND HUE where two PayPal cards would otherwise share lilac.
+// `wide` cards span both columns with their words beside the work; `flip`
+// puts the words on the right. Two wides, on request (2026-11-25, "A · Two
+// wides" of experiments/home-cards-six/): Okta wide, a pair, Scan & Go
+// wide, a pair.
+export const homeCards: { href: string; title?: string; tagline?: string; ground: 'okta' | 'paypal' | 'walmart' | 'mint' | 'apricot' | 'sage'; wide?: boolean; flip?: boolean; media: HomeMedia }[] = [
+  { href: '/work/okta-iam', ground: 'okta', wide: true,
     media: { type: 'desktop', image: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" } },
-  { href: '/work/paypal-privacy',
+  { href: '/work/paypal-privacy', ground: 'paypal',
     // The same flow as its /work tile: Shopping, a tap on the reminder, the Data and privacy hub, a swipe down it.
     media: { type: 'play', play: '/work/paypal-privacy',
       alt: 'The PayPal app: Shopping, a tap on the reminder to review privacy settings, then the redesigned Data and privacy screen, scrolled down' } },
-  // Ads consent in Chase Pay's place, on request (2026-11-19); Chase Pay
-  // is on /work. Its own apricot ground, as its case cover, so it doesn't
-  // share Privacy's lilac.
-  { href: '/work/paypal-ads-consent', hue: 'apricot',
+  // Ads consent, on request (2026-11-19).
+  { href: '/work/paypal-ads-consent', ground: 'apricot',
     media: { type: 'play', play: '/work/paypal-ads-consent',
       alt: 'The PayPal app playing by itself: Data and Privacy, the privacy checkup asking about ads, then Online ad preferences' } },
-  { href: '/work/paypal-debit-card', hue: 'mint',
+  // Scan & Go, on request (2026-11-25): its scan playing beside the cart.
+  { href: '/work/walmart-scan-go', ground: 'sage', wide: true, flip: true,
+    media: { type: 'pair', play: '/work/walmart-scan-go', still: '/images/work-play/sg-cart.webp',
+      alt: 'The Walmart app: Scan & Go scanning a jar of mustard and adding it to the cart, beside the cart with scanned items and weighable produce' } },
+  { href: '/work/paypal-debit-card', ground: 'mint',
     media: { type: 'prototype', name: 'paypal-enroll', alt: 'The PayPal Debit Card sign-up prototype running by itself: value prop, Balance account, confirming identity, shipping address, and the card marked Ordered' } },
+  // Chase Pay closes the second pair (on request, 2026-11-19); its /work flow plays on its own.
+  { href: '/work/walmart-chase-pay', ground: 'walmart',
+    media: { type: 'play', play: '/work/walmart-chase-pay',
+      alt: 'The Walmart Pay app playing by itself: choosing Chase Pay during set-up, the benefits of linking it, then Walmart Pay settings' } },
 ];
 
 // The archive tier on /work — the earlier projects, listed as text rows

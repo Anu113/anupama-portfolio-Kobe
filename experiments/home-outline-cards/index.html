@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Home cards — 1 · 2 · 2, outlined in oxblood</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+/* Mock page (2026-11-19, on request): the home page's Selected work as
+   a 1 · 2 · 2 grid (one wide card, then two pairs) instead of the
+   stacked phone rows. In place of the lock's frost, each option is a
+   way of drawing the card with a hairline outline in oxblood (#3a0b09,
+   from the preloader colour round). Five outline treatments, two
+   layouts, light and dark. Values inline on purpose; the pick moves
+   into tokens.css. Images read from ../../public, so it opens straight from disk. */
+:root{
+  --ground:#fcfcfc; --ink:#262626; --dim:#707070; --line:rgb(0 0 0/.08);
+  --ox:#3a0b09;                 /* oxblood */
+  --ox-rest:color-mix(in srgb,var(--ox) 32%,transparent);
+  --bezel:#0e0e0f;
+  --hue-okta:#c9dcf2; --hue-paypal:#e0d6ef; --ground-apricot:#f6dcc6; --ground-mint:#cfe7d8; --hue-walmart:#f4dc9c;
+  --pale-mix:#fff 55%; --deep-mix:#3d4f86 16%;
+  --ease:cubic-bezier(.16,1,.3,1); --dur:600ms; --dur-fast:240ms;
+  --pad:12px; --gap:24px;
+  --serif:'Crimson Pro',Georgia,serif; --sans:'Manrope',system-ui,sans-serif; --mono:'Azeret Mono',ui-monospace,monospace;
+}
+:root[data-mode=dark]{
+  --ground:#1b1a19; --ink:#ecebe8; --dim:#a09d98; --line:rgb(255 255 255/.1);
+  /* oxblood can't be seen on the dark ground as it is: lifted to the
+     same family, a brick that still reads as oxblood next to the ink */
+  --ox:#b4584d;
+  --ox-rest:color-mix(in srgb,var(--ox) 40%,transparent);
+  --pale-mix:#fff 30%; --deep-mix:#1b1a19 28%;
+}
+:root[data-ox=deep]{--ox:#5c1712}
+:root[data-mode=dark][data-ox=deep]{--ox:#c86a5e}
+:root[data-ox=ink]{--ox:var(--ink)}
+
+*{box-sizing:border-box;margin:0}
+html{background:var(--ground);transition:background var(--dur) var(--ease)}
+body{color:var(--ink);font:600 12px/1.8 var(--sans);padding:0 clamp(24px,5vw,80px) 160px;max-width:1440px;margin:0 auto}
+em{font-style:italic}
+.intro{max-width:780px;padding-top:64px}
+.intro h1{font:300 44px/1.1 var(--serif)}
+.intro p{color:var(--dim);margin-top:16px;max-width:68ch}
+
+.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--ground) 92%,transparent);backdrop-filter:blur(8px);
+  display:flex;flex-wrap:wrap;gap:24px;align-items:center;padding:16px 0;margin-top:32px;border-bottom:1px solid var(--line)}
+.grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.grp b{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-right:4px;font-weight:400}
+.pill{font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--ink);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer}
+.pill:hover{border-color:var(--ink)}
+.pill:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.pill[aria-pressed=true]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.note{color:var(--dim);margin-top:12px;max-width:80ch;min-height:3.6em}
+
+/* ---------- section head, as the home page's ---------- */
+.head{text-align:center;margin:96px 0 32px}
+.head h2{font:300 40px/1.1 var(--serif)}
+
+/* ---------- the 1 · 2 · 2 grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gap)}
+.card:nth-child(1){grid-column:1 / -1}
+.card:nth-child(n+2){grid-column:span 6}
+:root[data-layout=offset] .card:nth-child(2),
+:root[data-layout=offset] .card:nth-child(5){grid-column:span 7}
+:root[data-layout=offset] .card:nth-child(3),
+:root[data-layout=offset] .card:nth-child(4){grid-column:span 5}
+@media (max-width:860px){.grid .card{grid-column:1 / -1 !important}}
+
+.card{position:relative;display:flex;flex-direction:column;padding:var(--pad);color:inherit;text-decoration:none;background:var(--ground);isolation:isolate}
+.card:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+
+/* the stage: the project's lit colour block, as WorkGround draws it */
+.stage{position:relative;overflow:hidden;display:grid;place-items:center;--stage-h:440px;height:var(--stage-h);
+  --pale:color-mix(in oklab,var(--hue),var(--pale-mix));
+  --deep:color-mix(in oklab,var(--hue),var(--deep-mix));
+  background:
+    radial-gradient(42% 46% at 50% 46%,rgb(255 255 255/.5),transparent 72%),
+    radial-gradient(60% 55% at 12% 0%,rgb(255 255 255/.55),transparent 70%),
+    linear-gradient(155deg,var(--pale) 0%,var(--hue) 50%,var(--deep) 100%)}
+.card:nth-child(1) .stage{--stage-h:520px}
+.phone{position:relative;z-index:2;height:calc(var(--stage-h) * .8);aspect-ratio:786/1704;padding:1.6%;background:var(--bezel);border-radius:13% / 6%;
+  box-shadow:0 18px 40px -14px rgb(0 0 0/.35),0 1px 2px rgb(0 0 0/.2);transition:translate var(--dur) var(--ease)}
+.phone img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:11% / 5%}
+.desk{position:relative;width:62%;transition:translate var(--dur) var(--ease)}
+.desk .screen{display:block;width:100%;border:6px solid var(--bezel);border-bottom-width:14px;border-radius:10px 10px 4px 4px;box-shadow:0 22px 50px -18px rgb(0 0 0/.4)}
+.desk .phone{position:absolute;height:72%;width:auto;right:-6%;bottom:-8%}
+.card:hover .phone,.card:hover .desk,.card:focus-visible .phone{translate:0 -6px}
+.card:hover .desk .phone{translate:0 0}
+
+.text{display:grid;grid-template-columns:1fr auto;gap:4px 24px;padding:20px 8px 8px}
+.label{grid-column:1 / -1;font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+.title{font:600 18px/1.35 var(--sans)}
+.tag{color:var(--dim);max-width:52ch;grid-column:1}
+.go{grid-row:2 / span 2;grid-column:2;align-self:end;font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink);
+  opacity:0;translate:-6px 0;transition:opacity var(--dur) var(--ease),translate var(--dur) var(--ease)}
+.card:hover .go,.card:focus-visible .go{opacity:1;translate:0 0}
+
+/* ====================================================================
+   OUTLINE TREATMENTS — one at a time, from the bar
+   ==================================================================== */
+.card::before,.card::after{content:'';position:absolute;pointer-events:none}
+
+/* A · Hairline: a quiet oxblood line round every card; on hover it
+   comes up to full strength. The simplest of the five. */
+[data-style=hairline] .card::before{inset:0;border:1px solid var(--ox-rest);transition:border-color var(--dur) var(--ease)}
+[data-style=hairline] .card:hover::before,[data-style=hairline] .card:focus-visible::before{border-color:var(--ox)}
+
+/* B · Corners: crop marks at rest, the line draws in from all four
+   corners on hover and closes the frame. */
+[data-style=corners] .card::before{inset:0;
+  --c:var(--ox);
+  background:
+    linear-gradient(var(--c),var(--c)) top left/var(--h) 1px no-repeat,
+    linear-gradient(var(--c),var(--c)) top left/1px var(--v) no-repeat,
+    linear-gradient(var(--c),var(--c)) top right/var(--h) 1px no-repeat,
+    linear-gradient(var(--c),var(--c)) top right/1px var(--v) no-repeat,
+    linear-gradient(var(--c),var(--c)) bottom left/var(--h) 1px no-repeat,
+    linear-gradient(var(--c),var(--c)) bottom left/1px var(--v) no-repeat,
+    linear-gradient(var(--c),var(--c)) bottom right/var(--h) 1px no-repeat,
+    linear-gradient(var(--c),var(--c)) bottom right/1px var(--v) no-repeat;
+  --h:16px; --v:16px;
+  transition:--h var(--dur) var(--ease),--v var(--dur) var(--ease)}
+[data-style=corners] .card:hover::before,[data-style=corners] .card:focus-visible::before{--h:50.5%;--v:50.5%}
+@property --h{syntax:'<length-percentage>';inherits:false;initial-value:16px}
+@property --v{syntax:'<length-percentage>';inherits:false;initial-value:16px}
+
+/* C · Selection: a neutral hairline at rest; on hover the card is
+   "selected" the way a design tool selects a frame: oxblood box, four
+   square handles, the frame's size under it. Her trade, at card scale. */
+[data-style=select] .card::before{inset:0;border:1px solid var(--line);transition:border-color var(--dur-fast) var(--ease)}
+[data-style=select] .card:hover::before,[data-style=select] .card:focus-visible::before{border-color:var(--ox)}
+.handles{display:none}
+[data-style=select] .handles{display:block;position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity var(--dur-fast) var(--ease)}
+[data-style=select] .card:hover .handles,[data-style=select] .card:focus-visible .handles{opacity:1}
+.handles i{position:absolute;width:7px;height:7px;background:var(--ground);border:1px solid var(--ox)}
+.handles i:nth-child(1){top:-3px;left:-3px}.handles i:nth-child(2){top:-3px;right:-3px}
+.handles i:nth-child(3){bottom:-3px;left:-3px}.handles i:nth-child(4){bottom:-3px;right:-3px}
+.handles span{position:absolute;left:50%;bottom:-10px;translate:-50% 100%;font:400 10px/1 var(--mono);color:var(--ground);background:var(--ox);padding:4px 6px;white-space:nowrap;letter-spacing:.02em}
+
+/* D · Offset: a hairline frame; on hover a second outline slides out
+   from behind it, like a sheet lifted off the one under it. */
+[data-style=offset] .card::before{inset:0;border:1px solid var(--ox);background:var(--ground);z-index:-1}
+[data-style=offset] .card::after{inset:0;border:1px solid var(--ox-rest);z-index:-2;transition:translate var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+[data-style=offset] .card:hover::after,[data-style=offset] .card:focus-visible::after{translate:8px 8px;border-color:var(--ox)}
+
+/* E · Rule: no box at all, one oxblood hairline over each card; on
+   hover it draws across in full. The quietest of the five. */
+[data-style=rule] .card{padding:16px 0 0}
+[data-style=rule] .card::before{top:0;left:0;right:0;height:1px;background:var(--ox-rest)}
+[data-style=rule] .card::after{top:0;left:0;height:1px;width:100%;background:var(--ox);transform:scaleX(0);transform-origin:left;transition:transform var(--dur) var(--ease)}
+[data-style=rule] .card:hover::after,[data-style=rule] .card:focus-visible::after{transform:scaleX(1)}
+[data-style=rule] .text{padding:20px 0 8px}
+
+/* F · About: the About page's tiles, as they are (2026-11-19, on
+   request): no line, a soft card of 3% ink, 28px corners, the work
+   sitting on it with no colour block, the words centred under it.
+   On hover the card's ground grows 3% on the Small talk curve and the
+   phone lifts, as the About photo stacks do. */
+[data-family=soft] .card{padding:24px 24px 28px;border-radius:28px}
+[data-family=soft] .card::before{inset:0;z-index:-1;border-radius:inherit;
+  background:color-mix(in srgb,var(--ink) 3%,var(--ground));transition:scale 300ms cubic-bezier(.77,0,.175,1)}
+[data-family=soft] .card:hover::before,[data-family=soft] .card:focus-visible::before{scale:1.03}
+[data-family=soft] .card:focus-visible{outline-offset:8px;border-radius:28px}
+[data-style=soft] .stage,[data-style=softline] .stage,[data-style=cream] .stage{background:none}
+[data-style=softhue] .stage,[data-style=herpal] .stage,[data-style=warmhue] .stage{border-radius:16px}
+[data-family=soft] .phone{box-shadow:0 1px 2px rgb(0 0 0/.08),0 6px 16px rgb(0 0 0/.1);transition:translate var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+[data-family=soft] .card:hover .phone{box-shadow:0 2px 4px rgb(0 0 0/.1),0 16px 32px rgb(0 0 0/.18)}
+[data-family=soft] .text{grid-template-columns:1fr;justify-items:center;text-align:center;padding:20px 0 0}
+[data-family=soft] .tag{max-width:46ch;text-wrap:balance}
+[data-family=soft] .go{grid-row:auto;grid-column:1;margin-top:8px;translate:0 4px}
+[data-family=soft] .card:hover .go{translate:0 0}
+
+/* G · About + line: the same soft card, with the oxblood hairline
+   following its 28px corners, quiet at rest and full on hover. */
+[data-style=softline] .card::after{inset:0;border-radius:inherit;border:1px solid var(--ox-rest);transition:border-color var(--dur) var(--ease),scale 300ms cubic-bezier(.77,0,.175,1)}
+[data-style=softline] .card:hover::after,[data-style=softline] .card:focus-visible::after{border-color:var(--ox);scale:1.03}
+
+/* H · About + hue: the soft card, with the project's colour block kept
+   inside it on 16px corners, so the work still brings the colour. */
+
+/* ====================================================================
+   HER COLOURS (2026-11-19, on request): F and H tied to her portrait
+   by colour only, no drawn line. Every value below was sampled off
+   hero-idle.webp (the watercolour of her at the table), then lightened
+   for grounds or kept deep for marks. Note the site's accent, #b4482a,
+   is already her sweater's family.
+   ==================================================================== */
+:root{
+  --her-sweater:#9b3015;  /* the jumper, lit */
+  --her-oxblood:#5e1d0e;  /* the jumper in its folds: her own oxblood */
+  --her-chair:#c46246;    /* the chair */
+  --her-oak:#b77c51;      /* the table */
+  --her-cream:#efe4d4;    /* the trousers and socks */
+  --her-hair:#3f261a;     /* the hair */
+  /* washes, at the project hues' lightness */
+  --wash-chair:#f1cbbd; --wash-oak:#ead3b8; --wash-cream:#f4ebdd; --wash-sweater:#e6bfae; --wash-laptop:#e2dcd5;
+  --her-card:color-mix(in srgb,var(--her-cream) 55%,var(--ground));
+  --her-mark:var(--her-oxblood);
+}
+:root[data-mode=dark]{
+  --her-card:color-mix(in srgb,var(--her-hair) 45%,var(--ground));
+  --her-mark:#c86a52;
+}
+
+/* I · Her palette: H, but each colour block is a wash of one colour in
+   her portrait (oak, chair, cream, jumper, laptop) instead of the
+   company's hue. The grid reads as one family with the hero. */
+[data-style=herpal] .card:nth-child(1) .stage{--hue:var(--wash-oak)}
+[data-style=herpal] .card:nth-child(2) .stage{--hue:var(--wash-chair)}
+[data-style=herpal] .card:nth-child(3) .stage{--hue:var(--wash-cream)}
+[data-style=herpal] .card:nth-child(4) .stage{--hue:var(--wash-sweater)}
+[data-style=herpal] .card:nth-child(5) .stage{--hue:var(--wash-laptop)}
+[data-mode=dark][data-style=herpal] .stage{--deep-mix:#3f261a 30%}
+
+/* J · Cream + oxblood: F, but the soft card is her trousers' cream,
+   not grey, and one mark of her jumper's oxblood: a dot before each
+   company name, and a hairline that draws in on hover. */
+[data-style=cream] .card::before{background:var(--her-card)}
+[data-style=cream] .label::before,[data-style=warmhue] .label::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--her-mark);margin-right:8px;vertical-align:1px}
+[data-style=cream] .card::after,[data-style=warmhue] .card::after{inset:0;border-radius:inherit;border:1px solid var(--her-mark);opacity:0;transition:opacity var(--dur) var(--ease),scale 300ms cubic-bezier(.77,0,.175,1)}
+[data-style=cream] .card:hover::after,[data-style=warmhue] .card:hover::after,[data-style=cream] .card:focus-visible::after,[data-style=warmhue] .card:focus-visible::after{opacity:1;scale:1.03}
+[data-style=cream] .phone{box-shadow:0 1px 2px rgb(63 38 26/.12),0 8px 20px rgb(63 38 26/.16)}
+
+/* K · Warm hues: H with the company hues kept (so each project still
+   owns its colour), each one warmed a quarter toward her cream, its
+   far corner toward her oak; the card is her cream, with J's dot and
+   hover line. */
+[data-style=warmhue] .card::before{background:var(--her-card)}
+[data-style=warmhue] .stage{--hue-w:color-mix(in oklab,var(--hue) 72%,var(--her-cream));
+  --pale:color-mix(in oklab,var(--hue-w),#fff 50%);--deep:color-mix(in oklab,var(--hue-w),var(--her-oak) 22%);
+  background:radial-gradient(42% 46% at 50% 46%,rgb(255 255 255/.45),transparent 72%),linear-gradient(155deg,var(--pale) 0%,var(--hue-w) 50%,var(--deep) 100%)}
+
+/* her palette, as sampled */
+.palette{display:flex;gap:32px;align-items:center;margin-top:48px}
+.palette img{width:120px;height:auto}
+.palette ul{display:flex;flex-wrap:wrap;gap:16px;list-style:none;padding:0}
+.palette li{display:grid;gap:6px;font:400 10px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--dim)}
+.palette li i{width:56px;height:56px;border-radius:12px;background:var(--c)}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none !important}}
+</style>
+</head>
+<body>
+<header class="intro">
+  <h1>Selected work, <em>outlined</em></h1>
+  <p>The home page's cards as one wide card, then two pairs. Instead of the lock's frost, each option draws the card with a hairline in oxblood. Hover a card (or tab to it) to see what the outline does.</p>
+</header>
+
+<div class="bar" role="toolbar" aria-label="Mock controls">
+  <div class="grp" data-key="style"><b>Outline</b>
+    <button class="pill" data-v="hairline" aria-pressed="true">A · Hairline</button>
+    <button class="pill" data-v="corners" aria-pressed="false">B · Corners</button>
+    <button class="pill" data-v="select" aria-pressed="false">C · Selection</button>
+    <button class="pill" data-v="offset" aria-pressed="false">D · Offset</button>
+    <button class="pill" data-v="rule" aria-pressed="false">E · Rule</button>
+    <button class="pill" data-v="soft" aria-pressed="false">F · About</button>
+    <button class="pill" data-v="softline" aria-pressed="false">G · About + line</button>
+    <button class="pill" data-v="softhue" aria-pressed="false">H · About + hue</button>
+    <button class="pill" data-v="herpal" aria-pressed="false">I · Her palette</button>
+    <button class="pill" data-v="cream" aria-pressed="false">J · Cream + oxblood</button>
+    <button class="pill" data-v="warmhue" aria-pressed="false">K · Warm hues</button>
+  </div>
+  <div class="grp" data-key="layout"><b>Layout</b>
+    <button class="pill" data-v="even" aria-pressed="true">Even 6 / 6</button>
+    <button class="pill" data-v="offset" aria-pressed="false">Offset 7 / 5</button>
+  </div>
+  <div class="grp" data-key="ox"><b>Line</b>
+    <button class="pill" data-v="ox" aria-pressed="true">Oxblood</button>
+    <button class="pill" data-v="deep" aria-pressed="false">Oxblood, lighter</button>
+    <button class="pill" data-v="ink" aria-pressed="false">Ink (compare)</button>
+  </div>
+  <div class="grp" data-key="mode"><b>Mode</b>
+    <button class="pill" data-v="light" aria-pressed="true">Light</button>
+    <button class="pill" data-v="dark" aria-pressed="false">Dark</button>
+  </div>
+</div>
+<p class="note" id="note"></p>
+
+<section class="palette" aria-label="Colours sampled from her portrait">
+  <img src="../../public/images/hero-idle.webp" alt="" />
+  <ul>
+    <li><i style="--c:var(--her-oxblood)"></i>Oxblood<br>jumper folds</li>
+    <li><i style="--c:var(--her-sweater)"></i>Jumper</li>
+    <li><i style="--c:var(--her-chair)"></i>Chair</li>
+    <li><i style="--c:var(--her-oak)"></i>Table</li>
+    <li><i style="--c:var(--her-cream)"></i>Cream<br>trousers</li>
+    <li><i style="--c:var(--her-hair)"></i>Hair</li>
+  </ul>
+</section>
+
+<div class="head"><h2>Selected <em>work</em></h2></div>
+
+<div class="grid">
+  <a class="card" href="#" style="--hue:var(--hue-okta)">
+    <div class="stage"><div class="desk"><img class="screen" src="../../public/images/work-play/okta-desk.webp" alt="" /><div class="phone"><img src="../../public/images/work-play/okta-phone.webp" alt="" /></div></div></div>
+    <div class="text"><span class="label">Okta · Enterprise · IAM</span><span class="title">Rebuilding IAM for enterprise admins</span><span class="tag">A ground-up rebuild of the admin console, shipped under live tenants.</span><span class="go">Read case →</span></div>
+    <div class="handles" aria-hidden="true"><i></i><i></i><i></i><i></i><span></span></div>
+  </a>
+  <a class="card" href="#" style="--hue:var(--hue-paypal)">
+    <div class="stage"><div class="phone"><img src="../../public/images/work-play/pv-hub.webp" alt="" /></div></div>
+    <div class="text"><span class="label">PayPal · Fintech · Privacy</span><span class="title">Privacy settings people can read</span><span class="tag">Data &amp; Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.</span><span class="go">Read case →</span></div>
+    <div class="handles" aria-hidden="true"><i></i><i></i><i></i><i></i><span></span></div>
+  </a>
+  <a class="card" href="#" style="--hue:var(--ground-apricot)">
+    <div class="stage"><div class="phone"><img src="../../public/images/work-play/ads-prefs.webp" alt="" /></div></div>
+    <div class="text"><span class="label">PayPal · Fintech · Consent</span><span class="title">Privacy-first ad personalization</span><span class="tag">Ad data sharing moved from opted in by default to asking first.</span><span class="go">Read case →</span></div>
+    <div class="handles" aria-hidden="true"><i></i><i></i><i></i><i></i><span></span></div>
+  </a>
+  <a class="card" href="#" style="--hue:var(--ground-mint)">
+    <div class="stage"><div class="phone"><img src="../../public/images/work-play/debit-intro.webp" alt="" /></div></div>
+    <div class="text"><span class="label">PayPal · Fintech · Growth</span><span class="title">A debit card people finish signing up for</span><span class="tag">Card enrollment and cash back rebuilt inside the PayPal app.</span><span class="go">Read case →</span></div>
+    <div class="handles" aria-hidden="true"><i></i><i></i><i></i><i></i><span></span></div>
+  </a>
+  <a class="card" href="#" style="--hue:var(--hue-walmart)">
+    <div class="stage"><div class="phone"><img src="../../public/images/work-play/ch-benefits.webp" alt="" /></div></div>
+    <div class="text"><span class="label">Walmart Labs · Fintech · Growth</span><span class="title">Chase Pay inside Walmart Pay</span><span class="tag">Brought Chase Pay into Walmart Pay, validated with real customers in-store.</span><span class="go">Read case →</span></div>
+    <div class="handles" aria-hidden="true"><i></i><i></i><i></i><i></i><span></span></div>
+  </a>
+</div>
+
+<script>
+const root=document.documentElement;
+const notes={
+  hairline:'A · Hairline. One quiet oxblood line round every card, full strength on hover. The calmest grid; the colour does the work.',
+  corners:'B · Corners. Crop marks at rest, the frame draws in from the four corners on hover. Reads as print or framing; the most "finished" at rest.',
+  select:'C · Selection. Neutral at rest; on hover the card is selected like a frame in Figma: oxblood box, square handles, its size underneath. Speaks her trade, but it is the most playful of the five.',
+  offset:'D · Offset. A full oxblood frame; on hover a second outline slides out behind it. The strongest hover, and the heaviest at rest.',
+  rule:'E · Rule. No box: one hairline above each card that draws across in full on hover. The quietest; closest to the site as it is.',
+  soft:'F · About. The About page tiles as they are: a soft 3% card, 28px corners, no line, no colour block, words centred under the work. The ground grows 3% on hover, as on About and Small talk.',
+  softline:'G · About + line. The same soft card with the oxblood hairline on its rounded edge: quiet at rest, full on hover.',
+  herpal:'I · Her palette. H, but each colour block is a wash of one colour from her portrait (table, chair, cream, jumper, laptop) instead of the company hue. The grid and the hero read as one family; the five cards are closer to each other, so they tell apart less.',
+  cream:'J · Cream + oxblood. F, with the soft card in her trousers\' cream instead of grey, and one mark of her jumper\'s oxblood: a dot before each company, and a hairline on hover.',
+  warmhue:'K · Warm hues. H with each company\'s hue kept, warmed toward her cream and oak so it sits beside the portrait; the card is her cream, with J\'s dot and hover line.',
+  softhue:'H · About + hue. The soft card, with each project\'s colour block kept inside it on softer corners, so the work still brings the colour.'
+};
+const state={style:'hairline',layout:'even',ox:'ox',mode:'light'};
+function apply(){
+  root.dataset.style=state.style; root.dataset.family=['soft','softline','softhue','herpal','cream','warmhue'].includes(state.style)?'soft':'line'; root.dataset.layout=state.layout; root.dataset.ox=state.ox; root.dataset.mode=state.mode;
+  document.getElementById('note').textContent=notes[state.style];
+  sizes();
+}
+document.querySelectorAll('.grp').forEach(g=>g.addEventListener('click',e=>{
+  const b=e.target.closest('.pill'); if(!b) return;
+  state[g.dataset.key]=b.dataset.v;
+  g.querySelectorAll('.pill').forEach(p=>p.setAttribute('aria-pressed',p===b));
+  apply();
+}));
+// C · Selection shows each card's real size, as a design tool would
+function sizes(){document.querySelectorAll('.card').forEach(c=>{const r=c.getBoundingClientRect();c.querySelector('.handles span').textContent=`${Math.round(r.width)} × ${Math.round(r.height)}`})}
+new ResizeObserver(sizes).observe(document.body);
+document.querySelectorAll('.card').forEach(c=>c.addEventListener('click',e=>e.preventDefault()));
+// ?style=corners&layout=offset&mode=dark opens on a given option
+const q=new URLSearchParams(location.search);
+for(const k in state){const v=q.get(k); if(!v) continue; state[k]=v;
+  document.querySelectorAll(`[data-key=${k}] .pill`).forEach(p=>p.setAttribute('aria-pressed',p.dataset.v===v))}
+apply();
+</script>
+</body>
+</html>

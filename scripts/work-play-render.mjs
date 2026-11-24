@@ -48,25 +48,46 @@ const jobs = [
   ['okta-phone', 'okta-phone-shot'],
 ];
 
+// The home page's Privacy card shows its phone at 0.8 (--phone-scale):
+// a 284px screen drawn 227px wide, 454 device pixels on a 2x screen.
+// The 786px renders squeezed into that went soft, so these screens are
+// rendered again at that width, as <name>-454.webp (and -227 for 1x screens), and the card picks
+// them with srcset (HOME_SIZES in work-play-layer.ts). Re-render if the
+// phone's size or scale changes. `node scripts/work-play-render.mjs home`
+// renders only these.
+const HOME_W = [454, 227];   // 2x and 1x screens
+const homeJobs = ['pv-shopping', 'pv-hub', 'pv-hub-bar'];
+// `node scripts/work-play-render.mjs pv-hub pv-hub-bar` renders only those (every size)
+const onlyHome = process.argv[2] === 'home';
+const only = onlyHome ? [] : process.argv.slice(2);
+const pick = (j) => !only.length || only.includes(j[0]);
+
 if (existsSync(TMP)) rmSync(TMP, { recursive: true });
 mkdirSync(TMP, { recursive: true });
 mkdirSync(OUT, { recursive: true });
 
-for (const [name, key, part = 'full', h = 852] of jobs) {
+const runs = [
+  ...(onlyHome ? [] : jobs.filter(pick).map((j) => [j, j[0], 2])),
+  ...HOME_W.flatMap((w) => jobs.filter((j) => homeJobs.includes(j[0]) && pick(j)).map((j) => [j, `${j[0]}-${w}`, w / 393])),
+];
+
+for (const [[, key, part = 'full', h = 852], name, scale] of runs) {
   const png = join(TMP, `${name}.png`);
   execFileSync(CHROME, [
     '--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run',
-    '--force-device-scale-factor=2', `--window-size=393,${h}`,
+    `--force-device-scale-factor=${scale}`, `--window-size=393,${h}`,
     '--default-background-color=00000000', '--virtual-time-budget=4000',
     `--screenshot=${png}`, `${BASE}?k=${key}&part=${part}&h=${h}`,
   ], { stdio: 'ignore' });
   const transparent = ['sheet', 'alert', 'bar'].includes(part);
-  await sharp(png).webp({ quality: 90, alphaQuality: 100, effort: 6, ...(transparent ? {} : { nearLossless: false }) })
+  // home renders keep more of the type's edge: at 454px every pixel of it shows
+  await sharp(png).webp({ quality: scale === 2 ? 90 : 95, alphaQuality: 100, effort: 6, ...(transparent ? {} : { nearLossless: false }) })
     .toFile(join(OUT, `${name}.webp`));
   console.log(name);
 }
 
 // Okta's laptop screen: her export, padded to the laptop's 16:10 on its own ground
+if (!onlyHome && !only.length) {
 const DESK = new URL('../experiments/work-phones/screens/okta-desk.webp', import.meta.url).pathname;
 const meta = await sharp(DESK).metadata();
 const H10 = Math.round(meta.width * 10 / 16);
@@ -74,3 +95,4 @@ await sharp(DESK).extend({ top: 0, bottom: Math.max(0, H10 - meta.height), backg
   .resize({ width: meta.width, height: H10, fit: 'cover', position: 'top' })
   .webp({ quality: 90 }).toFile(join(OUT, 'okta-desk.webp'));
 console.log('okta-desk', meta.width, meta.height, '->', H10);
+}

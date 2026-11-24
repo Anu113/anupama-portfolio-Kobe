@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cards, closer to the inspiration</title>
+<!--
+  On request (2026-11-24): her picked setting from index.html (Beside the
+  globe, Project hue, words beside on the wide card, border on hover),
+  taken closer to andreas.vision's cards and buttons.
+    Border: the hover line at a fraction of the old strength (?edge=faint|soft).
+    Elevation (?lift=): lift = the card rises 6px on a soft layered shadow;
+      zoom = his: the card stays, the work inside grows to 1.05;
+      both = rises a little and the work grows.
+    His button, measured off his page: an ink pill 42px tall (padding 0 18px)
+    beside a round 42px arrow, 8px apart. On hover the pill grows 1.5% and
+    the arrow slides out and a fresh one slides in. Used for "About me" on the
+    closing screen and "View all work" under the grid; on the cards
+    (?pill=hover|always|off) as "View case study".
+  All on one curve, cubic-bezier(.16,1,.3,1), 500ms.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600&family=Crimson+Pro:ital,wght@0,300;1,300&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#fcfcfc;--ink:#262626;--grey:#707070;--wood:#eccaa6;--woodL:#f3dcc1;--land:#9e6743;--rim:#e0b88f;--shelf:#f5dcc2;--landR:#b9805a;--text:#2f1c10;--acc:#9d2f16;
+    --ox:#5c1712;--fill:color-mix(in srgb,var(--ink) 3%,var(--bg));--okta:#c9dcf2;--paypal:#e0d6ef;--walmart:#f4dc9c;
+    --serif:'Crimson Pro',Georgia,serif;--sans:'Manrope',system-ui,sans-serif;--mono:'Azeret Mono',monospace;--gutter:clamp(20px,6vw,88px)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:600 14px/1.6 var(--sans)}
+  .label{font:400 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  /* ---- the closing screen ---- */
+  .close{position:relative;height:100vh;min-height:560px;background:var(--wood);color:var(--text);overflow:hidden}
+  .close canvas{position:absolute}
+  .close h2{font:300 clamp(2.25rem,4.2vw,3.75rem)/1.04 var(--serif);letter-spacing:-.01em}
+  .close h2 em{font-style:italic;color:var(--acc)}
+  .close p{font-size:14px;line-height:1.6;max-width:30rem}
+  .close a{font:400 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text);text-decoration:underline;text-underline-offset:3px;display:inline-block;margin-top:14px}
+  .l1 .words{position:absolute;left:var(--gutter);right:var(--gutter);bottom:18vh;display:flex;justify-content:space-between;align-items:flex-start;gap:2rem}
+  .l2 .words{position:absolute;left:0;right:0;top:calc(40% + 220px);text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .l3 .words{position:absolute;left:var(--gutter);right:var(--gutter);bottom:16vh;display:flex;justify-content:space-between;align-items:flex-end;gap:2rem}
+  .l3 .facts{display:flex;gap:44px}
+  .l3 .facts b{display:block;font:300 44px/1 var(--serif);letter-spacing:-.02em;margin-bottom:6px}
+  .l4 .words{position:absolute;left:0;right:0;bottom:15vh;text-align:center;display:flex;flex-direction:column;align-items:center}
+  .l4 h2{max-width:22ch}
+  .l5 .words{position:absolute;left:52%;right:var(--gutter);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:18px}
+  /* ---- the cards ---- */
+  .work{padding:7rem var(--gutter) 8rem}
+  .work > h2{text-align:center;font:300 40px/1 var(--serif);margin-bottom:3rem}
+  .work > h2 em{font-style:italic}
+  .work > h2 i{display:inline-block;width:.12em;height:.12em;background:var(--land);margin-left:.05em}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:1180px;margin:0 auto}
+  .card{border-radius:28px;background:var(--fill);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ox) 32%,transparent);padding:1.5rem 1.5rem 1.75rem;display:flex;flex-direction:column;gap:1.25rem;transition:box-shadow .5s cubic-bezier(.16,1,.3,1)}
+  .card:hover{box-shadow:inset 0 0 0 1px var(--ox)}
+  .card.wide{grid-column:1/-1}
+  .stage{height:30rem;display:grid;place-items:center;border-radius:18px;overflow:hidden}
+  .wide .stage{height:26rem}
+  .stage img.desk{max-width:78%;border-radius:8px;box-shadow:0 30px 50px -30px rgba(0,0,0,.35)}
+  .phone{width:200px;aspect-ratio:9/19.5;border-radius:34px;background:#111;padding:7px;box-shadow:0 30px 50px -28px rgba(0,0,0,.4),inset 0 0 0 2px #cfd0d3}
+  .phone div{width:100%;height:100%;border-radius:28px;overflow:hidden;background:#fff}
+  .phone img{width:100%;display:block}
+  .words-c{text-align:center}
+  .meta{color:var(--grey)}
+  .card h3{font:600 18px/1.3 var(--sans);margin-top:6px}
+  .card p{color:var(--grey);font-size:12px;line-height:1.8;margin-top:4px}
+  .out{display:none;font:400 11px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+  /* border off: the plain soft card, no hairline, at rest or on hover */
+  .noline .card,.noline .card:hover{box-shadow:none}
+  .noline .card:hover{background:color-mix(in srgb,var(--ink) 5%,var(--bg))}
+  /* live colours: each card's work on a lit colour block in its own hue, as on the live site
+     (WorkGround 'colour': a pale lit corner, the hue, a slightly deeper far corner, a soft glow) */
+  .live .stage{background:radial-gradient(42% 46% at 50% 46%,rgba(255,255,255,.55),transparent 72%),radial-gradient(60% 55% at 12% 0%,rgba(255,255,255,.6),transparent 70%),linear-gradient(155deg,color-mix(in oklab,var(--g),#fff 55%) 0%,var(--g) 50%,color-mix(in oklab,var(--g),#3d4f86 16%) 100%)}
+  /* border on hover: no line at rest; the oxblood line comes in when you point at a card */
+  .hoverline .card{box-shadow:inset 0 0 0 1px transparent}
+  .hoverline .card:hover,.hoverline .card:focus-within{box-shadow:inset 0 0 0 1px var(--ox)}
+  /* words beside the work on the wide card (any card style) */
+  .wbeside .card.wide{display:grid;grid-template-columns:.8fr 1.6fr;align-items:center;gap:2rem}
+  .wbeside .card.wide .words-c{text-align:left;order:-1;padding-left:1rem}
+  .wbeside .card.wide h3{font:300 32px/1.1 var(--serif)}
+  @media (max-width:860px){.wbeside .card.wide{grid-template-columns:1fr}.wbeside .card.wide .words-c{order:0;padding-left:0}}
+  /* c2 outcome first */
+  .c2 .words-c{text-align:left}
+  .c2 .out{display:block;margin-bottom:8px}
+  .c2 .out::before{content:"";display:inline-block;width:8px;height:8px;background:var(--land);margin-right:8px;vertical-align:0}
+  /* c3 project hue */
+  .c3 .card{background:var(--bg)}
+  .c3 [data-hue=okta] .stage{background:var(--okta)} .c3 [data-hue=paypal] .stage{background:var(--paypal)} .c3 [data-hue=walmart] .stage{background:var(--walmart)}
+  /* c4 the wood carries on into the first card */
+  .c4 .card.wide{background:var(--woodL);box-shadow:none}
+  .c4 .card.wide .meta,.c4 .card.wide p{color:#6b5040}
+  /* c5 words beside on the wide card */
+  .c5 .card.wide{display:grid;grid-template-columns:.8fr 1.6fr;align-items:center;gap:2rem}
+  .c5 .card.wide .words-c{text-align:left;order:-1;padding-left:1rem}
+  .c5 .card.wide h3{font:300 32px/1.1 var(--serif)}
+  .c5 .card.wide .out{display:block;margin-top:16px}
+  /* ---- closer to the inspiration ---- */
+  :root{--ease:cubic-bezier(.16,1,.3,1);--dur:.5s}
+  .card{position:relative;transition:box-shadow var(--dur) var(--ease),transform var(--dur) var(--ease),background var(--dur) var(--ease)}
+  .card a.cover{position:absolute;inset:0;border-radius:inherit;z-index:1}
+  .card a.cover:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .stage{transition:none}
+  .stage > *{transition:transform .7s var(--ease)}
+  .words-c{text-align:left}
+  .card .pills{margin-top:16px;position:relative;z-index:2}
+  /* hover border, a fraction of the old strength */
+  .edge-faint{--edge:color-mix(in srgb,var(--ox) 16%,transparent)}
+  .edge-soft{--edge:color-mix(in srgb,var(--ox) 28%,transparent)}
+  .grid .card{box-shadow:inset 0 0 0 1px transparent,0 0 0 rgba(38,38,38,0)}
+  /* elevation */
+  .lift-lift .card:is(:hover,:focus-within),.lift-both .card:is(:hover,:focus-within){box-shadow:inset 0 0 0 1px var(--edge),0 1px 2px rgba(38,38,38,.04),0 8px 16px -6px rgba(38,38,38,.07),0 28px 48px -18px rgba(38,38,38,.14)}
+  .lift-lift .card:is(:hover,:focus-within){transform:translateY(-6px)}
+  .lift-both .card:is(:hover,:focus-within){transform:translateY(-3px)}
+  .lift-zoom .card:is(:hover,:focus-within){box-shadow:inset 0 0 0 1px var(--edge)}
+  .lift-zoom .card:is(:hover,:focus-within) .stage > *{transform:scale(1.05)}
+  .lift-both .card:is(:hover,:focus-within) .stage > *{transform:scale(1.035)}
+  /* the card's pill: shown on hover, or always */
+  .pill-hover .card .pills{opacity:0;transform:translateY(6px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+  .pill-hover .card:is(:hover,:focus-within) .pills{opacity:1;transform:none}
+  @media (hover:none){.pill-hover .card .pills{opacity:1;transform:none}}
+  .pill-off .card .pills{display:none}
+  /* his button: an ink pill and a round arrow */
+  .pills{display:inline-flex;gap:8px;text-decoration:none;color:var(--bg);font:600 14px/1 var(--sans);border-radius:999px}
+  .pills .pill{height:42px;padding:0 18px;display:inline-flex;align-items:center;border-radius:999px;background:var(--ink);transition:transform .1s ease-out}
+  .pills .arrow{width:42px;height:42px;border-radius:50%;background:var(--ink);position:relative;overflow:hidden;flex:none;transition:transform .4s cubic-bezier(.22,1,.36,1)}
+  .pills .arrow svg{position:absolute;inset:0;margin:auto;width:16px;height:16px;transition:transform .6s cubic-bezier(.77,0,.175,1)}
+  .pills .arrow svg + svg{transform:translateX(-200%)}
+  .pills:hover .pill,.pills:focus-visible .pill{transform:scale(1.015)}
+  .pills:hover .arrow svg:first-child,.pills:focus-visible .arrow svg:first-child{transform:translateX(200%)}
+  .pills:hover .arrow svg + svg,.pills:focus-visible .arrow svg + svg{transform:none}
+  .card .pills{pointer-events:none}
+  .card:is(:hover,:focus-within) .pills .pill{transform:scale(1.015)}
+  .card:is(:hover,:focus-within) .pills .arrow svg:first-child{transform:translateX(200%)}
+  .card:is(:hover,:focus-within) .pills .arrow svg + svg{transform:none}
+  .pills:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+  .pills--sm .pill{height:36px;padding:0 15px;font-size:13px}.pills--sm .arrow{width:36px;height:36px}
+  .close .pills{margin-top:6px;align-self:flex-start;text-transform:none;letter-spacing:0;text-decoration:none;font:600 14px/1 var(--sans);display:inline-flex}
+  .close .pills .pill,.close .pills .arrow{background:var(--text);color:var(--wood)}
+  .close .pills{color:var(--wood)}
+  .more{display:flex;justify-content:center;margin-top:3rem}
+  @media (prefers-reduced-motion:reduce){.card,.stage > *,.pills *{transition:none!important}.card:hover{transform:none!important}.stage > *{transform:none!important}}
+  .bars{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99;display:flex;flex-direction:column;gap:4px;align-items:center}
+  .bars__toggle{all:unset;cursor:pointer;background:#111;color:#fff;font:500 12px/1 system-ui;padding:10px 16px;border-radius:999px;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+  .bars:not(.open) .bar{display:none}
+  .bar{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;background:#111;border-radius:999px;padding:4px;font:500 12px/1 system-ui;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+  .bar span{color:#777;padding:9px 6px 9px 10px}
+  .bar a{color:#bbb;padding:9px 11px;border-radius:999px;text-decoration:none;white-space:nowrap}
+  .bar a[aria-current="true"]{background:#fff;color:#000}
+  @media (max-width:860px){.stage{height:20rem}.wide .stage{height:16rem}.phone{width:140px}.grid{grid-template-columns:1fr}.l1 .words,.l3 .words{flex-direction:column;align-items:flex-start}.l5 .words{left:var(--gutter);top:auto;bottom:10vh;transform:none}.c5 .card.wide{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bars" id="bars"><button class="bars__toggle" type="button" aria-expanded="false">Options</button><nav class="bar" id="barL"></nav><nav class="bar" id="barC"></nav></div>
+
+<section class="close" id="close">
+  <canvas id="cv" aria-hidden="true"></canvas>
+  <div class="words" id="words"></div>
+</section>
+
+<section class="work" id="work">
+  <h2>Selected <em>work</em><i></i></h2>
+  <div class="grid" id="grid"></div>
+  <div class="more" id="more"></div>
+</section>
+
+<script type="module">
+const Q = new URLSearchParams(location.search);
+const LINE = 'l5', CARDS = 'c3', BORDER = 'hover', WIDE = 'beside', COLOUR = 'paper';
+const EDGE = Q.get('edge') === 'soft' ? 'soft' : 'faint';
+const LIFT = ['lift', 'zoom', 'both'].includes(Q.get('lift')) ? Q.get('lift') : 'both';
+const PILL = ['hover', 'always', 'off'].includes(Q.get('pill')) ? Q.get('pill') : 'hover';
+const link = (o) => '?' + new URLSearchParams({ edge: EDGE, lift: LIFT, pill: PILL, ...o });
+const opt = (name, cur, list) => `<span>${name}</span>` + list.map(([k, l]) => `<a href="${link({ [name.toLowerCase()]: k })}" aria-current="${k === cur}">${l}</a>`).join('');
+document.getElementById('barL').innerHTML = opt('Edge', EDGE, [['faint', 'Faint line'], ['soft', 'Soft line']]) + opt('Lift', LIFT, [['lift', 'Rise'], ['zoom', 'Work grows'], ['both', 'Both']]);
+document.getElementById('barC').innerHTML = opt('Pill', PILL, [['hover', 'Pill on hover'], ['always', 'Pill always'], ['off', 'No pill on cards']]);
+const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+const pills = (label, href, cls = '') => `<a class="pills ${cls}" href="${href}"><span class="pill">${label}</span><span class="arrow">${ARROW}${ARROW}</span></a>`;
+
+{ const b = document.getElementById('bars'), t = b.querySelector('.bars__toggle');
+  t.onclick = () => { const o = b.classList.toggle('open'); t.setAttribute('aria-expanded', o); t.textContent = o ? 'Close' : 'Options'; }; }
+// ---- the closing screen
+const close = document.getElementById('close'), words = document.getElementById('words');
+close.classList.add(LINE);
+const H2 = '<h2>Built to <em>untangle</em></h2>', P = '<p>Ten years of complicated systems made usable: payments, privacy and identity. One desk in Bangalore, products used around the world.</p>', A = pills('More about me', '#');
+words.innerHTML = {
+  l1: `${H2}<div>${P}${A}</div>`,
+  l2: `${H2}<p style="text-align:center">One desk in Bangalore, products used around the world.</p>${A}`,
+  l3: `${H2}<div><div class="facts"><div><b>10+</b><span class="label">years</span></div><div><b>80M+</b><span class="label">people on one launch</span></div><div><b>60%</b><span class="label">fewer privacy calls</span></div></div>${A}</div>`,
+  l4: `<h2>One desk in Bangalore. <em>Products used around the world.</em></h2>${A}`,
+  l5: `${H2}${P}${A}`,
+}[LINE];
+
+// a small pixel globe, drawn from the site's land map
+const img = new Image(); img.src = '../../public/images/globe/land.png'; await new Promise(r => img.onload = r);
+const mc = document.createElement('canvas'); mc.width = img.width; mc.height = img.height; mc.getContext('2d').drawImage(img, 0, 0);
+const md = mc.getContext('2d').getImageData(0, 0, mc.width, mc.height).data, MW = mc.width, MH = mc.height, RAD = Math.PI / 180;
+const isLand = (lo, la) => md[(Math.min(MH - 1, Math.max(0, Math.floor((90 - la) / 180 * MH))) * MW + Math.floor(((lo + 180) % 360 + 360) % 360 / 360 * MW)) * 4] > 127;
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+function drawGlobe() {
+  const W = close.clientWidth, H = close.clientHeight, R = Math.min(190, W * .24);
+  const at = { l1: [W / 2, H * .38], l2: [W / 2, H * .36], l3: [W / 2, H * .36], l4: [W / 2, H * .36], l5: [W * .27, H * .5] }[LINE];
+  const d = Math.min(2, devicePixelRatio); cv.width = W * d; cv.height = H * d; cv.style.cssText = `left:0;top:0;width:${W}px;height:${H}px`; g.setTransform(d, 0, 0, d, 0, 0);
+  const cell = Math.max(5, R / 30), n = Math.ceil(R / cell), l0 = -36, p0 = 58, sp = Math.sin(p0 * RAD), cp = Math.cos(p0 * RAD);
+  for (let j = -n; j < n; j++) for (let i = -n; i < n; i++) {
+    const x = (i + .5) * cell / R, y = -((j + .5) * cell / R), rho = Math.hypot(x, y); if (rho > 1) continue;
+    const c = Math.asin(rho), sc = Math.sin(c), cc = Math.cos(c), la = Math.asin(cc * sp + (rho ? y * sc * cp / rho : 0)) / RAD, lo = l0 + Math.atan2(x * sc, rho * cp * cc - y * sp * sc) / RAD;
+    const near = isLand(lo + 2, la) || isLand(lo - 2, la) || isLand(lo, la + 2) || isLand(lo, la - 2);
+    g.fillStyle = isLand(lo, la) ? (cc < .3 ? '#b9805a' : '#9e6743') : near ? '#f5dcc2' : cc < .35 ? '#e0b88f' : '#eccaa6';
+    const gap = cell * .1; g.beginPath(); g.roundRect(at[0] + i * cell + gap / 2, at[1] + j * cell + gap / 2, cell - gap, cell - gap, cell * .26); g.fill();
+  }
+}
+drawGlobe(); addEventListener('resize', drawGlobe);
+
+document.getElementById('more').innerHTML = pills('View all work', '#');
+// ---- the cards
+const I = '../../public/images/';
+const C = [
+  { wide: true, g: '#c9dcf2', hue: 'okta', co: 'Okta', tags: 'Identity & security · Product strategy · Design systems', title: 'Rebuilding IAM for enterprise admins', line: 'A ground-up rebuild of the admin console, shipped under live tenants.', out: 'Admin task time down 32%', media: `<img class="desk" src="${I}work-play/okta-desk.webp" alt="">` },
+  { g: '#e0d6ef', hue: 'paypal', co: 'PayPal', tags: 'Fintech · Privacy & data', title: 'Privacy settings people can read', line: 'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.', out: 'Privacy support calls down 60%', media: `<div class="phone"><div><img src="${I}work-play/pv-hub.webp" alt=""></div></div>` },
+  { g: '#f6dcc6', hue: 'paypal', co: 'PayPal', tags: 'Fintech · Ads & personalization', title: 'Privacy-first ad personalization', line: 'Ad data sharing moved from opted in by default to asking first.', out: '41% opted in once PayPal asked first', media: `<div class="phone"><div><img src="${I}work-play/ads-privacy.webp" alt=""></div></div>` },
+  { g: '#cfe7d8', hue: 'paypal', co: 'PayPal', tags: 'Fintech · Growth', title: 'A debit card people finish signing up for', line: 'Card enrollment and cash back rebuilt inside the PayPal app.', out: 'Applications 20% faster', media: `<div class="phone"><div><img src="${I}work-play/debit-intro.webp" alt=""></div></div>` },
+  { g: '#f4dc9c', hue: 'walmart', co: 'Walmart Labs', tags: 'Fintech · Growth', title: 'Chase Pay inside Walmart Pay', line: 'Brought Chase Pay into Walmart Pay, validated with real customers in-store.', out: 'Shipped on iOS and Android, 2020', media: `<div class="phone"><div><img src="${I}work-play/ch-setup.webp" alt=""></div></div>` },
+];
+const grid = document.getElementById('grid'); grid.classList.add(CARDS); if (BORDER === 'off') grid.classList.add('noline'); if (BORDER === 'hover') grid.classList.add('hoverline'); if (WIDE === 'beside') grid.classList.add('wbeside'); if (COLOUR === 'live') grid.classList.add('live');
+grid.classList.add('edge-' + EDGE, 'lift-' + LIFT, 'pill-' + PILL);
+grid.innerHTML = C.map(c => `
+  <article class="card${c.wide ? ' wide' : ''}" data-hue="${c.hue}" style="--g:${c.g}">
+    <div class="stage">${c.media}</div>
+    <div class="words-c">
+      <span class="out">${c.out}</span>
+      <span class="label meta">${c.co} · ${c.tags}</span>
+      <h3>${c.title}</h3>
+      <p>${c.line}</p>
+      <span class="pills pills--sm" aria-hidden="true"><span class="pill">View case study</span><span class="arrow">${ARROW}${ARROW}</span></span>
+    </div>
+    <a class="cover" href="#" aria-label="${c.title}, view case study"></a>
+  </article>`).join('');
+</script>
+</body>
+</html>

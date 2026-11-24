@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference globe, refined</title>
+<!--
+  The "like the reference" globe (hero-globe V5), refined on request
+  (2026-11-20): her hero with the pixel globe on the table; scrolling
+  goes into the globe and then plays andreas.vision's globe pull-back
+  with her road and the closing line.
+  The zoom into the painting used to scale the watercolour up, which
+  went blurry. Four ways in that never enlarge the painting (?z=):
+    a  Globe lifts   — the painting stays put; the globe rises toward you.
+    b  Pixels sharpen — the zoom draws the painting as square pixels,
+                        so close up it's crisp blocks, not blur.
+    c  Iris          — a circle opens out of the globe and becomes the
+                        next screen.
+    d  Dissolve      — the painting breaks into pixels that drift off
+                        and fade while the globe grows.
+    e  Half iris + story — the iris opens to a disc on the right and
+                        holds; the globe turns a stop at a time while a
+                        line writes itself on the white to the left
+                        (2026-11-20, on request). Then the disc opens to
+                        the whole screen and his pull-back follows.
+  In a, b and d the new ground arrives as a disc growing out from behind
+  the globe, not as a fade (a fade went through a muddy pink). b draws
+  the painting as hard-edged pixel art with fewer colours and visible
+  tile edges, so it never looks like a blurred enlargement.
+  Backgrounds instead of the peach (?b=): ox (oxblood), white, ink
+  (near-black), mix (oxblood above, white below, meeting at a pixel
+  edge, the line set on the white), black, espresso, teal.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Crimson+Pro:ital,wght@0,300;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#fff;--ink:#262626;--grey:#707070;--ease:cubic-bezier(.16,1,.3,1);--sans:'Geist',system-ui,sans-serif;--serif:'Crimson Pro',Georgia,serif;--gutter:88px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .story{position:relative;height:var(--story-h,700vh)}
+  .write{position:absolute;left:var(--gutter);top:50%;transform:translateY(-50%);width:min(380px,30vw);z-index:4;pointer-events:none}
+  .write small{display:block;font:500 12px/1 ui-monospace,'SF Mono',monospace;letter-spacing:.1em;color:#888;margin-bottom:18px;min-height:12px}
+  .write p{font:italic 300 clamp(28px,3vw,42px)/1.12 var(--serif);color:var(--ink);min-height:3.4em}
+  .write p .caret{display:inline-block;width:.08em;height:.9em;background:var(--mark,#5c1712);vertical-align:-.1em;margin-left:.04em;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .write .steps{display:flex;gap:6px;margin-top:28px}
+  .write .steps i{width:8px;height:8px;background:#e3d9d6}
+  .write .steps i.on{background:var(--mark,#5c1712)}
+  .acc{color:var(--accent,inherit)}
+  .write small{color:var(--mark,#888)!important}
+  /* a faint grain over the dark ground, as in her reference */
+  .grain .stage::after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity .4s;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");mix-blend-mode:overlay}
+  .grain .stage.dark::after{opacity:.35}
+  .stage{position:sticky;top:0;height:100vh;overflow:hidden;background:#fff}
+  .scene{position:absolute;inset:0;z-index:1}
+  .scene img{position:absolute;display:block}
+  canvas#cv{position:absolute;inset:0;z-index:2;pointer-events:none;image-rendering:pixelated}
+  .copy{position:absolute;left:var(--gutter);top:50%;transform:translateY(-50%);width:min(560px,42vw);z-index:3}
+  .eyebrow{display:flex;gap:10px;align-items:center;font:500 12px/1 ui-monospace,'SF Mono',monospace;letter-spacing:.08em;color:#666;margin-bottom:28px}
+  .eyebrow i{width:8px;height:8px;border-radius:50%;background:#2fa86b;box-shadow:0 0 0 4px rgba(47,168,107,.18)}
+  .copy h1{font:300 clamp(30px,3.6vw,52px)/1.14 var(--serif);letter-spacing:-.01em}
+  .copy h1 em{font-style:italic}
+  .copy .more{font:400 15px/1.7 var(--sans);color:#666;margin-top:24px}
+  #chips{position:absolute;inset:0;z-index:4;pointer-events:none}
+  .chip{position:absolute;display:flex;gap:6px;align-items:center;background:#fff;color:#000;font:500 12px/1 var(--sans);padding:6px 9px 6px 6px;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.18);white-space:nowrap;opacity:0;transform:translate(-50%,-50%) scale(.92);transition:opacity .35s,transform .45s var(--ease)}
+  .chip.on{opacity:1;transform:translate(-50%,-50%)}
+  .chip i{width:14px;height:14px;border-radius:3px;background:#111;color:#fff;font:600 8px/14px var(--sans);text-align:center;font-style:normal}
+  .line{position:absolute;left:var(--gutter);right:var(--gutter);bottom:150px;z-index:4;display:flex;justify-content:space-between;align-items:flex-start;opacity:0;transform:translateY(16px);transition:.7s var(--ease)}
+  .line.on{opacity:1;transform:none}
+  .line h2{font:500 60px/1 var(--sans);letter-spacing:-.01em}
+  .line div{width:480px}
+  .line p{font:400 20px/26px var(--sans);margin-bottom:24px}
+  .pair{display:inline-flex;gap:6px}
+  .pill{display:inline-flex;align-items:center;height:44px;padding:0 24px;border-radius:999px;background:#000;color:#fff;font:500 16px/1 var(--sans)}
+  .arrow{width:44px;height:44px;border-radius:50%;background:#000;color:#fff;display:grid;place-items:center}
+  .arrow svg{width:16px;height:16px}
+  .after{padding:120px var(--gutter);font:500 13px/1.6 var(--sans);color:var(--grey)}
+  .after h2{font:italic 300 56px/1 var(--serif);color:var(--ink);margin-bottom:12px}
+  .bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99;display:flex;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);border-radius:24px!important;gap:2px;align-items:center;background:#111;border-radius:999px;padding:4px;font:500 11.5px/1 var(--sans);box-shadow:0 8px 28px rgba(0,0,0,.25);white-space:nowrap}
+  .bar a{color:#bbb;padding:9px 11px;border-radius:999px;display:flex;gap:6px;align-items:center}
+  .bar a:hover{color:#fff}
+  .bar a[aria-current="true"]{background:#fff;color:#000}
+  .bar b{color:#777;font-weight:500;padding:0 6px 0 10px}
+  .bar i{width:12px;height:12px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+  @media (prefers-reduced-motion:reduce){.chip,.line{transition:none}}
+</style>
+</head>
+<body>
+<nav class="bar" id="bar" aria-label="Mock options"></nav>
+
+<section class="story" id="story">
+  <div class="stage" id="stage">
+    <div class="copy" id="copy">
+      <p class="eyebrow"><i></i>BANGALORE, IN</p>
+      <h1><em>Hi, I&rsquo;m Anupama,</em> a Staff Product Designer. I&nbsp;ship, I&nbsp;nudge, I&nbsp;craft, from systems and strategy to the last stubborn pixel.</h1>
+      <p class="more">Most recently @ Okta. Previously at PayPal, Walmart Labs, and Deloitte.</p>
+    </div>
+    <div class="scene" id="scene" aria-hidden="true">
+      <img class="art" src="../../public/images/hero-idle.webp" alt="">
+      <img class="moss" src="../../public/images/moss/moss-idle.webp" alt="">
+    </div>
+    <canvas id="cv" aria-hidden="true"></canvas>
+    <div id="chips" aria-hidden="true"></div>
+    <div class="write" id="write" hidden><small id="wLabel"></small><p id="wText"></p><div class="steps" id="wSteps"></div></div>
+    <div class="line" id="line">
+      <h2>Built to <span class="acc">untangle</span></h2>
+      <div><p>Ten years of complicated systems made usable: payments, privacy and identity. I find the clear way through and carry it to the last pixel.</p>
+        <a class="pair" href="#"><span class="pill">How I work</span><span class="arrow"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></span></a></div>
+    </div>
+  </div>
+</section>
+<section class="after"><h2>Selected work</h2>The case cards and the rest of the page follow here, as in the hero-globe mock.</section>
+
+<script>
+const Q = new URLSearchParams(location.search);
+const Z = 'abcde'.includes(Q.get('z') || '') && Q.get('z') ? Q.get('z') : 'a';
+const B = ['ox', 'white', 'ink', 'mix', 'black', 'espresso', 'teal', 'maroon'].includes(Q.get('b')) ? Q.get('b') : 'ox';
+// per background: page colour, globe [rim sea, sea, land rim, land], pin, text, skyline
+const BG = {
+  ox:    { bg: '#5c1712', gc: ['#7d2a20', '#93443a', '#e7c3bd', '#fbeeea'], pin: '#5c1712', text: '#fff',    sky: '#fff', name: 'Oxblood' },
+  white: { bg: '#ffffff', gc: ['#e7c3bd', '#f3dfdb', '#93443a', '#5c1712'], pin: '#fff',    text: '#2a120e', sky: '#5c1712', name: 'White' },
+  ink:   { bg: '#1b1a19', gc: ['#2e2422', '#3d2c28', '#c86a4d', '#f0a07c'], pin: '#1b1a19', text: '#f3efe9', sky: '#fcfcfc', name: 'Near-black' },
+  black:    { bg: '#0d0d0d', gc: ['#262626', '#363636', '#e0714f', '#f6c3a9'], pin: '#0d0d0d', text: '#f5f5f2', sky: '#f5f5f2', name: 'Black' },
+  espresso: { bg: '#2b1a14', gc: ['#3d261d', '#4d3026', '#d9b98a', '#f3e3c8'], pin: '#2b1a14', text: '#f3e9df', sky: '#f3e9df', name: 'Espresso' },
+  // from her reference (2026-11-20): a deep maroon ground, coral and white type, a faint grain
+  maroon:   { bg: '#330504', gc: ['#4a0d0a', '#5e1410', '#e6614e', '#ffffff'], pin: '#330504', text: '#ffffff', sky: '#ffffff', accent: '#e6614e', grain: true, name: 'Maroon + coral' },
+  teal:     { bg: '#0f3b3a', gc: ['#155150', '#1d6362', '#f0a07c', '#fde6d6'], pin: '#0f3b3a', text: '#eafaf6', sky: '#eafaf6', name: 'Deep teal' },
+  mix:   { bg: '#5c1712', gc: ['#7d2a20', '#93443a', '#e7c3bd', '#fbeeea'], pin: '#5c1712', text: '#2a120e', sky: '#fff', name: 'Oxblood + white' },
+}[B];
+const GC = BG.gc;
+document.getElementById('bar').innerHTML = '<b>Way in</b>' +
+  [['a', 'Globe lifts'], ['b', 'Pixels sharpen'], ['c', 'Iris'], ['d', 'Dissolve'], ['e', 'Half iris + story']].map(([k, l]) => `<a href="?z=${k}&b=${B}" aria-current="${k === Z}">${k} · ${l}</a>`).join('') +
+  '<b>Background</b>' + [['ox', 'Oxblood', '#5c1712'], ['white', 'White', '#fff'], ['ink', 'Near-black', '#1b1a19'], ['mix', 'Oxblood + white', 'linear-gradient(#5c1712 50%,#fff 50%)'], ['black', 'Black', '#0d0d0d'], ['espresso', 'Espresso', '#2b1a14'], ['teal', 'Deep teal', '#0f3b3a'], ['maroon', 'Maroon + coral', 'linear-gradient(135deg,#330504 55%,#e6614e 55%)']]
+    .map(([k, l, c]) => `<a href="?z=${Z}&b=${k}" aria-current="${k === B}"><i style="background:${c}"></i>${l}</a>`).join('');
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hash = (x, y) => { const v = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return v - Math.floor(v); };
+const sm = t => t * t * (3 - 2 * t);
+function noise(x, y) { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  return a + (b - a) * sm(xf) + (c - a) * sm(yf) + (a - b - c + d) * sm(xf) * sm(yf); }
+const fbm = (x, y) => noise(x, y) * .55 + noise(x * 2.1, y * 2.1) * .3 + noise(x * 4.3, y * 4.3) * .15;
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+const story = document.getElementById('story'), stage = document.getElementById('stage'), scene = document.getElementById('scene');
+const art = scene.querySelector('.art'), moss = scene.querySelector('.moss'), copy = document.getElementById('copy');
+const cv = document.getElementById('cv'), g = cv.getContext('2d'), line = document.getElementById('line'), chipsEl = document.getElementById('chips');
+line.style.color = BG.text;
+if (BG.accent) {
+  document.documentElement.style.setProperty('--accent', BG.accent);
+  document.documentElement.style.setProperty('--mark', BG.accent);
+}
+if (BG.grain) document.documentElement.classList.add('grain');
+const STOPS = [['Z', 'Zomato'], ['D', 'Deloitte Digital'], ['W', 'Walmart Labs'], ['P', 'PayPal'], ['O', 'Okta'], ['B', 'Bangalore, now']];
+chipsEl.innerHTML = STOPS.map(([i, n]) => `<span class="chip"><i>${i}</i>${n}</span>`).join('');
+const chipEls = [...chipsEl.children];
+
+// the painting (700×980): the globe right of the books, Moss on them
+const F = { w: 700, h: 980 }, GL = { x: 665, y: 480, r: 40 }, FOOT = 548, MOSS = { x: 565, y: 462 }, PIN = { lon: 77.6, lat: 13 };
+let L = {}, mosaic = null;
+function layout() {
+  const W = innerWidth, H = innerHeight, h = Math.min(H * .86, (W * .5) * F.h / F.w), w = h * F.w / F.h;
+  L = { W, H, s: h / F.h, x: W - w - Math.max(24, W * .05), y: H - h - H * .02, w, h };
+  art.style.cssText = `left:${L.x}px;top:${L.y}px;width:${L.w}px`;
+  const mw = 104 * L.s;
+  L.moss = { x: L.x + MOSS.x * L.s - mw * .53, y: L.y + MOSS.y * L.s - mw * 223 / 188 * .954, w: mw, h: mw * 223 / 188 };
+  moss.style.cssText = `left:${L.moss.x}px;top:${L.moss.y}px;width:${mw}px`;
+  cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  g.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  mosaic = null; parts = null;
+}
+addEventListener('resize', layout);
+const home = () => ({ x: L.x + GL.x * L.s, y: L.y + GL.y * L.s, r: GL.r * L.s });
+
+/* the painting + Moss, as a small picture of square pixels (for b and d) */
+function buildMosaic(cellPx) {
+  const c = document.createElement('canvas'), cols = Math.ceil(L.W / cellPx), rows = Math.ceil(L.H / cellPx);
+  c.width = cols; c.height = rows; const x = c.getContext('2d');
+  x.imageSmoothingEnabled = true;
+  x.drawImage(art, L.x / cellPx, L.y / cellPx, L.w / cellPx, L.h / cellPx);
+  x.drawImage(moss, L.moss.x / cellPx, L.moss.y / cellPx, L.moss.w / cellPx, L.moss.h / cellPx);
+  return { c, cell: cellPx, cols, rows, data: x.getImageData(0, 0, cols, rows).data };
+}
+
+/* the globe in square pixels */
+function cellColour(nx, ny, rot) {
+  const d = nx * nx + ny * ny; if (d > 1) return null;
+  const nz = Math.sqrt(1 - d), lat = -Math.asin(ny) * 57.3 + PIN.lat * .6, lon = Math.atan2(nx, nz) * 57.3 + rot;
+  const pd = Math.hypot(((lon - PIN.lon + 540) % 360) - 180, lat - PIN.lat);
+  if (pd < 3.2 && nz > .3) return BG.pin;
+  let v = fbm(((lon % 360) + 360) % 360 / 30, (lat + 90) / 22); if (pd < 12) v = Math.max(v, .6);
+  if (v > .56) return nz < .35 ? GC[2] : GC[3];
+  if (v > .5) return GC[2];
+  return nz < .4 ? GC[0] : GC[1];
+}
+function paintGlobe(cx, cy, R, rot) {
+  const cell = Math.max(2, R / 13), n = Math.ceil(R / cell);
+  for (let j = -n; j < n; j++) for (let i = -n; i < n; i++) {
+    const c = cellColour((i + .5) * cell / R, (j + .5) * cell / R, rot); if (!c) continue;
+    g.fillStyle = c; g.fillRect(Math.round(cx + i * cell), Math.round(cy + j * cell), Math.ceil(cell), Math.ceil(cell));
+  }
+}
+function paintStand(alpha = 1) {
+  const p = home(), u = Math.max(2, Math.round(p.r / 12));
+  g.globalAlpha = alpha; g.fillStyle = '#a37b45';
+  for (let t = .55 * Math.PI; t < 1.6 * Math.PI; t += .03) g.fillRect(Math.round(p.x + Math.cos(t - .38) * p.r * 1.12), Math.round(p.y + Math.sin(t - .38) * p.r * 1.12), u, u);
+  g.fillRect(Math.round(p.x - u / 2), Math.round(p.y + p.r), u, Math.round(FOOT * L.s + L.y - p.y - p.r - u * 2));
+  g.fillRect(Math.round(p.x - p.r * .55), Math.round(L.y + FOOT * L.s - u * 2), Math.round(p.r * 1.1), u * 2);
+  g.globalAlpha = 1;
+}
+const TARGET = () => { const R = L.W * .62; return { x: L.W / 2, y: R + 40, r: R }; }; // his big cropped globe
+function setBg(k) { stage.style.background = k >= 1 ? BG.bg : '#fff'; stage.classList.toggle('dark', k >= 1); }
+// the new ground arrives as a disc that grows out from behind the globe, never as a fade
+function disc(cx, cy, r) { g.fillStyle = BG.bg; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill(); }
+const covers = (cx, cy, r) => r >= Math.hypot(Math.max(cx, L.W - cx), Math.max(cy, L.H - cy));
+
+/* the painting + Moss as crisp pixel art: fewer colours, hard edges (for b) */
+function buildPixelArt(cellPx) {
+  const m = buildMosaic(cellPx), d = m.data, x = m.c.getContext('2d'), img = x.getImageData(0, 0, m.cols, m.rows), o = img.data;
+  const q = v => Math.round(v / 42) * 42; // about six steps a channel
+  for (let i = 0; i < d.length; i += 4) { const a = d[i + 3] > 110; o[i] = q(d[i]); o[i + 1] = q(d[i + 1]); o[i + 2] = q(d[i + 2]); o[i + 3] = a ? 255 : 0; }
+  x.putImageData(img, 0, 0);
+  return m;
+}
+
+/* ---- the ways in. Each takes a (0..1) and ends on his big cropped globe on the new ground ---- */
+const INTRO = {
+  a(a) { // the globe lifts toward you; the painting stays still and fades back
+    const h = home(), T = TARGET(), e = ease(a);
+    const R = h.r * Math.pow(T.r / h.r, e), f = (R - h.r) / (T.r - h.r);
+    scene.style.opacity = 1 - clamp(f * 1.6); scene.style.transform = `translateY(${f * 40}px)`;
+    copy.style.opacity = 1 - clamp(e * 3);
+    const X = lerp(h.x, T.x, f), Y = lerp(h.y, T.y, f), rd = R * lerp(1.02, 3.4, clamp((f - .15) / .85));
+    setBg(covers(X, Y, rd) ? 1 : 0);
+    paintStand(1 - clamp(e * 4));
+    if (f > .12) disc(X, Y, rd);
+    paintGlobe(X, Y, R, lerp(0, 40, e));
+  },
+  b(a) { // a camera zoom, but the painting turns into crisp pixel art, so close up it's hard-edged tiles
+    const h = home(), T = TARGET(), e = ease(a);
+    const R = h.r * Math.pow(T.r / h.r, e), f = (R - h.r) / (T.r - h.r), k = R / h.r;
+    const X = lerp(h.x, T.x, f), Y = lerp(h.y, T.y, f), ox = X - k * h.x, oy = Y - k * h.y;
+    copy.style.opacity = 1 - clamp(e * 3);
+    if (!mosaic) mosaic = buildPixelArt(6);
+    const showArt = k > 1.04;
+    scene.style.opacity = showArt ? 0 : 1;
+    if (showArt) {
+      const cs = mosaic.cell * k;
+      g.imageSmoothingEnabled = false;
+      g.drawImage(mosaic.c, ox, oy, mosaic.cols * cs, mosaic.rows * cs);
+      if (cs > 9) { // the tile edges, so they read as pixels
+        g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 1; g.beginPath();
+        const x0 = ((ox % cs) + cs) % cs, y0 = ((oy % cs) + cs) % cs;
+        for (let x = x0; x < L.W; x += cs) { g.moveTo(Math.round(x) + .5, 0); g.lineTo(Math.round(x) + .5, L.H); }
+        for (let y = y0; y < L.H; y += cs) { g.moveTo(0, Math.round(y) + .5); g.lineTo(L.W, Math.round(y) + .5); }
+        g.stroke();
+      }
+    }
+    const rd = R * lerp(1.02, 3.4, clamp((f - .3) / .7));
+    setBg(covers(X, Y, rd) ? 1 : 0);
+    g.save(); g.translate(ox, oy); g.scale(k, k); paintStand(1 - clamp(f * 3)); g.restore();
+    if (f > .3) disc(X, Y, rd);
+    paintGlobe(X, Y, R, lerp(0, 40, e));
+  },
+  c(a) { // an iris opens out of the globe: inside it, the new ground and the globe growing
+    const h = home(), T = TARGET(), e = ease(a);
+    const far = Math.hypot(Math.max(h.x, L.W - h.x), Math.max(h.y, L.H - h.y)) * 1.05;
+    const rc = h.r * 1.04 * Math.pow(far / (h.r * 1.04), e);
+    copy.style.opacity = 1 - clamp(e * 2.5);
+    scene.style.opacity = 1; scene.style.transform = '';
+    paintStand(1);
+    g.save(); g.beginPath(); g.arc(h.x, h.y, rc, 0, Math.PI * 2); g.clip();
+    g.fillStyle = BG.bg; g.fillRect(0, 0, L.W, L.H);
+    const f = clamp((rc - h.r) / (far - h.r)), R = lerp(h.r, T.r, f);
+    paintGlobe(lerp(h.x, T.x, f), lerp(h.y, T.y, f), R, lerp(0, 40, e));
+    g.restore();
+    setBg(e >= 1 ? 1 : 0);
+  },
+  d(a) { // the painting breaks into pixels that drift off and fade, while the globe grows
+    const h = home(), T = TARGET(), e = ease(a);
+    if (!mosaic) mosaic = buildMosaic(8);
+    scene.style.opacity = a > .02 ? 0 : 1;
+    copy.style.opacity = 1 - clamp(e * 3);
+    const go = clamp(a * 1.3), m = mosaic;
+    for (let j = 0; j < m.rows; j++) for (let i = 0; i < m.cols; i++) {
+      const q = (j * m.cols + i) * 4; if (m.data[q + 3] < 110) continue;
+      const x0 = i * m.cell, y0 = j * m.cell;
+      const delay = hash(i, j) * .45 + (j / m.rows) * .15, k = clamp((go - delay) / .45);
+      if (k >= 1) continue;
+      const kk = k * k;
+      g.globalAlpha = 1 - kk;
+      g.fillStyle = `rgb(${m.data[q]},${m.data[q + 1]},${m.data[q + 2]})`;
+      g.fillRect(Math.round(x0 + kk * (180 + hash(j, i) * 220)), Math.round(y0 - kk * (160 + hash(i + 3, j) * 260)), m.cell - 1, m.cell - 1);
+    }
+    g.globalAlpha = 1;
+    const R = h.r * Math.pow(T.r / h.r, e), f = (R - h.r) / (T.r - h.r), X = lerp(h.x, T.x, f), Y = lerp(h.y, T.y, f);
+    const rd = R * lerp(1.02, 3.4, clamp((f - .35) / .65));
+    setBg(covers(X, Y, rd) ? 1 : 0);
+    if (f > .35) disc(X, Y, rd);
+    paintGlobe(X, Y, R, lerp(0, 40, e));
+  },
+};
+
+/* e · Half iris + story: the iris opens to a disc on the right and holds there. The globe turns
+   in it as you scroll; on the white to the left, a line writes itself for each stop. Then the
+   disc opens to the whole screen and his pull-back follows. */
+const STORY = [
+  ['TEN YEARS', 'One thread: making money, privacy and identity simple to use.'],
+  ['WALMART LABS', 'Scan & Go and Chase Pay. Baskets up 25% in the pilot.'],
+  ['PAYPAL', 'Privacy settings for 80M+ people, and 60% fewer support calls.'],
+  ['OKTA', 'Identity and access for enterprise admins. I led a team of six.'],
+  ['BANGALORE, NOW', 'Open to Staff or Lead Product Designer roles.'],
+];
+const write = document.getElementById('write'), wLabel = document.getElementById('wLabel'), wText = document.getElementById('wText'), wSteps = document.getElementById('wSteps');
+wSteps.innerHTML = STORY.map(() => '<i></i>').join('');
+function halfIris(p) { // p is the whole story's progress
+  const h = home(), D = { x: L.W * .72, y: L.H * .5, r: Math.max(L.H * .6, L.W * .29) };
+  const open = ease(clamp((p - .02) / .12)), tell = clamp((p - .15) / .5), full = ease(clamp((p - .67) / .09));
+  copy.style.opacity = 1 - clamp(open * 2.5);
+  scene.style.opacity = 1 - clamp((open - .3) / .5); scene.style.transform = '';
+  // the disc: out of the globe on the table, to its place on the right, then (at the end) the whole screen
+  const far = Math.hypot(Math.max(D.x, L.W - D.x), Math.max(D.y, L.H - D.y)) * 1.04;
+  const cx = lerp(h.x, D.x, open), cy = lerp(h.y, D.y, open);
+  const r = full > 0 ? lerp(D.r, far, full) : h.r * 1.04 * Math.pow(D.r / (h.r * 1.04), open);
+  if (open < 1) paintStand(1 - open);
+  disc(cx, cy, r);
+  // the globe in it: grows with the disc, turns a stop at a time
+  const step = Math.min(STORY.length - 1, Math.floor(tell * STORY.length)), local = ease(clamp((tell * STORY.length - step) * 1.4));
+  const R = lerp(h.r, D.r * .56, open), T = TARGET();
+  const gx = full > 0 ? lerp(cx, T.x, full) : cx, gy = full > 0 ? lerp(cy, T.y, full) : cy, gR = full > 0 ? lerp(R, T.r, full) : R;
+  const turn = open < 1 ? 0 : step + local;                    // one turn a stop; the last stop faces Bangalore
+  const rot = PIN.lon + (turn - (STORY.length - 1)) * 72;
+  paintGlobe(gx, gy, gR, full > 0 ? lerp(rot, 40, full) : rot);
+  // the writing, on the white
+  const showWrite = open >= 1 && full === 0;
+  write.hidden = !showWrite;
+  if (showWrite) {
+    const [label, text] = STORY[step], typed = clamp((tell * STORY.length - step) / .55);
+    wLabel.textContent = label;
+    wText.innerHTML = text.slice(0, Math.round(text.length * typed)).replace(/&/g, '&amp;') + '<span class="caret"></span>';
+    [...wSteps.children].forEach((d, i) => d.classList.toggle('on', i <= step));
+  }
+  setBg(full >= 1 ? 1 : 0);
+}
+/* ---- his globe: big and cropped, pulling back, her road, the line ---- */
+function outro(q) {
+  const W = L.W, H = L.H, k = Math.min(1, q / .45);
+  const R = (1 - sm(k)) * W * .62 + sm(k) * 150, cy = (1 - sm(k)) * (R + 40) + sm(k) * (H * .3);
+  setBg(1);
+  paintGlobe(W / 2, cy, R, 40 + q * 260);
+  const shown = Math.floor(Math.max(0, (q - .5) / .4) * STOPS.length + .001);
+  chipEls.forEach((c, i) => {
+    const a = (i / STOPS.length) * Math.PI * 1.4 - .6;
+    c.style.left = (W / 2 + Math.cos(a) * 190) + 'px'; c.style.top = (cy + Math.sin(a) * 130) + 'px';
+    c.classList.toggle('on', i < shown && i >= shown - 2);
+  });
+  line.classList.toggle('on', q > .62);
+  // the ground along the bottom
+  const cell = 24, tall = B === 'mix' ? 18 : 4;
+  for (let i = 0; i < W / cell; i++) {
+    const hh = B === 'mix' ? 14 + Math.floor(fbm(i * .25, 3) * 3) : Math.floor(fbm(i * .35, 3) * 4);
+    for (let j = 0; j < tall; j++) {
+      const row = H - (j + 1) * cell;
+      if (j < hh) { g.fillStyle = BG.sky; g.fillRect(i * cell, row, cell, cell); }
+      else if (j === hh && hash(i, j) > .5) { g.globalAlpha = .45; g.fillStyle = BG.sky; g.fillRect(i * cell, row, cell, cell); g.globalAlpha = 1; }
+    }
+  }
+}
+
+const SPLIT = Z === 'e' ? .76 : .28;
+if (Z === 'e') story.style.setProperty('--story-h', '1000vh');
+let idle = 0;
+function tick() {
+  const r = story.getBoundingClientRect();
+  if (r.bottom > 0 && r.top < innerHeight) {
+    const p = reduce ? 0 : clamp(-r.top / (r.height - innerHeight));
+    g.clearRect(0, 0, L.W, L.H);
+    if (p <= .02) { // at rest: her hero as it is, the globe turning slowly on the table
+      scene.style.opacity = 1; scene.style.transform = ''; copy.style.opacity = 1; setBg(0); write.hidden = true;
+      chipEls.forEach(c => c.classList.remove('on')); line.classList.remove('on');
+      paintStand(1); const h = home(); if (!reduce) idle = (idle + .3) % 360; paintGlobe(h.x, h.y, h.r, idle);
+    } else if (p < SPLIT) {
+      chipEls.forEach(c => c.classList.remove('on')); line.classList.remove('on');
+      if (Z === 'e') halfIris(p); else INTRO[Z]((p - .02) / (SPLIT - .02));
+    } else {
+      scene.style.opacity = 0; copy.style.opacity = 0; write.hidden = true;
+      outro((p - SPLIT) / (1 - SPLIT));
+    }
+  }
+  requestAnimationFrame(tick);
+}
+let parts = null;
+const start = () => { layout(); tick(); };
+if (art.complete) start(); else art.onload = start;
+</script>
+</body>
+</html>

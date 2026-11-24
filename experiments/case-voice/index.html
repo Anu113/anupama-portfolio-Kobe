@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case voice review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Review, 2026-11-25. How the site's copy reads against human writing,
+  case by case, and the top three home-page cases (Okta IAM, PayPal
+  Privacy, Ads consent) rewritten in andreas.vision/work/schneider's
+  voice, side by side with what's live in src/data/cases.ts.
+  Nothing in src/ has changed. Facts are only those already in cases.ts;
+  dashed boxes mark what only she can supply, dotted underlines mark
+  numbers that are written stand-ins (per the header of cases.ts).
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070;
+    --rule: rgb(0 0 0 / .1);
+    --card: color-mix(in srgb, #262626 3%, #fcfcfc);
+    --page: #f0efec;
+    --strike: rgb(0 0 0 / .35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1a19; --fg: #ecebe8; --dim: #a09d98; --rule: rgb(255 255 255 / .12);
+      --card: color-mix(in srgb, #ecebe8 5%, #1b1a19); --page: #141312; --strike: rgb(255 255 255 / .35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1b1a19; --fg: #ecebe8; --dim: #a09d98; --rule: rgb(255 255 255 / .12);
+    --card: color-mix(in srgb, #ecebe8 5%, #1b1a19); --page: #141312; --strike: rgb(255 255 255 / .35);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--fg); font: 600 14px/1.65 var(--font-sans); }
+  .doc { max-width: 1280px; margin: 0 auto; padding: 56px 32px 160px; }
+  h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 12px; letter-spacing: -0.01em; }
+  h2 { font: 300 34px/1.15 var(--font-serif); margin: 0 0 8px; }
+  h3 { font: 600 18px/1.35 var(--font-sans); margin: 0 0 8px; }
+  em { font-style: italic; }
+  p { margin: 0 0 12px; }
+  .dek { color: var(--dim); max-width: 72ch; }
+  .label { font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 24px 0 64px; padding: 0; list-style: none; }
+  .toc a { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); text-decoration: none; }
+  .toc a:hover, .toc a:focus-visible { color: var(--fg); }
+  a { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+
+  section.part { margin: 0 0 96px; scroll-margin-top: 24px; }
+  .panel { background: var(--bg); border-radius: 20px; padding: 32px; margin-top: 24px; }
+
+  /* Scores */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); padding: 0 12px 10px 0; vertical-align: bottom; }
+  td { padding: 12px 12px 12px 0; border-top: 1px solid var(--rule); vertical-align: top; }
+  td:first-child { white-space: nowrap; }
+  .meter { display: inline-flex; gap: 2px; vertical-align: middle; margin-right: 8px; }
+  .meter i { width: 6px; height: 12px; background: var(--rule); border-radius: 1px; }
+  .meter i.on { background: var(--fg); }
+  .score { font-family: var(--font-mono); font-weight: 400; }
+
+  /* Tells */
+  .tells { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .tell { background: var(--card); border-radius: 16px; padding: 20px; }
+  .tell q, .q { display: block; font: 300 17px/1.4 var(--font-serif); font-style: italic; margin: 10px 0; quotes: none; }
+  .tell .fix { color: var(--dim); font-size: 13px; }
+  .tell .fix b { color: var(--fg); font-weight: 600; }
+
+  /* Side by side */
+  .casehead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; align-items: baseline; }
+  .voice { background: var(--card); border-radius: 16px; padding: 20px 24px; margin: 20px 0 8px; max-width: 880px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 40px; }
+  .colhead { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 16px 0 12px; border-bottom: 1px solid var(--rule); }
+  .row { display: contents; }
+  .row > div { padding: 22px 0; border-bottom: 1px solid var(--rule); }
+  .row .sec { grid-column: 1 / -1; padding: 28px 0 0; border: 0; }
+  .now { color: var(--dim); }
+  .now h3 { color: var(--dim); }
+  .new h3 { font: 300 24px/1.25 var(--font-serif); }
+  .new .title { font: 300 32px/1.15 var(--font-serif); }
+  .now .title { font: 300 26px/1.2 var(--font-serif); }
+  ul { margin: 0 0 12px; padding-left: 18px; }
+  li { margin: 0 0 6px; }
+  .why { display: block; margin-top: 10px; font: 400 11px/1.5 var(--font-mono); color: var(--dim); }
+  .ask { border: 1px dashed var(--dim); border-radius: 6px; padding: 1px 6px; font: 400 12px/1.5 var(--font-mono); color: var(--dim); }
+  .stand { text-decoration: underline dotted; text-underline-offset: 4px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cards > div { background: var(--card); border-radius: 14px; padding: 16px; }
+  .cards h4 { margin: 0 0 6px; font: 600 14px/1.35 var(--font-sans); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0 12px; }
+  .two > div { background: var(--card); border-radius: 14px; padding: 16px; font-size: 13px; }
+  .two .span { font-family: var(--font-mono); font-weight: 400; font-size: 12px; }
+  .hmw { font: 300 20px/1.35 var(--font-serif); font-style: italic; }
+  .list2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  ol.qs li { margin-bottom: 10px; }
+
+  @media (max-width: 900px) {
+    .doc { padding: 40px 16px 120px; }
+    h1 { font-size: 34px; }
+    .panel { padding: 20px 16px; }
+    .cols { grid-template-columns: 1fr; }
+    .colhead { display: none; }
+    .row .now::before { content: 'Live'; }
+    .row .new::before { content: 'Andreas version'; }
+    .row .now::before, .row .new::before { display: block; font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin-bottom: 8px; }
+    .row .now { border-bottom: 0; padding-bottom: 0; }
+    .cards, .two, .list2 { grid-template-columns: 1fr; }
+    table, thead, tbody, tr, td { display: block; }
+    thead { display: none; }
+    td { border: 0; padding: 4px 0; }
+    tr { border-top: 1px solid var(--rule); padding: 12px 0; }
+  }
+</style>
+</head>
+<body>
+<main class="doc">
+  <p class="label">Review · 25 Nov 2026 · nothing on the site has changed</p>
+  <h1>How human the site <em>sounds</em></h1>
+  <p class="dek">Every case study and the site's short copy, read for the patterns that make writing sound machine-made. Then the three cases at the top of the home page, rewritten in the voice of andreas.vision's Schneider case and set beside what's live.</p>
+  <ul class="toc">
+    <li><a href="#verdict">01 Verdict</a></li>
+    <li><a href="#tells">02 The tells</a></li>
+    <li><a href="#scores">03 Case by case</a></li>
+    <li><a href="#site">04 The rest of the site</a></li>
+    <li><a href="#okta">05 Okta IAM</a></li>
+    <li><a href="#privacy">06 Privacy</a></li>
+    <li><a href="#ads">07 Ads consent</a></li>
+    <li><a href="#questions">08 What I need from you</a></li>
+  </ul>
+
+  <!-- 01 -->
+  <section class="part" id="verdict">
+    <p class="label">01 · Verdict</p>
+    <h2>Short and clean, but it sounds like a summary of you, not you.</h2>
+    <div class="panel">
+      <p>The site has already lost most of the obvious machine words: no "seamless", no "leverage", no "passionate". What's left is subtler, and a design leader reading properly will still feel it:</p>
+      <ul>
+        <li><b>Every sentence lands.</b> Paragraphs end on a neat line ("That was the trade…", "Neither side oversells."). People don't write like that for a whole page. Andreas lets most sentences just carry a fact and saves the punchline for one or two.</li>
+        <li><b>There's no scene.</b> No room, no day, no person in it. Andreas opens with "three of us had three weeks"; ours opens with a problem statement.</li>
+        <li><b>The gaps are too tidy.</b> When we admit something, it's a polished confession. Andreas just says it: "We never sat with an operator, and it's the biggest gap in this project."</li>
+        <li><b>The numbers are too round to be anyone's.</b> In Okta IAM, Ads consent, Debit Card and the Okta Integration Platform most numbers are stand-ins written to sound plausible. That's the biggest risk on the site. Nothing reads more like AI to an interviewer than a number you can't explain.</li>
+        <li><b>Privacy overcorrected.</b> It's the most honest case, but it's compressed into notes ("A list of controls in legal language, with no structure underneath."). No one is speaking. Human doesn't mean clipped.</li>
+      </ul>
+      <p>The fix is less about word choice than about what's in the sentences: who, when, where, what went wrong, and what you'd say if someone asked "and then what?". Some of that only you know, so the rewrites below mark those spots instead of making them up.</p>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section class="part" id="tells">
+    <p class="label">02 · The tells</p>
+    <h2>Nine patterns, with the lines they show up in</h2>
+    <div class="tells" style="margin-top:24px">
+      <div class="tell">
+        <p class="label">1 · The closing aphorism</p>
+        <q>That was the trade — a slower, uglier build, in exchange for never asking a customer to stop working.</q>
+        <q>A checkup that nags undoes the trust it is meant to build.</q>
+        <p class="fix"><b>Fix:</b> end on the fact. Keep at most one line like this per case, where it's earned.</p>
+      </div>
+      <div class="tell">
+        <p class="label">2 · "X, not Y"</p>
+        <q>The system as a contract, not a library. · I designed for confidence, not speed. · Fail at the field, not at the end.</q>
+        <p class="fix"><b>Fix:</b> say what you did. The contrast is the most common AI rhythm there is; it appears 6–9 times per 1,000 words in Okta IAM, Chase Pay and the Integration Platform.</p>
+      </div>
+      <div class="tell">
+        <p class="label">3 · Always three</p>
+        <q>Renewal risk · Implementation cost · A frozen roadmap</q>
+        <p class="fix"><b>Fix:</b> every "What was at stake" and "What had to be solved" has exactly three points with two-word titles. Real problems come in twos and fives. Use the number there is.</p>
+      </div>
+      <div class="tell">
+        <p class="label">4 · Em dashes</p>
+        <q>…support volume on the four highest-traffic admin flows, and — the one that reached the executive staff — deals where…</q>
+        <p class="fix"><b>Fix:</b> about 10 per 1,000 words in Okta IAM, the Integration Platform, Chase Pay and the archive. Use a full stop or a comma.</p>
+      </div>
+      <div class="tell">
+        <p class="label">5 · "Genuinely", "actually"</p>
+        <q>That is genuinely good news and genuinely bad news.</q>
+        <q>What the rebuilt surfaces actually do.</q>
+        <p class="fix"><b>Fix:</b> cut. If it's true it doesn't need the push.</p>
+      </div>
+      <div class="tell">
+        <p class="label">6 · The polished confession</p>
+        <q>…and that was my sequencing, not their capacity.</q>
+        <p class="fix"><b>Fix:</b> reflections should sound like you talking after the project, not a performance review. "I'd sit with an operator first" beats a balanced sentence about ownership.</p>
+      </div>
+      <div class="tell">
+        <p class="label">7 · Numbers no one measured</p>
+        <q>Admin experience was surfacing in 1 of every 4 enterprise renewal conversations.</q>
+        <q>64 shared components, consolidated from 212 one-off variants.</q>
+        <p class="fix"><b>Fix:</b> swap for your real figure, or say what you saw instead ("support kept forwarding the same three tickets"). A real small number beats a plausible big one.</p>
+      </div>
+      <div class="tell">
+        <p class="label">8 · Abstract nouns</p>
+        <q>seam · surface · model · registers · legible · through-line</q>
+        <p class="fix"><b>Fix:</b> name the thing. "The screen where one squad's work met another's" instead of "the seams".</p>
+      </div>
+      <div class="tell">
+        <p class="label">9 · One heading shape</p>
+        <q>The first structure tested well and cost a tap. I kept the groups and dropped the extra layer.</q>
+        <p class="fix"><b>Fix:</b> nearly every heading is two short sentences, setup then resolution. Andreas mixes: a claim, a number, a plain label ("Light or dark"), a question.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section class="part" id="scores">
+    <p class="label">03 · Case by case</p>
+    <h2>How far each case is from human, and how it should sound</h2>
+    <p class="dek">My read, 10 being "reads as written by AI". It weighs the tells above, the stand-in numbers, and whether a person is present in the writing.</p>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Case</th><th>AI-ness</th><th>What gives it away</th><th>The voice to aim for</th></tr></thead>
+        <tbody>
+          <tr><td>Okta IAM</td><td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="score">8</span></td><td>Stand-in numbers throughout, a manager's voice, every tell above. The craft text talks about bulk admin actions, but the boards show Auth0 onboarding and illustrations.</td><td><b>Someone who was on call for it.</b> Calm, practical, admin's-eye. Fewer claims, more "this is what an admin was doing at 2am".</td></tr>
+          <tr><td>Okta Integration Platform</td><td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="score">8</span></td><td>Highest em-dash count, slogans ("Build it once, extend it forever"), abstract framework talk, stand-in numbers.</td><td><b>A developer explaining to a developer.</b> What an ISV typed, what came back, how many times.</td></tr>
+          <tr><td>Ads consent</td><td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></span><span class="score">6</span></td><td>Clean, but every impact number is a stand-in and the lines are a little too wise.</td><td><b>The room where it got decided.</b> Growth wanted a pre-ticked box. Say so, plainly, and what you put on the table instead.</td></tr>
+          <tr><td>Debit Card</td><td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></span><span class="score">6</span></td><td>Stand-in hard call and reflection; "designed for confidence, not speed".</td><td><b>The person signing up.</b> Follow one applicant through the screens and where 68% of them left.</td></tr>
+          <tr><td>Chase Pay</td><td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i></span><span class="score">5</span></td><td>Real, specific story (Dallas, twelve customers, dates), dressed in "genuinely", "the whole detour", "three registers".</td><td><b>Already close.</b> Strip the flourishes; the store study carries it. Your favourite fix ("briefly", "shortly") is the most human paragraph on the site.</td></tr>
+          <tr><td>PayPal Privacy</td><td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="score">4</span></td><td>Sourced from your deck, so the facts hold. But it's compressed into notes, with no one speaking.</td><td><b>A conversation with a customer.</b> Warm and plain, built round one person's question: "what is PayPal doing with my data?"</td></tr>
+          <tr><td>Data rights</td><td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="score">4</span></td><td>Same as Privacy: true, clipped.</td><td><b>Practical and kind.</b> Someone who wants to delete one thing without leaving.</td></tr>
+          <tr><td>Scan &amp; Go</td><td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="score">4</span></td><td>Great specifics (bananas that need weighing, a 12-pack of Topo Chico), then slogan reflections ("Edge cases are the product").</td><td><b>Field notes from a store aisle.</b> Keep the bananas; drop the slogans.</td></tr>
+          <tr><td>ID check</td><td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="score">4</span></td><td>Numbers from your deck; colon-heavy, list-like.</td><td><b>Reassuring, step by step.</b> Someone holding their ID up to a phone.</td></tr>
+          <tr><td>Archive (9 cases)</td><td><span class="meter"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="score">2</span></td><td>Your own old copy. A few em dashes from edits.</td><td><b>Leave as is.</b> Only swap the em dashes.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section class="part" id="site">
+    <p class="label">04 · The rest of the site</p>
+    <h2>Where else to change, and what to leave</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Where</th><th>Live</th><th>Suggested</th></tr></thead>
+        <tbody>
+          <tr><td>Hero line<br><span class="label">index.astro</span></td><td>"I ship, I nudge, I craft, from systems and strategy to the last stubborn pixel."</td><td>The three verbs read as a tagline. Optional, yours to word: "I've spent ten years making money and identity software make sense, down to the last stubborn pixel." Keeps "pixel" for the preloader.</td></tr>
+          <tr><td>Now<br><span class="label">site.ts</span></td><td>"Right now I'm thinking about trust: specifically, how much of it AI tools have actually earned versus assumed. Watching how background agents…"</td><td>The second sentence has no subject and loses the thread. <span class="ask">yours to write</span> Something like: "Lately I keep thinking about trust: how much of it AI tools have earned, and how much we've just handed them."</td></tr>
+          <tr><td>Small talk<br><span class="label">talk.ts</span></td><td>"Complicated systems, made usable, down to the last pixel."</td><td>Cut it. The first line already answers the question.</td></tr>
+          <tr><td>Card taglines<br><span class="label">work.ts</span></td><td>"Brought Chase Pay into Walmart Pay, validated with real customers in-store."<br>"A ground-up rebuild of the admin console, shipped under live tenants."<br>"One extensible framework replaced four bespoke integration review flows."</td><td>"Chase Pay in Walmart Pay, tested with twelve customers in a Dallas store."<br>"Okta's admin console, rebuilt while companies kept using it."<br>"One way to publish an integration to Okta, instead of four."</td></tr>
+          <tr><td>Moss<br><span class="label">ask.ts</span></td><td>His voice is from your brief and reads human.</td><td>Leave it. Only his facts change: "hardest call" and "which first" quote the cases, so they follow whatever we settle below.</td></tr>
+          <tr><td>About</td><td>Your bio, in your words.</td><td>Leave it.</td></tr>
+          <tr><td>Locked page<br><span class="label">LockedGate, cases.ts</span></td><td>"Entitlements, role management, OIN publishing and developer onboarding"</td><td>Fine as a scope line. The outcome line borrows Okta's company size; say it's theirs, or swap in yours when cleared.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 05 OKTA -->
+  <section class="part" id="okta">
+    <p class="label">05 · Side by side</p>
+    <div class="casehead"><h2>Okta IAM</h2><span class="label">AI-ness 8 → aim 3</span></div>
+    <div class="voice"><p class="label">How it should sound</p><p>Someone who's been paged at 2am because an admin couldn't remove access fast enough. Practical, admin's-eye, short on claims. The pride is in "no customer had to stop", said once. And the craft has to match the pictures we actually have.</p></div>
+    <div class="panel">
+      <div class="cols">
+        <div class="colhead label">Live</div><div class="colhead label">Andreas version</div>
+
+        <div class="row"><div class="sec label">Title and opening</div></div>
+        <div class="row">
+          <div class="now"><p class="title">Rebuilding IAM for enterprise admins</p><p>Okta IAM and developer tools: rebuilding the enterprise admin console underneath live tenants — entitlements, role management, OIN publishing and developer onboarding, and the one model four squads designed to.</p></div>
+          <div class="new"><p class="title">Okta's admin console, rebuilt in place over 15 months, with no migration day</p><p>Okta's admin console is where an IT team adds people, gives them apps, and takes access away. It was designed for companies with a few hundred employees, and Okta was now selling it to companies with tens of thousands. Six designers had fifteen months to rebuild it while every one of those companies kept using it.</p><p class="hmw">How might we rebuild the screen an admin opens when something has gone wrong, without asking them to relearn it on our schedule?</p><span class="why">Why: a scene and a constraint before any claim. The bet as one question, as Andreas does.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">The problem</div></div>
+        <div class="row">
+          <div class="now"><h3>Okta was closing enterprise deals on a console built for smaller companies.</h3><p>The administrative surfaces had been designed for an admin managing a few hundred users. The accounts Okta was now winning had tens of thousands, nested org structures, and compliance teams auditing every permission change. The same screens were being asked to do a job an order of magnitude larger.</p><p>It showed in the places that cost money: onboarding time in enterprise implementations, support volume on the four highest-traffic admin flows, and — the one that reached the executive staff — deals where a competitor demoed better against the same requirements.</p><p><b>What was at stake:</b> Renewal risk · Implementation cost · A frozen roadmap</p></div>
+          <div class="new"><h3>An admin at a big company rarely looks at one person. The console only knew how to show one.</h3><p>At a few hundred users you can open each person's page. At forty thousand you're asking "everyone in Finance who still has Salesforce" and changing all of them at once. The console made you do that one page at a time.</p><p><span class="ask">a real task, and how long it took</span> is what that looked like in the research.</p><p>Meanwhile four squads were fixing their own screens in parallel, each in its own words. Every release pulled them further apart.</p><span class="why">Why: one concrete task instead of "an order of magnitude larger". Two problems, not a forced three. The stand-in "1 in 4 renewals" is dropped until there's a real number.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">Constraints and the people</div></div>
+        <div class="row">
+          <div class="now"><p>(Not a section. Constraints are spread through the hard call; there's no "who reads this".)</p></div>
+          <div class="new"><h3>Constraints</h3><ul><li>No migration day. Security teams open this console during an incident.</li><li>Old and new screens would sit side by side for over a year, so the design system had to speak both.</li><li>Keyboard and screen reader from the first build, tested with screen-reader users before anything shipped.</li></ul>
+            <div class="two"><div><p class="label">IT admin</p><p class="span">Minutes, mid-incident</p><p>Who has access to this, and how do I take it away?</p></div><div><p class="label">Developer on Auth0</p><p class="span">The first ten minutes</p><p>Where do I start, and does this know I've done it before?</p></div></div>
+            <span class="why">Why: Andreas's two readers, one per side of your scope (admin console and developer onboarding), so the craft section has someone to answer to.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">The hard call</div></div>
+        <div class="row">
+          <div class="now"><h3>We rebuilt underneath live tenants instead of behind a migration.</h3><p>The clean version of this project is a new console behind a flag, a migration window, and a cutover. Engineering wanted it. It is easier to build, easier to test, and easier to demo.</p><p>I argued against it. Our largest customers could not take a cutover on our schedule — an identity console is the thing you touch when something has gone wrong…</p><p>…That was the trade — a slower, uglier build, in exchange for never asking a customer to stop working.</p><p class="q">"An identity console is what you open when something has already gone wrong. That is not a screen you get to move on your own schedule."</p></div>
+          <div class="new"><h3>No new console, no cutover date</h3><p>Engineering wanted the clean version: a new console behind a flag, a migration window, a switch-over. It's easier to build and much easier to demo.</p><p>I pushed back. Nobody opens an identity console for fun. They open it because someone left the company or something leaked, and that's the worst day to find every button has moved. So we rebuilt one area at a time, on the live product.</p><p>It was slower and messier. Every new screen had to sit next to old ones, and our design system designer spent most of two quarters keeping both working. I'd make the same call again. I'd staff it differently (last section).</p><span class="why">Why: the quote and the aphorism say the same thing twice; one plain version with an example ("someone left the company") does it once. Ends on a fact and a pointer, not a maxim.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">How the work got made</div></div>
+        <div class="row">
+          <div class="now"><h3>Four squads had been drifting apart. I built the three things that held them together.</h3><p><b>A critique with a decision at the end.</b> … <b>The system as a contract, not a library.</b> … <b>Research on a rota.</b> …</p><p>The part I would not compromise on was that squad designers made their own calls. My review was at the seams…</p></div>
+          <div class="new"><h3>Four squads, one weekly crit, and a rule about components</h3><p>Each squad had a designer who owned their area and made their own calls. I looked at the places where one squad's screen handed over to another's, because that's where the console had drifted.</p><p>Three habits did most of the work. Crit ended with a decision and a name next to it. A component only joined the system once two squads needed it. And every designer sat in on one admin research session a month, so arguments about what admins do got shorter.</p><p><span class="ask">one real moment: a disagreement between squads and how it got settled</span></p><span class="why">Why: same three habits, without slogan titles. Andreas's teamwork section has one specific moment ("I sent the dashboard at 80% and said the scope had doubled"); this needs yours.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">The craft</div></div>
+        <div class="row">
+          <div class="now"><h3>What the rebuilt surfaces actually do.</h3><p>The through-line across all four surfaces: an admin at enterprise scale is almost never looking at one object… The rebuild is built around the set.</p><p>(Then five boards: Auth0 onboarding path, onboarding moments, light and dark, illustration system, character guidelines.)</p></div>
+          <div class="new"><h3>Developer onboarding starts with one question</h3><p>A new Auth0 tenant asks one thing first: are you new to Auth0, or have you used it before? Each answer gets its own path, so someone who's set up ten tenants isn't walked through what a tenant is.</p><p>Past the first screen, the same idea: a feedback prompt where people already look, an introduction to Organizations before you need it, and an empty SSO page that says what to do next.</p><p>The illustrations are a small system of their own: line art in blue, orange and green, with rules for drawing people.</p><p><span class="ask">entitlements or role-management screens, if cleared</span> The case says these were yours end to end, and there's no picture of them yet.</p><span class="why">Why: the old text describes work the pictures don't show. A hiring manager notices. Say what the boards show, and flag the missing evidence.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">Impact</div></div>
+        <div class="row">
+          <div class="now"><p><b>-32%</b> admin task time · <b>-27%</b> support volume · <b>9 wks</b> implementation, down from 14 · <b>64</b> components from 212 · <b>0</b> migration windows</p><p>The number I care about most is the last one…</p></div>
+          <div class="new"><p><span class="stand">-32%</span> admin task time on the four busiest flows · <span class="stand">9 weeks</span> to set up a new enterprise customer, down from <span class="stand">14</span> · <b>0</b> customers asked to migrate</p><p>The last one is the one I'd talk about in an interview. <span class="ask">replace dotted numbers with yours, or drop them</span></p><span class="why">Why: five numbers, four of them stand-ins, read as generated. Fewer, real ones read as yours.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">Reflection</div></div>
+        <div class="row">
+          <div class="now"><p><b>I underestimated the seam.</b> One designer held the design system across two vocabularies for two quarters… It was the closest anyone on the team came to burning out, and that was my sequencing, not their capacity.</p><p><b>I built the executive case too late.</b> …</p></div>
+          <div class="new"><div class="cards"><div><p class="label">Team</p><h4>Two people on the system, from day one</h4><p>One designer carried both versions of the system for two quarters. It was the closest anyone came to burning out, and it was my plan that put them there.</p></div><div><p class="label">Funding</p><h4>Ask leadership sooner</h4><p>I waited for research before making the case. The console was already losing deals, and the research wasn't going to change the answer. It cost us a quarter.</p></div></div><span class="why">Why: Andreas's card format: a one-word tag, a plain title, two lines. Same honesty, less polish.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 PRIVACY -->
+  <section class="part" id="privacy">
+    <p class="label">06 · Side by side</p>
+    <div class="casehead"><h2>PayPal Privacy</h2><span class="label">AI-ness 4 → aim 2</span></div>
+    <div class="voice"><p class="label">How it should sound</p><p>A conversation with one customer who wants to know what PayPal does with their data. Warm, plain, full sentences. The facts are already right; this case needs a person in it, not new claims.</p></div>
+    <div class="panel">
+      <div class="cols">
+        <div class="colhead label">Live</div><div class="colhead label">Andreas version</div>
+
+        <div class="row"><div class="sec label">Title and opening</div></div>
+        <div class="row">
+          <div class="now"><p class="title">Privacy settings 80 million people can read, and 60% fewer calls about them</p><p>75% of settings traffic stopped on the first page. I owned the design from the first card sort to launch in early 2023: every setting one tap away, saying what it does, and still meeting GDPR and CCPA.</p></div>
+          <div class="new"><p class="title">Privacy settings people can read, and 60% fewer calls about them</p><p>PayPal's privacy page was a list of controls in legal language, and three out of four visits never got past it. Over two years, with four other designers, I rebuilt it so every setting is one tap away and says what it's set to. More than 80 million people use it, and it still meets GDPR and CCPA on every screen.</p><p class="hmw">How might we give people privacy settings they can read and change in one tap, and meet GDPR and CCPA on the same screens?</p><span class="why">Why: the title gets shorter and the 80 million moves into a sentence. "Three out of four" reads like a person; "75% of settings traffic" reads like a dashboard.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">The situation</div></div>
+        <div class="row">
+          <div class="now"><h3>75% of settings traffic stopped on the first page, and every new rule had nowhere to go.</h3><p>A list of controls in legal language, with no structure underneath. New features and new GDPR and CCPA rules had nowhere to go. Customer service heard the same privacy questions again and again.</p><p class="q">"It's not explained clearly. I have to fill in the holes with my own prior knowledge."</p></div>
+          <div class="new"><h3>One list, and it kept growing</h3><p>Every new feature and every new rule added another row to the same list. Nothing grouped them, so nobody could find anything, and customer service answered the same privacy questions every week.</p><p>One person in our research put it better than we could:</p><p class="q">"It's not explained clearly. I have to fill in the holes with my own prior knowledge."</p><span class="why">Why: the fragment gets a subject and a verb. The quote gets a line of setup, so it's someone talking, not a pull quote dropped in.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">Research, with the gap where it happened</div></div>
+        <div class="row">
+          <div class="now"><h3>Four structures, three prototypes, and only one cleared the 70% bar.</h3><p>(Funnel: 1 year → 4 → 3 → 1. Bars: 74, 68, 67.)</p><p><b>What we missed:</b> The card sorts settled where every setting goes, not what it's called. Two of the four findings were words: deals against ads, and "Correct your data". We tested the labels after the structure.</p></div>
+          <div class="new"><h3>Four structures went in. One came out.</h3><p>We started from a year of settings traffic, so the tasks people do most would come first. Four structures went into closed card sorts with 20 tasks. Three made it to prototypes, and we set ourselves a bar: 70% of people finish the task, on their own. Only one cleared it, at 74%. The others came in at 68 and 67, close enough to argue about, so we didn't.</p><p>The card sorts told us where every setting goes. They didn't tell us what to call it, and that's where the next round caught us: people couldn't tell deals from ads, and read "Correct your data" as something else. We'd tested the words too late.</p><span class="why">Why: the numbers stay. One dry aside ("so we didn't"), and the gap is said in the first person, in the middle of the story, the way Andreas says his.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">The hard call</div></div>
+        <div class="row">
+          <div class="now"><h3>The first structure tested well and cost a tap. I kept the groups and dropped the extra layer.</h3><p>The first version came straight from the card sorts. Four tiles… In rapid research the groups worked. The sheets didn't, and some labels failed too. So the second version kept the groups and dropped the sheets…</p></div>
+          <div class="new"><h3>Keep the groups, lose the extra tap</h3><p>The first version came straight from the card sorts: four tiles, each opening a sheet of its settings. People found their way by group just fine. But every task meant opening a sheet first, on every visit. So I kept the groups as three headings on one page and dropped the sheets. Two taps to any setting became one.</p><span class="why">Why: same decision, one heading sentence instead of two, and the result (two taps → one) said as part of the story.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">What shipped</div></div>
+        <div class="row">
+          <div class="now"><h3>The second version put art first and the settings second. What shipped is the settings.</h3><p>(Five findings: Art first · No state · Blue card · Dead ends · Words.)</p></div>
+          <div class="new"><h3>The prettiest version didn't ship</h3><p>The second version put an illustration on top of every screen. On a page where three out of four visits stopped, the first setting started halfway down. Rows said what a setting does but not what it was set to, and the yearly reminder asked a question and then sent you somewhere else to answer it.</p><p>What shipped is plainer: settings first, what each is set to on the right, and every explanation ending on its switch. <span class="ask">what decided it: a test, a review, or a call you made?</span></p><span class="why">Why: a heading with a small admission in it. The reasons stay; they still need your confirmation, as cases.ts says.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">Teamwork</div></div>
+        <div class="row">
+          <div class="now"><p>(Scope rows: What I owned · Research · How the designers worked · Who I worked with · The constraint. The teamwork moment is a marked stand-in.)</p></div>
+          <div class="new"><h3>Five designers on one set of screens</h3><p>Five of us were drawing the same pages, so I set up one file structure, a log of every change, and a sprint site everyone could check. I mentored two of the designers on mobile patterns. A content strategist was on every string, and two privacy officers read every screen before it shipped.</p><p><span class="ask">your real moment, to replace the stand-in: a time legal or a team pushed back, and what you did</span></p><span class="why">Why: the rows become two sentences about how five people worked. The moment Andreas leans on is the one we don't have yet.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">Impact and reflection</div></div>
+        <div class="row">
+          <div class="now"><h3>60% fewer support calls about privacy, on settings now used by more than 80 million people.</h3><p><b>60%</b> fewer support calls · <b>4.7/5</b> from 150 users</p><p><b>Test the words with the groups.</b> … <b>Go rougher before high fidelity.</b> …</p></div>
+          <div class="new"><h3>Fewer calls, and people liked it</h3><p>After launch in early 2023, support calls about privacy settings dropped 60%. 150 people rated the new settings, and the average was 4.7 out of 5. <span class="ask">how the 60% was measured, and over what period</span></p><div class="cards"><div><p class="label">Words</p><h4>Test labels with the groups</h4><p>The structure held from the start. The words failed later. I'd bring the content strategist into the first card sort.</p></div><div><p class="label">Fidelity</p><h4>Go rougher, sooner</h4><p>Two of three high-fidelity prototypes missed the bar. Clickable wireframes would have told us that for a lot less work.</p></div></div><span class="why">Why: the heading stops repeating the title. The numbers stay, said as a sentence.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 ADS -->
+  <section class="part" id="ads">
+    <p class="label">07 · Side by side</p>
+    <div class="casehead"><h2>Ads consent</h2><span class="label">AI-ness 6 → aim 3</span></div>
+    <div class="voice"><p class="label">How it should sound</p><p>Straight about the pressure. Growth wanted a pre-ticked box, legal wanted consent that holds up, and you put a fair ask on the table. Say it like you'd say it across a desk. Every impact number here is a stand-in, so the voice can't lean on them yet.</p></div>
+    <div class="panel">
+      <div class="cols">
+        <div class="colhead label">Live</div><div class="colhead label">Andreas version</div>
+
+        <div class="row"><div class="sec label">Title and opening</div></div>
+        <div class="row">
+          <div class="now"><p class="title">Privacy-first ad personalization</p><p>PayPal interest-based ads: moving ad data sharing from opted in by default to asking first, plus the Auto Privacy Advisor, a proposed checkup that brings privacy settings to people.</p></div>
+          <div class="new"><p class="title">PayPal stopped sharing ad data until people said yes, and <span class="stand">41%</span> did</p><p>PayPal shared some customer data with ad partners like Facebook and Google, and everyone was opted in unless they found the setting. About 1% ever did. In 2023 compliance flipped the default: no sharing until a customer agrees. I designed how PayPal asks.</p><p class="hmw">How might we ask for consent people can say yes to and mean it, when the easiest yes is a pre-ticked box?</p><span class="why">Why: the outcome in the title, as Andreas and your Privacy case do. "Privacy-first ad personalization" is a category label. Use it only once the 41% is real; otherwise "PayPal stopped sharing ad data until people said yes".</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">The problem</div></div>
+        <div class="row">
+          <div class="now"><h3>Everyone was opted in to ad data sharing, and almost no one knew it.</h3><p>(Metrics: ~1% opted out · ~99% would leave ad audiences.)</p><p><b>What had to be solved:</b> Consent people mean · A setting people can find · Honest about what changes</p></div>
+          <div class="new"><h3>Ninety-nine in a hundred people were about to drop out of ad audiences</h3><p>Once the default flipped, everyone who hadn't said yes was out. That was nearly everyone. Marketing felt that number immediately.</p><h3>Constraints</h3><ul><li>Compliance set the default. Legal read every word of the ask.</li><li>Turning sharing off doesn't stop PayPal ads. The setting had to say so.</li><li>The ads settings would grow, so the structure had to take more options later.</li></ul><span class="why">Why: the stake told from the other side of the table, which is what makes the hard call a hard call. The three "what had to be solved" become constraints, Andreas's format.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">Research</div></div>
+        <div class="row">
+          <div class="now"><h3>Past research first, then two days of rapid research on a prototype.</h3><p><b>Start from what PayPal already knew.</b> … <b>A new structure for ads settings.</b> … <b>Test, then revise the consent flow.</b> … <b>Legal and CXR review.</b> …</p></div>
+          <div class="new"><h3>Two days, eight people</h3><p>Before drawing anything we went back through PayPal's earlier privacy research and looked at how six other apps ask. Then on 19 and 20 April 2023 the researcher and I put a prototype in front of eight customers. It's a small study, and I'd call it that. The consent flow changed after it, and a third version followed. <span class="ask">one thing someone said or did in those sessions</span></p><span class="why">Why: dates and a headcount instead of four process bullets, and the size of the study named honestly ("I won't call the reviews one").</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">The hard call</div></div>
+        <div class="row">
+          <div class="now"><h3>The ask had to be worth saying yes to, without pushing anyone into it.</h3><p>The easiest option was a pre-ticked box inside a vague "personalise your experience" screen… Legal backed it, because a nudged yes doesn't hold up as consent.</p><p>Part of the answer is in the setting's own words… Neither side oversells.</p></div>
+          <div class="new"><h3>No pre-ticked box</h3><p>Growth marketing wanted the ask inside a "personalise your experience" screen with the box already ticked. It would have kept ad audiences close to where they were, and I understood why they wanted it.</p><p>I proposed the opposite: nothing ticked, Allow and Not now the same size, and one plain sentence on what sharing means. Legal backed it. A yes someone was nudged into doesn't hold up as consent anyway.</p><p>In the sessions, <span class="stand">7 of 8</span> said they'd trust a PayPal that asked first, and the ones who chose Allow could tell us what they'd agreed to.</p><span class="why">Why: names who wanted what, gives the other side its reason, and drops "Neither side oversells."</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">The checkup (Auto Privacy Advisor)</div></div>
+        <div class="row">
+          <div class="now"><h3>A privacy checkup that comes to people, instead of waiting to be found.</h3><p>Settings only help people who go looking for them, and about 1% did. The Auto Privacy Advisor (APA) is a proposal that turns this around…</p><p><b>Not too often.</b> … <b>Not intrusive.</b> A checkup that nags undoes the trust it is meant to build. … <b>Tailored.</b> …</p></div>
+          <div class="new"><h3>If 1% find the setting, bring the setting to them</h3><p>So I proposed a checkup. Once a year a card on Data and privacy offers a few short steps: one setting each, what it means in a line, two equal answers and Not now. It borrows from Google's Privacy Checkup, and I'd rather say so than pretend otherwise.</p><p>The risk is obvious: show it too often and it's nagging. How often is the first thing it needs testing for.</p><span class="why">Why: the reference named plainly, and one risk said straight instead of three bulleted ones with a maxim in the middle.</span></div>
+        </div>
+
+        <div class="row"><div class="sec label">Impact and reflection</div></div>
+        <div class="row">
+          <div class="now"><h3>Consent people meant, at a rate that kept ads working.</h3><p><b>41%</b> opted in · <b>9</b> markets · <b>-35%</b> support contacts · APA pilot with 5%, 58% finished</p><p><b>I didn't test Not now.</b> … <b>The checkup should have started smaller.</b> …</p></div>
+          <div class="new"><h3>What happened after launch</h3><p><span class="stand">41%</span> of people who saw the ask said yes. It shipped in <span class="stand">9</span> markets. <span class="ask">which of these are real?</span></p><div class="cards"><div><p class="label">Testing</p><h4>I didn't test Not now</h4><p>We checked people understood Allow. Some read Not now as "ask me again tomorrow". One line on where to change it later would have settled that.</p></div><div><p class="label">Scope</p><h4>Start the checkup with ads only</h4><p>I proposed it with every setting in it. Ads alone would have shipped sooner and told us how often is too often.</p></div></div><span class="why">Why: "Consent people meant, at a rate that kept ads working" is a slogan. The reflections were already the most human part of this case; they barely change.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section class="part" id="questions">
+    <p class="label">08 · Before I change anything</p>
+    <h2>What I need from you</h2>
+    <div class="panel">
+      <div class="list2">
+        <div>
+          <p class="label">Decisions</p>
+          <ol class="qs">
+            <li>Do these three read like you? Too casual, too plain, or right?</li>
+            <li>Should the case pages take Andreas's sections too (Constraints, the two readers, Research with its gap), or keep our seven sections and only change the words?</li>
+            <li>Okta IAM: drop the stand-in numbers now, or keep them until you have real ones?</li>
+            <li>Change the hero line, or leave "I ship, I nudge, I craft"?</li>
+            <li>Then the other six cases in the same pass, or one at a time?</li>
+          </ol>
+        </div>
+        <div>
+          <p class="label">Only you know</p>
+          <ol class="qs">
+            <li>Okta: one real task an admin struggled with, and how long it took.</li>
+            <li>Okta: a moment two squads disagreed, and how it was settled.</li>
+            <li>Okta: can any entitlements or role-management screens be shown?</li>
+            <li>Privacy: what decided against the illustrated second version?</li>
+            <li>Privacy: your real teamwork moment, to replace the stand-in.</li>
+            <li>Ads consent: which of 41%, 9 markets, -35%, 7 of 8, 58% are real?</li>
+            <li>Ads consent: one thing someone said in the April sessions.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

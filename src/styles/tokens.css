@@ -142,15 +142,6 @@
      inside the cards rather than with their outer edge. */
   --card-pad: clamp(1.75rem, 3vw, 2.75rem);
   --card-gap: clamp(1.5rem, 3vw, 2.5rem);   /* between a card's text and its stage */
-  /* Every row in the home stack is this height, whatever the copy, so
-     the stack reads evenly. 672px = 420px + 60%. */
-  --card-h: 672px;
-  --stack-end-hold: 25vh;   /* how long the finished stack holds before it scrolls away */
-  /* A covered card dims toward black as the next one slides over it
-     (up to --stack-dim-max), the way brightness() used to, as an overlay
-     so scrolling never runs a filter. */
-  --stack-dim: #000;
-  --stack-dim-max: 0.08;
 
   --space-section: clamp(5rem, 10vw, 9rem);
   --space-band-tight: clamp(2rem, 4vw, 3.5rem);
@@ -291,6 +282,16 @@
   --pb-c7: #ab4aba;        /* violet */
 
   /* --- COMPONENT TOKENS ---------------------------------- */
+  /* Archive strings (ArchiveList.astro, /work), on request 2026-11-18,
+     "A · Catch" of experiments/archive-strings/: the hairlines between
+     archive rows catch the pointer as it crosses, bend with it up to
+     --string-pull, then slip off and ring back to straight. Unitless
+     ring speed (Hz) and damping ratio; lower damping rings longer. The
+     line keeps the --rule colour. */
+  --string-pull: 14px;
+  --string-hz: 9;
+  --string-damping: 0.07;
+
   /* Nav (Nav.astro). One line: the name on the left; the links, a
      hairline and the theme button, together on the right. */
   --nav-pad-block: 1.5rem;
@@ -465,6 +466,27 @@
   --dur-ask-breathe: 2.4s;          /* one slow fade out and back of the ellipsis */
   --ask-launch-step-1: 0.75rem;     /* 12px */
   --ask-launch-step-2: 0.6875rem;   /* 11px */
+  /* ASK DOCK — the pill after the hero (AskBubble.astro, .pixel-dock):
+     "Paper" + bar caret + types once + Moss beside, round 3 of
+     experiments/moss-cta/. Ground, ink and edge are role colours; the
+     shadow is the card's (--ask-card-shadow, re-set for dark mode). */
+  --ask-dock-inset: 1.25rem;        /* the panel's corner, so it opens where the pill was */
+  --ask-dock-gap: 0.375rem;
+  --ask-dock-moss: 4rem;            /* his width, 64px */
+  --ask-dock-lift: 1.375rem;        /* the bubble sits at his face, not his feet */
+  --ask-dock-max: min(19rem, calc(100vw - 7.5rem));   /* the line and its caret on one row from ~420px up */
+  --ask-dock-pad-y: 0.625rem;
+  --ask-dock-pad-x: 0.875rem;
+  --ask-dock-who-gap: 0.2rem;
+  --ask-dock-radius: 1rem;
+  --ask-dock-tail-radius: 0.25rem;  /* the corner nearest him */
+  --ask-dock-step: 0.875rem;        /* 14px mono */
+  --ask-dock-caret-w: 2px;
+  --ask-dock-rise: 1rem;
+  --dur-ask-dock: 520ms;
+  --dur-ask-type-char: 42ms;
+  --dur-ask-caret: 1.1s;
+  --z-ask-dock: 900;                /* over the page, under the panel's scrim (1000) */
   --pixel-bg: #17120f;
   --pixel-raised: #1e1814;
   --pixel-high: #2a221d;
@@ -608,6 +630,7 @@
 :root {
   --ground-mint: #cfe7d8;   /* PayPal Debit Card */
   --ground-apricot: #f6dcc6; /* PayPal Ads consent, as its case cover */
+  --ground-sage: #dde5cc;    /* Walmart Scan & Go (Chase Pay has Walmart's butter), 2026-11-25 */
 }
 
 /* ============================================================
@@ -709,6 +732,72 @@
 }
 
 /* ============================================================
+   HOME CARDS (ProjectCard.astro, index.astro) — on request,
+   2026-11-24, from experiments/home-explore/inspired.html ("Project
+   hue", "Words beside", "Border on hover", "Faint line", "Both", "Pill
+   on hover"), after andreas.vision's cards. Selected work as one wide
+   card (its words beside the work), then two pairs. Each card is paper
+   with its work on the project's hue (PROJECT HUES / GROUND HUES); no
+   line at rest. On hover or focus a faint oxblood line comes in, the
+   card rises a little on a soft layered shadow, the work inside grows a
+   touch, and "View case study" (the pill pair, PILL PAIR) fades up. All
+   on --ease-out over --home-card-dur. The 28px corners are a requested
+   exception to the square --radius rule, these cards only. The line is
+   a mark, never text; it's decoration (the title is what's read).
+   ============================================================ */
+:root {
+  --home-card-fill: var(--bg);
+  --home-card-line: color-mix(in srgb, #5c1712 16%, transparent);   /* oxblood, faint ("Faint line") */
+  --radius-home-card: 28px;
+  --radius-home-stage: 20px;
+  --home-card-pad: 1.5rem 1.5rem 1.75rem;
+  --home-card-gap: 1.5rem;             /* between cards, both ways */
+  --home-card-rise: -3px;              /* the card on hover */
+  --home-card-grow: 1.035;             /* the work inside it on hover */
+  --home-card-dur: 500ms;
+  --home-card-shadow:
+    0 1px 2px rgb(38 38 38 / 0.04),
+    0 8px 16px -6px rgb(38 38 38 / 0.07),
+    0 28px 48px -18px rgb(38 38 38 / 0.14);
+  --home-stage-h: 36rem;               /* 576px: the phone (502px) with air round it */
+  --home-stage-h-narrow: 27rem;        /* 432px: the narrow phone (389px) */
+  --home-card-text-gap: 1.25rem;       /* stage ↔ the words */
+  --home-tagline-max: 46ch;
+  --home-wide-cols: 0.8fr 1.6fr;       /* the wide card: words, then the work */
+  --home-wide-cols-flip: 1.6fr 0.8fr;  /* the second wide card (Scan & Go): the work, then the words */
+  --home-pair-gap: 1.5rem;             /* two phones side by side on one card */
+}
+:root[data-mode='dark'] {
+  --home-card-line: color-mix(in srgb, #c86a5e 30%, transparent);   /* the same oxblood, lifted for the dark ground */
+  --home-card-shadow:
+    0 1px 2px rgb(0 0 0 / 0.2),
+    0 8px 16px -6px rgb(0 0 0 / 0.3),
+    0 28px 48px -18px rgb(0 0 0 / 0.5);
+}
+
+/* ============================================================
+   PILL PAIR (.btn--pair in global.css) — andreas.vision's button, on
+   request (2026-11-24: "I really like the button style of the
+   inspiration"), measured off his page: an ink pill 42px tall beside a
+   round 42px arrow, 8px apart. On hover the pill grows 1.5% and the
+   arrow slides out as a fresh one slides in. Ink, never the accent.
+   Used for "View all work", the cards' "View case study" and the
+   globe's "More about me".
+   ============================================================ */
+:root {
+  --pair-h: 42px;
+  --pair-h-sm: 36px;
+  --pair-pad: 0 18px;
+  --pair-pad-sm: 0 15px;
+  --pair-gap: 8px;
+  --pair-bg: var(--fg);
+  --pair-fg: var(--bg);
+  --pair-grow: 1.015;
+  --pair-swap: 600ms;
+  --ease-pair-swap: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* ============================================================
    PHONE CARDS (ProjectCard.astro, home page "Selected work") — after
    daneden.me: each stacked card holds a phone that runs the project's flow on
    its own (a recording, her screens in sequence, or one of the coded
@@ -745,6 +834,8 @@
   --phone-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.35);
   --phone-scale: 0.8;          /* the phone as drawn in a card: 240 x 496 */
   --phone-scale-narrow: 0.62;  /* stacked cards on narrow screens: 186 x 384 */
+  --phone-scale-pair: 0.72;    /* two phones on one wide card: 222 x 452, air above and below */
+  --phone-scale-pair-narrow: 0.4;   /* the pair on narrow screens: 123 x 251, side by side within a 287px stage */
   --phone-stage-pad: clamp(1.5rem, 3vw, 2.25rem);
   --phone-lift: -6px;          /* hover: the phone rises a little */
   --dur-phone-step: 700ms;     /* one screen sliding over the last */
@@ -1059,6 +1150,7 @@
    next worked on.
    ============================================================ */
 .pixel-launch,
+.pixel-dock,
 .pixel-panel {
   --font-mono: 'Roboto Mono', ui-monospace, monospace;
   --font-display: var(--font-sans);
@@ -1145,7 +1237,7 @@
   --preloader-wait-at: 0.8;              /* while loading, it goes only this far (slats gone, last pixel waiting) */
   --dur-preloader-open: 500ms;           /* ...then it draws back to open the strip */
   --ease-preloader-open: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-preloader-max: 4000ms;           /* images still out by now count as in */
+  --dur-preloader-max: 2500ms;           /* images still out by now count as in (was 4s) */
   --dur-preloader-glide: 800ms;          /* the sentence gliding from the middle to its place */
   --ease-preloader-glide: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-preloader-focus: 1100ms;         /* each piece of the hero coming into focus */
@@ -1284,16 +1376,6 @@
 }
 
 /* ============================================================
-   CASE CARDS (CaseNumbers.astro, the metrics block in CaseBlocks.astro):
-   the headline numbers and the Impact numbers sit on the About page's
-   soft cards instead of hairlines (on request, 2026-11-14), the same
-   cards as the locked gate's. The 28px corners are an exception to the
-   square --radius rule, these blocks only. (The case snapshot's cards
-   became the head's hairline facts, CASE HEAD above.)
-   Contrast: as LOCKED GATE — --fg-dim on the card 4.5 : 1 light,
-   5.9 : 1 dark.
-   ============================================================ */
-/* ============================================================
    LOCK FROST (LockFrost.astro, SiteGate.astro): a locked case says so
    before the click (on request, 2026-11-18, "A · Frost" of
    experiments/password-lock/): hovered or focused, its picture frosts
@@ -1322,6 +1404,16 @@
   --z-site-gate: 10002;             /* above the preloader and the cursor trail */
 }
 
+/* ============================================================
+   CASE CARDS (CaseNumbers.astro, the metrics block in CaseBlocks.astro):
+   the headline numbers and the Impact numbers sit on the About page's
+   soft cards instead of hairlines (on request, 2026-11-14), the same
+   cards as the locked gate's. The 28px corners are an exception to the
+   square --radius rule, these blocks only. (The case snapshot's cards
+   became the head's hairline facts, CASE HEAD above.)
+   Contrast: as LOCKED GATE — --fg-dim on the card 4.5 : 1 light,
+   5.9 : 1 dark.
+   ============================================================ */
 :root {
   --case-card: var(--locked-card);
   --radius-case-card: var(--radius-locked-card);
@@ -1612,4 +1704,38 @@
   --work-read: 1300ms;                   /* a screen stays this long before the next tap */
   --work-first: 600ms;                   /* hover → first tap */
   --work-hold: 1800ms;                   /* the last screen, before it starts again */
+}
+
+/* ============================================================
+   GLOBE STORY (GlobeStory.astro, home page, between the hero and
+   Selected work) — andreas.vision's globe sequence, step for step, on
+   request (2026-11-23; picked in experiments/espresso-page as "Like the
+   reference", "Table wood", "Alive, turning", "Smooth", "Rounded"). A
+   pixel globe drawn from a real map (public/images/globe/land.png) comes
+   up under the hero, fills the screen on Bangalore with Moss standing
+   there, pulls back, turns while lines run to where her companies are
+   from and Moss travels them, shows one line, then closes on the globe,
+   which shrinks to a square and lands as the full stop of "Selected work.".
+   Its colours are her painting's table, light: like project hues they
+   belong to the object, so they stay the same in dark mode, and they
+   are never page chrome. The heading on the wood is ink, 11 : 1.
+   ============================================================ */
+:root {
+  --globe-ground: #eccaa6;        /* the table's wood, light: the stage once the globe fills it */
+  --globe-sea: #eccaa6;
+  --globe-sea-rim: #e0b88f;       /* the sea at the globe's edge */
+  --globe-shelf: #f5dcc2;         /* shallow water along the coasts */
+  --globe-land: #9e6743;          /* the wood's darker grain */
+  --globe-land-rim: #b9805a;
+  --globe-line: #5a3520;          /* the lines between places */
+  --globe-text: #2f1c10;
+  --globe-accent: #9d2f16;        /* "untangle": her sweater's rust, 5.4 : 1 on the wood */
+  --globe-chip: #ffffff;
+  --globe-chip-ink: #2f1c10;
+  --globe-story-h: 1000vh;        /* how much scroll the story takes */
+  --globe-follow: 280ms;          /* the story eases after the scroll by this much ("Smooth") */
+  --globe-cell-fade: 220ms;       /* each pixel fades to its new colour: movement, never a flash */
+  --globe-step-h: clamp(2.25rem, 4.2vw, 3.75rem);   /* the closing line */
+  --globe-line-left: 52%;              /* the closing words, beside the globe (wide screens) */
+  --globe-copy-max: 30rem;
 }

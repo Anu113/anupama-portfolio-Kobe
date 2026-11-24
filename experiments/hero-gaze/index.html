@@ -1,0 +1,226 @@
+<!doctype html>
+<!-- Hero portrait: why she doesn't look where the cursor is, and a fix.
+
+     Before (today, HeroIllustration.astro): the pointer's place across
+     the hero band (72% x + 28% y) picks a moment of her 8s clip. But the
+     clip is a performance, not a sweep of where she looks: down at the
+     laptop → blink → eyes right → blink, head turns → wink → eyes left →
+     at you → wink → down-right → wink → down. So as the cursor moves
+     steadily right, her gaze goes right, away, left, at you, down — and
+     she blinks on the way. Up/down movement turns her too (the 28% y).
+
+     After (gaze): her frames are sorted by where her eyes point, read off
+     the 96 pictures. The cursor's direction from her face picks a pose
+     (left, at you, right, down-right at Moss, down at her laptop). She
+     moves to it through her own frames when they're near on the clip,
+     and when they aren't, she blinks and looks — a blink is how people
+     change where they look, and it hides the cut. No easing lag on the
+     choice; one short hold so a cursor on a boundary doesn't flicker.
+
+     Frames: ../hero-frames/frames (96, every 2nd frame of her clip). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero portrait — following the cursor with her eyes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#fcfcfc; --fg:#262626; --dim:#707070; --rule:#e6e6e6; --zone:rgba(38,38,38,.06); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font: 600 12px/1.8 Manrope, system-ui, sans-serif; }
+  .top { padding: 24px 48px 0; display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+  .mono { font: 400 11px/1.4 'Azeret Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em; }
+  button { font: 400 11px/1 'Azeret Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em;
+    background: transparent; color: var(--fg); border: 1px solid var(--fg); border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .readout { color: var(--dim); }
+  .hero { position: relative; display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; align-items: end;
+    padding: 48px 48px 0; min-height: calc(100vh - 160px); }
+  .hero h1 { font: 300 50px/1.15 'Crimson Pro', Georgia, serif; margin: 0 0 96px; max-width: 18ch; align-self: center; }
+  .hero h1 em { font-style: italic; }
+  .stage { position: relative; }
+  canvas { display: block; width: 100%; aspect-ratio: 420 / 588; }
+  #zones { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+  body.show-zones #zones { display: block; }
+  .notes { padding: 32px 48px 64px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; max-width: 1100px; }
+  .notes strong { display: block; font: 600 18px/1.3 Manrope, sans-serif; margin-bottom: 8px; }
+  .notes p { margin: 0; color: var(--dim); }
+  .dot { position: fixed; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: #b4482a; pointer-events: none; z-index: 5; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <div role="group" aria-label="Mapping" style="display:flex;gap:8px">
+      <button type="button" data-mode="before" aria-pressed="false">Before · scrub</button>
+      <button type="button" data-mode="after" aria-pressed="true">After · gaze</button>
+    </div>
+    <button type="button" id="zonesBtn" aria-pressed="false">Show zones</button>
+    <span class="mono readout" id="readout">—</span>
+  </div>
+
+  <section class="hero" id="band">
+    <h1><em>Hi, I’m Anupama,</em> a Staff Product Designer. I ship, I nudge, I craft, from systems and strategy to the last stubborn pixel.</h1>
+    <div class="stage" id="stage">
+      <canvas id="c" width="840" height="1176" aria-label="Illustrated portrait"></canvas>
+      <svg id="zones" aria-hidden="true"></svg>
+    </div>
+  </section>
+
+  <div class="notes">
+    <div><strong>Why she misses the cursor today</strong>
+      <p>The cursor picks a moment in her clip, not a direction. Moving right she looks right, turns away, looks left, then down; moving down turns her too. And on the way she blinks and winks, because those are in the clip.</p></div>
+    <div><strong>What changes</strong>
+      <p>The direction from her face to the cursor picks where she looks: left over the headline, at you near her, right, down at Moss, down at the laptop. Near poses play through her own frames; far ones are a blink and a look.</p></div>
+  </div>
+  <div class="dot" id="dot" hidden></div>
+
+<script>
+  // ---- frames (96 timeline) -----------------------------------------
+  const N = 96;
+  const imgs = Array.from({ length: N }, (_, i) => {
+    const im = new Image(); im.src = `../hero-frames/frames/${String(i).padStart(3, '0')}.webp`; return im;
+  });
+  const ready = Promise.all(imgs.map((im) => im.decode().catch(() => {})));
+
+  // Where her eyes point, read off the 96 pictures (see the header).
+  // `hold`: the frame for that look. `near`/`far` let a pose deepen with
+  // distance where the clip has more than one picture of it.
+  const POSES = {
+    left:      { near: 47, far: 49 },   // head to you, eyes to your left
+    atYou:     { near: 56, far: 56 },   // eyes on the viewer
+    right:     { near: 22, far: 25 },   // eyes to your right, level
+    downRight: { near: 69, far: 72 },   // down to the books, where Moss sits
+    down:      { near: 84, far: 88 },   // at her laptop (also the rest pose)
+  };
+  const BLINK = 13;              // both eyes shut, head forward
+  const NEAR_PATH = 16;          // play through the clip if the pose is this close on it
+  const FPS = 30;                // pictures a second when playing through
+  const BLINK_MS = 90;           // eyes shut for a blink-and-look
+  const DWELL_MS = 90;           // a new pose must hold this long before she moves
+  const FACE = { x: 0.43, y: 0.215 };   // her face in the frame (frame 0), as fractions
+  const DEAD = 0.16;             // within this × figure width of her face: she looks at you
+
+  // Angle bands, degrees, 0 = right of her face, +90 = straight down.
+  // Above her she looks at you (the clip has no upward look).
+  const pick = (deg) => {
+    if (deg >= -35 && deg < 20) return 'right';
+    if (deg >= 20 && deg < 62) return 'downRight';
+    if (deg >= 62 && deg < 112) return 'down';
+    if (deg >= 112 || deg < -150) return 'left';
+    return 'atYou';            // -150 … -35: above her
+  };
+
+  // ---- before: exactly today's mapping ------------------------------
+  const ease = (k, dt) => 1 - Math.pow(1 - k, dt / (1000 / 60));
+  let bTarget = 0, bCur = 0;
+
+  // ---- after: pose machine ------------------------------------------
+  let frame = 0;               // what's on screen (96 timeline)
+  let goal = 0;                // frame she's heading to
+  let pose = 'down', pending = 'down', pendingAt = 0;
+  let blinkUntil = 0, afterBlink = -1, stepAcc = 0;
+  const cyc = (a, b) => { let d = (b - a) % N; if (d > N / 2) d -= N; if (d < -N / 2) d += N; return d; };
+
+  const setGoal = (f, now) => {
+    goal = f;
+    if (Math.abs(cyc(frame, f)) > NEAR_PATH) {   // too far on the clip: blink and look
+      frame = BLINK; afterBlink = f; blinkUntil = now + BLINK_MS;
+    }
+  };
+
+  let mode = 'after';
+  let inBand = false, px = 0, py = 0, depth = 0;
+  const band = document.getElementById('band');
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const readout = document.getElementById('readout');
+  const dot = document.getElementById('dot');
+
+  const faceOnScreen = () => {
+    const r = stage.getBoundingClientRect();
+    return { x: r.left + r.width * FACE.x, y: r.top + r.height * FACE.y, w: r.width };
+  };
+
+  const poseFor = () => {
+    if (!inBand) return { name: 'down', d: 0 };
+    const f = faceOnScreen();
+    const dx = px - f.x, dy = py - f.y, dist = Math.hypot(dx, dy);
+    if (dist < f.w * DEAD) return { name: 'atYou', d: 0 };
+    return { name: pick(Math.atan2(dy, dx) * 180 / Math.PI), d: Math.min(1, (dist - f.w * DEAD) / (f.w * 1.2)) };
+  };
+
+  band.addEventListener('pointermove', (e) => { inBand = true; px = e.clientX; py = e.clientY;
+    const r = band.getBoundingClientRect();
+    const nx = Math.max(0, Math.min(1, (px - r.left) / r.width)), ny = Math.max(0, Math.min(1, (py - r.top) / r.height));
+    bTarget = (nx * 0.72 + ny * 0.28) * (N - 1);
+  });
+  band.addEventListener('pointerleave', () => { inBand = false; bTarget = 0; });
+  addEventListener('pointermove', (e) => { dot.hidden = false; dot.style.left = e.clientX + 'px'; dot.style.top = e.clientY + 'px'; });
+
+  let last = performance.now();
+  const loop = (now) => {
+    const dt = Math.min(50, now - last); last = now;
+    let shown;
+    if (mode === 'before') {
+      bCur += (bTarget - bCur) * ease(0.14, dt);
+      shown = Math.round(bCur);
+      readout.textContent = `before · frame ${shown}`;
+    } else {
+      const { name, d } = poseFor();
+      if (name !== pending) { pending = name; pendingAt = now; }
+      const want = POSES[pending];
+      const target = Math.round(want.near + (want.far - want.near) * d);
+      if (now - pendingAt >= DWELL_MS || pending === pose) {
+        // `down` exists twice in the loop (0–11 and 77–95); take the nearer.
+        let t = target;
+        if (pending === 'down' && Math.abs(cyc(frame, 4)) < Math.abs(cyc(frame, t))) t = 4;
+        if (pending !== pose || t !== goal) { pose = pending; if (t !== goal && afterBlink < 0) setGoal(t, now); }
+      }
+      if (afterBlink >= 0) {
+        if (now >= blinkUntil) { frame = afterBlink; afterBlink = -1; stepAcc = 0; }
+      } else if (frame !== goal) {
+        stepAcc += dt * FPS / 1000;
+        while (stepAcc >= 1 && frame !== goal) { stepAcc -= 1; frame = (frame + Math.sign(cyc(frame, goal)) + N) % N; }
+      } else stepAcc = 0;
+      shown = frame;
+      readout.textContent = `after · ${pose} · frame ${frame}${afterBlink >= 0 ? ' · blink' : ''}`;
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const im = imgs[shown];
+    if (im.complete) ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
+    requestAnimationFrame(loop);
+  };
+  ready.then(() => requestAnimationFrame(loop));
+
+  // ---- zones overlay (After only) -----------------------------------
+  const zones = document.getElementById('zones');
+  const drawZones = () => {
+    const r = stage.getBoundingClientRect();
+    const fx = r.width * FACE.x, fy = r.height * FACE.y, R = 2000;
+    zones.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
+    zones.style.overflow = 'visible';
+    const ray = (deg) => `${fx + Math.cos(deg * Math.PI / 180) * R},${fy + Math.sin(deg * Math.PI / 180) * R}`;
+    const lines = [-35, 20, 62, 112, -150].map((d) => `<line x1="${fx}" y1="${fy}" x2="${ray(d).split(',')[0]}" y2="${ray(d).split(',')[1]}" stroke="#262626" stroke-opacity=".25" stroke-dasharray="4 4"/>`).join('');
+    const lab = (deg, t) => { const x = fx + Math.cos(deg * Math.PI / 180) * 220, y = fy + Math.sin(deg * Math.PI / 180) * 220;
+      return `<text x="${x}" y="${y}" font-family="Azeret Mono" font-size="11" fill="#707070" text-anchor="middle">${t}</text>`; };
+    zones.innerHTML = lines + `<circle cx="${fx}" cy="${fy}" r="${r.width * DEAD}" fill="rgba(38,38,38,.06)"/>`
+      + lab(-8, 'RIGHT') + lab(41, 'DOWN-RIGHT') + lab(87, 'DOWN') + lab(170, 'LEFT') + lab(-92, 'AT YOU') + lab(0.1, '');
+  };
+  addEventListener('resize', drawZones); drawZones();
+
+  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => {
+    mode = b.dataset.mode;
+    document.querySelectorAll('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    frame = goal = 0; bCur = bTarget; afterBlink = -1;
+  }));
+  document.getElementById('zonesBtn').addEventListener('click', (e) => {
+    const on = document.body.classList.toggle('show-zones');
+    e.currentTarget.setAttribute('aria-pressed', String(on)); drawZones();
+  });
+</script>
+</body>
+</html>

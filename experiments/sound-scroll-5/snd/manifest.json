@@ -1,0 +1,25 @@
+{
+ "pencil": [
+  "pencil-1.mp3",
+  "pencil-2.mp3",
+  "pencil-3.mp3",
+  "pencil-4.mp3",
+  "pencil-5.mp3",
+  "pencil-6.mp3",
+  "pencil-7.mp3",
+  "pencil-8.mp3"
+ ],
+ "marimba": [
+  "marimba-C4.mp3",
+  "marimba-D4.mp3",
+  "marimba-E4.mp3",
+  "marimba-G4.mp3",
+  "marimba-A4.mp3"
+ ],
+ "piano": [
+  "piano-D3.mp3",
+  "piano-A3.mp3",
+  "piano-D4.mp3",
+  "piano-Gb4.mp3"
+ ]
+}

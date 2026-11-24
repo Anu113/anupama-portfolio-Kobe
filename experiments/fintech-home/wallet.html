@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A · Wallet — fintech direction mock</title>
+<!--
+  Direction A, "Wallet". Fintech in the first second, craft in one object.
+  Hero: a graphite card engraved with a pixel guilloche, tilting toward the
+  pointer with a light sheen; it flips (click, Enter, or scrolling past) to
+  its back, the "account": role, years, companies.
+  Work: a wallet stack, one card per case, in its company's hue; hover
+  lifts, click opens it in place to the screen and the outcome.
+  Beyond work: receipts, perforated slips with a photo and three lines.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f4f1; --paper:#fff; --ink:#0d0d0d; --ink-2:#5c5c58; --ink-3:#8b8b86; --line:rgba(0,0,0,.08);
+    --card:#1b1c1e; --card-2:#2a2b2e; --engrave:#5d6066;
+    --accent:#2f5bff;
+    --okta:#c9dcf2; --paypal:#e0d6ef; --walmart:#f4dc9c; --mint:#cfe8dc;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --sans:'Geist',system-ui,sans-serif; --mono:'Geist Mono',ui-monospace,monospace;
+    --gutter:clamp(20px,6vw,88px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .mono{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+
+  /* nav */
+  .nav{display:flex;justify-content:space-between;align-items:center;padding:22px var(--gutter)}
+  .nav__name{font:600 15px/1 var(--sans);letter-spacing:-.01em}
+  .nav__links{display:flex;gap:28px;font:500 14px/1 var(--sans);color:var(--ink-2)}
+  .nav__links a:hover{color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;gap:10px;height:42px;padding:0 18px;border-radius:999px;background:var(--ink);color:#fff;font:500 14px/1 var(--sans);transition:transform .3s var(--ease)}
+  .btn:hover{transform:translateY(-1px)}
+  .btn i{width:6px;height:6px;background:#3ddc84;border-radius:50%}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1.05fr 1fr;align-items:center;gap:40px;padding:72px var(--gutter) 96px;min-height:calc(100svh - 86px)}
+  .hero h1{font:500 clamp(40px,5.2vw,76px)/1.02 var(--sans);letter-spacing:-.035em;max-width:640px}
+  .hero h1 span{color:var(--ink-3)}
+  .hero p{font:400 17px/1.55 var(--sans);color:var(--ink-2);max-width:460px;margin-top:28px}
+  .hero__meta{display:flex;gap:28px;margin-top:40px}
+  .hero__meta b{display:block;font:500 13px/1.4 var(--sans);color:var(--ink);text-transform:none;letter-spacing:0;margin-top:4px}
+
+  .stage{perspective:1400px;display:grid;place-items:center;height:440px}
+  .cc{width:min(460px,86vw);aspect-ratio:1.586;position:relative;transform-style:preserve-3d;transition:transform .9s var(--ease);cursor:pointer}
+  .cc__tilt{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .25s ease-out}
+  .cc.is-flipped .cc__tilt{transform:rotateY(180deg)!important;transition:transform .9s var(--ease)}
+  .face{position:absolute;inset:0;border-radius:20px;overflow:hidden;backface-visibility:hidden;background:linear-gradient(140deg,var(--card-2),var(--card) 60%);color:#e9e9e6;
+    box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 40px 60px -30px rgba(0,0,0,.45),0 18px 30px -18px rgba(0,0,0,.35)}
+  .face canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.9}
+  .face__sheen{position:absolute;inset:0;background:radial-gradient(circle at var(--sx,30%) var(--sy,20%),rgba(255,255,255,.22),transparent 45%);mix-blend-mode:screen;pointer-events:none}
+  .front{padding:26px 28px;display:flex;flex-direction:column;justify-content:space-between}
+  .front__top{display:flex;justify-content:space-between;align-items:flex-start;position:relative}
+  .front__mark{font:600 20px/1 var(--sans);letter-spacing:-.02em}
+  .front__tier{font:500 10px/1 var(--mono);letter-spacing:.14em;color:#a9aaa6}
+  .chip{width:46px;height:34px;border-radius:7px;background:linear-gradient(135deg,#d9c58f,#a8925a);position:relative;margin-top:22px}
+  .chip::before{content:"";position:absolute;inset:7px 0;border-top:1px solid rgba(0,0,0,.25);border-bottom:1px solid rgba(0,0,0,.25)}
+  .chip::after{content:"";position:absolute;inset:0 15px;border-left:1px solid rgba(0,0,0,.25);border-right:1px solid rgba(0,0,0,.25)}
+  .front__num{position:relative;font:400 clamp(14px,1.6vw,19px)/1 var(--mono);letter-spacing:.16em;color:#d8d8d4;text-shadow:0 1px 0 rgba(0,0,0,.6),0 -1px 0 rgba(255,255,255,.12)}
+  .front__bottom{position:relative;display:flex;justify-content:space-between;align-items:flex-end}
+  .front__name{font:500 14px/1 var(--mono);letter-spacing:.12em;text-shadow:0 1px 0 rgba(0,0,0,.6),0 -1px 0 rgba(255,255,255,.12)}
+  .front__since{font:400 9px/1.3 var(--mono);letter-spacing:.1em;color:#a9aaa6;text-align:right}
+  .back{transform:rotateY(180deg);padding:0}
+  .back__strip{height:44px;background:#0a0a0a;margin-top:24px}
+  .back__rows{padding:16px 28px;display:grid;grid-template-columns:auto 1fr;gap:7px 20px;font:400 12px/1.35 var(--mono);position:relative}
+  .back__rows dt{color:#8e8f8b;letter-spacing:.08em;text-transform:uppercase;font-size:10px;padding-top:2px}
+  .back__rows dd{color:#ecece8}
+  .flip-hint{margin-top:22px;text-align:center}
+
+  /* section heads */
+  .sec{padding:120px var(--gutter)}
+  .sec__head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:48px;gap:24px}
+  .sec h2{font:500 clamp(32px,3.6vw,52px)/1 var(--sans);letter-spacing:-.03em}
+  .sec__dek{max-width:340px;color:var(--ink-2);font-size:15px}
+
+  /* wallet stack */
+  .stack{max-width:920px;margin:0 auto;padding-bottom:20px}
+  .wcard{position:relative;border-radius:22px;background:var(--hue);height:96px;overflow:hidden;margin-top:-18px;
+    box-shadow:0 -1px 0 rgba(255,255,255,.6) inset,0 -10px 24px -14px rgba(0,0,0,.18);
+    transition:height .7s var(--ease),transform .4s var(--ease),margin .7s var(--ease)}
+  .wcard:first-child{margin-top:0}
+  .wcard:not(.open):hover{transform:translateY(-10px)}
+  .wcard.open{height:500px}
+  .wcard.open + .wcard{margin-top:20px}
+  .wcard__bar{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:150px 1fr auto;align-items:center;gap:20px;width:100%;height:78px;padding:0 28px}
+  .wcard__bar:focus-visible{outline:2px solid var(--ink);outline-offset:-6px;border-radius:18px}
+  .wcard__co{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase}
+  .wcard__title{font:500 18px/1.2 var(--sans);letter-spacing:-.01em}
+  .wcard__amt{font:500 15px/1 var(--mono);background:rgba(255,255,255,.65);padding:9px 12px;border-radius:999px;white-space:nowrap}
+  .wcard__body{display:grid;grid-template-columns:1fr 280px;gap:28px;padding:6px 28px 28px;height:410px;opacity:0;transition:opacity .4s}
+  .wcard.open .wcard__body{opacity:1;transition-delay:.2s}
+  .wcard__shot{background:rgba(255,255,255,.55);border-radius:14px;overflow:hidden;position:relative}
+  .wcard__shot img{position:absolute;left:50%;top:24px;transform:translateX(-50%);width:200px;border-radius:24px;box-shadow:0 20px 40px -10px rgba(0,0,0,.25)}
+  .wcard__shot img.wide{width:92%;top:28px;border-radius:8px}
+  .wcard__facts{display:flex;flex-direction:column;gap:18px;padding-top:8px}
+  .wcard__facts p{font-size:14px;line-height:1.5}
+  .wcard__facts .mono{color:rgba(0,0,0,.55);margin-bottom:4px;display:block}
+  .wcard__link{margin-top:auto;font:500 14px/1 var(--sans);display:inline-flex;gap:8px;align-items:center}
+  .wcard__link:hover{text-decoration:underline;text-underline-offset:4px}
+
+  /* receipts */
+  .receipts{display:flex;gap:28px;overflow-x:auto;padding:12px var(--gutter) 40px;scrollbar-width:none}
+  .receipt{flex:0 0 230px;background:var(--paper);padding:20px 18px 34px;font:400 12px/1.6 var(--mono);color:#333;
+    --z:10px;
+    -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/var(--z) 100%;
+    mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/var(--z) 100%;
+    transform:rotate(var(--r));transition:transform .5s var(--ease);filter:drop-shadow(0 4px 8px rgba(0,0,0,.06))}
+  .receipt:hover{transform:rotate(0) translateY(-6px)}
+  .receipt__head{text-align:center;letter-spacing:.1em;font-size:10px;color:#777;border-bottom:1px dashed #bbb;padding-bottom:10px;margin-bottom:12px}
+  .receipt img{width:100%;aspect-ratio:1;object-fit:cover;filter:grayscale(.15) contrast(1.02);margin-bottom:12px}
+  .receipt .row{display:flex;justify-content:space-between;gap:8px}
+  .receipt .row span:first-child{overflow:hidden;white-space:nowrap}
+  .receipt .total{border-top:1px dashed #bbb;margin-top:10px;padding-top:8px;font-weight:500;color:#000}
+
+  /* footer */
+  .foot{background:var(--ink);color:#f1f1ee;padding:96px var(--gutter) 120px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:end}
+  .foot h2{font:500 clamp(36px,4.4vw,64px)/1 var(--sans);letter-spacing:-.035em;max-width:720px}
+  .foot h2 span{color:#7c7c78}
+  .foot .btn{background:#fff;color:#000}
+  .foot__row{grid-column:1/-1;display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.12);padding-top:20px;font:400 12px/1 var(--mono);color:#8a8a86;letter-spacing:.06em;text-transform:uppercase}
+
+  @media (max-width:860px){
+    .hero{grid-template-columns:1fr}
+    .nav__links{display:none}
+    .wcard__bar{grid-template-columns:1fr auto}.wcard__co{display:none}
+    .wcard__body{grid-template-columns:1fr}.wcard.open{height:720px}.wcard__body{height:auto}
+    .wcard__shot{height:300px}
+    .foot{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="nav">
+  <a class="nav__name" href="#">Anupama Mishra</a>
+  <nav class="nav__links" aria-label="Main"><a href="#work">Work</a><a href="#">About</a><a href="#beyond">Play</a></nav>
+  <a class="btn" href="#"><i></i>Open to Staff roles</a>
+</header>
+
+<section class="hero">
+  <div>
+    <h1>Product design for money, privacy and identity. <span>Down to the last pixel.</span></h1>
+    <p>I'm Anupama, a Staff Product Designer. Ten years making complicated financial and enterprise systems feel simple, at PayPal, Okta and Walmart Labs.</p>
+    <div class="hero__meta">
+      <div class="mono">Most recently<b>Staff PD, Okta</b></div>
+      <div class="mono">Before<b>PayPal · Walmart Labs</b></div>
+      <div class="mono">Based in<b>Bangalore</b></div>
+    </div>
+  </div>
+  <div>
+    <div class="stage">
+      <div class="cc" id="cc" role="button" tabindex="0" aria-pressed="false" aria-label="Anupama's card. Press to turn it over.">
+        <div class="cc__tilt" id="tilt">
+          <div class="face front">
+            <canvas id="gFront" aria-hidden="true"></canvas>
+            <div class="front__top"><span class="front__mark">A.</span><span class="front__tier">STAFF · DESIGN</span></div>
+            <div class="chip" aria-hidden="true"></div>
+            <div class="front__num" aria-hidden="true">PAYPAL &nbsp;OKTA &nbsp;WALMART</div>
+            <div class="front__bottom"><span class="front__name">ANUPAMA MISHRA</span><span class="front__since">DESIGNING<br>10+ YEARS</span></div>
+            <div class="face__sheen"></div>
+          </div>
+          <div class="face back">
+            <canvas id="gBack" aria-hidden="true"></canvas>
+            <div class="back__strip"></div>
+            <dl class="back__rows">
+              <dt>Role</dt><dd>Staff Product Designer</dd>
+              <dt>Range</dt><dd>Fintech, enterprise, developer tools</dd>
+              <dt>Scale</dt><dd>80M+ people on one launch</dd>
+              <dt>Led</dt><dd>A team of six designers, Okta</dd>
+              <dt>Seeking</dt><dd>Staff or Lead Product Designer</dd>
+            </dl>
+            <div class="face__sheen"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="mono flip-hint">Click the card to turn it over</p>
+  </div>
+</section>
+
+<section class="sec" id="work">
+  <div class="sec__head">
+    <h2>Selected work</h2>
+    <p class="sec__dek">One card per product. Open one to see the screen and what changed.</p>
+  </div>
+  <div class="stack" id="stack"></div>
+</section>
+
+<section class="sec" id="beyond" style="padding-left:0;padding-right:0">
+  <div class="sec__head" style="padding:0 var(--gutter)">
+    <h2>Off the clock</h2>
+    <p class="sec__dek">Receipts from the rest of my life.</p>
+  </div>
+  <div class="receipts" id="receipts"></div>
+</section>
+
+<footer class="foot">
+  <h2>Let's start with a conversation. <span>I write back.</span></h2>
+  <a class="btn" href="#">Email me</a>
+  <div class="foot__row"><span>© 2026 Anupama Mishra</span><span>LinkedIn · Email</span><span>Bangalore, IN</span></div>
+</footer>
+
+<script type="module">
+import { IMG, switcher, guilloche } from './shared.js';
+switcher('wallet');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* card faces: pixel guilloche engraving */
+const cardBands = [];
+for (let i = 0; i < 7; i++) cardBands.push({ R: 1, r: 1 / 24, d: .3, k: 1 - i * .05, rot: i * Math.PI / 24 / 3.5, turns: 1 });
+const draw = () => {
+  guilloche(document.getElementById('gFront'), { lines: true, cell: 2, color: '#6a6d73', alpha: .55, cx: .8, cy: .52, scale: 1.3, bands: cardBands });
+  guilloche(document.getElementById('gBack'), { lines: true, cell: 2, color: '#55585e', alpha: .45, cx: .15, cy: .7, scale: 1.1, bands: cardBands });
+};
+draw(); addEventListener('resize', draw);
+
+/* tilt + sheen */
+const cc = document.getElementById('cc'), tilt = document.getElementById('tilt');
+if (!reduce && matchMedia('(hover: hover)').matches) {
+  cc.addEventListener('pointermove', e => {
+    if (cc.classList.contains('is-flipped')) return;
+    const r = cc.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    tilt.style.transform = `rotateY(${(x - .5) * 16}deg) rotateX(${(.5 - y) * 12}deg)`;
+    cc.querySelectorAll('.face__sheen').forEach(s => { s.style.setProperty('--sx', x * 100 + '%'); s.style.setProperty('--sy', y * 100 + '%'); });
+  });
+  cc.addEventListener('pointerleave', () => { if (!cc.classList.contains('is-flipped')) tilt.style.transform = ''; });
+}
+const flip = () => { const f = cc.classList.toggle('is-flipped'); cc.setAttribute('aria-pressed', f); if (!f) tilt.style.transform = ''; };
+cc.addEventListener('click', flip);
+cc.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
+
+/* wallet stack */
+const cases = [
+  { co: 'Okta', hue: 'okta', title: 'Rebuilding IAM for enterprise admins', amt: 'Led 6', img: 'work-play/okta-desk.webp', wide: true,
+    problem: 'Admins ran identity for thousands of people through a console built for a smaller company.',
+    owned: 'The core admin surfaces: entitlements, roles, OIN publishing, developer onboarding.',
+    out: 'Shipped underneath live tenants, with no migration freeze.' },
+  { co: 'PayPal', hue: 'paypal', title: 'Privacy settings people can read', amt: '−60% calls', img: 'work-play/pv-hub.webp',
+    problem: '75% of visitors stopped on the first privacy page: legal controls, no structure.',
+    owned: 'Research and design of a new structure, card sorts to unmoderated prototypes.',
+    out: '60% fewer support calls, on settings used by more than 80 million people.' },
+  { co: 'PayPal', hue: 'mint', title: 'Delete part of your data, keep the account', amt: '76% faster', img: 'paypal-data-rights/hero.webp', wide: true,
+    problem: 'Deleting anything meant closing your PayPal account.',
+    owned: 'Get a copy, delete part, keep the account: six steps, one call on the delete screen.',
+    out: 'Data access 76% faster.' },
+  { co: 'PayPal', hue: 'paypal', title: 'An ID check people pass first time', amt: '11 rounds', img: 'work-play/id-scan.webp',
+    problem: 'A photo upload: 42% dropped off and only 68% passed first time.',
+    owned: 'A document and face scan for iOS, Android and web, with a fallback for every failure.',
+    out: 'Tested over 11 rounds of research.' },
+  { co: 'Walmart Labs', hue: 'walmart', title: 'Scan & Go, in-store', amt: '+25% basket', img: 'work-play/sg-cart.webp',
+    problem: 'No answer to the checkout queue, and in 2020 the queue became a health question.',
+    owned: 'Scan & Go end to end: scanning, cart, payment and exit, tested in stores.',
+    out: 'A pilot that grew basket size 25%.' },
+];
+document.getElementById('stack').innerHTML = cases.map((c, i) => `
+  <article class="wcard" style="--hue:var(--${c.hue});z-index:${i + 1}">
+    <button class="wcard__bar" aria-expanded="false" aria-controls="wc${i}">
+      <span class="wcard__co">${c.co}</span><span class="wcard__title">${c.title}</span><span class="wcard__amt">${c.amt}</span>
+    </button>
+    <div class="wcard__body" id="wc${i}">
+      <div class="wcard__shot"><img class="${c.wide ? 'wide' : ''}" src="${IMG}${c.img}" alt=""></div>
+      <div class="wcard__facts">
+        <p><span class="mono">Problem</span>${c.problem}</p>
+        <p><span class="mono">I owned</span>${c.owned}</p>
+        <p><span class="mono">Outcome</span>${c.out}</p>
+        <a class="wcard__link" href="#">Read the case →</a>
+      </div>
+    </div>
+  </article>`).join('');
+const cards = [...document.querySelectorAll('.wcard')];
+cards.forEach(c => c.querySelector('.wcard__bar').addEventListener('click', () => {
+  const open = !c.classList.contains('open');
+  cards.forEach(o => { o.classList.remove('open'); o.querySelector('.wcard__bar').setAttribute('aria-expanded', 'false'); });
+  if (open) { c.classList.add('open'); c.querySelector('.wcard__bar').setAttribute('aria-expanded', 'true'); }
+}));
+cards[1].querySelector('.wcard__bar').click();
+
+/* receipts */
+const rec = [
+  ['travel-fuji', 'Fuji, at dawn', [['Early alarm', '1'], ['Cloud cover', '0'], ['Patience', '∞']], 'Worth it'],
+  ['baking-icing', 'Saturday bake', [['Icing bags', '3'], ['Steady hands', '1'], ['Redo', '2']], 'Gone in an hour'],
+  ['talk-poster', 'The Saga of Accessibility', [['Slides', '42'], ['Contrast checks', 'all'], ['Nerves', 'some']], 'One standing room'],
+  ['food-noodles', 'Noodles, Osaka', [['Bowls', '2'], ['Words of Japanese', '6'], ['Pointing', 'lots']], 'Would return'],
+  ['art-porch', 'The porch, painted', [['Hours', '14'], ['Shades of red', '9'], ['Do-overs', '3']], 'Hung at home'],
+  ['meetup-group', 'Design meetup', [['People', '40'], ['Chai', '40'], ['New friends', '6']], 'Again next month'],
+];
+document.getElementById('receipts').innerHTML = rec.map((r, i) => `
+  <article class="receipt" style="--r:${[-1.5, 1, -.5, 1.5, -1, .5][i]}deg">
+    <div class="receipt__head">RECEIPT NO. ${String(i + 1).padStart(4, '0')}</div>
+    <img src="${IMG}beyond/${r[0]}.webp" alt="" loading="lazy">
+    <div style="font-weight:500;color:#000;margin-bottom:6px">${r[1]}</div>
+    ${r[2].map(([a, b]) => `<div class="row"><span>${a} ${'.'.repeat(30)}</span><span>${b}</span></div>`).join('')}
+    <div class="row total"><span>TOTAL</span><span>${r[3]}</span></div>
+  </article>`).join('');
+</script>
+</body>
+</html>

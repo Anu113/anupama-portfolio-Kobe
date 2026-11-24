@@ -1,44 +1,50 @@
 ---
-/* ProjectCard.astro — one row in the home page's "Selected work": a
-   full-width card that stacks over the one before it as you scroll
-   (the sticky rows and settle effect live in index.astro). Text on the
-   left — number, company and tags (mono labels), title (18px, the item role;
-   see ONE TYPE SCALE in tokens.css), one 12px line, "View case study" — and on the right a stage on the company's project hue
-   holding the work itself, on the Okta card's lit colour block
-   (WorkGround.astro, kind 'colour'; no photos, on request 2026-11-17,
-   home page only — /work keeps its photo grounds for now). The block is
-   the company's hue, or the card's own `hue` (GROUND HUES in
-   tokens.css) so no two home cards match:
+/* ProjectCard.astro — one card in the home page's "Selected work":
+   one wide card, then two pairs (the grid lives in index.astro). On
+   request, 2026-11-24, from experiments/home-explore/inspired.html,
+   after andreas.vision's cards: a paper card, 28px corners, its work on
+   the project's own hue (`ground`: okta, paypal, walmart, or the GROUND
+   HUES mint and apricot where two PayPal cards would share lilac). The
+   words sit left under the work; on the wide card (`wide`) they sit
+   beside it, on the left (on the right with `flip`), with the title in
+   the serif heading. The
+   words: the company and tags (mono labels, `labelsFor()`), the title,
+   one 12px line and "View case study" as the pill pair
+   (PillPair.astro). The work is:
 
    - a phone that runs the flow on its own (after daneden.me): a screen
      recording, her screens in sequence (each sliding over the last, like
-     an app pushing a new screen), a /work flow playing on its own
-     (Privacy: the same screens, touch marks and iOS arrivals as its
-     /work tile, from data/workPlay.ts and scripts/work-play.ts), or a
-     coded PayPal prototype on autopilot;
-   - for Okta's desktop work, the screenshot on its own (a placeholder,
-     drawn as a browser window, until the NDA check).
+     an app pushing a new screen), a /work flow playing on its own (the
+     same screens, touch marks and iOS arrivals as its /work tile, from
+     data/workPlay.ts and scripts/work-play.ts), or a coded PayPal
+     prototype on autopilot;
+   - for Okta's desktop work, the screenshot on its own (it draws its
+     own laptop and phone);
+   - two phones side by side (`pair`, Scan & Go, on request 2026-11-25):
+     the first plays only its flow's first screen on a loop (the scan:
+     the line sweeps, the barcode catches green, the item card rises),
+     the second holds a still screen (the cart). A little smaller than a
+     single phone (--phone-scale-pair) so the card's colour shows above
+     and below them.
 
-   Its UX reason: a recruiter skimming the stack sees the product
-   working, not a thumbnail of it.
+   Its UX reason: a recruiter skimming the grid sees the product working,
+   not a thumbnail of it.
+
+   Hover or keyboard focus (the reused hover system): a faint oxblood
+   line comes in (none at rest), the card rises a little on a soft
+   layered shadow, the work inside grows a touch, and "View case study"
+   fades up with its arrow swapping (it shows at rest on touch, where
+   there is no hover). Values under HOME CARDS in tokens.css.
 
    Motion: a phone moves only while its card is on screen, the tab is
    visible and motion is allowed (no pause control, on request). Under
-   reduced motion each phone
-   shows its first screen and the recording its poster. The flows run on
-   phone-loop.ts, told when to go by this file's script. Hover (fine
-   pointers): the phone or screenshot rises by --phone-lift and the CTA's
-   arrow nudges.
+   reduced motion each phone shows its first screen and the recording
+   its poster, and nothing rises or grows. The flows run on phone-loop.ts, told
+   when to go by this file's script.
 
    The whole card is one link, made by stretching the title's link over
    it, not by wrapping the card in <a>: the coded prototypes are real
    buttons and inputs (inert here), which can't sit inside a link.
-
-   Hard-edged, like the rest of the site's cards; a sharp top edge also
-   reads as a deliberate shingle where one card slides over the next.
-   Only the phone is round (it's the device's, PHONE CARDS in
-   tokens.css). Fixed height, so every row in the stack is the same
-   size whatever the copy; on narrow screens it stacks, stage first.
 
    A locked case (`locked`, from lockFor() in cases.ts) frosts its stage
    on hover or focus with a small lock and "Password protected"
@@ -46,55 +52,61 @@
    its gate; screen readers hear "password protected" after the title. */
 import EnrollPrototype from './EnrollPrototype.astro';
 import OffersPrototype from './OffersPrototype.astro';
-import { hueFor, type HomeMedia } from '../data/work';
+import type { HomeMedia } from '../data/work';
 import { workPlay, isPlay } from '../data/workPlay';
-import { layerHtml } from '../scripts/work-play-layer';
+import { layerHtml, HOME_SIZES } from '../scripts/work-play-layer';
+import { existsSync } from 'node:fs';
 import '../styles/work-play.css';
-import WorkGround from './WorkGround.astro';
 import LockFrost from './LockFrost.astro';
 import LockIcon from './LockIcon.astro';
+import PillPair from './PillPair.astro';
 
 interface Props {
-  index: number;
   company: string; title: string; tagline: string; href: string;
   tags?: string[];
   media: HomeMedia;
   video?: { mp4: string; webm: string; poster: string };
-  hue?: string;
   locked?: boolean;
+  ground?: 'okta' | 'paypal' | 'walmart' | 'mint' | 'apricot' | 'sage';
+  wide?: boolean;
+  flip?: boolean;
 }
-const { index, company, title, tagline, href, tags = [], media, video, hue, locked = false } = Astro.props;
-const num = String(index).padStart(2, '0');
-const ground = workPlay[href] ? { kind: 'colour' as const } : undefined;
+const { company, title, tagline, href, tags = [], media, video, locked = false, ground, wide = false, flip = false } = Astro.props;
+const groundVar = ground === 'mint' || ground === 'apricot' || ground === 'sage' ? `var(--ground-${ground})` : ground ? `var(--hue-${ground})` : 'var(--screen)';
+// The home-size screen renders (-454 / -227, see work-play-layer.ts) exist only for some flows;
+// ask for them only when the first screen has one, or the browser gets a missing file and the
+// phone shows black glass.
+const hasHomeRenders = (src?: string) => !!src && existsSync(`public${src.replace(/\.webp$/, '-454.webp')}`);
 // A 'play' card runs its /work tile's flow (data/workPlay.ts).
 const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[media.play] : null;
+// A 'pair' card's first phone loops only the flow's first screen (Scan & Go's scan).
+const pairFull = media.type === 'pair' ? workPlay[media.play] : undefined;
+const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.steps[0]] } : null;
 ---
-<article class="pc" data-locked={locked || undefined}>
-  <div class="pc__body">
-    <p class="pc__num" aria-hidden="true">{num}</p>
-    {/* COMPANY · [domain] [discipline]… — after carlthomasiv.com; the
-        chips come from labelsFor() in data/work.ts. */}
-    <div class="pc__meta">
-      <p class="pc__co u-label-mono">{locked && <LockIcon class="pc__lock" size="1em" />}{company}</p>
-      {tags.length > 0 && (
-        <>
-          <span class="pc__dot u-label-mono" aria-hidden="true">·</span>
-          <ul class="pc__tags" aria-label="Domain and discipline">
-            {tags.map((t) => <li>{t}</li>)}
-          </ul>
-        </>
-      )}
-    </div>
-    <h3 class="pc__title"><a class="pc__link" href={href}>{title}{locked && <span class="u-sr-only">, password protected</span>}</a></h3>
-    <p class="pc__tagline">{tagline}</p>
-    <span class="pc__cta" aria-hidden="true">View case study <span class="pc__arrow">→</span></span>
-  </div>
-
-  <div class="pc__stage" data-hue={hueFor(company) ?? ''} style={hue ? `--hue: var(--ground-${hue});` : undefined} data-phone role="img" aria-label={media.alt}>
-    {ground && <WorkGround ground={ground} cover />}
-
+<article class:list={['pc', wide && 'pc--wide', wide && flip && 'pc--flip']} data-locked={locked || undefined} style={`--stage-ground: ${groundVar}`}>
+  <div class="pc__stage" data-phone role="img" aria-label={media.alt}>
     {media.type === 'desktop' ? (
       <img class="pc__desktop" src={media.image} alt="" loading="lazy" decoding="async" />
+    ) : media.type === 'pair' ? (
+      <div class="pc__pair" aria-hidden="true">
+        {[pairFlow, null].map((f) => (
+          <div class="pc__device">
+            <i class="pc__btn"></i><i class="pc__btn"></i><i class="pc__btn"></i><i class="pc__btn"></i><i class="pc__btn"></i>
+            <div class="pc__device-inner">
+              <span class="pc__island"></span>
+              <div class="pc__phone">
+                <div class="pc__screen">
+                  {f ? (
+                    <div class="pc__play" data-work-play={JSON.stringify(f)} set:html={layerHtml(f.steps[0], false)} />
+                  ) : (
+                    <img class="pc__shot is-on" src={media.still} alt="" loading="lazy" decoding="async" />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     ) : (
       <div class="pc__device" aria-hidden="true">
         <i class="pc__btn"></i><i class="pc__btn"></i><i class="pc__btn"></i><i class="pc__btn"></i><i class="pc__btn"></i>
@@ -115,7 +127,7 @@ const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[me
                   <img class:list={['pc__shot', i === 0 && 'is-on']} src={src} alt="" loading="lazy" decoding="async" data-phone-shot />
                 ))}
                 {flow && isPlay(flow) && (
-                  <div class="pc__play" data-work-play={JSON.stringify(flow)} set:html={layerHtml(flow.steps[0])} />
+                  <div class="pc__play" data-work-play={JSON.stringify(flow)} data-wp-sizes={hasHomeRenders(flow.steps[0].src) ? HOME_SIZES : undefined} set:html={layerHtml(flow.steps[0], false, hasHomeRenders(flow.steps[0].src) ? HOME_SIZES : undefined)} />
                 )}
               </div>
             </div>
@@ -125,52 +137,69 @@ const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[me
     )}
     {locked && <LockFrost />}
   </div>
-  {/* The settle dim (index.astro): a plain overlay whose opacity the
-      stack script sets, instead of a brightness() filter on the whole
-      card, which re-rendered the card and its running phone through a
-      filter on every scroll frame. */}
-  <span class="pc__dim" aria-hidden="true"></span>
+
+  <div class="pc__body">
+    {/* COMPANY · [domain] [discipline]… — after carlthomasiv.com; the
+        chips come from labelsFor() in data/work.ts. */}
+    <div class="pc__meta">
+      <p class="pc__co u-label-mono">{locked && <LockIcon class="pc__lock" size="1em" />}{company}</p>
+      {tags.length > 0 && (
+        <>
+          <span class="pc__dot u-label-mono" aria-hidden="true">·</span>
+          <ul class="pc__tags" aria-label="Domain and discipline">
+            {tags.map((t) => <li>{t}</li>)}
+          </ul>
+        </>
+      )}
+    </div>
+    <h3 class="pc__title"><a class="pc__link" href={href}>{title}{locked && <span class="u-sr-only">, password protected</span>}</a></h3>
+    <p class="pc__tagline">{tagline}</p>
+    <PillPair label="View case study" size="sm" class="pc__cta" />
+  </div>
 </article>
 
 <style>
+  /* The card: paper, no line at rest. On hover or focus the faint line
+     (::after, so it never shifts the layout) comes in and the card rises
+     on its shadow. */
   .pc {
     position: relative;
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    /* minmax(0, 1fr) so the fixed height below wins over a long title;
-       text that doesn't fit clamps instead of growing the row. */
-    grid-template-rows: minmax(0, 1fr);
-    gap: var(--card-gap);
-    height: var(--card-h);
-    padding: var(--card-pad);   /* the footer insets by this too */
-    background: var(--bg);
+    isolation: isolate;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: var(--home-card-pad);
     color: var(--fg);
-    border-radius: var(--radius);
-    overflow: hidden;
+    background: var(--home-card-fill);
+    border-radius: var(--radius-home-card);
+    transition:
+      transform var(--home-card-dur) var(--ease-out),
+      box-shadow var(--home-card-dur) var(--ease-out);
   }
-
-  .pc__dim {
+  .pc::after {
+    content: '';
     position: absolute;
     inset: 0;
-    z-index: 2;
-    background: var(--stack-dim);
-    opacity: 0;
+    border-radius: inherit;
+    border: 1px solid transparent;
     pointer-events: none;
+    transition: border-color var(--home-card-dur) var(--ease-out);
   }
+  @media (hover: hover) and (pointer: fine) {
+    .pc:hover { transform: translateY(var(--home-card-rise)); box-shadow: var(--home-card-shadow); }
+    .pc:hover::after { border-color: var(--home-card-line); }
+  }
+  .pc:has(.pc__link:focus-visible) { transform: translateY(var(--home-card-rise)); box-shadow: var(--home-card-shadow); }
+  .pc:has(.pc__link:focus-visible)::after { border-color: var(--home-card-line); }
 
-  .pc__body { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-  /* Number, company and tags are the label role (mono 11px caps);
-     the title is the item role (18px), so it reads first. */
-  .pc__num {
-    font-family: var(--font-mono);
-    font-weight: var(--weight-mono);
-    font-size: var(--step-fine);
-    line-height: 1.5;
-    letter-spacing: var(--tracking-mono-label);
-    color: var(--fg-dim);
-    margin: 0 0 var(--space-head-link);
+  /* The words, left under the work, as on the reference. */
+  .pc__body {
+    display: flex; flex-direction: column; align-items: flex-start;
+    text-align: left;
+    padding-top: var(--home-card-text-gap);
+    flex: 1;
   }
-  .pc__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem 1rem; margin: 0 0 var(--space-head-body); }
+  .pc__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem 1rem; margin: 0 0 0.5rem; }
   .pc__dot { color: var(--fg-dim); }
   .pc__co { color: var(--fg-dim); margin: 0; transition: color var(--dur-micro) var(--ease-out); }
   .pc:hover .pc__co { color: var(--fg); }
@@ -180,7 +209,6 @@ const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[me
     .pc[data-locked]:hover .pc__device,
     .pc[data-locked]:hover .pc__desktop { transform: none; }
   }
-  /* Label chips: a hairline box, no fill, square. */
   .pc__tags { display: contents; list-style: none; margin: 0; padding: 0; }
   .pc__tags li {
     font-family: var(--font-mono);
@@ -192,76 +220,70 @@ const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[me
     color: var(--fg-dim);
     white-space: nowrap;   /* a tag never breaks across lines */
   }
-  /* The title in the item role, sentence case, so it outranks the
-     labels above it (it used to be 12px caps, the same as them). */
   .pc__title {
     font-family: var(--font-sans);
     font-size: var(--step-item);
     line-height: var(--leading-item);
     letter-spacing: var(--tracking-item);
     font-weight: var(--weight-sans);
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.375rem;
     text-wrap: balance;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
   .pc__link { color: var(--fg); text-decoration: none; }
   /* The title's link covers the whole card — see the header comment. */
-  .pc__link::after { content: ''; position: absolute; inset: 0; z-index: 2; }
+  .pc__link::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: var(--radius-home-card); }
   .pc__link:focus-visible { outline: none; }
-  .pc:has(.pc__link:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .pc:has(.pc__link:focus-visible) { outline: 2px solid var(--focus); outline-offset: 6px; }
   .pc__tagline {
     font-size: var(--step-copy);
     line-height: var(--leading-copy);
     letter-spacing: var(--tracking-copy);
     color: var(--fg-dim);
-    margin: 0 0 var(--space-head-body);
-    max-width: 40ch;
+    margin: 0;
+    max-width: var(--home-tagline-max);
     text-wrap: pretty;
   }
-  .pc__cta {
-    margin-top: auto;
-    display: inline-flex; align-items: center; gap: 0.4em;
-    font-family: var(--font-mono);
-    font-size: var(--step-fine);
-    font-weight: var(--weight-mono);
-    letter-spacing: var(--tracking-mono-label);
-    text-transform: uppercase;
-    /* The site's standalone link (.btn--link in global.css): the LINKS
-       underline at 45%, solid and 2px while the card is hovered or
-       focused, the arrow nudging right — it goes to a page on this site,
-       so it moves the way you're going, not up-and-out. */
-    color: var(--link);
-    text-decoration: underline;
-    text-decoration-color: var(--link-line);
-    text-decoration-thickness: var(--link-thick);
-    text-underline-offset: var(--link-offset);
-    transition: text-decoration-color var(--dur-micro) var(--ease-out);
+  /* "View case study": the pill pair, a label here (the card is the
+     link), so the card's hover drives it. Withheld at rest where there's
+     a pointer to reveal it. */
+  .pc :global(.pc__cta) {
+    margin-top: 1rem;
+    transition:
+      opacity var(--home-card-dur) var(--ease-out),
+      translate var(--home-card-dur) var(--ease-out);
   }
-  .pc:hover .pc__cta,
-  .pc:has(.pc__link:focus-visible) .pc__cta {
-    text-decoration-color: var(--link-line-hover);
-    text-decoration-thickness: var(--link-thick-hover);
+  @media (hover: hover) and (pointer: fine) {
+    .pc :global(.pc__cta) { opacity: 0; translate: 0 6px; }
   }
-  .pc__arrow {
-    display: inline-block;
-    transition: transform var(--dur-micro-move) var(--ease-out);
-  }
-  .pc:hover .pc__arrow,
-  .pc:has(.pc__link:focus-visible) .pc__arrow { transform: translateX(3px); }
+  .pc:is(:hover, :has(.pc__link:focus-visible)) :global(.pc__cta) { opacity: 1; translate: 0 0; }
+  .pc:is(:hover, :has(.pc__link:focus-visible)) :global(.btn--pair__pill) { transform: scale(var(--pair-grow)); }
+  .pc:is(:hover, :has(.pc__link:focus-visible)) :global(.btn--pair__arrow svg:first-child) { transform: translateX(200%); }
+  .pc:is(:hover, :has(.pc__link:focus-visible)) :global(.btn--pair__arrow svg + svg) { transform: none; }
 
-  /* The stage: the project hue, the work standing on it. */
+  /* The wide card: the words on the left, the work on the right, the
+     title in the serif heading. */
+  @media (min-width: 861px) {
+    .pc--wide { display: grid; grid-template-columns: var(--home-wide-cols); align-items: center; gap: 2rem; }
+    .pc--wide .pc__body { order: -1; padding: 0 0 0 1rem; flex: none; }
+    .pc--wide .pc__title {
+      font-family: var(--font-serif); font-weight: var(--weight-serif);
+      font-size: var(--step-heading); line-height: var(--leading-heading); letter-spacing: normal;
+      margin-bottom: 0.75rem;
+    }
+    /* The second wide card: the work first, the words on the right. */
+    .pc--flip { grid-template-columns: var(--home-wide-cols-flip); }
+    .pc--flip .pc__body { order: 0; padding: 0 1rem 0 0; }
+  }
+
+  /* The stage: the work on its project's hue. */
   .pc__stage {
     position: relative;
-    background: var(--hue);
-    min-height: 0;
+    height: var(--home-stage-h);
     display: flex; justify-content: center; align-items: center;
     overflow: hidden;
+    border-radius: var(--radius-home-stage);
+    background: var(--stage-ground);
   }
-  /* the work stands on the case's ground (WorkGround), as on /work */
-  .pc__stage > :not(.wp-ground) { position: relative; z-index: 1; }
 
   /* --- the phone ---------------------------------------------------
      An iPhone 17 Pro in silver, after daneden.me (option C of
@@ -285,7 +307,7 @@ const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[me
       inset 0 0 0 calc(0.75px * var(--s)) var(--phone-metal-4),
       inset calc(1.5px * var(--s)) calc(1.5px * var(--s)) calc(2px * var(--s)) var(--phone-metal-hi),
       var(--phone-shadow);
-    transition: transform var(--dur-hover) var(--ease-out);
+    transition: transform var(--home-card-dur) var(--ease-out);
   }
   /* Buttons: Action and volume on the left, the side button and Camera
      Control on the right. */
@@ -354,29 +376,42 @@ const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[me
     transition: transform var(--dur-phone-step) var(--ease-out);
   }
 
+  /* Two phones on one card, a little smaller than one alone. */
+  .pc__pair { --phone-scale: var(--phone-scale-pair); display: flex; gap: var(--home-pair-gap); }
+
   /* A /work flow: its layers fill the screen (styles/work-play.css). */
-  .pc__play { position: absolute; inset: 0; overflow: hidden; }
+  /* container-type: the scan's marks are sized in cqw of the screen, as on /work. */
+  .pc__play { position: absolute; inset: 0; overflow: hidden; container-type: inline-size; }
 
   /* --- desktop work ----------------------------------------------
-     The screenshot as given: the Okta placeholders draw their own window
-     on a transparent ground, so the hue shows round it. */
+     The screenshot as given: the Okta placeholder draws its own laptop
+     and phone, so it stands on the soft card with no frame of ours. */
   .pc__desktop {
     max-width: calc(100% - 2 * var(--phone-stage-pad)); max-height: calc(100% - 2 * var(--phone-stage-pad));
     object-fit: contain;
     display: block;
-    transition: transform var(--dur-hover) var(--ease-out);
+    transition: transform var(--home-card-dur) var(--ease-out);
   }
 
-  @media (hover: hover) {
+  /* The work grows a touch inside its stage. */
+  @media (hover: hover) and (pointer: fine) {
     .pc:hover .pc__device,
-    .pc:hover .pc__desktop { transform: translateY(var(--phone-lift)); }
+    .pc:hover .pc__desktop { transform: scale(var(--home-card-grow)); }
+  }
+  .pc:has(.pc__link:focus-visible) :is(.pc__device, .pc__desktop) { transform: scale(var(--home-card-grow)); }
+
+  /* Narrow: a smaller phone on a shorter stage. */
+  @media (max-width: 860px) {
+    .pc { --phone-scale: var(--phone-scale-narrow); }
+    .pc__pair { --phone-scale: var(--phone-scale-pair-narrow); gap: 0.75rem; }
+    .pc__stage { height: var(--home-stage-h-narrow); }
   }
 
-  /* Narrow: one column, stage first, sized to the phone. */
-  @media (max-width: 860px) {
-    .pc { grid-template-columns: 1fr; grid-template-rows: auto auto; height: auto; --phone-scale: var(--phone-scale-narrow); }
-    .pc__stage { order: -1; padding: var(--phone-stage-pad); }
-    .pc__tagline { max-width: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .pc, .pc::after, .pc :global(.pc__cta), .pc__device, .pc__desktop { transition: none; }
+    .pc:hover, .pc:has(.pc__link:focus-visible) { transform: none; }
+    .pc:hover :is(.pc__device, .pc__desktop),
+    .pc:has(.pc__link:focus-visible) :is(.pc__device, .pc__desktop) { transform: none; }
   }
 </style>
 

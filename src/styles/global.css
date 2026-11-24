@@ -275,6 +275,44 @@ h1, h2, h3, h4, h5, h6 {
 .btn__arrow { display: inline-block; transition: transform var(--dur-micro-move) var(--ease-out); }
 .btn--link:hover .btn__arrow,
 .btn--link:focus-visible .btn__arrow { transform: translateX(3px); }
+/* The pill pair — andreas.vision's button (PILL PAIR in tokens.css):
+   an ink pill beside a round arrow. Written by PillPair.astro. Two
+   copies of the arrow: on hover the first slides out to the right and
+   the second slides in from the left. A card that holds one as a label
+   (ProjectCard) drives the same states from its own hover. */
+.btn--pair {
+  display: inline-flex; gap: var(--pair-gap);
+  color: var(--pair-fg); text-decoration: none;
+  font-family: var(--font-sans); font-weight: var(--weight-sans); font-size: var(--step-nav); line-height: 1;
+  border-radius: 999px;
+}
+.btn--pair__pill {
+  height: var(--pair-h); padding: var(--pair-pad);
+  display: inline-flex; align-items: center; white-space: nowrap;
+  border-radius: 999px; background: var(--pair-bg);
+  transition: transform 0.1s ease-out;
+}
+.btn--pair__arrow {
+  position: relative; flex: none; overflow: hidden;
+  width: var(--pair-h); height: var(--pair-h);
+  border-radius: 50%; background: var(--pair-bg);
+}
+.btn--pair__arrow svg {
+  position: absolute; inset: 0; margin: auto; width: 16px; height: 16px;
+  transition: transform var(--pair-swap) var(--ease-pair-swap);
+}
+.btn--pair__arrow svg + svg { transform: translateX(-200%); }
+.btn--pair--sm { font-size: var(--step-copy); }
+.btn--pair--sm .btn--pair__pill { height: var(--pair-h-sm); padding: var(--pair-pad-sm); }
+.btn--pair--sm .btn--pair__arrow { width: var(--pair-h-sm); height: var(--pair-h-sm); }
+:is(.btn--pair:hover, .btn--pair:focus-visible) .btn--pair__pill { transform: scale(var(--pair-grow)); }
+:is(.btn--pair:hover, .btn--pair:focus-visible) .btn--pair__arrow svg:first-child { transform: translateX(200%); }
+:is(.btn--pair:hover, .btn--pair:focus-visible) .btn--pair__arrow svg + svg { transform: none; }
+.btn--pair:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  .btn--pair__pill, .btn--pair__arrow svg { transition: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btn { transition: none; }
   .btn--primary::before,

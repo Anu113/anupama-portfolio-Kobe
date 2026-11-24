@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B · Ledger — fintech direction mock</title>
+<!--
+  Direction B, "Ledger". Swiss modernist: a 12-column grid, one sans,
+  tabular figures, hairlines, numbers set to a column.
+  Hero: the sentence, then a ledger of outcomes rolling in on digits.
+  Work: statement rows (no., product, company, outcome as the amount);
+  hover shows the screen beside the pointer, click opens the row in place.
+  Career: a statement, oldest at the bottom, each line a tiny pixel bar.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fafaf8; --ink:#0b0b0b; --ink-2:#55554f; --ink-3:#8d8d86; --rule:rgba(0,0,0,.14); --rule-2:rgba(0,0,0,.07);
+    --up:#0a7d4f; --pix:#0b0b0b;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --sans:'Geist',system-ui,sans-serif; --mono:'Geist Mono',ui-monospace,monospace;
+    --gutter:clamp(20px,4vw,56px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);column-gap:20px;padding:0 var(--gutter)}
+  .label{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+
+  .nav{height:64px;align-items:center;border-bottom:1px solid var(--rule)}
+  .nav__name{grid-column:1/4;font:600 14px/1 var(--sans)}
+  .nav__links{grid-column:7/10;display:flex;gap:24px;font:500 13px/1 var(--sans);color:var(--ink-2)}
+  .nav__links a:hover{color:var(--ink)}
+  .nav__cta{grid-column:10/13;justify-self:end;font:500 13px/1 var(--sans);display:flex;gap:8px;align-items:center}
+  .nav__cta i{width:7px;height:7px;background:var(--up)}
+
+  .hero{padding-top:12vh;padding-bottom:64px;row-gap:56px}
+  .hero__idx{grid-column:1/3}
+  .hero h1{grid-column:3/12;font:500 clamp(38px,5.6vw,88px)/.98 var(--sans);letter-spacing:-.045em}
+  .hero h1 span{color:var(--ink-3)}
+  .hero__dek{grid-column:3/7;font-size:16px;color:var(--ink-2);line-height:1.55}
+  .hero__facts{grid-column:8/13;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .hero__facts b{display:block;font:500 14px/1.35 var(--sans);margin-top:8px;color:var(--ink);text-transform:none;letter-spacing:0}
+
+  /* ledger */
+  .ledger{margin-top:24px}
+  .ledger__head,.ledger__row{display:grid;grid-template-columns:repeat(12,1fr);column-gap:20px;align-items:baseline}
+  .ledger__head{padding:0 0 10px;border-bottom:1px solid var(--ink)}
+  .ledger__row{padding:22px 0;border-bottom:1px solid var(--rule)}
+  .c-no{grid-column:1/2}.c-what{grid-column:2/7}.c-co{grid-column:7/9}.c-pix{grid-column:9/11}.c-amt{grid-column:11/13;text-align:right}
+  .ledger__row .c-what{font:500 17px/1.3 var(--sans);letter-spacing:-.01em}
+  .ledger__row .c-co{color:var(--ink-2)}
+  .amt{font:500 clamp(28px,3.4vw,48px)/1 var(--sans);letter-spacing:-.03em;display:inline-flex}
+  .amt.up{color:var(--up)}
+  .pixbar{display:flex;gap:2px;align-items:flex-end;height:22px}
+  .pixbar i{width:6px;background:var(--pix);opacity:.85;height:0;transition:height .6s var(--ease)}
+  .ledger__foot{display:flex;justify-content:space-between;padding:14px 0}
+
+  /* statement rows (work) */
+  .sec{padding-top:140px}
+  .sec__head{grid-column:1/-1;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid var(--ink);padding-bottom:16px}
+  .sec h2{font:500 clamp(30px,3.4vw,52px)/1 var(--sans);letter-spacing:-.035em}
+  .rows{grid-column:1/-1}
+  .srow{border-bottom:1px solid var(--rule)}
+  .srow__btn{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:grid;grid-template-columns:repeat(12,1fr);column-gap:20px;align-items:baseline;padding:26px 0;transition:padding .4s var(--ease)}
+  .srow__btn:hover{padding-left:8px}
+  .srow__btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .srow__title{grid-column:2/7;font:500 22px/1.25 var(--sans);letter-spacing:-.02em}
+  .srow__co{grid-column:7/9;color:var(--ink-2)}
+  .srow__tags{grid-column:9/11;color:var(--ink-3)}
+  .srow__amt{grid-column:11/13;text-align:right;font:500 22px/1 var(--sans);letter-spacing:-.02em}
+  .srow__sign{display:inline-block;width:14px;transition:transform .4s var(--ease)}
+  .srow.open .srow__sign{transform:rotate(45deg)}
+  .srow__body{display:grid;grid-template-columns:repeat(12,1fr);column-gap:20px;overflow:hidden;height:0;transition:height .6s var(--ease)}
+  .srow__inner{grid-column:2/-1;display:grid;grid-template-columns:repeat(11,1fr);column-gap:20px;padding:4px 0 40px}
+  .srow__shot{grid-column:1/6;background:#efefeb;height:340px;position:relative;overflow:hidden}
+  .srow__shot img{position:absolute;left:50%;top:28px;width:190px;transform:translateX(-50%);box-shadow:0 20px 40px -12px rgba(0,0,0,.25);border-radius:22px}
+  .srow__shot img.wide{width:90%;border-radius:6px}
+  .srow__facts{grid-column:7/12;display:grid;grid-template-columns:1fr;gap:18px;align-content:start}
+  .srow__facts p{font-size:15px;line-height:1.5}
+  .srow__facts .label{display:block;margin-bottom:6px}
+  .srow__facts a{font-weight:500;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--rule)}
+
+  .peek{position:fixed;left:0;top:0;width:200px;height:250px;pointer-events:none;z-index:40;background:#efefeb;overflow:hidden;opacity:0;transform:translate(-50%,-50%) scale(.92);transition:opacity .25s,transform .35s var(--ease);box-shadow:0 20px 40px -12px rgba(0,0,0,.2)}
+  .peek.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .peek img{width:100%;height:100%;object-fit:cover;object-position:top}
+
+  /* career statement */
+  .career{grid-column:1/-1}
+  .crow{display:grid;grid-template-columns:repeat(12,1fr);column-gap:20px;align-items:center;padding:18px 0;border-bottom:1px solid var(--rule)}
+  .crow__yrs{grid-column:1/3;color:var(--ink-3);font:400 13px/1 var(--mono)}
+  .crow__co{grid-column:3/6;font:500 18px/1.2 var(--sans);letter-spacing:-.01em}
+  .crow__role{grid-column:6/9;color:var(--ink-2)}
+  .crow__bal{grid-column:9/13;display:flex;gap:2px;justify-content:flex-end}
+  .crow__bal i{width:8px;height:8px;background:var(--ink)}
+  .crow__bal i.dim{background:var(--rule)}
+
+  .foot{margin-top:160px;border-top:1px solid var(--ink);padding-top:28px;padding-bottom:110px;row-gap:40px}
+  .foot h2{grid-column:1/9;font:500 clamp(36px,5vw,80px)/.98 var(--sans);letter-spacing:-.045em}
+  .foot h2 a{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:8px}
+  .foot__col{grid-column:span 2;display:flex;flex-direction:column;gap:8px;font-size:14px}
+
+  @media (max-width:860px){
+    .grid,.ledger__head,.ledger__row,.srow__btn,.crow{grid-template-columns:repeat(6,1fr)}
+    .hero h1,.hero__dek,.hero__facts,.hero__idx{grid-column:1/-1}
+    .c-no,.c-pix,.c-co,.srow__tags,.srow__co{display:none}
+    .c-what,.srow__title{grid-column:1/5}.c-amt,.srow__amt{grid-column:5/7}
+    .srow__inner{grid-column:1/-1;grid-template-columns:1fr}.srow__shot,.srow__facts{grid-column:1/-1}.srow__facts{margin-top:20px}
+    .crow__yrs{grid-column:1/3}.crow__co{grid-column:3/7}.crow__role,.crow__bal{display:none}
+    .foot h2,.foot__col{grid-column:1/-1}
+    .nav__links{display:none}.nav__name{grid-column:1/4}.nav__cta{grid-column:4/7}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="grid nav">
+  <a class="nav__name" href="#">Anupama Mishra</a>
+  <nav class="nav__links" aria-label="Main"><a href="#work">Work</a><a href="#">About</a><a href="#career">Career</a></nav>
+  <a class="nav__cta" href="#"><i></i>Open to Staff roles</a>
+</header>
+
+<section class="grid hero">
+  <span class="label hero__idx">Staff Product Designer</span>
+  <h1>I design how money, privacy and identity work. <span>For 80 million people at a time.</span></h1>
+  <p class="hero__dek">Ten years in fintech and enterprise software, at PayPal, Okta and Walmart Labs. Systems and strategy, down to the last pixel.</p>
+  <div class="hero__facts">
+    <div class="label">Now<b>Staff PD, Okta</b></div>
+    <div class="label">Led<b>6 designers</b></div>
+    <div class="label">Based<b>Bangalore</b></div>
+  </div>
+
+  <div class="ledger" style="grid-column:1/-1" id="ledger">
+    <div class="ledger__head label"><span class="c-no">No.</span><span class="c-what">Outcome</span><span class="c-co">Company</span><span class="c-pix"></span><span class="c-amt">Amount</span></div>
+  </div>
+</section>
+
+<section class="grid sec" id="work">
+  <div class="sec__head"><h2>Statement of work</h2><span class="label">5 entries</span></div>
+  <div class="rows" id="rows"></div>
+</section>
+
+<section class="grid sec" id="career">
+  <div class="sec__head"><h2>Career</h2><span class="label">Newest first</span></div>
+  <div class="career" id="careerRows"></div>
+</section>
+
+<footer class="grid foot">
+  <h2>Let's start with a <a href="#">conversation</a>.</h2>
+  <div class="foot__col"><span class="label">Contact</span><a href="#">Email</a><a href="#">LinkedIn</a></div>
+  <div class="foot__col"><span class="label">Local time</span><span id="clock">--:--</span><span style="color:var(--ink-3)">Bangalore, IST</span></div>
+</footer>
+
+<div class="peek" id="peek" aria-hidden="true"><img alt=""></div>
+
+<script type="module">
+import { IMG, switcher, rolling, ROLL_CSS, onVisible } from './shared.js';
+switcher('ledger');
+const st = document.createElement('style'); st.textContent = ROLL_CSS; document.head.appendChild(st);
+
+/* the ledger: only numbers the site already states */
+const L = [
+  ['80M+', 'People using the privacy settings I redesigned', 'PayPal', [3,5,6,8,9,10]],
+  ['−60%', 'Support calls about privacy, after launch', 'PayPal', [10,9,7,6,5,4]],
+  ['76%', 'Faster access to your own data', 'PayPal', [3,4,6,7,9,10]],
+  ['+25%', 'Basket size in the Scan & Go pilot', 'Walmart Labs', [4,5,5,7,8,9]],
+];
+const led = document.getElementById('ledger');
+led.insertAdjacentHTML('beforeend', L.map((r, i) => `
+  <div class="ledger__row">
+    <span class="c-no label">${String(i + 1).padStart(2, '0')}</span>
+    <span class="c-what">${r[1]}</span>
+    <span class="c-co">${r[2]}</span>
+    <span class="c-pix"><span class="pixbar">${r[3].map(h => `<i data-h="${h * 2.2}"></i>`).join('')}</span></span>
+    <span class="c-amt"><span class="amt ${i ? 'up' : ''}" data-value="${r[0]}">${r[0]}</span></span>
+  </div>`).join('') + `<div class="ledger__foot label"><span>Figures as published in each case study</span><span>Updated Nov 2026</span></div>`);
+onVisible(led, () => {
+  led.querySelectorAll('.amt').forEach((el, i) => rolling(el, i * 180));
+  led.querySelectorAll('.pixbar i').forEach((el, i) => setTimeout(() => el.style.height = el.dataset.h + 'px', 200 + i * 30));
+}, .2);
+
+/* statement of work */
+const W = [
+  { t: 'Rebuilding IAM for enterprise admins', co: 'Okta', tags: 'Enterprise · Identity', amt: 'Led 6', img: 'work-play/okta-desk.webp', wide: true,
+    p: 'Admins ran identity for thousands of people through a console built for a smaller company.', o: 'The core admin surfaces: entitlements, roles, OIN publishing, developer onboarding.', r: 'Shipped underneath live tenants, with no migration freeze.' },
+  { t: 'Privacy settings people can read', co: 'PayPal', tags: 'Fintech · Privacy', amt: '−60%', img: 'work-play/pv-hub.webp',
+    p: '75% of visitors stopped on the first privacy page.', o: 'Research and design of a new structure, card sorts to unmoderated prototypes.', r: '60% fewer support calls, on settings used by 80M+ people.' },
+  { t: 'Delete part of your data, keep the account', co: 'PayPal', tags: 'Fintech · Privacy', amt: '76%', img: 'paypal-data-rights/hero.webp', wide: true,
+    p: 'Deleting anything meant closing your PayPal account.', o: 'Get a copy, delete part, keep the account, in six steps.', r: 'Data access 76% faster.' },
+  { t: 'An ID check people pass first time', co: 'PayPal', tags: 'Fintech · Identity', amt: '11 rounds', img: 'work-play/id-scan.webp',
+    p: '42% dropped off; only 68% passed first time.', o: 'A document and face scan for iOS, Android and web.', r: 'A fallback for every way a capture fails.' },
+  { t: 'Scan & Go, in-store', co: 'Walmart Labs', tags: 'Retail · Payments', amt: '+25%', img: 'work-play/sg-cart.webp',
+    p: 'No answer to the checkout queue.', o: 'Scan & Go end to end, tested in stores.', r: 'A pilot that grew basket size 25%.' },
+];
+document.getElementById('rows').innerHTML = W.map((w, i) => `
+  <div class="srow" data-img="${IMG}${w.img}">
+    <button class="srow__btn" aria-expanded="false" aria-controls="sr${i}">
+      <span class="label">${String(i + 1).padStart(2, '0')}</span>
+      <span class="srow__title">${w.t}</span>
+      <span class="srow__co">${w.co}</span>
+      <span class="srow__tags">${w.tags}</span>
+      <span class="srow__amt">${w.amt} <span class="srow__sign" aria-hidden="true">+</span></span>
+    </button>
+    <div class="srow__body" id="sr${i}"><div class="srow__inner">
+      <div class="srow__shot"><img class="${w.wide ? 'wide' : ''}" src="${IMG}${w.img}" alt="" loading="lazy"></div>
+      <div class="srow__facts">
+        <p><span class="label">Problem</span>${w.p}</p>
+        <p><span class="label">I owned</span>${w.o}</p>
+        <p><span class="label">Outcome</span>${w.r}</p>
+        <p><a href="#">Read the case</a></p>
+      </div>
+    </div></div>
+  </div>`).join('');
+const rows = [...document.querySelectorAll('.srow')];
+rows.forEach(r => r.querySelector('.srow__btn').addEventListener('click', () => {
+  const body = r.querySelector('.srow__body'), open = !r.classList.contains('open');
+  rows.forEach(o => { o.classList.remove('open'); o.querySelector('.srow__body').style.height = '0'; o.querySelector('.srow__btn').setAttribute('aria-expanded', 'false'); });
+  if (open) { r.classList.add('open'); body.style.height = body.scrollHeight + 'px'; r.querySelector('.srow__btn').setAttribute('aria-expanded', 'true'); }
+  peek.classList.remove('on');
+}));
+
+/* hover peek follows the pointer (fine pointers only) */
+const peek = document.getElementById('peek'), pimg = peek.querySelector('img');
+if (matchMedia('(hover:hover)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  let tx = 0, ty = 0, x = 0, y = 0;
+  rows.forEach(r => {
+    r.querySelector('.srow__btn').addEventListener('pointerenter', () => { if (r.classList.contains('open')) return; pimg.src = r.dataset.img; peek.classList.add('on'); });
+    r.querySelector('.srow__btn').addEventListener('pointerleave', () => peek.classList.remove('on'));
+  });
+  addEventListener('pointermove', e => { tx = e.clientX + 150; ty = e.clientY; });
+  (function loop() { x += (tx - x) * .18; y += (ty - y) * .18; peek.style.left = x + 'px'; peek.style.top = y + 'px'; requestAnimationFrame(loop); })();
+}
+
+/* career statement: the bar is cumulative years */
+const C = [['Okta', 'Staff Product Designer, led a team of six'], ['PayPal', 'Payments, cards, privacy, identity'], ['Walmart Labs', 'In-store, Walmart Pay'], ['Deloitte Digital', '[X] Her work there'], ['Zomato', '[X] Her work there']];
+document.getElementById('careerRows').innerHTML = C.map((c, i) => `
+  <div class="crow"><span class="crow__yrs">${String(C.length - i).padStart(2, '0')}</span><span class="crow__co">${c[0]}</span><span class="crow__role">${c[1]}</span>
+  <span class="crow__bal" aria-hidden="true">${Array.from({ length: 10 }, (_, k) => `<i class="${k < (C.length - i) * 2 ? '' : 'dim'}"></i>`).join('')}</span></div>`).join('');
+
+const clock = document.getElementById('clock');
+const tick = () => clock.textContent = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' }).format(new Date());
+tick(); setInterval(tick, 10000);
+</script>
+</body>
+</html>
