@@ -354,27 +354,46 @@ export const cases: CaseStudy[] = [
               'The through-line across all four surfaces: an admin at enterprise scale is almost never looking at one object. They are looking at a set — every user matching a condition, every policy touching a group — and deciding what to do to the whole set. The old console was built around the single-object page. The rebuild is built around the set.',
             ],
           },
+          /* Her own boards (added 2026-11-23, on request). Captions
+             describe only what's on each board; the My Apps board is the
+             cover, so it isn't repeated here. */
           {
             kind: 'figure',
-            src: '/images/placeholder-1.svg',
-            alt: 'The rebuilt user directory, showing bulk selection and an inline policy preview',
+            src: '/images/okta/onboarding-path.webp',
+            alt: 'Auth0 onboarding: after a tenant is created, one question — new to Auth0, or used it before — with an illustration on each choice',
             caption:
-              'Directory. Filtering builds a set; the set is the thing you act on. The preview panel shows what a change will do before it is applied — the single most requested behaviour in research.',
-            wide: true,
+              'Developer onboarding. A new tenant starts on one question, new to Auth0 or used it before, and each answer leads to its own path.',
+            ratio: '16 / 9',
           },
           {
             kind: 'figure',
-            src: '/images/placeholder-2.svg',
-            alt: 'The policy builder with its evaluation trace open',
+            src: '/images/okta/onboarding-moments.webp',
+            alt: 'Three onboarding moments: a feedback prompt in the dashboard nav, an Auth0 Organizations introduction, and an empty state for SSO integrations',
             caption:
-              'Policy builder. Every policy shows its evaluation trace: which rule matched, in what order, and who it affects right now. Admins were previously reconstructing this by hand in spreadsheets.',
+              'Onboarding past the first screen: a feedback prompt in the nav, an introduction to Organizations before you start, and an SSO empty state that says what to do next.',
+            ratio: '16 / 9',
           },
           {
             kind: 'figure',
-            src: '/images/placeholder-3.svg',
-            alt: 'The audit view, showing a filterable change history',
+            src: '/images/okta/onboarding-modes.webp',
+            alt: 'The Getting Started page in light mode and dark mode',
+            caption: 'Getting started, in light and dark mode.',
+            ratio: '16 / 9',
+          },
+          {
+            kind: 'figure',
+            src: '/images/okta/illustration-system.webp',
+            alt: 'Okta illustration system: eight illustrations in blue, orange and green line art, including a book opening onto stars, a paper plane in a tunnel and a key in a lock',
             caption:
-              'Audit. Built for the compliance reviewer rather than the admin — a different reader, on the same data, which is why it is a separate surface and not a tab.',
+              'The illustration system behind those screens: line art in blue, orange and green.',
+            ratio: '16 / 9',
+          },
+          {
+            kind: 'figure',
+            src: '/images/okta/character-guidelines.webp',
+            alt: 'Okta character guidelines: a full-figure character, people in profile cards and a video call, and four head-and-shoulder portraits',
+            caption: 'Character guidelines for the people in the illustrations.',
+            ratio: '16 / 9',
           },
           {
             kind: 'prose',
