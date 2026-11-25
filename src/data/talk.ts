@@ -25,7 +25,6 @@ export const talk: TalkItem[] = [
     q: 'What’s your main thing?',
     a: [
       'Fintech first: payments, cards and privacy at PayPal. Then enterprise software and developer tools: identity, access and the integration platform at Okta.',
-      'Complicated systems, made usable, down to the last pixel.',
     ],
   },
   {

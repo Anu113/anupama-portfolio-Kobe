@@ -68,8 +68,8 @@ export const work = [
   // were written as stand-ins on request (2026-11-14), for her to confirm;
   // the ads screens are still a coded rebuild until she exports them.
   { company: 'PayPal', theme: 'sage', device: 'phone',
-    title: 'Privacy-first ad personalization',
-    tagline: 'Ad data sharing moved from opted in by default to asking first.',
+    title: 'Ad sharing that asks first',
+    tagline: 'PayPal stopped sharing ad data until people said yes.',
     summary: 'PayPal shared customer data with ad partners by default, and only about 1% of people ever opted out. When compliance moved the default to opted out, I designed how PayPal asks for consent, and proposed the Auto Privacy Advisor: a checkup that brings privacy settings to people.',
     role: 'Owned the design · Ads consent and privacy settings',
     impact: '41% opted in once PayPal asked first',
@@ -79,8 +79,8 @@ export const work = [
 
   { company: 'Walmart Labs', theme: 'ink', device: 'phone',
     title: 'Chase Pay inside Walmart Pay',
-    tagline: 'Brought Chase Pay into Walmart Pay, validated with real customers in-store.',
-    summary: 'Savings Catcher retired in May 2019 and Walmart Pay adoption fell with it. Chase came with the integration already solved — the same pattern they had shipped with PayPal and Samsung Pay. I took it to twelve customers in a store instead, and the two things that broke were invisible from a spec.',
+    tagline: 'Chase Pay in Walmart Pay, tested with twelve customers in a Dallas store.',
+    summary: 'Savings Catcher retired in May 2019 and Walmart Pay adoption fell with it. Chase came with the integration already solved: the same pattern they had shipped with PayPal and Samsung Pay. I took it to twelve customers in a store instead, and the two things that broke were invisible from a spec.',
     role: 'Product designer, Walmart Pay · Sole designer · 5 Chase stakeholders',
     impact: 'Shipped on iOS Feb 2020 and Android Jun 2020',
     hoverState: 'case-study',
@@ -98,9 +98,9 @@ export const work = [
     mediaRatio: '600 / 1066' },
 
   { company: 'Okta', theme: 'coral', device: 'desktop',
-    title: 'Rebuilding IAM for enterprise admins',
-    tagline: 'A ground-up rebuild of the admin console, shipped under live tenants.',
-    summary: 'Admins ran identity for thousands of employees through a console built for a smaller company. I owned the design of the core administrative surfaces — entitlements, role management, the OIN publishing flow and developer onboarding — through a rebuild that shipped underneath live tenants, with no migration freeze.',
+    title: "Okta's admin console, rebuilt in place",
+    tagline: "Okta's admin console, rebuilt while companies kept using it.",
+    summary: 'Admins ran identity for thousands of employees through a console built for a smaller company. I led the design of entitlements, role management, integration publishing and developer onboarding, rebuilt one area at a time while every customer kept using it.',
     role: 'Staff Product Designer · IAM + Developer Tools · Led 6 designers',
     impact: 'Admin task time down 32% across the four highest-volume flows',
     hoverState: 'case-study',
@@ -109,7 +109,7 @@ export const work = [
 
   { company: 'PayPal', theme: 'lilac', device: 'phone',
     title: 'Privacy settings people can read',
-    tagline: 'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.',
+    tagline: 'Privacy settings 80 million people can read.',
     summary: 'PayPal\'s privacy settings had grown into a list of legal controls with no structure, and 75% of visitors stopped on the first page. I owned the research and design of a new structure, tested it through card sorts and unmoderated prototypes, and it launched in early 2023 to more than 80 million people, under GDPR and CCPA.',
     role: 'Owned the design · PayPal app and web · Research through delivery',
     impact: 'Privacy support calls down 60%',
@@ -120,7 +120,7 @@ export const work = [
   { company: 'Walmart Labs', theme: 'sage', device: 'phone',
     title: 'Scan & Go, in-store',
     tagline: 'Scan as you shop, pay on your phone, skip the line. Research to store pilot in a year.',
-    summary: 'Walmart had no answer to the checkout queue, and in 2020 the queue became a health question. I designed Scan & Go end to end inside the Walmart app — scanning, cart, payment and exit — tested it in stores, and took it to a pilot that grew basket size 25%.',
+    summary: 'Walmart had no answer to the checkout queue, and in 2020 the queue became a health question. I designed Scan & Go end to end inside the Walmart app (scanning, cart, payment and exit), tested it in stores, and took it to a pilot that grew basket size 25%.',
     role: 'Product designer · End-to-end flows · Team of 11',
     impact: 'Basket size up 25% in the first pilot',
     hoverState: 'case-study',
@@ -133,9 +133,9 @@ export const work = [
   // 16/10 treatment, which reads as an intentional close to the grid
   // rather than a squeezed sixth card.
   { company: 'Okta', theme: 'ember', device: 'desktop',
-    title: "Designing the future of Okta's Integration Platform",
-    tagline: 'One extensible framework replaced four bespoke integration review flows.',
-    summary: 'Every new OIN integration category meant a bespoke review flow built by hand. I designed one extensible framework instead — a shared manifest schema, validation engine and component kit — so a category Okta hasn\'t invented yet can launch on it without a new build.',
+    title: 'One way to publish an integration to Okta',
+    tagline: 'One way to publish an integration to Okta, instead of four.',
+    summary: 'Every new OIN integration category meant a bespoke review flow built by hand. I designed one framework instead, with a shared manifest, checks and components, so a category Okta hasn\'t invented yet can launch on it without a new build.',
     role: 'Staff Product Designer · Integration Platform + Developer Ecosystem',
     impact: 'Submission cycle time down 48%, on one framework instead of four',
     hoverState: 'case-study',

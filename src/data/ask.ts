@@ -41,7 +41,7 @@ const linkedin: PixelExit = { label: 'LinkedIn', href: site.linkedin, external: 
 
 const oin: PixelCard = {
   label: 'Okta',
-  title: 'Designing the future of Okta’s Integration Platform',
+  title: 'One way to publish an integration to Okta',
   sub: 'Staff Product Designer',
   href: '/work/okta-oin',
 };
@@ -83,7 +83,7 @@ export const pixelTree: Record<string, PixelNode> = {
     q: 'Who is Anupama?',
     say: [
       'That’s Anupama. Staff Product Designer. Ten-ish years of turning complicated systems into things humans can actually use.',
-      'Most recently Okta — identity, access and the integration platform — where she also led a team of six. Before that: PayPal, Walmart Labs, Deloitte Digital, Zomato.',
+      'Most recently Okta, on identity, access and the integration platform, where she also led a team of six. Before that: PayPal, Walmart Labs, Deloitte Digital, Zomato.',
       'I’ve watched her obsess over tiny interaction details. It’s a little concerning. The work is good, though.',
     ],
     next: ['work', 'available'],
@@ -103,7 +103,7 @@ export const pixelTree: Record<string, PixelNode> = {
     say: [
       'Oh, this one. I like this one.',
       'The Okta Integration Network. It looked like a review queue. It was really a framework problem: one manifest, one UI kit and one validation engine behind every kind of integration. Most recent, and open.',
-      'Then PayPal privacy, if you like settings people can actually read.',
+      'Then PayPal privacy, if you like settings people can read.',
     ],
     cards: [{ ...oin, sub: 'Start here' }],
     next: ['hardest', 'locked'],
@@ -113,7 +113,7 @@ export const pixelTree: Record<string, PixelNode> = {
     say: [
       'Pick one. She has a habit of arguing for the slower option.',
       'At Okta: one framework for every kind of integration, instead of four quick fixes. Nobody shipped anything for a quarter. Four impatient teams watched each other wait.',
-      'At Walmart: testing showed the always-on scanner was double-scanning. She kept it on — speed was the point — and gave people a switch and the last item on screen instead.',
+      'At Walmart: testing showed the always-on scanner was double-scanning. She kept it on, because speed was the point, and gave people a switch and the last item on screen instead.',
     ],
     cards: [
       { ...oin, sub: 'The hard call' },
@@ -128,7 +128,7 @@ export const pixelTree: Record<string, PixelNode> = {
       site.lock.cases === 'all'
         ? 'All the case studies are behind one passcode. I don’t have it. Tiny creature, limited access.'
         : site.lock.cases === 'marked'
-          ? 'One. <strong>Rebuilding IAM at Okta</strong> is behind a passcode. I don’t have it. Tiny creature, limited access.'
+          ? 'One. <strong>Okta’s admin console</strong> is behind a passcode. I don’t have it. Tiny creature, limited access.'
           : 'Nothing right now. Every case study is open. Go and look before someone changes their mind.',
       site.lock.cases === 'none'
         ? 'Want the story behind one? She’ll walk you through it.'
