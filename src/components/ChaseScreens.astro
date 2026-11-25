@@ -15,7 +15,8 @@
 
    The recording plays only while on screen, muted and looping; under
    reduced motion it doesn't play on its own and gets the browser's
-   controls. Static phones are one role="img" each, with a label. Every row is a
+   controls. Replay beside its label starts it again from the top.
+   Static phones are one role="img" each, with a label. Every row is a
    pair, before and after, side by side; rows scroll sideways where they
    don't fit (arrow keys once focused). */
 import DeviceBox from './DeviceBox.astro';
@@ -52,7 +53,7 @@ const phones = set === 'recording' ? [] : sets[set];
 ---
 <figure class:list={['cps', `cps--${set}`]} data-cps>
   {set === 'recording' ? (
-    <DeviceBox label="Study prototype">
+    <DeviceBox label="Study prototype" replay>
       <video
         muted loop playsinline preload="metadata" data-cps-video
         poster="/images/chase-pay/prototype-poster.jpg"
@@ -132,6 +133,11 @@ const phones = set === 'recording' ? [] : sets[set];
   // The recording: plays while on screen, not on its own under reduced motion.
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.querySelectorAll<HTMLVideoElement>('[data-cps-video]').forEach((v) => {
+    // Replay, beside the label: from the top, playing (a press, so even under reduced motion).
+    v.closest('.device-box')?.querySelector('[data-replay]')?.addEventListener('click', () => {
+      v.currentTime = 0;
+      v.play().catch(() => { v.controls = true; });
+    });
     if (still) { v.controls = true; return; }
     new IntersectionObserver(([e]) => {
       if (e.isIntersecting) v.play().catch(() => { v.controls = true; });

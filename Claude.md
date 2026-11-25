@@ -1033,7 +1033,13 @@ walked back. Concretely, in the current implementation:
   to show a phone on a case study, reuse it; its corners are a requested
   exception to the square `--radius` rule. The PayPal prototypes get the
   same look in their case-study view; their home-page autoplay phones
-  keep PHONE CARDS. Values under DEVICE BOX in `tokens.css`. On the
+  keep PHONE CARDS. Values under DEVICE BOX in `tokens.css`.
+  Phones that play or can be tapped through (the PayPal prototypes,
+  Privacy's working phones, the Chase recording) carry a round replay
+  button beside their label pill, the pill's glass and height, that
+  puts the phone back to its start (`DeviceFoot.astro`; "C · Beside the
+  pill" of `experiments/device-replay/`, on request, 2026-11-25).
+  Still screenshots don't get one. On the
   PayPal Debit Card case the work (prototypes, then screens) comes first,
   before the situation, on request. Section
   heads follow the reference: a centred serif line with an italic phrase,

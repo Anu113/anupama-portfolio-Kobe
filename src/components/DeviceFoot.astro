@@ -1,0 +1,39 @@
+---
+/* DeviceFoot.astro — the label pill under a case-study phone, with a
+   round replay button beside it when the phone plays or can be tapped
+   through ("C · Beside the pill" of experiments/device-replay, on
+   request, 2026-11-25). Used by DeviceBox (`replay`) and by the PayPal
+   prototypes' case-study view, so every phone's replay looks the same.
+
+   Why: a visitor who has tapped deep into a phone, or watched its flow
+   end, gets back to the start in one press, without hunting for it.
+
+   The button only carries `data-replay`; the component that owns the
+   phone listens for it and does its own reset. Its one motion is the
+   arrow turning once on press (none under reduced motion). Values under
+   DEVICE BOX in tokens.css, styles in styles/device-box.css. */
+import '../styles/device-box.css';
+interface Props { label: string; replay?: boolean }
+const { label, replay = false } = Astro.props;
+---
+{replay ? (
+  <div class="device-box__foot">
+    <span class="device-box__pill" aria-hidden="true">{label}</span>
+    <button type="button" class="device-box__replay" data-replay aria-label={`Replay ${label}`} title="Replay">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+    </button>
+  </div>
+) : (
+  <span class="device-box__pill" aria-hidden="true">{label}</span>
+)}
+
+<script>
+  document.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('.device-box__replay');
+    if (!b) return;
+    b.classList.remove('is-turning');
+    void b.offsetWidth;
+    b.classList.add('is-turning');
+    requestAnimationFrame(() => requestAnimationFrame(() => b.classList.remove('is-turning')));
+  });
+</script>

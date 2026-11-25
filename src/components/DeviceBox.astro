@@ -8,14 +8,19 @@
    The PayPal prototypes don't use this component (their markup is shared
    with the home page's autoplay cards), but they get the same look from
    the same rules in styles/device-box.css. Values under DEVICE BOX in
-   tokens.css. */
+   tokens.css.
+
+   `replay`: a round replay button beside the label (DeviceFoot.astro),
+   for phones that play or can be tapped through. It carries
+   `data-replay`; the component holding the phone does the reset. */
 import '../styles/device-box.css';
-interface Props { label?: string }
-const { label } = Astro.props;
+import DeviceFoot from './DeviceFoot.astro';
+interface Props { label?: string; replay?: boolean }
+const { label, replay = false } = Astro.props;
 ---
 <div class="device-box">
   <div class="device">
     <div class="device__screen"><slot /></div>
   </div>
-  {label && <span class="device-box__pill" aria-hidden="true">{label}</span>}
+  {label && <DeviceFoot label={label} replay={replay} />}
 </div>

@@ -59,3 +59,45 @@
   white-space: nowrap;
   pointer-events: none;
 }
+
+/* The label with a replay beside it (DeviceBox's `replay`, and the
+   prototypes' case-study view): the pill and a round button of the same
+   glass and height, side by side where the pill alone would sit. */
+.device-box__foot {
+  position: absolute;
+  left: 50%;
+  bottom: var(--device-pill-bottom);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: stretch;
+  gap: var(--device-foot-gap);
+}
+.device-box__foot .device-box__pill {
+  position: static;
+  transform: none;
+}
+.device-box__replay {
+  /* The pill's height: its 0.85em padding top and bottom plus one line. */
+  font: inherit;
+  font-size: var(--step-body);
+  width: calc(1.7em + 1lh);
+  flex: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--device-pill-bg);
+  color: var(--device-pill-ink);
+  box-shadow: var(--device-pill-shadow);
+  cursor: pointer;
+  transition: color var(--dur-micro) var(--ease-out);
+}
+.device-box__replay:hover { color: var(--fg); }
+.device-box__replay svg {
+  width: var(--device-replay-icon);
+  height: var(--device-replay-icon);
+  transition: transform var(--dur-device-replay) var(--ease-out);
+}
+/* Pressed: jump back a turn without transition, then ease forward to rest. */
+.device-box__replay.is-turning svg { transform: rotate(-360deg); transition: none; }

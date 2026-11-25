@@ -36,9 +36,12 @@
    running the loop by itself — open the offers, activate Target and
    Walmart, back to the card, a Target purchase lands as cash back —
    then starting again. phone-loop.ts runs it only while the card is on
-   screen and motion is allowed. */
+   screen and motion is allowed. 
+   Replay: in the case-study view, a round button beside the phone's
+   label (DeviceFoot.astro) does what "Start again" does. */
 import '../styles/pp-proto.css';
 import '../styles/device-box.css';
+import DeviceFoot from './DeviceFoot.astro';
 interface Props { caption?: string; autoplay?: boolean }
 const { caption, autoplay = false } = Astro.props;
 
@@ -141,7 +144,7 @@ const steps = [
         </section>
       </div>
     </div>
-    {!autoplay && <span class="device-box__pill" aria-hidden="true">Cash back offers</span>}
+    {!autoplay && <DeviceFoot label="Cash back offers" replay />}
   </div>
 
   <div class="proto__side">
@@ -422,7 +425,7 @@ const steps = [
         active = active.filter((a) => a !== id); expired = [...expired, id];
         render();
         showPush('PayPal Debit Card - cash back offer expired', 'Thanks for participating. Be on the lookout for more PayPal Debit Card offers.');
-      } else if (b.hasAttribute('data-restart')) {
+      } else if (b.matches('[data-restart], [data-replay]')) {
         reset(); go('card', { focus: true });
       } else if (b.dataset.jump) {
         const j = b.dataset.jump;

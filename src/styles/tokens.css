@@ -884,6 +884,13 @@
   --device-pill-ink: rgb(0 0 0 / 0.6);
   --device-pill-shadow: 0 1px 3px rgb(0 0 0 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.5);
   --device-pill-bottom: clamp(1rem, 3vw, 2.5rem);
+  /* Replay ("C · Beside the pill" of experiments/device-replay, on
+     request 2026-11-25): a round button of the pill's glass and height,
+     beside it, on phones that play or can be tapped through. Grey at
+     rest, ink on hover; the arrow turns once when pressed. */
+  --device-foot-gap: 0.5rem;
+  --device-replay-icon: 16px;
+  --dur-device-replay: 600ms;
 }
 :root[data-mode='dark'] {
   --device-box-bg: #232220;

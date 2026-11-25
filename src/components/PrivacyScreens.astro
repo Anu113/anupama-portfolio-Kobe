@@ -17,7 +17,8 @@
    How a phone works: it starts on its screen; a `data-go` clones that
    screen's <template> on top (sheets slide over the screen they came
    from, pages slide in), `data-back` and Escape step back, `data-home`
-   returns to the start. Each phone keeps its own state. Only the
+   returns to the start. Each phone keeps its own state; the round
+   Replay beside its label puts it back exactly as it started. Only the
    screens a phone can reach are templated in it. A phone that starts on
    a sheet (How it works, Delete your data, Shopping and Privacy) has the
    page it belongs to underneath, so closing it lands on that page.
@@ -144,7 +145,7 @@ const names: Record<string, string> = {
 <figure class="ps-set" data-ps>
   <div class="ps-set__row" style={`--n: ${phones.length};`} role="group" aria-label={`${phones.length} screens: ${phones.map((x) => x.label).join(', ')}`}>
     {phones.map((p) => (
-      <DeviceBox label={p.label}>
+      <DeviceBox label={p.label} replay={!p.before}>
         <div
           class:list={['ps', p.before && 'ps--before']}
           role={p.before ? 'img' : 'group'}
@@ -371,14 +372,27 @@ const names: Record<string, string> = {
     });
     phone.addEventListener('keydown', (e) => { if (e.key === 'Escape' && screens().length > 1) { e.preventDefault(); back(); } });
 
-    const first = top();
-    live(first);
+    const offset = Number(phone.dataset.offset);
     const parentId = phone.dataset.parent;
     const parentTpl = parentId && phone.querySelector<HTMLTemplateElement>(`template[data-tpl="${parentId}"]`);
-    const under = parentTpl ? parentTpl.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined : undefined;
-    if (under) { stack.prepend(under); live(under); first.classList.add('is-over'); }
-    syncBack();
-    const offset = Number(phone.dataset.offset);
-    if (offset) requestAnimationFrame(() => { first.scrollTop = offset; });
+    // Kept untouched so Replay can put the phone back exactly as it started.
+    const startFirst = top().cloneNode(true) as HTMLElement;
+    const startUnder = parentTpl ? parentTpl.content.firstElementChild as HTMLElement | null : null;
+
+    const start = (focus: boolean) => {
+      const first = startFirst.cloneNode(true) as HTMLElement;
+      const under = startUnder?.cloneNode(true) as HTMLElement | undefined;
+      stack.replaceChildren(first);
+      live(first);
+      if (under) { stack.prepend(under); live(under); first.classList.add('is-over'); }
+      if (toast) toast.hidden = true;
+      syncBack();
+      if (offset) requestAnimationFrame(() => { first.scrollTop = offset; });
+      if (focus) { focusTop(); say(names[first.dataset.screen ?? ''] ?? ''); }
+    };
+    start(false);
+
+    // Replay (DeviceFoot, beside the label): back to the start, switches and all.
+    phone.closest('.device-box')?.querySelector('[data-replay]')?.addEventListener('click', () => start(true));
   });
 </script>
