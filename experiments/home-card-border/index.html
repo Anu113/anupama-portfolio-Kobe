@@ -54,8 +54,13 @@
             arrow; on hover it deepens a little more
     grey    E · Grey: our grey (#707070) filled, white arrow; on hover ink
     ghostink F · Ghost to ink: the Ghost at rest (no fill, a 1px ring at
-            18% ink, ink arrow); on hover it fills with ink as it opens,
-            the ring goes, and the arrow and "View" turn white Nothing under the text. "View all work" is the old CTA again: the
+            18% ink, ink arrow). On hover the ink spreads out from the arrow
+            as a circle: the ring fills with ink (the arrow turning white
+            with it), then the ink grows into the whole pill (clip-path, so
+            it never passes through grey) while the arrow rides it to the
+            end and "View" comes in white. Leaving plays it back: the ink
+            draws in to the circle, and there it and the arrow's colour
+            fade together, so the arrow is never white on white. Nothing under the text. "View all work" is the old CTA again: the
   mono caps link with its underline and a nudging arrow (.btn--link in
   global.css), not the pill pair.
 -->
@@ -166,14 +171,26 @@
     --b-bg-h:#fff;--b-fg-h:var(--ink);--b-ring-h:color-mix(in srgb,var(--ink) 8%,transparent);--b-sh-h:0 1px 2px rgb(38 38 38/.08),0 8px 18px -6px rgb(38 38 38/.2)}
   .t-hue .peek2{--b-bg:color-mix(in oklab,var(--g),var(--ink) 8%);--b-fg:var(--ink);--b-bg-h:color-mix(in oklab,var(--g),var(--ink) 16%);--b-fg-h:var(--ink)}
   .t-ghostink .peek2{--b-bg:transparent;--b-fg:var(--ink);--b-ring:color-mix(in srgb,var(--ink) 18%,transparent);
-    --b-bg-h:var(--ink);--b-fg-h:var(--bg);--b-ring-h:transparent}
+    --b-bg-h:transparent;--b-fg-h:var(--bg);--b-ring-h:color-mix(in srgb,var(--ink) 18%,transparent)}
+  /* F · the ink layer: a full pill revealed by a circle growing from the arrow */
+  .peek2 u{display:none}
+  .t-ghostink .peek2 u{display:block;position:absolute;inset:0;border-radius:20px;background:var(--ink);
+    clip-path:circle(20px at 20px 20px);opacity:0;
+    transition:clip-path .45s cubic-bezier(.4,0,.2,1),opacity .2s linear .35s;will-change:clip-path,opacity}
+  .t-ghostink .card:is(:hover,:focus-within) .peek2 u{clip-path:circle(80px at 20px 20px);opacity:1;
+    transition:opacity .15s linear,clip-path .6s var(--ease) .05s}
+  .t-ghostink .card:is(:hover,:focus-within) .peek2 s{width:40px;box-shadow:inset 0 0 0 1px var(--b-ring)}
+  .t-ghostink .peek2{transition:color .2s linear .35s}
+  .t-ghostink .card:is(:hover,:focus-within) .peek2{transition:color .15s linear}
+  .t-ghostink .peek2 b,.t-ghostink .peek2 i{z-index:1}
+  .t-ghostink .card:is(:hover,:focus-within) .peek2 i{transition:transform .6s var(--ease) .05s}
   .t-grey .peek2{--b-bg:var(--grey);--b-fg:#fff;--b-bg-h:var(--ink);--b-fg-h:#fff}
   .peek2 i{position:absolute;left:0;top:0;width:40px;height:40px;display:grid;place-items:center;transition:transform .6s var(--ease)}
   .peek2 svg{width:15px;height:15px}
   .peek2 b{position:absolute;left:16px;top:0;line-height:40px;font:600 13px/40px var(--sans);opacity:0;transform:translateX(-6px);transition:opacity .25s var(--ease),transform .6s var(--ease)}
   .card:is(:hover,:focus-within) .peek2 i{transform:translateX(52px)}
   .card:is(:hover,:focus-within) .peek2 b{opacity:1;transform:none;transition:opacity .35s var(--ease) .1s,transform .6s var(--ease)}
-  @media (prefers-reduced-motion:reduce){.peek2,.peek2 s,.peek2 i,.peek2 b{transition:none!important}}
+  @media (prefers-reduced-motion:reduce){.peek2,.peek2 s,.peek2 u,.peek2 i,.peek2 b{transition:none!important}}
   @media (prefers-reduced-motion:reduce){.peek,.peek b{transition:none!important}}
   /* the old "View all work" CTA (.btn--link) */
   .btn--link{display:inline-flex;align-items:center;gap:.4em;font:400 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink);
@@ -335,7 +352,7 @@ const card = (k, cls = '', media) => { const c = C[k]; return `
       ${LB === 'chips' ? `<div class="chips">${[c.co, ...c.tags.split(' · ')].map(t => `<span>${t}</span>`).join('')}</div>` : `<span class="label meta">${c.co} · ${c.tags}</span>`}
       <h3>${c.title}</h3>
       <p>${c.line}</p>
-      <span class="peek2" aria-hidden="true"><s></s><b>View</b><i>${UP}</i></span>
+      <span class="peek2" aria-hidden="true"><s></s><u></u><b>View</b><i>${UP}</i></span>
       <span class="pills" aria-hidden="true"><span class="pill">View case study</span><span class="arrow">${ARROW}${ARROW}</span></span>
     </div>
     <a class="cover" href="#" aria-label="${c.title}, view case study"></a>
