@@ -203,7 +203,17 @@ effect:
     rounded corners. That's one of two sanctioned exceptions to the square
     `--radius` rule (the other is the page's curved end over the black
     footer, below); the site's own cards stay square. Colours, corners and
-    timing live in the "Pixel" block of `tokens.css`.
+    timing live in the "Pixel" block of `tokens.css`. One Moss in the
+    panel, in the header beside his name (on request, 2026-11-25,
+    `experiments/moss-edges/`: "1 · Dark disc" + "Peek", and "H · No
+    big Moss"; the white avatar circle and the big Moss over the greeting
+    are gone): his body sits in a dark disc, his head and ears out over
+    its rim. At rest he peeks, half down in it; he comes up while he
+    thinks and answers or the pointer is on the panel, and sinks back
+    after. Still and up under reduced motion. Values under PIXEL MOSS.
+    His image, `moss-sm.webp`, has its pale rim and the white smear
+    under his feet cleaned by `scripts/moss-defringe.py` (run by
+    `moss-sprite.py`).
   - Content: a conversation tree in `src/data/ask.ts` — buttons only, no
     free text, no model, no backend. Moss's voice comes from her character
     brief (summarised at the top of `ask.ts`): curious, dry, slightly

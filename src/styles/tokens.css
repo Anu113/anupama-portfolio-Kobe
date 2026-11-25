@@ -503,6 +503,18 @@
   --ease-pixel: cubic-bezier(0.2, 0.8, 0.2, 1);
   --dur-pixel: 250ms;
   --pixel-stagger: 90ms;   /* gap between chips rising in, one by one */
+  /* PIXEL MOSS — the header Moss (AskBubble.astro, .pixel-moss), "1 · Dark
+     disc" + "Peek" of experiments/moss-edges/ (2026-11-25): his body in a
+     disc, head and ears out over its rim. His image is wider than the disc
+     and set up and left of it, so his face centres in it. */
+  --pixel-moss-disc: 32px;
+  --pixel-moss-w: 44px;             /* his width; the image is 240 x 287 */
+  --pixel-moss-x: -6px;
+  --pixel-moss-y: -12px;            /* ears this far above the disc */
+  --pixel-moss-peek: 9px;           /* how far down he sinks at rest */
+  --dur-pixel-moss: 650ms;
+  --ease-pixel-moss: cubic-bezier(0.34, 1.56, 0.64, 1);   /* a small overshoot: he pops */
+  --dur-pixel-moss-linger: 1400ms;  /* how long he stays up after he's done talking */
 }
 
 /* ============================================================

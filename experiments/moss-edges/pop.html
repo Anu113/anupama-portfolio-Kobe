@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moss pops out — round 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page:#fcfcfc; --ink:#262626; --grey:#707070;
+    --pixel-bg:#17120f; --pixel-raised:#1e1814; --pixel-high:#2a221d;
+    --pixel-fg:#f4ece1; --pixel-dim:#a2968a; --pixel-rule:#322a24; --pixel-rule-strong:#4a3f37;
+    --ask-bg:#fbf3ee;
+    --sage-deep:#3a3d2b;
+    --glow:255 214 170;          /* the lamp's candle (--lamp-hue) */
+    --mono:'Roboto Mono', ui-monospace, monospace;
+    --lab:'Azeret Mono', ui-monospace, monospace;
+    --serif:'Crimson Pro', Georgia, serif;
+    --sans:'Manrope', system-ui, sans-serif;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --spring:cubic-bezier(.34,1.56,.64,1);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--ink); font:600 12px/1.8 var(--sans); }
+  .wrap { max-width:1280px; margin:0 auto; padding:56px 40px 120px; }
+  .label { font:400 11px/1.4 var(--lab); text-transform:uppercase; letter-spacing:.04em; color:var(--grey); }
+  h1 { font:300 40px/1.1 var(--serif); margin:8px 0 12px; }
+  h1 em { font-style:italic; }
+  p.dek { max-width:60ch; margin:0; color:var(--grey); }
+  .top { display:grid; grid-template-columns:1fr 26rem; gap:56px; align-items:start; }
+  .picks { margin-top:24px; display:grid; gap:6px; }
+  .picks b { font:400 11px/1.4 var(--lab); text-transform:uppercase; letter-spacing:.04em; }
+  .replay { all:unset; cursor:pointer; margin-top:16px; justify-self:start; font:400 11px/1 var(--lab); text-transform:uppercase; letter-spacing:.04em; padding:10px 14px; border-radius:999px; background:var(--ink); color:var(--page); }
+  .replay:focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
+
+  /* ---------- panel ---------- */
+  .panel { background:var(--pixel-bg); color:var(--pixel-fg); border-radius:24px; overflow:hidden; font-family:var(--mono); box-shadow:0 28px 70px -24px rgb(20 8 4 / .6); }
+  .panel--full { height:34rem; display:flex; flex-direction:column; }
+  .head { display:flex; justify-content:space-between; align-items:center; padding:1.1rem 1.1rem 1.1rem 1.4rem; border-bottom:1px solid var(--pixel-rule); }
+  .title { display:flex; align-items:center; gap:.7rem; margin:0; font:500 14px/1 var(--mono); }
+  .title small { font:400 12px/1.3 var(--mono); color:var(--pixel-dim); }
+  .acts { display:flex; gap:.25rem; color:var(--pixel-dim); }
+  .acts i { width:2rem; height:2rem; display:grid; place-items:center; }
+  .acts svg { width:1rem; height:1rem; }
+  .thread { flex:1; padding:1.25rem 1.5rem 1.5rem; display:flex; flex-direction:column; gap:1rem; }
+  .msg { font:400 13px/1.6 var(--mono); max-width:92%; }
+  .msg p { margin:0 0 .5rem; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chips span { font:400 12px/1 var(--mono); padding:.55rem .8rem; border-radius:999px; border:1px solid var(--pixel-rule-strong); }
+
+  /* ---------- big Moss: 3 · Lamp-lit, her pick ---------- */
+  .big { position:relative; display:grid; place-items:center; padding:.75rem 0; }
+  .big::before { content:''; position:absolute; left:50%; bottom:2px; width:190px; height:126px; transform:translateX(-50%);
+    background:radial-gradient(50% 50% at 50% 70%, rgb(var(--glow) / .16), rgb(var(--glow) / .05) 55%, transparent 75%); }
+  .big::after { content:''; position:absolute; left:50%; bottom:12px; width:74px; height:10px; transform:translateX(-50%);
+    background:radial-gradient(50% 50% at 50% 50%, rgb(0 0 0 / .55), transparent 70%); }
+  .big img { position:relative; z-index:1; display:block; width:96px; }
+
+  /* ---------- option grid ---------- */
+  .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:32px 24px; margin-top:40px; }
+  .opt { all:unset; cursor:pointer; display:grid; gap:12px; align-content:start; }
+  .opt .panel { transition:transform .5s var(--ease); }
+  .opt:hover .panel { transform:translateY(-3px); }
+  .opt:focus-visible .panel, .opt[aria-pressed="true"] .panel { outline:2px solid var(--ink); outline-offset:4px; }
+  .opt .head { padding:1rem 1rem 1rem 1.25rem; }
+  .mag { height:11rem; display:grid; place-items:end center; padding-bottom:1.25rem; border-top:1px solid var(--pixel-rule); background:var(--pixel-bg); }
+  .mag .av { zoom:3.5; }
+  .cap { display:grid; gap:2px; }
+  .cap strong { font:400 11px/1.4 var(--lab); text-transform:uppercase; letter-spacing:.04em; }
+  .cap span { color:var(--grey); }
+
+  /* ================= the pop =================
+     .av is the disc's box. .pop is his head, masked to (everything above
+     the disc's centre) + (the disc itself), so he is inside the disc at the
+     bottom and out of it at the top. The img moves inside .pop, so a rise
+     or bob slides him through the mask instead of carrying it along.
+       --d  disc size     --w  head width (full body, 240:287)
+       --x/--y  head offset from the disc's top-left            */
+  .av { --d:32px; --w:44px; --x:-6px; --y:-12px; --cut:var(--d);
+    position:relative; display:block; flex:none; width:var(--d); height:var(--d); }
+  .av .disc { position:absolute; inset:0; border-radius:50%; background:var(--pixel-high); box-shadow:inset 0 0 0 1px var(--pixel-rule-strong); }
+  .av .pop { position:absolute; left:var(--x); top:var(--y); width:var(--w); height:calc(var(--w) * 287 / 240 + 12px); /* room below for him to sink into the disc */
+    --cx:calc(var(--d) / 2 - var(--x)); --cy:calc(var(--d) / 2 - var(--y));
+    -webkit-mask:
+      linear-gradient(#000,#000) 0 0 / 100% var(--cy) no-repeat,
+      radial-gradient(circle calc(var(--cut) / 2) at var(--cx) var(--cy), #000 97%, transparent 100%) 0 0 / 100% 100% no-repeat;
+            mask:
+      linear-gradient(#000,#000) 0 0 / 100% var(--cy) no-repeat,
+      radial-gradient(circle calc(var(--cut) / 2) at var(--cx) var(--cy), #000 97%, transparent 100%) 0 0 / 100% 100% no-repeat; }
+  .av .pop img { display:block; width:100%; height:auto; }
+  .av .front { display:none; }
+
+  /* 1 — E, as picked: dark disc, ears over the rim */
+
+  /* 2 — leaf: the same pop on a deep sage disc, the leaf on his head */
+  .av--leaf .disc { background:var(--sage-deep); box-shadow:none; }
+
+  /* 3 — lamp: the disc lit from below by the candle, like the big Moss under it */
+  .av--lamp .disc { background:radial-gradient(70% 70% at 50% 85%, rgb(var(--glow) / .32), rgb(var(--glow) / .08) 60%, transparent 85%), var(--pixel-high); box-shadow:inset 0 0 0 1px rgb(var(--glow) / .14); }
+  .av--lamp .pop img { filter:drop-shadow(0 1px 1.5px rgb(0 0 0 / .5)); }
+
+  /* 4 — through the ring: no fill, only a hairline; his ears break it */
+  .av--ring .disc { background:none; box-shadow:inset 0 0 0 1px var(--pixel-dim); }
+
+  /* 5 — big head: his head larger than the disc, cheeks and ears out at the sides too */
+  .av--bighead { --w:52px; --x:-10px; --y:-16px; }
+  .av--bighead .pop { -webkit-mask:
+      linear-gradient(#000,#000) 0 0 / 100% calc(var(--cy) + 4px) no-repeat,
+      radial-gradient(circle calc(var(--d) / 2) at var(--cx) var(--cy), #000 97%, transparent 100%) 0 0 / 100% 100% no-repeat;
+    mask:
+      linear-gradient(#000,#000) 0 0 / 100% calc(var(--cy) + 4px) no-repeat,
+      radial-gradient(circle calc(var(--d) / 2) at var(--cx) var(--cy), #000 97%, transparent 100%) 0 0 / 100% 100% no-repeat; }
+
+  /* 6 — burrow: no disc, a dark oval hole he comes up out of; its front lip covers his chest */
+  .av--burrow { --y:-9px; }
+  .av--burrow .disc { inset:auto 0 0; height:12px; border-radius:50%;
+    background:radial-gradient(closest-side, #0b0807, #0f0b09 70%, var(--pixel-rule-strong) 96%, transparent); box-shadow:none; }
+  .av--burrow .pop { -webkit-mask:linear-gradient(#000,#000) 0 0 / 100% calc(var(--d) - 6px - var(--y)) no-repeat;
+                             mask:linear-gradient(#000,#000) 0 0 / 100% calc(var(--d) - 6px - var(--y)) no-repeat; }
+  .av--burrow .front { display:block; position:absolute; left:0; right:0; bottom:0; height:6px; border-radius:0 0 50% 50% / 0 0 100% 100%;
+    border-bottom:1px solid var(--pixel-rule-strong); }
+
+  /* 7 — pops up on open: starts sunk in the disc, springs up as the panel opens, settles */
+  .av--rise .pop img { transform:translateY(0); }
+  .is-playing .av--rise .pop img { animation:rise 900ms var(--spring) both; }
+  @keyframes rise { 0% { transform:translateY(22px); } 35% { transform:translateY(22px); } 100% { transform:translateY(0); } }
+
+  /* 8 — pops when he talks: dips into the disc and pops back each time a reply starts */
+  .is-playing .av--talk .pop img { animation:talk 520ms var(--spring) both; }
+  @keyframes talk { 0% { transform:translateY(0); } 30% { transform:translateY(6px); } 100% { transform:translateY(0); } }
+
+  /* 9 — peek: shy at rest (eyes over the rim), up when he talks or the pointer is on the panel */
+  .av--peek .pop img { transform:translateY(9px); transition:transform 600ms var(--spring); }
+  .is-playing .av--peek .pop img, .opt:hover .av--peek .pop img, .panel--full:hover .av--peek .pop img { transform:translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .av .pop img { animation:none !important; transition:none !important; transform:none !important; }
+  }
+  @media (max-width: 1000px) { .top, .grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="label">Experiment · Moss in his panel · round 2 · 2026-11-25</p>
+  <div class="top">
+    <div>
+      <h1>Moss <em>pops out</em></h1>
+      <p class="dek">You picked E, his ears over the rim of the disc, and the lamp-lit big Moss. Here are more ways for the small one to pop. 1–6 are still; 7–9 move, but only at a moment, never on a loop. Each card shows the real size in the header and 3.5× underneath. "Play" runs the moving ones. Under reduced motion they all stay still.</p>
+      <div class="picks">
+        <span class="label">Your pick</span>
+        <b data-pick>Header: 1 · Dark disc</b>
+        <b>Big Moss: Lamp-lit</b>
+      </div>
+      <button class="replay" type="button" data-play>Play</button>
+    </div>
+    <div class="panel panel--full" data-full>
+      <div class="head">
+        <p class="title"><span data-slot style="display:contents"></span><span>Moss</span> <small>looks after this portfolio</small></p>
+        <div class="acts">
+          <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></i>
+          <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></i>
+        </div>
+      </div>
+      <div class="thread">
+        <div class="big"><img src="img/moss-smart.png" alt=""></div>
+        <div class="msg"><p>Ah. You found me.</p><p>I’m Moss. I look after this portfolio. Short on time? Ask me something and I’ll point you at the good bits.</p></div>
+        <div class="chips"><span>Who is she?</span><span>Show me the work</span><span>Is she available?</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" data-group>
+    <button class="opt" data-name="1 · Dark disc" aria-pressed="true">
+      <div class="panel"><div class="head"><p class="title"><span class="av"><span class="disc"></span><span class="pop"><img src="img/moss-smart.png" alt=""></span></span><span>Moss</span> <small>looks after this portfolio</small></p></div><div class="mag"></div></div>
+      <span class="cap"><strong>1 · Dark disc</strong><span>E, as you picked it: the panel’s raised tone, his ears over the rim.</span></span>
+    </button>
+    <button class="opt" data-name="2 · Leaf disc" aria-pressed="false">
+      <div class="panel"><div class="head"><p class="title"><span class="av av--leaf"><span class="disc"></span><span class="pop"><img src="img/moss-smart.png" alt=""></span></span><span>Moss</span> <small>looks after this portfolio</small></p></div><div class="mag"></div></div>
+      <span class="cap"><strong>2 · Leaf disc</strong><span>The same pop on a deep sage from his leaf. The leaf and the disc read as one colour.</span></span>
+    </button>
+    <button class="opt" data-name="3 · Lamp disc" aria-pressed="false">
+      <div class="panel"><div class="head"><p class="title"><span class="av av--lamp"><span class="disc"></span><span class="pop"><img src="img/moss-smart.png" alt=""></span></span><span>Moss</span> <small>looks after this portfolio</small></p></div><div class="mag"></div></div>
+      <span class="cap"><strong>3 · Lamp disc</strong><span>The disc lit from below by the candle, so he matches the big lamp-lit Moss under it.</span></span>
+    </button>
+    <button class="opt" data-name="4 · Through the ring" aria-pressed="false">
+      <div class="panel"><div class="head"><p class="title"><span class="av av--ring"><span class="disc"></span><span class="pop"><img src="img/moss-smart.png" alt=""></span></span><span>Moss</span> <small>looks after this portfolio</small></p></div><div class="mag"></div></div>
+      <span class="cap"><strong>4 · Through the ring</strong><span>No fill, just a thin ring. His ears break through the line.</span></span>
+    </button>
+    <button class="opt" data-name="5 · Big head" aria-pressed="false">
+      <div class="panel"><div class="head"><p class="title"><span class="av av--bighead"><span class="disc"></span><span class="pop"><img src="img/moss-smart.png" alt=""></span></span><span>Moss</span> <small>looks after this portfolio</small></p></div><div class="mag"></div></div>
+      <span class="cap"><strong>5 · Big head</strong><span>His head bigger than the disc: ears, cheeks and whiskers out at the sides too. The boldest pop.</span></span>
+    </button>
+    <button class="opt" data-name="6 · Burrow" aria-pressed="false">
+      <div class="panel"><div class="head"><p class="title"><span class="av av--burrow"><span class="disc"></span><span class="pop"><img src="img/moss-smart.png" alt=""></span><span class="front"></span></span><span>Moss</span> <small>looks after this portfolio</small></p></div><div class="mag"></div></div>
+      <span class="cap"><strong>6 · Burrow</strong><span>No disc. He comes up out of a little hole, like Totoro’s family. The hole’s front edge covers his chest.</span></span>
+    </button>
+    <button class="opt" data-name="7 · Pops up on open" aria-pressed="false">
+      <div class="panel"><div class="head"><p class="title"><span class="av av--rise"><span class="disc"></span><span class="pop"><img src="img/moss-smart.png" alt=""></span></span><span>Moss</span> <small>looks after this portfolio</small></p></div><div class="mag"></div></div>
+      <span class="cap"><strong>7 · Pops up on open</strong><span>The disc is empty for a beat as the panel opens, then he springs up out of it, once. It says he arrived to talk.</span></span>
+    </button>
+    <button class="opt" data-name="8 · Pops when he talks" aria-pressed="false">
+      <div class="panel"><div class="head"><p class="title"><span class="av av--talk"><span class="disc"></span><span class="pop"><img src="img/moss-smart.png" alt=""></span></span><span>Moss</span> <small>looks after this portfolio</small></p></div><div class="mag"></div></div>
+      <span class="cap"><strong>8 · Pops when he talks</strong><span>A quick dip and bounce each time a reply starts typing, so the header shows he’s answering.</span></span>
+    </button>
+    <button class="opt" data-name="9 · Peek" aria-pressed="false">
+      <div class="panel"><div class="head"><p class="title"><span class="av av--peek"><span class="disc"></span><span class="pop"><img src="img/moss-smart.png" alt=""></span></span><span>Moss</span> <small>looks after this portfolio</small></p></div><div class="mag"></div></div>
+      <span class="cap"><strong>9 · Peek</strong><span>Shy at rest, only eyes and ears over the rim. He pops all the way up when he talks or the pointer is on the panel.</span></span>
+    </button>
+  </div>
+</div>
+
+<script>
+  const slot = document.querySelector('[data-slot]');
+  const label = document.querySelector('[data-pick]');
+  const full = document.querySelector('[data-full]');
+  const opts = [...document.querySelectorAll('[data-group] .opt')];
+  opts.forEach(b => b.querySelector('.mag').append(b.querySelector('.av').cloneNode(true)));
+  function play(el) { el.classList.remove('is-playing'); void el.offsetWidth; el.classList.add('is-playing');
+    clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('is-playing'), 1400); }
+  function pick(btn) {
+    opts.forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+    slot.replaceChildren(btn.querySelector('.head .av').cloneNode(true));
+    label.textContent = 'Header: ' + btn.dataset.name;
+    play(full);
+  }
+  opts.forEach(b => b.addEventListener('click', () => { pick(b); play(b); }));
+  document.querySelector('[data-play]').addEventListener('click', () => { play(full); opts.forEach(play); });
+  pick(opts[0]);
+</script>
+</body>
+</html>

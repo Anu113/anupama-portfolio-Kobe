@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moss in his panel — header avatar and big Moss</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* the panel's own values, from the Pixel block of tokens.css */
+  :root {
+    --page:#fcfcfc; --ink:#262626; --grey:#707070;
+    --pixel-bg:#17120f; --pixel-raised:#1e1814; --pixel-high:#2a221d;
+    --pixel-fg:#f4ece1; --pixel-dim:#a2968a; --pixel-rule:#322a24; --pixel-rule-strong:#4a3f37;
+    --pixel-accent:#e8613c; --ask-bg:#fbf3ee;
+    --sage:#8f9a6c;            /* his leaf, muted */
+    --sage-deep:#3a3d2b;       /* the leaf, at night */
+    --glow:255 214 170;        /* the lamp's candle */
+    --mono:'Roboto Mono', ui-monospace, monospace;
+    --lab:'Azeret Mono', ui-monospace, monospace;
+    --serif:'Crimson Pro', Georgia, serif;
+    --sans:'Manrope', system-ui, sans-serif;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--ink); font:600 12px/1.8 var(--sans); }
+  .wrap { max-width:1280px; margin:0 auto; padding:56px 40px 120px; }
+  .label { font:400 11px/1.4 var(--lab); text-transform:uppercase; letter-spacing:.04em; color:var(--grey); }
+  h1 { font:300 40px/1.1 var(--serif); margin:8px 0 12px; }
+  h1 em, h2 em { font-style:italic; }
+  h2 { font:300 32px/1.1 var(--serif); margin:0 0 6px; }
+  p.dek { max-width:62ch; margin:0; color:var(--grey); }
+  section { margin-top:88px; }
+
+  /* ---------- pick preview ---------- */
+  .top { display:grid; grid-template-columns:1fr 26rem; gap:56px; align-items:start; }
+  .picks { margin-top:24px; display:grid; gap:6px; }
+  .picks b { font:400 11px/1.4 var(--lab); text-transform:uppercase; letter-spacing:.04em; color:var(--ink); }
+
+  /* ---------- the panel ---------- */
+  .panel { background:var(--pixel-bg); color:var(--pixel-fg); border-radius:24px; overflow:hidden; font-family:var(--mono); box-shadow:0 28px 70px -24px rgb(20 8 4 / .6); }
+  .panel--full { height:34rem; display:flex; flex-direction:column; }
+  .head { display:flex; justify-content:space-between; align-items:center; padding:1.1rem 1.1rem 1.1rem 1.4rem; border-bottom:1px solid var(--pixel-rule); }
+  .title { display:flex; align-items:center; gap:.625rem; margin:0; font:500 14px/1 var(--mono); }
+  .title small { font:400 12px/1.3 var(--mono); color:var(--pixel-dim); }
+  .acts { display:flex; gap:.25rem; color:var(--pixel-dim); }
+  .acts i { width:2rem; height:2rem; display:grid; place-items:center; }
+  .acts svg { width:1rem; height:1rem; }
+  .thread { flex:1; padding:1.25rem 1.5rem 1.5rem; display:flex; flex-direction:column; gap:1rem; }
+  .msg { font:400 13px/1.6 var(--mono); max-width:92%; }
+  .msg p { margin:0 0 .5rem; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chips span { font:400 12px/1 var(--mono); padding:.55rem .8rem; border-radius:999px; border:1px solid var(--pixel-rule-strong); color:var(--pixel-fg); }
+
+  /* ---------- option grids ---------- */
+  .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:28px 24px; margin-top:32px; }
+  .opt { all:unset; cursor:pointer; display:grid; gap:12px; }
+  .opt:focus-visible .panel { outline:2px solid var(--ink); outline-offset:4px; }
+  .opt .panel { transition:transform .5s var(--ease), box-shadow .5s var(--ease); }
+  .opt:hover .panel { transform:translateY(-3px); }
+  .opt[aria-pressed="true"] .panel { outline:2px solid var(--ink); outline-offset:4px; }
+  .cap { display:grid; gap:2px; }
+  .cap strong { font:400 11px/1.4 var(--lab); text-transform:uppercase; letter-spacing:.04em; }
+  .cap span { color:var(--grey); }
+  .opt .head { padding:1rem 1rem 1rem 1.25rem; }
+  .body-only { height:15rem; display:grid; place-items:center; }
+
+  /* ================= header avatars ================= */
+  .av { flex:none; display:inline-grid; place-items:center; position:relative; }
+  .av img { display:block; }
+
+  /* A — now: beige crop in a white circle */
+  .av--a { width:28px; height:28px; border-radius:50%; overflow:hidden; background:var(--ask-bg); }
+  .av--a img { width:100%; height:100%; opacity:.55; filter:saturate(.4); }
+
+  /* B — no circle: his head and ears straight on the dark */
+  .av--b { width:40px; height:30px; overflow:hidden; }
+  .av--b img { width:40px; height:auto; position:absolute; top:0; left:0; }
+
+  /* C — tone on tone: a raised dark disc, face inside */
+  .av--c { width:32px; height:32px; border-radius:50%; overflow:hidden; background:var(--pixel-high); }
+  .av--c img { position:absolute; width:34px; left:-2px; top:3px; }
+
+  /* D — his leaf: a muted sage disc */
+  .av--d { width:32px; height:32px; border-radius:50%; overflow:hidden; background:var(--sage-deep); }
+  .av--d img { position:absolute; width:34px; left:-2px; top:3px; }
+
+  /* E — pops out: a dark disc, his ears out over its rim */
+  .av--e { width:32px; height:32px; }
+  .av--e::before { content:''; position:absolute; inset:0; border-radius:50%; background:var(--pixel-high); box-shadow:inset 0 0 0 1px var(--pixel-rule-strong); }
+  /* the head is masked to the disc's lower half + everything above its centre, so ears rise out of it */
+  .av--e img { position:absolute; width:44px; left:-6px; top:-12px;
+    -webkit-mask: linear-gradient(#000,#000) 0 0 / 100% 28px no-repeat, radial-gradient(circle 16px at 22px 28px, #000 98%, transparent 100%) 0 0 / 100% 100% no-repeat;
+            mask: linear-gradient(#000,#000) 0 0 / 100% 28px no-repeat, radial-gradient(circle 16px at 22px 28px, #000 98%, transparent 100%) 0 0 / 100% 100% no-repeat; }
+
+  /* F — a hairline ring, face on the dark */
+  .av--f { width:32px; height:32px; border-radius:50%; overflow:hidden; box-shadow:inset 0 0 0 1px var(--pixel-rule-strong); }
+  .av--f img { position:absolute; width:34px; left:-2px; top:3px; }
+
+  /* ================= big Moss ================= */
+  .big { position:relative; display:grid; place-items:center; padding:.75rem 0; }
+  .big img { display:block; width:88px; height:auto; position:relative; }
+  .panel--full .big img { width:96px; }
+
+  /* 1 — now */
+  .big--1 img { opacity:.55; filter:saturate(.4); }
+
+  /* 2 — clean cut, awake */
+  /* (no extras) */
+
+  /* 3 — the lamp: a warm pool on the floor and a contact shadow, as the hero at night */
+  .big--3::before { content:''; position:absolute; left:50%; bottom:2px; width:180px; height:120px; transform:translateX(-50%);
+    background:radial-gradient(50% 50% at 50% 70%, rgb(var(--glow) / .16), rgb(var(--glow) / .05) 55%, transparent 75%); }
+  .big--3::after { content:''; position:absolute; left:50%; bottom:12px; width:70px; height:10px; transform:translateX(-50%);
+    background:radial-gradient(50% 50% at 50% 50%, rgb(0 0 0 / .55), transparent 70%); }
+  .big--3 img { z-index:1; }
+
+  /* 4 — on paper: a cream watercolour sheet, so the paint sits where it was painted */
+  .big--4 .sheet { position:relative; padding:14px 22px 10px; background:var(--ask-bg); border-radius:14px; box-shadow:0 10px 24px -12px rgb(0 0 0 / .6); }
+  .big--4 .sheet img { width:76px; }
+  .panel--full .big--4 .sheet img { width:84px; }
+
+  /* 5 — sticker: a deliberate die-cut edge, not a messy one */
+  .big--5 img { width:96px; filter:drop-shadow(0 6px 8px rgb(0 0 0 / .45)); transform:rotate(-4deg); }
+  .panel--full .big--5 img { width:104px; }
+
+  /* 6 — a moon: a soft raised disc behind him */
+  .big--6::before { content:''; position:absolute; top:50%; left:50%; width:118px; height:118px; transform:translate(-50%, -46%);
+    border-radius:50%; background:radial-gradient(closest-side, #352b24, #251e19 75%, transparent); }
+  .panel--full .big--6::before { width:128px; height:128px; }
+
+  @media (max-width: 1000px) { .top, .grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="label">Experiment · Moss in his panel · 2026-11-25</p>
+  <div class="top">
+    <div>
+      <h1>Moss, <em>cut out properly</em></h1>
+      <p class="dek">Two fixes in his chat panel. The small Moss in the header is a square crop with its own beige backdrop inside a white circle. The big Moss still has a pale rim and a white patch under his feet, left from the white he was painted on. Every option except "Now" uses a new cut-out of the same frame. Pale pixels at the edge are faded and tinted to his fur, the ground patch is gone, and the whiskers and leaf stem are kept. Pick one from each row; the panel on the right shows them together.</p>
+      <div class="picks">
+        <span class="label">Your pick</span>
+        <b data-pick-av>Header: B · No circle</b>
+        <b data-pick-big>Big Moss: 3 · Lamp-lit</b>
+      </div>
+    </div>
+    <div class="panel panel--full" data-full>
+      <div class="head">
+        <p class="title"><span data-slot-av></span><span>Moss</span> <small>looks after this portfolio</small></p>
+        <div class="acts">
+          <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></i>
+          <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></i>
+        </div>
+      </div>
+      <div class="thread">
+        <div data-slot-big></div>
+        <div class="msg"><p>Ah. You found me.</p><p>I’m Moss. I look after this portfolio. Short on time? Ask me something and I’ll point you at the good bits.</p></div>
+        <div class="chips"><span>Who is she?</span><span>Show me the work</span><span>Is she available?</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <p class="label">01 · Header</p>
+    <h2>The small <em>Moss</em></h2>
+    <p class="dek">28–32px, beside his name.</p>
+    <div class="grid" data-group="av">
+      <button class="opt" data-key="a" data-name="A · Now" aria-pressed="false">
+        <div class="panel"><div class="head"><p class="title"><span class="av av--a"><img src="img/moss-head.webp" alt=""></span><span>Moss</span> <small>looks after this portfolio</small></p></div></div>
+        <span class="cap"><strong>A · Now</strong><span>Beige crop in a white circle, dimmed. For comparison.</span></span>
+      </button>
+      <button class="opt" data-key="b" data-name="B · No circle" aria-pressed="true">
+        <div class="panel"><div class="head"><p class="title"><span class="av av--b"><img src="img/moss-bust.png" alt=""></span><span>Moss</span> <small>looks after this portfolio</small></p></div></div>
+        <span class="cap"><strong>B · No circle</strong><span>His head and ears straight on the dark, like the big one below. Nothing to cut a circle round.</span></span>
+      </button>
+      <button class="opt" data-key="c" data-name="C · Dark disc" aria-pressed="false">
+        <div class="panel"><div class="head"><p class="title"><span class="av av--c"><img src="img/moss-bust.png" alt=""></span><span>Moss</span> <small>looks after this portfolio</small></p></div></div>
+        <span class="cap"><strong>C · Dark disc</strong><span>His head on the panel’s raised tone. Still an avatar, with no bright edge.</span></span>
+      </button>
+      <button class="opt" data-key="d" data-name="D · Leaf disc" aria-pressed="false">
+        <div class="panel"><div class="head"><p class="title"><span class="av av--d"><img src="img/moss-bust.png" alt=""></span><span>Moss</span> <small>looks after this portfolio</small></p></div></div>
+        <span class="cap"><strong>D · Leaf disc</strong><span>A deep sage from the leaf on his head. His own colour, not a new one.</span></span>
+      </button>
+      <button class="opt" data-key="e" data-name="E · Pops out" aria-pressed="false">
+        <div class="panel"><div class="head"><p class="title"><span class="av av--e"><img src="img/moss-bust.png" alt=""></span><span>Moss</span> <small>looks after this portfolio</small></p></div></div>
+        <span class="cap"><strong>E · Pops out</strong><span>A dark disc; his ears stick out over the top of it.</span></span>
+      </button>
+      <button class="opt" data-key="f" data-name="F · Hairline ring" aria-pressed="false">
+        <div class="panel"><div class="head"><p class="title"><span class="av av--f"><img src="img/moss-bust.png" alt=""></span><span>Moss</span> <small>looks after this portfolio</small></p></div></div>
+        <span class="cap"><strong>F · Hairline ring</strong><span>His head in a 1px ring of the panel’s rule colour. The quietest one.</span></span>
+      </button>
+    </div>
+  </section>
+
+  <section>
+    <p class="label">02 · Panel</p>
+    <h2>The big <em>Moss</em></h2>
+    <p class="dek">Shown at the top of the conversation.</p>
+    <div class="grid" data-group="big">
+      <button class="opt" data-key="1" data-name="1 · Now" aria-pressed="false">
+        <div class="panel"><div class="body-only"><div class="big big--1"><img src="img/moss-sm.webp" alt=""></div></div></div>
+        <span class="cap"><strong>1 · Now</strong><span>Pale rim, white patch under his feet, dimmed. For comparison.</span></span>
+      </button>
+      <button class="opt" data-key="2" data-name="2 · Clean cut" aria-pressed="false">
+        <div class="panel"><div class="body-only"><div class="big big--2"><img src="img/moss-smart.png" alt=""></div></div></div>
+        <span class="cap"><strong>2 · Clean cut</strong><span>Just the new cut-out, at full strength. The smallest change.</span></span>
+      </button>
+      <button class="opt" data-key="3" data-name="3 · Lamp-lit" aria-pressed="true">
+        <div class="panel"><div class="body-only"><div class="big big--3"><img src="img/moss-smart.png" alt=""></div></div></div>
+        <span class="cap"><strong>3 · Lamp-lit</strong><span>Clean cut, standing in a faint candle-coloured pool with a shadow under him, like the hero at night. He’s on the ground instead of floating.</span></span>
+      </button>
+      <button class="opt" data-key="4" data-name="4 · On paper" aria-pressed="false">
+        <div class="panel"><div class="body-only"><div class="big big--4"><div class="sheet"><img src="img/moss-smart.png" alt=""></div></div></div></div>
+        <span class="cap"><strong>4 · On paper</strong><span>A small cream sheet of watercolour paper, so the painting sits on paper. No edge to show.</span></span>
+      </button>
+      <button class="opt" data-key="5" data-name="5 · Sticker" aria-pressed="false">
+        <div class="panel"><div class="body-only"><div class="big big--5"><img src="img/moss-sticker.png" alt=""></div></div></div>
+        <span class="cap"><strong>5 · Sticker</strong><span>Makes the white edge on purpose: an even die-cut border, a slight tilt, a shadow.</span></span>
+      </button>
+      <button class="opt" data-key="6" data-name="6 · Moon" aria-pressed="false">
+        <div class="panel"><div class="body-only"><div class="big big--6"><img src="img/moss-smart.png" alt=""></div></div></div>
+        <span class="cap"><strong>6 · Moon</strong><span>Clean cut in front of a soft raised disc of the panel’s own tone.</span></span>
+      </button>
+    </div>
+  </section>
+</div>
+
+<script>
+  const slots = { av: document.querySelector('[data-slot-av]'), big: document.querySelector('[data-slot-big]') };
+  const label = { av: document.querySelector('[data-pick-av]'), big: document.querySelector('[data-pick-big]') };
+  function pick(group, btn) {
+    document.querySelectorAll(`[data-group="${group}"] .opt`).forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+    const src = group === 'av' ? btn.querySelector('.av') : btn.querySelector('.big');
+    slots[group].replaceChildren(src.cloneNode(true));
+    label[group].textContent = (group === 'av' ? 'Header: ' : 'Big Moss: ') + btn.dataset.name;
+  }
+  document.querySelectorAll('[data-group]').forEach(g => {
+    const group = g.dataset.group;
+    g.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => pick(group, b)));
+    pick(group, g.querySelector('[aria-pressed="true"]'));
+  });
+</script>
+</body>
+</html>
