@@ -38,7 +38,21 @@
             work's top-right corner; on hover it opens left to "View".
     below   3 · Arrow under the text: the round arrow always sits under
             the words, where the pill used to be; on hover it opens right,
-            the arrow sliding to the end and "View" coming in before it. Nothing under the text. "View all work" is the old CTA again: the
+            the arrow sliding to the end and "View" coming in before it.
+            Built as a fixed 92 x 40 box with a fill inside that grows from
+            a 40px circle, so nothing around it moves and rings and
+            shadows stay round.
+  Colour of 3 (?tone=), on request: black read too strong. Each is a
+  rest look and a hover look; the arrow stays at least 3:1 on its fill.
+    ink     Ink: today's black, at rest and on hover (for comparison)
+    ghost   A · Ghost: no fill, a 1px ring at 18% ink, ink arrow; on hover
+            a 6% ink fill comes in and the ring goes to 28%
+    tint    B · Soft fill: a 6% ink fill, ink arrow; on hover 10%
+    paper   C · Paper: white with a soft shadow, ink arrow; on hover the
+            shadow deepens a little
+    hue     D · The card's hue: the card's ground deepened a touch, ink
+            arrow; on hover it deepens a little more
+    grey    E · Grey: our grey (#707070) filled, white arrow; on hover ink Nothing under the text. "View all work" is the old CTA again: the
   mono caps link with its underline and a nudging arrow (.btn--link in
   global.css), not the pill pair.
 -->
@@ -131,15 +145,30 @@
   /* 3 · always under the text: a fixed 92px pill, the left 40px shown at
      rest; on hover the clip opens right while the arrow slides to the end */
   .c-below .stage .peek,.c-hover .words .peek2,.c-corner .words .peek2{display:none}
-  .peek2{position:relative;display:block;width:92px;height:40px;margin-top:16px;border-radius:20px;background:var(--ink);color:var(--bg);pointer-events:none;
-    clip-path:inset(0 calc(100% - 40px) 0 0 round 20px);transition:clip-path .6s var(--ease);will-change:clip-path}
+  /* a fixed 92 x 40 box, so nothing around it ever moves; inside it the
+     fill (ring, shadow and colour) grows from a 40px circle to the full
+     pill, the arrow slides to the end and "View" fades in before it */
+  .peek2{position:relative;display:block;width:92px;height:40px;margin-top:16px;pointer-events:none;color:var(--b-fg);transition:color .4s var(--ease)}
+  .peek2 s{position:absolute;left:0;top:0;width:40px;height:40px;border-radius:20px;text-decoration:none;
+    background:var(--b-bg);box-shadow:inset 0 0 0 1px var(--b-ring,transparent),var(--b-sh,0 0 0 transparent);
+    transition:width .6s var(--ease),background-color .4s var(--ease),box-shadow .4s var(--ease)}
+  .card:is(:hover,:focus-within) .peek2{color:var(--b-fg-h)}
+  .card:is(:hover,:focus-within) .peek2 s{width:92px;background:var(--b-bg-h);box-shadow:inset 0 0 0 1px var(--b-ring-h,transparent),var(--b-sh-h,0 0 0 transparent)}
+  /* tones: rest, then hover */
+  .t-ink .peek2{--b-bg:var(--ink);--b-fg:var(--bg);--b-bg-h:var(--ink);--b-fg-h:var(--bg)}
+  .t-ghost .peek2{--b-bg:transparent;--b-fg:var(--ink);--b-ring:color-mix(in srgb,var(--ink) 18%,transparent);
+    --b-bg-h:color-mix(in srgb,var(--ink) 6%,var(--bg));--b-fg-h:var(--ink);--b-ring-h:color-mix(in srgb,var(--ink) 28%,transparent)}
+  .t-tint .peek2{--b-bg:color-mix(in srgb,var(--ink) 6%,var(--bg));--b-fg:var(--ink);--b-bg-h:color-mix(in srgb,var(--ink) 10%,var(--bg));--b-fg-h:var(--ink)}
+  .t-paper .peek2{--b-bg:#fff;--b-fg:var(--ink);--b-ring:color-mix(in srgb,var(--ink) 6%,transparent);--b-sh:0 1px 2px rgb(38 38 38/.06),0 4px 10px -4px rgb(38 38 38/.12);
+    --b-bg-h:#fff;--b-fg-h:var(--ink);--b-ring-h:color-mix(in srgb,var(--ink) 8%,transparent);--b-sh-h:0 1px 2px rgb(38 38 38/.08),0 8px 18px -6px rgb(38 38 38/.2)}
+  .t-hue .peek2{--b-bg:color-mix(in oklab,var(--g),var(--ink) 8%);--b-fg:var(--ink);--b-bg-h:color-mix(in oklab,var(--g),var(--ink) 16%);--b-fg-h:var(--ink)}
+  .t-grey .peek2{--b-bg:var(--grey);--b-fg:#fff;--b-bg-h:var(--ink);--b-fg-h:#fff}
   .peek2 i{position:absolute;left:0;top:0;width:40px;height:40px;display:grid;place-items:center;transition:transform .6s var(--ease)}
   .peek2 svg{width:15px;height:15px}
   .peek2 b{position:absolute;left:16px;top:0;line-height:40px;font:600 13px/40px var(--sans);opacity:0;transform:translateX(-6px);transition:opacity .25s var(--ease),transform .6s var(--ease)}
-  .card:is(:hover,:focus-within) .peek2{clip-path:inset(0 round 20px)}
   .card:is(:hover,:focus-within) .peek2 i{transform:translateX(52px)}
   .card:is(:hover,:focus-within) .peek2 b{opacity:1;transform:none;transition:opacity .35s var(--ease) .1s,transform .6s var(--ease)}
-  @media (prefers-reduced-motion:reduce){.peek2,.peek2 i,.peek2 b{transition:none!important}}
+  @media (prefers-reduced-motion:reduce){.peek2,.peek2 s,.peek2 i,.peek2 b{transition:none!important}}
   @media (prefers-reduced-motion:reduce){.peek,.peek b{transition:none!important}}
   /* the old "View all work" CTA (.btn--link) */
   .btn--link{display:inline-flex;align-items:center;gap:.4em;font:400 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink);
@@ -257,10 +286,14 @@ const LB = new URLSearchParams(location.search).get('labels') === 'mono' ? 'mono
 const CTAS = [['hover', '1 · Appears on hover'], ['corner', '2 · Arrow on image'], ['below', '3 · Arrow under text']];
 const cq = new URLSearchParams(location.search).get('cta');
 const CT = CTAS.some(([k]) => k === cq) ? cq : 'corner';
-const href = (o) => '?' + new URLSearchParams({ edge: E, labels: LB, cta: CT, ...o });
+const TONES = [['ink', 'Ink'], ['ghost', 'A · Ghost'], ['tint', 'B · Soft fill'], ['paper', 'C · Paper'], ['hue', 'D · Card hue'], ['grey', 'E · Grey']];
+const tq = new URLSearchParams(location.search).get('tone');
+const TN = TONES.some(([k]) => k === tq) ? tq : 'ghost';
+const href = (o) => '?' + new URLSearchParams({ edge: E, labels: LB, cta: CT, tone: TN, ...o });
 document.getElementById('bar').innerHTML = '<span>Border at rest</span>' + EDGES.map(([k, l]) => `<a href="${href({ edge: k })}" aria-current="${k === E}">${l}</a>`).join('')
   + '<span>Labels</span>' + [['chips', 'His chips'], ['mono', 'Today']].map(([k, l]) => `<a href="${href({ labels: k })}" aria-current="${k === LB}">${l}</a>`).join('')
-  + '<span>Button</span>' + CTAS.map(([k, l]) => `<a href="${href({ cta: k })}" aria-current="${k === CT}">${l}</a>`).join('');
+  + '<span>Button</span>' + CTAS.map(([k, l]) => `<a href="${href({ cta: k })}" aria-current="${k === CT}">${l}</a>`).join('')
+  + (CT === 'below' ? '<span>Colour</span>' + TONES.map(([k, l]) => `<a href="${href({ tone: k })}" aria-current="${k === TN}">${l}</a>`).join('') : '');
 
 const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
 const UP = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg>';
@@ -291,20 +324,20 @@ const C = {
 const scangoWide = `<div class="pair">${C.scango.media}${phone('sg-cart.webp')}</div>`;
 
 const card = (k, cls = '', media) => { const c = C[k]; return `
-  <article class="card ${cls}">
+  <article class="card ${cls}" style="--g:${c.g}">
     <div class="stage" style="--g:${c.g}">${media || c.media}<span class="peek" aria-hidden="true"><b>View</b><i>${UP}</i></span></div>
     <div class="words">
       ${LB === 'chips' ? `<div class="chips">${[c.co, ...c.tags.split(' · ')].map(t => `<span>${t}</span>`).join('')}</div>` : `<span class="label meta">${c.co} · ${c.tags}</span>`}
       <h3>${c.title}</h3>
       <p>${c.line}</p>
-      <span class="peek2" aria-hidden="true"><b>View</b><i>${UP}</i></span>
+      <span class="peek2" aria-hidden="true"><s></s><b>View</b><i>${UP}</i></span>
       <span class="pills" aria-hidden="true"><span class="pill">View case study</span><span class="arrow">${ARROW}${ARROW}</span></span>
     </div>
     <a class="cover" href="#" aria-label="${c.title}, view case study"></a>
   </article>`; };
 
 const grid = document.getElementById('grid'), more = document.getElementById('more');
-grid.classList.add('l-' + L, 'e-' + E, 'c-' + CT);
+grid.classList.add('l-' + L, 'e-' + E, 'c-' + CT, 't-' + TN);
 grid.innerHTML = {
   wides: card('okta', 'wide beside') + card('privacy') + card('ads') + card('scango', 'wide beside flip', scangoWide) + card('debit') + card('chase'),
   reference: `<div class="col">${card('okta', 'big')}${card('privacy', 'big')}${card('scango', 'big', scangoWide)}</div>
