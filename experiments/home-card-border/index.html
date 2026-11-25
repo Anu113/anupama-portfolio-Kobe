@@ -27,8 +27,10 @@
   (nudged darker, ~4.9:1, since our #707070 on the fill is 4.4:1) on a 5% ink fill, 6px corners, 21px tall, 4px apart, the company first;
   mono = today's "PAYPAL · FINTECH · …" line in 11px mono caps.
   On hover (or keyboard focus) a round black arrow appears in the top-right
-  corner of the card's work, as on andreas.vision, then widens to the left
-  into a pill reading "View" (on request). Nothing under the text. "View all work" is the old CTA again: the
+  corner of the card's work, as on andreas.vision, and opens to the left
+  into a pill reading "View" (on request), in one motion: clip-path,
+  opacity and transform only, on the one curve (smoothed 2026-11-25; it
+  used to animate max-width in three staggered steps). Nothing under the text. "View all work" is the old CTA again: the
   mono caps link with its underline and a nudging arrow (.btn--link in
   global.css), not the pill pair.
 -->
@@ -101,15 +103,20 @@
   /* the corner arrow: appears, then widens into "View" */
   .card .words .pills{display:none}
   .stage{position:relative}
-  .peek{position:absolute;top:14px;right:14px;z-index:2;height:40px;min-width:40px;max-width:40px;display:flex;align-items:center;justify-content:flex-end;
-    border-radius:999px;background:var(--ink);color:var(--bg);overflow:hidden;white-space:nowrap;pointer-events:none;
-    opacity:0;transform:scale(.6);transform-origin:100% 0;
-    transition:opacity .3s var(--ease),transform .4s var(--ease),max-width .55s var(--ease) 0s}
-  .peek b{font:600 13px/1 var(--sans);padding:0 2px 0 16px;opacity:0;transition:opacity .25s var(--ease)}
+  /* Drawn at full width always; at rest only the round arrow on its right
+     is shown (clip-path), and on hover the clip opens to the left. Only
+     clip-path, opacity and transform move: no layout per frame, one
+     curve, one start, so it opens and closes in one smooth stroke. */
+  .peek{position:absolute;top:14px;right:14px;z-index:2;height:40px;display:flex;align-items:center;
+    border-radius:20px;background:var(--ink);color:var(--bg);white-space:nowrap;pointer-events:none;
+    clip-path:inset(0 0 0 calc(100% - 40px) round 20px);
+    opacity:0;transform:scale(.85);transform-origin:calc(100% - 20px) 20px;
+    transition:opacity .3s var(--ease),transform .5s var(--ease),clip-path .6s var(--ease);will-change:clip-path,transform}
+  .peek b{font:600 13px/1 var(--sans);padding:0 0 0 16px;opacity:0;transform:translateX(8px);transition:opacity .3s var(--ease),transform .6s var(--ease)}
   .peek i{flex:none;width:40px;height:40px;display:grid;place-items:center}
   .peek svg{width:15px;height:15px}
-  .card:is(:hover,:focus-within) .peek{opacity:1;transform:none;max-width:110px;transition:opacity .3s var(--ease),transform .4s var(--ease),max-width .55s var(--ease) .18s}
-  .card:is(:hover,:focus-within) .peek b{opacity:1;transition:opacity .3s var(--ease) .3s}
+  .card:is(:hover,:focus-within) .peek{opacity:1;transform:none;clip-path:inset(0 round 20px)}
+  .card:is(:hover,:focus-within) .peek b{opacity:1;transform:none;transition:opacity .35s var(--ease) .08s,transform .6s var(--ease)}
   @media (hover:none){.peek{opacity:1;transform:none}}
   @media (prefers-reduced-motion:reduce){.peek,.peek b{transition:none!important}}
   /* the old "View all work" CTA (.btn--link) */
