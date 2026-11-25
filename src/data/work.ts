@@ -1,7 +1,8 @@
 // The case-study set, shared by the home page (ACT 2) and /work.
 // Placeholder imagery — swap the image paths once real assets land in
 // /public/images. Impact lines were filled with stand-in numbers on her
-// request (2026-11-14); see the note at the top of cases.ts.
+// request (2026-11-14); the ones shown here are confirmed (2026-11-25), see
+// the note at the top of cases.ts.
 //
 // All eight link to /work/<slug>. Nothing here sends a visitor off to a
 // Google Slides deck — a recruiter who lands on a Drive login has left the
@@ -65,7 +66,8 @@ export const work = [
   // second, the rest as they were.
   // Interest-based ads and the Auto Privacy Advisor, one case on request —
   // see `paypal-ads-consent` in cases.ts. Its role, hard call and outcome
-  // were written as stand-ins on request (2026-11-14), for her to confirm;
+  // were written as stand-ins on request (2026-11-14) and confirmed by her
+  // (2026-11-25);
   // the ads screens are still a coded rebuild until she exports them.
   { company: 'PayPal', theme: 'sage', device: 'phone',
     title: 'Ad sharing that asks first',
@@ -145,7 +147,8 @@ export const work = [
   // Written from her "PayPal Debit Card" deck — see the header comment on
   // `paypal-debit-card` in cases.ts. Replaced the old Unified Card System
   // skeleton. The hard call, her hands-on scope and the reflections were
-  // written as stand-ins on request (2026-11-14), for her to confirm.
+  // written as stand-ins on request (2026-11-14); she confirmed the hard
+  // call and reflections (2026-11-25).
   // `showOnHome: false` is unchanged.
   { company: 'PayPal', theme: 'clay', device: 'phone', showOnHome: false,
     title: 'A debit card people finish signing up for',

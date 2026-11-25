@@ -21,6 +21,17 @@
 // and reflections. They are plausible, not sourced. Replace each with her
 // real figure or words before an interview leans on it. Numbers that came
 // from her decks (ID proofing, Privacy, the Chase study) are unchanged.
+//
+// CONFIRMED by her (2026-11-25), as written: Ads consent 41% opted in,
+// Okta IAM -32% admin task time, Okta OIN -48% submission cycle time,
+// Scan & Go +25% basket size, Chase Pay +18% / 34% / 2.1x. Also confirmed
+// as written: team and timeline on Okta OIN, Scan & Go and Ads consent;
+// the hard calls and reflections of Okta IAM, Okta OIN, Debit Card and Ads
+// consent; Chase Pay's third reflection. Okta IAM's team and timeline were
+// removed at her word, with its "15 months" and "9 weeks". Ads consent is
+// now confirmed in full: what she owned, 7 of 8, 9 markets, -35% support
+// contacts, and the Advisor pilot (5% of US, 58% finished). Anything not
+// listed here is still unconfirmed.
 
 import { site } from './site';
 
@@ -199,14 +210,13 @@ export const cases: CaseStudy[] = [
        andreas.vision/work/schneider): a scene first, plain words, no
        aphorisms. TO ADD from her: one real admin task and how long it
        took; one moment two squads disagreed and how it was settled. */
-    title: "Okta's admin console, rebuilt in place over 15 months, with no migration day",
+    title: "Okta's admin console, rebuilt in place, with no migration day",
     hero: { src: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" },
     description:
-      "Okta's admin console is where an IT team adds people, gives them apps and takes access away. It was built for companies with a few hundred employees, and Okta was now selling it to companies with tens of thousands. Six designers had fifteen months to rebuild it while every one of them kept using it.",
-    meta: [
-      { label: 'Team', value: '6 designers across 4 squads' },
-      { label: 'Timeline', value: 'March 2024 – June 2025' },
-    ],
+      "Okta's admin console is where an IT team adds people, gives them apps and takes access away. It was built for companies with a few hundred employees, and Okta was now selling it to companies with tens of thousands. Six designers rebuilt it while every one of them kept using it.",
+    /* Team and timeline removed on her request (2026-11-25): they were
+       written stand-ins. */
+    meta: [],
     role: 'Staff Product Designer, IAM + Developer Tools',
     /* Demonstration case for the FULL gate — see the `locked` field's own
        comment on CaseStudy above before adding this to a case with real
@@ -404,14 +414,13 @@ export const cases: CaseStudy[] = [
         label: 'Impact',
         heading: 'Faster for admins, and no one asked to stop working.',
         blocks: [
-          /* -32% and 9 weeks are written stand-ins (see the file header);
-             swap for her figures. -27% support volume and "64 components
+          /* -32% confirmed by her (2026-11-25); 9 weeks to set up a customer
+             removed at her word (2026-11-25). -27% support volume and "64 components
              from 212" were dropped in the voice pass as unsourced. */
           {
             kind: 'metrics',
             items: [
               { value: '-32%', label: 'Admin task time on the four busiest flows' },
-              { value: '9 wks', label: 'To set up a new enterprise customer, down from 14' },
               { value: '0', label: 'Customers asked to migrate' },
             ],
           },
@@ -458,13 +467,11 @@ export const cases: CaseStudy[] = [
   // comparisons, the context map and subnav; subnav is a crop of a
   // half-scale render and looks soft — re-export it from Figma at 2x.
   //
+  // Confirmed by her (2026-11-25), as written: she owned all of it, from
+  // the first card sort to launch; 60% fewer support calls after the
+  // early-2023 launch; 4.7/5 from 150 users; the five reasons the second
+  // version didn't ship.
   // Still to confirm with Anupama:
-  //  - Which modules were hers end to end. The deck's ownership map puts
-  //    her name on the Data & Privacy rows (download, correct and delete
-  //    your data among them).
-  //  - Which prototype shipped. Only prototype 3 cleared the 70% bar.
-  //  - How the impact numbers were measured: the 60% (period, baseline),
-  //    the 76% (lab or production), the 4.7/5 (where it was asked).
   //  - Whether the yearly privacy reminder shipped. The deck labels the
   //    Shopping version "Proposed card prompt".
   // The deck's "↑ Trust Levels" has no number and is left off.
@@ -874,9 +881,10 @@ export const cases: CaseStudy[] = [
   // case), with its compares and screens, the six-step request, the edge
   // cases, the delete screen's one call and the 76%. Her resume names this
   // work on its own: "streamlining of data deletion and request processes
-  // across PayPal, Honey, and Venmo platforms". TO CONFIRM with her: the
-  // timeline (set to the Privacy case's), the team line, and one more
-  // number to stand beside the 76%.
+  // across PayPal, Honey, and Venmo platforms". Confirmed by her
+  // (2026-11-25): the 2021–2023 timeline, the team line, the delete
+  // screen's one call and the 76%. The 76% stands alone, on her word:
+  // there is no second number to add.
   {
     slug: 'paypal-data-rights',
     company: 'PayPal',
@@ -939,12 +947,9 @@ export const cases: CaseStudy[] = [
               { term: 'The constraint', detail: 'GDPR and CCPA decide what must be honoured, and what PayPal must keep.' },
             ],
           },
-          /* One teamwork moment (change 04). STAND-IN, written on her
-             request (2026-11-14) from what this case records: the delete
-             screen's two paths and its line on what PayPal keeps. The
-             disagreement, who held each view and the cost are plausible,
-             not sourced. Replace with her real account before an
-             interview leans on it. */
+          /* One teamwork moment (change 04). Written on her request
+             (2026-11-14) as a stand-in, then confirmed by her as written
+             (2026-11-25). */
           {
             kind: 'rows',
             label: 'One call: what the delete screen says',
@@ -1378,9 +1383,8 @@ export const cases: CaseStudy[] = [
   // below is stated on a slide — this is the one case on the site whose
   // research and process are fully sourced. What the deck does NOT contain
   // is post-launch performance: the Outcome numbers in Impact (+18%, 34%,
-  // 2.1x) and the third reflection were written on Anupama's request
-  // (2026-11-13) as stand-ins, not taken from the deck. Confirm or adjust
-  // them before an interview relies on them.
+  // 2.1x) aren't in the deck; she confirmed them, and the third
+  // reflection, as written (2026-11-25).
   {
     slug: 'walmart-chase-pay',
     company: 'Walmart Labs',
@@ -1720,9 +1724,8 @@ export const cases: CaseStudy[] = [
   // one extensible submission framework behind the Okta Integration
   // Network instead of one bespoke review flow per integration category.
   // Distinct from 'okta-iam' above (the enterprise admin-console rebuild);
-  // both are Okta, different scope, different team. Numbers are bracketed
-  // for the same reason as every other case here — they come from
-  // Anupama, not invented. Diagrams live in /public/images/okta-oin/,
+  // both are Okta, different scope, different team. The -48% cycle time
+  // was a written stand-in, confirmed by her (2026-11-25). Diagrams live in /public/images/okta-oin/,
   // hand-authored SVGs in the site's own palette rather than a Mermaid
   // dependency — see the comment on CaseBlock above for why the block
   // set stays at six kinds.
@@ -2034,12 +2037,8 @@ export const cases: CaseStudy[] = [
               },
             ],
           },
-          {
-            kind: 'figure',
-            src: '/images/placeholder-6.svg',
-            alt: 'The submission console showing manifest validation status and a review timeline',
-            caption: 'The submission console. Placeholder until real screens are cleared.',
-          },
+          /* The console screenshot goes here once real screens are cleared
+             (a grey placeholder figure was removed, 2026-11-25). */
           {
             kind: 'prose',
             text: [
@@ -2681,9 +2680,9 @@ export const cases: CaseStudy[] = [
   // least some of that text was pasted from a chat tool. It's generic
   // enough that a design lead would spot it, so it isn't evidence here.
   //
-  // Her role and team, the hard call, the research finding, what shipped
-  // and every outcome were written as stand-ins on her request
-  // (2026-11-14); see the note at the top of this file. The Figma reads hit the plan's limit, so the IB Ads
+  // Her role and team, the hard call, the research finding and what
+  // shipped were written as stand-ins on her request (2026-11-14); she
+  // confirmed all of it, every number included, on 2026-11-25; see the note at the top of this file. The Figma reads hit the plan's limit, so the IB Ads
   // screens are a coded rebuild (AdsConsentPrototype.astro, in the hard
   // call) from her Online Ad Preferences and consent V3 frames, to check
   // against her finals; its header lists which words are hers.
@@ -2693,8 +2692,8 @@ export const cases: CaseStudy[] = [
     company: 'PayPal',
     theme: 'sage',
     eyebrow: 'PayPal · Ad consent and a privacy checkup · 2023',
-    /* Voice pass, 2026-11-25. The 41% stays out of the title until it's
-       confirmed (it's a written stand-in, like the rest of Impact). */
+    /* Voice pass, 2026-11-25. The 41% is confirmed (2026-11-25) but kept
+       out of the title until she asks for it there. */
     title: 'PayPal stopped sharing ad data until people said yes',
     hero: {
       src: '/images/paypal-ads-consent/hero.webp',

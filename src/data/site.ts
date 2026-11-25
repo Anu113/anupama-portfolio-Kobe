@@ -51,7 +51,7 @@ export const site = {
   // A static site has nowhere to check a passcode but the browser, so
   // this deters casual visitors; it is not confidentiality. For real
   // privacy, password-protect the deployment at the host (Vercel/Netlify).
-  // [Placeholder passcode — replace before sharing the link.]
+  // Passcode chosen by her (2026-11-25): keep okta2026.
   lock: {
     passcode: 'okta2026',
     site: false,

@@ -1065,8 +1065,8 @@ walked back. Concretely, in the current implementation:
   finding) rather than paragraphs; one gap is named mid-story (`aside`);
   and scope carries one teamwork moment as rows (the pull, my call, what
   it cost, what held). Ink, no hairlines, no accent; values under CASE
-  STORY in `tokens.css`. Privacy's teamwork moment is a stand-in, on her
-  request, marked in `cases.ts`: replace it with her real account.
+  STORY in `tokens.css`. The teamwork moment (now on Data rights) was
+  written as a stand-in and confirmed by her, 2026-11-25.
 - **The Privacy case's versions** (on request, 2026-11-18): Before (the
   old list) → First version (four tiles) → Second version (the
   illustrated screens with the blue reminder card, which never launched)
@@ -1074,7 +1074,7 @@ walked back. Concretely, in the current implementation:
   its card, explanations ending on their switch; drawn from
   `experiments/privacy-case-learnings/redesign.html`). "What shipped",
   after The hard call, says why the second version didn't ship; the
-  reasons there are drafted from the screens and need her confirmation.
+  reasons there were drafted from the screens and confirmed by her.
   The compares, the craft rows and the cover show Shipped (`it-*`
   screens in `PrivacyScreen.astro`); the illustrated screens appear only
   as the Second version (`v2-*` pairs and the evolution row). Shipped
@@ -1092,7 +1092,7 @@ walked back. Concretely, in the current implementation:
   (the settings: hub, versions, craft, context, web sub-nav; 60% fewer
   calls), `paypal-data-rights` (new: get a copy, delete part and keep the
   account, the six steps, the delete screen's one call; 76% faster data
-  access; timeline, team and a second number to confirm with her; cover
+  access, its one number (timeline and team confirmed, 2026-11-25); cover
   `public/images/paypal-data-rights/hero.webp`, rendered from its coded
   screens) and `paypal-ads-consent`, whose Auto Privacy Advisor now shows
   the yearly checkup as live screens (`ck-*`, set `checkup`). The hub's
