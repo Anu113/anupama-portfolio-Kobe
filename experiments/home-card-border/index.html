@@ -30,7 +30,15 @@
   corner of the card's work, as on andreas.vision, and opens to the left
   into a pill reading "View" (on request), in one motion: clip-path,
   opacity and transform only, on the one curve (smoothed 2026-11-25; it
-  used to animate max-width in three staggered steps). Nothing under the text. "View all work" is the old CTA again: the
+  used to animate max-width in three staggered steps).
+  Button (?cta=), on request:
+    hover   1 · Appears on hover: nothing at rest; on hover the arrow
+            comes up in the work's top-right corner and opens to "View".
+    corner  2 · Arrow on the image: the round arrow is always in the
+            work's top-right corner; on hover it opens left to "View".
+    below   3 · Arrow under the text: the round arrow always sits under
+            the words, where the pill used to be; on hover it opens right,
+            the arrow sliding to the end and "View" coming in before it. Nothing under the text. "View all work" is the old CTA again: the
   mono caps link with its underline and a nudging arrow (.btn--link in
   global.css), not the pill pair.
 -->
@@ -118,6 +126,20 @@
   .card:is(:hover,:focus-within) .peek{opacity:1;transform:none;clip-path:inset(0 round 20px)}
   .card:is(:hover,:focus-within) .peek b{opacity:1;transform:none;transition:opacity .35s var(--ease) .08s,transform .6s var(--ease)}
   @media (hover:none){.peek{opacity:1;transform:none}}
+  /* 2 · always on the image */
+  .c-corner .peek{opacity:1;transform:none}
+  /* 3 · always under the text: a fixed 92px pill, the left 40px shown at
+     rest; on hover the clip opens right while the arrow slides to the end */
+  .c-below .stage .peek,.c-hover .words .peek2,.c-corner .words .peek2{display:none}
+  .peek2{position:relative;display:block;width:92px;height:40px;margin-top:16px;border-radius:20px;background:var(--ink);color:var(--bg);pointer-events:none;
+    clip-path:inset(0 calc(100% - 40px) 0 0 round 20px);transition:clip-path .6s var(--ease);will-change:clip-path}
+  .peek2 i{position:absolute;left:0;top:0;width:40px;height:40px;display:grid;place-items:center;transition:transform .6s var(--ease)}
+  .peek2 svg{width:15px;height:15px}
+  .peek2 b{position:absolute;left:16px;top:0;line-height:40px;font:600 13px/40px var(--sans);opacity:0;transform:translateX(-6px);transition:opacity .25s var(--ease),transform .6s var(--ease)}
+  .card:is(:hover,:focus-within) .peek2{clip-path:inset(0 round 20px)}
+  .card:is(:hover,:focus-within) .peek2 i{transform:translateX(52px)}
+  .card:is(:hover,:focus-within) .peek2 b{opacity:1;transform:none;transition:opacity .35s var(--ease) .1s,transform .6s var(--ease)}
+  @media (prefers-reduced-motion:reduce){.peek2,.peek2 i,.peek2 b{transition:none!important}}
   @media (prefers-reduced-motion:reduce){.peek,.peek b{transition:none!important}}
   /* the old "View all work" CTA (.btn--link) */
   .btn--link{display:inline-flex;align-items:center;gap:.4em;font:400 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink);
@@ -232,8 +254,13 @@ const q = new URLSearchParams(location.search).get('edge');
 const E = EDGES.some(([k]) => k === q) ? q : 'ink7';
 const L = 'wides';
 const LB = new URLSearchParams(location.search).get('labels') === 'mono' ? 'mono' : 'chips';
-document.getElementById('bar').innerHTML = '<span>Border at rest</span>' + EDGES.map(([k, l]) => `<a href="?edge=${k}&labels=${LB}" aria-current="${k === E}">${l}</a>`).join('')
-  + '<span>Labels</span>' + [['chips', 'His chips'], ['mono', 'Today']].map(([k, l]) => `<a href="?edge=${E}&labels=${k}" aria-current="${k === LB}">${l}</a>`).join('');
+const CTAS = [['hover', '1 · Appears on hover'], ['corner', '2 · Arrow on image'], ['below', '3 · Arrow under text']];
+const cq = new URLSearchParams(location.search).get('cta');
+const CT = CTAS.some(([k]) => k === cq) ? cq : 'corner';
+const href = (o) => '?' + new URLSearchParams({ edge: E, labels: LB, cta: CT, ...o });
+document.getElementById('bar').innerHTML = '<span>Border at rest</span>' + EDGES.map(([k, l]) => `<a href="${href({ edge: k })}" aria-current="${k === E}">${l}</a>`).join('')
+  + '<span>Labels</span>' + [['chips', 'His chips'], ['mono', 'Today']].map(([k, l]) => `<a href="${href({ labels: k })}" aria-current="${k === LB}">${l}</a>`).join('')
+  + '<span>Button</span>' + CTAS.map(([k, l]) => `<a href="${href({ cta: k })}" aria-current="${k === CT}">${l}</a>`).join('');
 
 const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
 const UP = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg>';
@@ -270,13 +297,14 @@ const card = (k, cls = '', media) => { const c = C[k]; return `
       ${LB === 'chips' ? `<div class="chips">${[c.co, ...c.tags.split(' · ')].map(t => `<span>${t}</span>`).join('')}</div>` : `<span class="label meta">${c.co} · ${c.tags}</span>`}
       <h3>${c.title}</h3>
       <p>${c.line}</p>
+      <span class="peek2" aria-hidden="true"><b>View</b><i>${UP}</i></span>
       <span class="pills" aria-hidden="true"><span class="pill">View case study</span><span class="arrow">${ARROW}${ARROW}</span></span>
     </div>
     <a class="cover" href="#" aria-label="${c.title}, view case study"></a>
   </article>`; };
 
 const grid = document.getElementById('grid'), more = document.getElementById('more');
-grid.classList.add('l-' + L, 'e-' + E);
+grid.classList.add('l-' + L, 'e-' + E, 'c-' + CT);
 grid.innerHTML = {
   wides: card('okta', 'wide beside') + card('privacy') + card('ads') + card('scango', 'wide beside flip', scangoWide) + card('debit') + card('chase'),
   reference: `<div class="col">${card('okta', 'big')}${card('privacy', 'big')}${card('scango', 'big', scangoWide)}</div>
