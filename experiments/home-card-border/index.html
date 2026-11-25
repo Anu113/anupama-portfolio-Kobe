@@ -26,8 +26,9 @@
   experiments/andreas-home): one small chip per label, 12px sans in grey
   (nudged darker, ~4.9:1, since our #707070 on the fill is 4.4:1) on a 5% ink fill, 6px corners, 21px tall, 4px apart, the company first;
   mono = today's "PAYPAL · FINTECH · …" line in 11px mono caps.
-  On hover each card shows only the round black arrow (no "View case
-  study" pill), on request. "View all work" is the old CTA again: the
+  On hover (or keyboard focus) a round black arrow appears in the top-right
+  corner of the card's work, as on andreas.vision, then widens to the left
+  into a pill reading "View" (on request). Nothing under the text. "View all work" is the old CTA again: the
   mono caps link with its underline and a nudging arrow (.btn--link in
   global.css), not the pill pair.
 -->
@@ -60,14 +61,14 @@
   .e-ox8{--edge:color-mix(in srgb,var(--ox) 8%,transparent)}
   /* E · Like Andreas: the card never moves or outlines; the work zooms inside its frame */
   .e-zoom .card:is(:hover,:focus-within){box-shadow:none;transform:none}
-  .e-zoom .stage > *{transition:transform .7s var(--ease)}
-  .e-zoom .card:is(:hover,:focus-within) .stage > *{transform:scale(1.05)}
+  .e-zoom .stage > :not(.peek){transition:transform .7s var(--ease)}
+  .e-zoom .card:is(:hover,:focus-within) .stage > :not(.peek){transform:scale(1.05)}
   .e-zoom .card a.cover:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
   .card a.cover{position:absolute;inset:0;border-radius:inherit;z-index:1}
   .card a.cover:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
   .stage{height:30rem;display:grid;place-items:center;border-radius:20px;overflow:hidden;background:var(--g)}
-  .stage > *{transition:transform .7s var(--ease)}
-  .card:is(:hover,:focus-within) .stage > *{transform:scale(1.035)}
+  .stage > :not(.peek){transition:transform .7s var(--ease)}
+  .card:is(:hover,:focus-within) .stage > :not(.peek){transform:scale(1.035)}
   .stage img.desk{max-width:80%;border-radius:8px;box-shadow:0 30px 50px -30px rgba(0,0,0,.35)}
   .phone{width:200px;aspect-ratio:9/19.5;border-radius:34px;background:#111;padding:7px;box-shadow:0 30px 50px -28px rgba(0,0,0,.4),inset 0 0 0 2px #cfd0d3}
   .phone div{width:100%;height:100%;border-radius:28px;overflow:hidden;background:#fff}
@@ -97,8 +98,20 @@
   a.pills:hover .arrow svg + svg,a.pills:focus-visible .arrow svg + svg{transform:none}
   a.pills:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:999px}
   .more{display:flex;justify-content:center;margin-top:3rem}
-  /* on hover, just the black arrow */
-  .card .pills .pill{display:none}
+  /* the corner arrow: appears, then widens into "View" */
+  .card .words .pills{display:none}
+  .stage{position:relative}
+  .peek{position:absolute;top:14px;right:14px;z-index:2;height:40px;min-width:40px;max-width:40px;display:flex;align-items:center;justify-content:flex-end;
+    border-radius:999px;background:var(--ink);color:var(--bg);overflow:hidden;white-space:nowrap;pointer-events:none;
+    opacity:0;transform:scale(.6);transform-origin:100% 0;
+    transition:opacity .3s var(--ease),transform .4s var(--ease),max-width .55s var(--ease) 0s}
+  .peek b{font:600 13px/1 var(--sans);padding:0 2px 0 16px;opacity:0;transition:opacity .25s var(--ease)}
+  .peek i{flex:none;width:40px;height:40px;display:grid;place-items:center}
+  .peek svg{width:15px;height:15px}
+  .card:is(:hover,:focus-within) .peek{opacity:1;transform:none;max-width:110px;transition:opacity .3s var(--ease),transform .4s var(--ease),max-width .55s var(--ease) .18s}
+  .card:is(:hover,:focus-within) .peek b{opacity:1;transition:opacity .3s var(--ease) .3s}
+  @media (hover:none){.peek{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.peek,.peek b{transition:none!important}}
   /* the old "View all work" CTA (.btn--link) */
   .btn--link{display:inline-flex;align-items:center;gap:.4em;font:400 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink);
     text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--ink) 45%,transparent);text-decoration-thickness:1px;text-underline-offset:3px;transition:text-decoration-color .2s var(--ease)}
@@ -189,7 +202,7 @@
     .beside,.beside.flip{grid-template-columns:1fr}.beside .words,.beside.flip .words{order:0;padding:0}
     .stage,.beside .stage,.l-reference .big .stage{height:22rem}.phone{width:150px}.pair{gap:14px}.pair .phone{width:140px}
   }
-  @media (prefers-reduced-motion:reduce){.card,.stage > *,.pills,.pills *{transition:none!important}.card:is(:hover,:focus-within){transform:none}.card:is(:hover,:focus-within) .stage > *{transform:none!important}}
+  @media (prefers-reduced-motion:reduce){.card,.stage > :not(.peek),.pills,.pills *{transition:none!important}.card:is(:hover,:focus-within){transform:none}.card:is(:hover,:focus-within) .stage > :not(.peek){transform:none!important}}
 
   /* the option bar */
   .bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99;display:flex;gap:2px;flex-wrap:wrap;justify-content:center;background:#111;border-radius:999px;padding:4px;font:500 12px/1 system-ui;box-shadow:0 8px 28px rgba(0,0,0,.25)}
@@ -216,6 +229,7 @@ document.getElementById('bar').innerHTML = '<span>Border at rest</span>' + EDGES
   + '<span>Labels</span>' + [['chips', 'His chips'], ['mono', 'Today']].map(([k, l]) => `<a href="?edge=${E}&labels=${k}" aria-current="${k === LB}">${l}</a>`).join('');
 
 const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+const UP = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg>';
 const pillA = (label) => `<a class="pills" href="#"><span class="pill">${label}</span><span class="arrow">${ARROW}${ARROW}</span></a>`;
 const I = '../../public/images/work-play/';
 const phone = (src) => `<div class="phone"><div><img src="${I}${src}" alt=""></div></div>`;
@@ -244,7 +258,7 @@ const scangoWide = `<div class="pair">${C.scango.media}${phone('sg-cart.webp')}<
 
 const card = (k, cls = '', media) => { const c = C[k]; return `
   <article class="card ${cls}">
-    <div class="stage" style="--g:${c.g}">${media || c.media}</div>
+    <div class="stage" style="--g:${c.g}">${media || c.media}<span class="peek" aria-hidden="true"><b>View</b><i>${UP}</i></span></div>
     <div class="words">
       ${LB === 'chips' ? `<div class="chips">${[c.co, ...c.tags.split(' · ')].map(t => `<span>${t}</span>`).join('')}</div>` : `<span class="label meta">${c.co} · ${c.tags}</span>`}
       <h3>${c.title}</h3>
