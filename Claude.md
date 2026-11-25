@@ -630,7 +630,8 @@ walked back. Concretely, in the current implementation:
   over): a slash when off, two waves drawing in when on, on the
   sun/moon's 15px grid. The rules and sounds are the old dock's, in
   `scripts/sound.ts`: off by default, on for the tab once pressed (a
-  reload starts off), synthesised in the browser (no files): a tap as
+  reload starts off), synthesised in the browser (no files, bar the
+  wall's piano, below): a tap as
   sound turns on and a short tone on Light/Dark. The name
   and links make no sound on hover or click (removed on request,
   2026-11-13); don't add one back. Since 2026-11-17, on request, six
@@ -647,11 +648,17 @@ walked back. Concretely, in the current implementation:
   as the Beyond ring is thrown or turned (not on its drift), and counter
   ticks on a case's numbers (first count only). Footsteps on the
   playground wall were mocked and left out, on request. A seventh, on
-  request (2026-11-17, "A · Detent" of `experiments/sound-scroll/`): on
-  the playground wall, a soft wooden click as each piece's centre crosses
-  the middle of the screen while the page scrolls, like a date-picker
-  wheel (`playWallTick`); silent when still and when panning sideways.
-  Rounds of other wall sounds (knock, wind bell, koto, per-painting
+  request (2026-11-25, "C · Piano settle" of `experiments/sound-scroll-5/`,
+  replacing the 2026-11-17 detent click, which sounded "froggish" live):
+  on the playground wall, silent while the page scrolls, and when the
+  scroll comes to rest, one soft chord on a real piano (`wallScroll`). It
+  is the one recorded sound: four short notes in `public/sounds/wall/`,
+  cut from the University of Iowa Electronic Music Studios' piano (free
+  "for any projects, without restrictions"), fetched only once sound is
+  on there; everything else stays synthesised. Rounds 9–12
+  (`experiments/sound-scroll-2` to `-5`) tried quieter ticks, softened
+  hums, vinyl, a brook, marimba and pencil; the research behind round 11
+  and what other sites do is noted in those pages. Rounds of other wall sounds (knock, wind bell, koto, per-painting
   scenes, techno music, single notes) were mocked in `experiments/sound-*`
   and turned down; a curtain sound for the preloader was mocked too but
   can't be heard (sound is always off on a first visit or reload). Nothing else has
