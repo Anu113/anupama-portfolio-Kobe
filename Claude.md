@@ -352,7 +352,10 @@ effect:
   Wet paint, scroll pull, window light and hover-only were mocked and
   passed over. Values under PLAY DEPTH in `tokens.css`.
 
-- **`GlobeStory`, approved on request** (2026-11-23; andreas.vision's
+- **`GlobeStory`, approved on request, now parked** (2026-11-25, on
+  request: "remove that for now"; the component, its map, script and
+  GLOBE STORY tokens stay, no page mounts it, and "Selected work."
+  keeps its square full stop, simply there). Built 2026-11-23, andreas.vision's
   globe sequence step for step, mocked in `experiments/espresso-page`
   and picked there as "Like the reference", "Table wood", "Smooth",
   "Rounded"). Between the hero and Selected work: as the hero scrolls
@@ -379,8 +382,8 @@ effect:
   one picture of the range (one desk in Bangalore, products used
   around the world), handing the eye to the work.
 
-Outside those nine moments — hero shader, first-paint loader, the reused
-hover system, `CursorTrail`, `CursorLamp`, Pixel, BeyondWork, the playground wall, the globe story — the old rule still applies at full strength:
+Outside those eight moments — hero shader, first-paint loader, the reused
+hover system, `CursorTrail`, `CursorLamp`, Pixel, BeyondWork, the playground wall (the globe story is parked) — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,
@@ -904,7 +907,7 @@ walked back. Concretely, in the current implementation:
   at a time, stops when the tab is hidden; nothing moves under reduced
   motion. Its reason: one personal detail she can share in a press,
   the way the paintings share hers.
-- The home page is now: hero → the globe story (`GlobeStory`) →
+- The home page is now: hero →
   "Selected *work*" head + six project cards →
   "Beyond *work*" ring → one-line playground pointer → Small talk →
   Now → footer (which carries contact). The hero is the screen minus

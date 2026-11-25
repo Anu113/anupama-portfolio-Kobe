@@ -11,7 +11,6 @@ import PillPair from '../components/PillPair.astro';
 import BeyondWork from '../components/BeyondWork.astro';
 import SmallTalk from '../components/SmallTalk.astro';
 import Now from '../components/Now.astro';
-import GlobeStory from '../components/GlobeStory.astro';
 
 import { site } from '../data/site';
 import { work, homeCards, labelsFor } from '../data/work';
@@ -88,10 +87,9 @@ const cards = homeCards.map((c) => {
     }
   </script>
 
-  <!-- The globe story (GlobeStory.astro): the globe comes up under the hero,
-       closes in on Bangalore, pulls back and turns to where her companies
-       are from, and hands over to the work. -->
-  <GlobeStory />
+  <!-- The globe story (GlobeStory.astro) is parked, on request
+       (2026-11-25, "remove that for now"): the component, its map and
+       tokens stay; no page mounts it. -->
 
   <!-- Selected work. Section head: a serif line with its key phrase in
        italic, centred. "View all work" sits after the cards (on request,
@@ -100,7 +98,7 @@ const cards = homeCards.map((c) => {
        ProjectCard.astro). -->
 <Section theme="bone" full id="work" class="workhead-section">
   <div class="u-shell workhead">
-    <h2 class="u-heading">Selected <em>work</em><span class="workhead__stop" data-globe-stop aria-hidden="true"></span></h2>
+    <h2 class="u-heading">Selected <em>work</em><span class="workhead__stop" aria-hidden="true"></span></h2>
   </div>
 </Section>
 <Section theme="bone" class="worklist">
@@ -216,9 +214,9 @@ const cards = homeCards.map((c) => {
   .hero__line { max-width: 26ch; text-wrap: pretty; }
   /* A square full stop: the sentence ends on a pixel (on request,
      2026-11-18). The real "." stays for screen readers and copying. */
-  /* the globe story's last pixel lands here (GlobeStory.astro): hidden until it arrives */
-  .workhead__stop { display: inline-block; width: var(--hero-stop-size); height: var(--hero-stop-size); margin-left: var(--hero-stop-gap); background: var(--globe-land); opacity: 0; }
-  .workhead__stop.is-on { opacity: 1; }
+  /* The globe story's last pixel used to land here. With the globe parked
+     (2026-11-25) the square is simply there, in the globe's land colour. */
+  .workhead__stop { display: inline-block; width: var(--hero-stop-size); height: var(--hero-stop-size); margin-left: var(--hero-stop-gap); background: var(--globe-land); }
   .hero__end { white-space: nowrap; }   /* the stop never wraps away from its word */
   .hero__stop {
     display: inline-block;
