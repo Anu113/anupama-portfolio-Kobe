@@ -26,6 +26,10 @@
   experiments/andreas-home): one small chip per label, 12px sans in grey
   (nudged darker, ~4.9:1, since our #707070 on the fill is 4.4:1) on a 5% ink fill, 6px corners, 21px tall, 4px apart, the company first;
   mono = today's "PAYPAL · FINTECH · …" line in 11px mono caps.
+  On hover each card shows only the round black arrow (no "View case
+  study" pill), on request. "View all work" is the old CTA again: the
+  mono caps link with its underline and a nudging arrow (.btn--link in
+  global.css), not the pill pair.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -93,6 +97,15 @@
   a.pills:hover .arrow svg + svg,a.pills:focus-visible .arrow svg + svg{transform:none}
   a.pills:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:999px}
   .more{display:flex;justify-content:center;margin-top:3rem}
+  /* on hover, just the black arrow */
+  .card .pills .pill{display:none}
+  /* the old "View all work" CTA (.btn--link) */
+  .btn--link{display:inline-flex;align-items:center;gap:.4em;font:400 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink);
+    text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--ink) 45%,transparent);text-decoration-thickness:1px;text-underline-offset:3px;transition:text-decoration-color .2s var(--ease)}
+  .btn--link:hover,.btn--link:focus-visible{text-decoration-color:var(--ink);text-decoration-thickness:2px}
+  .btn--link:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+  .btn__arrow{display:inline-block;transition:transform .2s var(--ease)}
+  .btn--link:hover .btn__arrow,.btn--link:focus-visible .btn__arrow{transform:translateX(3px)}
 
   /* Scan & Go's scan, from src/styles/work-play.css (end state at rest; plays while .is-live) */
   .sg{position:relative;container-type:inline-size;height:100%}
@@ -251,7 +264,7 @@ grid.innerHTML = {
   bento: card('okta', 's2') + card('privacy', 's1') + card('ads', 's1') + card('scango', 's2', scangoWide) + card('debit', 's3') + card('chase', 's3'),
   threes: card('okta') + card('privacy') + card('scango') + card('ads') + card('debit') + card('chase'),
 }[L];
-more.innerHTML = L === 'reference' ? '' : pillA('View all work');
+more.innerHTML = '<a class="btn--link" href="#">View all work <span class="btn__arrow" aria-hidden="true">→</span></a>';
 
 // Scan & Go's scan: plays on its own (as the home phones do), restarting every 6.5s; still under reduced motion.
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
