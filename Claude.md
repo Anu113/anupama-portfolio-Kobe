@@ -352,7 +352,10 @@ effect:
   Wet paint, scroll pull, window light and hover-only were mocked and
   passed over. Values under PLAY DEPTH in `tokens.css`.
 
-- **`GlobeStory`, approved on request** (2026-11-23; andreas.vision's
+- **`GlobeStory`, approved on request, now parked** (2026-11-25, on
+  request: "remove that for now"; the component, its map, script and
+  GLOBE STORY tokens stay, no page mounts it, and "Selected work."
+  keeps its square full stop, simply there). Built 2026-11-23, andreas.vision's
   globe sequence step for step, mocked in `experiments/espresso-page`
   and picked there as "Like the reference", "Table wood", "Smooth",
   "Rounded"). Between the hero and Selected work: as the hero scrolls
@@ -379,8 +382,8 @@ effect:
   one picture of the range (one desk in Bangalore, products used
   around the world), handing the eye to the work.
 
-Outside those nine moments — hero shader, first-paint loader, the reused
-hover system, `CursorTrail`, `CursorLamp`, Pixel, BeyondWork, the playground wall, the globe story — the old rule still applies at full strength:
+Outside those eight moments — hero shader, first-paint loader, the reused
+hover system, `CursorTrail`, `CursorLamp`, Pixel, BeyondWork, the playground wall (the globe story is parked) — the old rule still applies at full strength:
 prefer hover previews, subtle scale/opacity shifts, masked/positional
 transitions, scroll-linked reveals tied to content appearing, fast and
 physically believable feedback. Avoid slow cinematic transitions,
@@ -904,7 +907,7 @@ walked back. Concretely, in the current implementation:
   at a time, stops when the tab is hidden; nothing moves under reduced
   motion. Its reason: one personal detail she can share in a press,
   the way the paintings share hers.
-- The home page is now: hero → the globe story (`GlobeStory`) →
+- The home page is now: hero →
   "Selected *work*" head + six project cards →
   "Beyond *work*" ring → one-line playground pointer → Small talk →
   Now → footer (which carries contact). The hero is the screen minus
@@ -953,13 +956,18 @@ walked back. Concretely, in the current implementation:
   on its own hue (`ground` in `homeCards`: Okta sky, Privacy lilac, Ads
   consent apricot, Scan & Go sage, Debit Card mint, Chase Pay butter). The words sit left
   under the work; on the wide card they sit beside it on the left, its
-  title in the serif heading. No line at rest; on hover or focus a faint
-  oxblood line comes in (16%), the card rises 3px on a soft layered
-  shadow, the work inside grows to 1.035 and "View case study" fades up
-  as the pill pair (below), all on `--ease-out` over 500ms (always shown
-  on touch). The oxblood is a mark only, never text; the 28px corners
-  are a requested exception to the square `--radius` rule, these cards
-  only. Values under HOME CARDS in `tokens.css`. After daneden.me, a phone runs each flow on its own:
+  title in the serif heading. Since 2026-11-25, on request (picked in
+  `experiments/home-card-border/`: "E · Like Andreas", "His chips",
+  "3 · Arrow under text", "F · Ghost to ink"): no line, rise or shadow
+  at rest or on hover; the card holds still and only the work inside
+  grows to 1.05 on a 700ms ease-out. The labels are andreas.vision's
+  small grey chips, the company first. Under the words, a round arrow
+  in a thin grey ring; on hover it fills with ink and opens to "View"
+  (ink fills the ring, then spreads by clip-path; leaving, it draws back
+  and fades there, so the arrow is never white on white). Mocked and
+  passed over: faint borders at rest, an arrow on the image, other
+  fills. The 28px corners are a requested exception to the square
+  `--radius` rule, these cards only. Values under HOME CARDS in `tokens.css`. After daneden.me, a phone runs each flow on its own:
   Privacy's, Ads consent's and Chase Pay's /work flows playing on their
   own (the same redrawn screens, touch marks and arrivals as their /work
   tiles), and the coded Debit Card sign-up prototype on autopilot
@@ -977,8 +985,9 @@ walked back. Concretely, in the current implementation:
   button style of the inspiration"), measured off andreas.vision: an ink
   pill 42px tall beside a round 42px arrow, 8px apart; on hover the pill
   grows 1.5% and the arrow slides out as a fresh one slides in. Ink,
-  never the accent. Used for "View all work", the home cards' "View case
-  study" and the globe's "More about me" (re-inked in the wood's brown).
+  never the accent. Now used only by the parked globe's "More about me";
+  the home cards and "View all work" no longer use it
+  (2026-11-25: "View all work" is the mono `.btn--link` again).
   Don't spread it to the hero's Resume/LinkedIn without asking.
 - **The /work tiles play their flow on hover** (`WorkStage.astro`,
   `scripts/work-play.ts`, `data/workPlay.ts`, WORK PLAY in
