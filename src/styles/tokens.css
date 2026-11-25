@@ -738,12 +738,13 @@
    on hover"), after andreas.vision's cards. Selected work as one wide
    card (its words beside the work), then two pairs. Each card is paper
    with its work on the project's hue (PROJECT HUES / GROUND HUES); no
-   line at rest. On hover or focus a faint oxblood line comes in, the
-   card rises a little on a soft layered shadow, the work inside grows a
-   touch, and "View case study" (the pill pair, PILL PAIR) fades up. All
-   on --ease-out over --home-card-dur. The 28px corners are a requested
-   exception to the square --radius rule, these cards only. The line is
-   a mark, never text; it's decoration (the title is what's read).
+   line at rest. Since 2026-11-25 (experiments/home-card-border/: "E ·
+   Like Andreas", "His chips", "3 · Arrow under text", "F · Ghost to
+   ink"): no line, rise or shadow on hover either; the work grows to
+   --home-card-grow over --home-work-dur; labels are small grey chips;
+   and a ghost ring under the words fills with ink and opens to "View".
+   The 28px corners are a requested exception to the square --radius
+   rule, these cards only.
    ============================================================ */
 :root {
   --home-card-fill: var(--bg);
@@ -753,7 +754,8 @@
   --home-card-pad: 1.5rem 1.5rem 1.75rem;
   --home-card-gap: 1.5rem;             /* between cards, both ways */
   --home-card-rise: -3px;              /* the card on hover */
-  --home-card-grow: 1.035;             /* the work inside it on hover */
+  --home-card-grow: 1.05;              /* the work inside it on hover (his) */
+  --home-work-dur: 700ms;              /* the work's zoom, his slower ease-out */
   --home-card-dur: 500ms;
   --home-card-shadow:
     0 1px 2px rgb(38 38 38 / 0.04),
@@ -766,6 +768,33 @@
   --home-wide-cols: 0.8fr 1.6fr;       /* the wide card: words, then the work */
   --home-wide-cols-flip: 1.6fr 0.8fr;  /* the second wide card (Scan & Go): the work, then the words */
   --home-pair-gap: 1.5rem;             /* two phones side by side on one card */
+  /* his chips: 12px sans in grey on a 5% ink fill, 21px tall, 6px corners.
+     The grey is ours nudged toward ink (~4.9:1 on the fill; plain
+     --fg-dim on it is 4.4:1, under AA for 12px). */
+  --home-chip-size: 12px;
+  --home-chip-h: 21px;
+  --home-chip-pad: 8px;
+  --home-chip-gap: 4px;
+  --home-chip-title-gap: 10px;
+  --radius-home-chip: 6px;
+  --home-chip-fill: color-mix(in srgb, var(--fg) 5%, var(--bg));
+  --home-chip-fg: color-mix(in srgb, var(--fg-dim) 85%, var(--fg));
+  /* the arrow under the words: a 40px ghost ring that opens to a 92px
+     "View" pill filled with ink */
+  --home-go-w: 92px;
+  --home-go-h: 40px;
+  --home-go-gap: 16px;
+  --home-go-ring: color-mix(in srgb, var(--fg) 18%, transparent);
+  --home-go-label-x: 16px;
+  --home-go-label-size: 13px;
+  --home-go-in: 150ms;      /* the ring filling with ink, the arrow turning */
+  --home-go-lag: 50ms;      /* then the ink spreads and the arrow rides */
+  --home-go-open: 600ms;
+  --home-go-label-lag: 100ms;
+  --home-go-close: 450ms;   /* leaving: the ink draws back to the ring… */
+  --home-go-hold: 350ms;    /* …and only then fades with the arrow's colour */
+  --home-go-fade: 200ms;
+  --ease-in-out-go: cubic-bezier(.4, 0, .2, 1);
 }
 :root[data-mode='dark'] {
   --home-card-line: color-mix(in srgb, #c86a5e 30%, transparent);   /* the same oxblood, lifted for the dark ground */

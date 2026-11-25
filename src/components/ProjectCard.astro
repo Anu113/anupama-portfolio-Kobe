@@ -8,9 +8,9 @@
    words sit left under the work; on the wide card (`wide`) they sit
    beside it, on the left (on the right with `flip`), with the title in
    the serif heading. The
-   words: the company and tags (mono labels, `labelsFor()`), the title,
-   one 12px line and "View case study" as the pill pair
-   (PillPair.astro). The work is:
+   words: the company and tags as small grey chips (andreas.vision's,
+   `labelsFor()`), the title, one 12px line and a round arrow that opens
+   to "View" on hover. The work is:
 
    - a phone that runs the flow on its own (after daneden.me): a screen
      recording, her screens in sequence (each sliding over the last, like
@@ -30,11 +30,14 @@
    Its UX reason: a recruiter skimming the grid sees the product working,
    not a thumbnail of it.
 
-   Hover or keyboard focus (the reused hover system): a faint oxblood
-   line comes in (none at rest), the card rises a little on a soft
-   layered shadow, the work inside grows a touch, and "View case study"
-   fades up with its arrow swapping (it shows at rest on touch, where
-   there is no hover). Values under HOME CARDS in tokens.css.
+   Hover or keyboard focus (on request, 2026-11-25, chosen in
+   experiments/home-card-border/ as "E · Like Andreas", "His chips",
+   "3 · Arrow under text", "F · Ghost to ink"): the card itself holds
+   still, with no line, rise or shadow; the work inside grows to 1.05;
+   the arrow under the words, a ghost ring at rest, fills with ink and
+   opens to "View". Keyboard focus also rings the card. On touch the
+   ring stays as it is (a tap opens the case). Values under HOME CARDS
+   in tokens.css.
 
    Motion: a phone moves only while its card is on screen, the tab is
    visible and motion is allowed (no pause control, on request). Under
@@ -59,7 +62,6 @@ import { existsSync } from 'node:fs';
 import '../styles/work-play.css';
 import LockFrost from './LockFrost.astro';
 import LockIcon from './LockIcon.astro';
-import PillPair from './PillPair.astro';
 
 interface Props {
   company: string; title: string; tagline: string; href: string;
@@ -139,29 +141,25 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
   </div>
 
   <div class="pc__body">
-    {/* COMPANY · [domain] [discipline]… — after carlthomasiv.com; the
-        chips come from labelsFor() in data/work.ts. */}
-    <div class="pc__meta">
-      <p class="pc__co u-label-mono">{locked && <LockIcon class="pc__lock" size="1em" />}{company}</p>
-      {tags.length > 0 && (
-        <>
-          <span class="pc__dot u-label-mono" aria-hidden="true">·</span>
-          <ul class="pc__tags" aria-label="Domain and discipline">
-            {tags.map((t) => <li>{t}</li>)}
-          </ul>
-        </>
-      )}
-    </div>
+    {/* His chips (andreas.vision): the company, then the labels from
+        labelsFor() in data/work.ts, one small chip each. */}
+    <ul class="pc__chips" aria-label="Company, domain and discipline">
+      <li class="pc__co">{locked && <LockIcon class="pc__lock" size="1em" />}{company}</li>
+      {tags.map((t) => <li>{t}</li>)}
+    </ul>
     <h3 class="pc__title"><a class="pc__link" href={href}>{title}{locked && <span class="u-sr-only">, password protected</span>}</a></h3>
     <p class="pc__tagline">{tagline}</p>
-    <PillPair label="View case study" size="sm" class="pc__cta" />
+    {/* The arrow under the words: a ghost ring at rest; on hover the ink
+        fills it and spreads into "View" (see the styles). A label: the
+        card itself is the link. */}
+    <span class="pc__go" aria-hidden="true"><s></s><u></u><b>View</b><i><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></i></span>
   </div>
 </article>
 
 <style>
-  /* The card: paper, no line at rest. On hover or focus the faint line
-     (::after, so it never shifts the layout) comes in and the card rises
-     on its shadow. */
+  /* The card: paper, no line at rest and none on hover (on request,
+     2026-11-25, "E · Like Andreas"): the card holds still; only the work
+     inside it grows, and the arrow under the words opens to "View". */
   .pc {
     position: relative;
     isolation: isolate;
@@ -172,25 +170,7 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
     color: var(--fg);
     background: var(--home-card-fill);
     border-radius: var(--radius-home-card);
-    transition:
-      transform var(--home-card-dur) var(--ease-out),
-      box-shadow var(--home-card-dur) var(--ease-out);
   }
-  .pc::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    border: 1px solid transparent;
-    pointer-events: none;
-    transition: border-color var(--home-card-dur) var(--ease-out);
-  }
-  @media (hover: hover) and (pointer: fine) {
-    .pc:hover { transform: translateY(var(--home-card-rise)); box-shadow: var(--home-card-shadow); }
-    .pc:hover::after { border-color: var(--home-card-line); }
-  }
-  .pc:has(.pc__link:focus-visible) { transform: translateY(var(--home-card-rise)); box-shadow: var(--home-card-shadow); }
-  .pc:has(.pc__link:focus-visible)::after { border-color: var(--home-card-line); }
 
   /* The words, left under the work, as on the reference. */
   .pc__body {
@@ -199,26 +179,24 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
     padding-top: var(--home-card-text-gap);
     flex: 1;
   }
-  .pc__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem 1rem; margin: 0 0 0.5rem; }
-  .pc__dot { color: var(--fg-dim); }
-  .pc__co { color: var(--fg-dim); margin: 0; transition: color var(--dur-micro) var(--ease-out); }
-  .pc:hover .pc__co { color: var(--fg); }
+  /* His chips: one per label, the company first (HOME CARDS in tokens.css). */
+  .pc__chips { display: flex; flex-wrap: wrap; gap: var(--home-chip-gap); list-style: none; margin: 0 0 var(--home-chip-title-gap); padding: 0; }
+  .pc__chips li {
+    font-family: var(--font-sans);
+    font-size: var(--home-chip-size);
+    font-weight: var(--weight-sans);
+    line-height: var(--home-chip-h);
+    padding: 0 var(--home-chip-pad);
+    border-radius: var(--radius-home-chip);
+    color: var(--home-chip-fg);
+    background: var(--home-chip-fill);
+    white-space: nowrap;   /* a chip never breaks across lines */
+  }
   .pc__co :global(.pc__lock) { display: inline-block; margin-right: 0.4em; vertical-align: -0.1em; }
   /* Locked: the frost is the hover, so the work holds still under it. */
   @media (hover: hover) {
     .pc[data-locked]:hover .pc__device,
     .pc[data-locked]:hover .pc__desktop { transform: none; }
-  }
-  .pc__tags { display: contents; list-style: none; margin: 0; padding: 0; }
-  .pc__tags li {
-    font-family: var(--font-mono);
-    font-size: var(--step-fine);
-    font-weight: var(--weight-mono);
-    line-height: 1.5;
-    letter-spacing: var(--tracking-mono-label);
-    text-transform: uppercase;
-    color: var(--fg-dim);
-    white-space: nowrap;   /* a tag never breaks across lines */
   }
   .pc__title {
     font-family: var(--font-sans);
@@ -243,22 +221,65 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
     max-width: var(--home-tagline-max);
     text-wrap: pretty;
   }
-  /* "View case study": the pill pair, a label here (the card is the
-     link), so the card's hover drives it. Withheld at rest where there's
-     a pointer to reveal it. */
-  .pc :global(.pc__cta) {
-    margin-top: 1rem;
+  /* The arrow under the words ("3 · Arrow under text", "F · Ghost to ink"
+     of experiments/home-card-border/). A fixed box, so nothing around it
+     moves. At rest: a ring (s) with the ink arrow. On hover the ink layer
+     (u) first fills the ring (the arrow turning white with it), then
+     spreads into the whole pill by clip-path, so it is never a grey
+     half-fill, while the arrow rides to the end and "View" comes in.
+     Leaving plays it back: the ink draws in to the ring and only there
+     fades, together with the arrow's colour, so the arrow always reads.
+     Values under HOME CARDS in tokens.css. */
+  .pc__go {
+    position: relative; display: block; flex: none;
+    width: var(--home-go-w); height: var(--home-go-h);
+    margin-top: var(--home-go-gap);
+    color: var(--fg);
+    transition: color var(--home-go-fade) linear var(--home-go-hold);
+  }
+  .pc__go s {
+    position: absolute; left: 0; top: 0;
+    width: var(--home-go-h); height: var(--home-go-h);
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--home-go-ring);
+  }
+  .pc__go u {
+    position: absolute; inset: 0; border-radius: 999px;
+    background: var(--fg);
+    clip-path: circle(calc(var(--home-go-h) / 2) at calc(var(--home-go-h) / 2) 50%);
+    opacity: 0;
     transition:
-      opacity var(--home-card-dur) var(--ease-out),
-      translate var(--home-card-dur) var(--ease-out);
+      clip-path var(--home-go-close) var(--ease-in-out-go),
+      opacity var(--home-go-fade) linear var(--home-go-hold);
   }
-  @media (hover: hover) and (pointer: fine) {
-    .pc :global(.pc__cta) { opacity: 0; translate: 0 6px; }
+  .pc__go i {
+    position: absolute; left: 0; top: 0; z-index: 1;
+    width: var(--home-go-h); height: var(--home-go-h);
+    display: grid; place-items: center;
+    transition: transform var(--home-go-open) var(--ease-out);
   }
-  .pc:is(:hover, :has(.pc__link:focus-visible)) :global(.pc__cta) { opacity: 1; translate: 0 0; }
-  .pc:is(:hover, :has(.pc__link:focus-visible)) :global(.btn--pair__pill) { transform: scale(var(--pair-grow)); }
-  .pc:is(:hover, :has(.pc__link:focus-visible)) :global(.btn--pair__arrow svg:first-child) { transform: translateX(200%); }
-  .pc:is(:hover, :has(.pc__link:focus-visible)) :global(.btn--pair__arrow svg + svg) { transform: none; }
+  .pc__go svg { width: 15px; height: 15px; }
+  .pc__go b {
+    position: absolute; left: var(--home-go-label-x); top: 0; z-index: 1;
+    font-family: var(--font-sans); font-weight: var(--weight-sans);
+    font-size: var(--home-go-label-size); line-height: var(--home-go-h);
+    opacity: 0; transform: translateX(-6px);
+    transition: opacity var(--home-go-fade) var(--ease-out), transform var(--home-go-open) var(--ease-out);
+  }
+  .pc:is(:hover, :has(.pc__link:focus-visible)) .pc__go { color: var(--bg); transition: color var(--home-go-in) linear; }
+  .pc:is(:hover, :has(.pc__link:focus-visible)) .pc__go u {
+    clip-path: circle(var(--home-go-w) at calc(var(--home-go-h) / 2) 50%);
+    opacity: 1;
+    transition: opacity var(--home-go-in) linear, clip-path var(--home-go-open) var(--ease-out) var(--home-go-lag);
+  }
+  .pc:is(:hover, :has(.pc__link:focus-visible)) .pc__go i {
+    transform: translateX(calc(var(--home-go-w) - var(--home-go-h)));
+    transition: transform var(--home-go-open) var(--ease-out) var(--home-go-lag);
+  }
+  .pc:is(:hover, :has(.pc__link:focus-visible)) .pc__go b {
+    opacity: 1; transform: none;
+    transition: opacity var(--home-go-fade) var(--ease-out) var(--home-go-label-lag), transform var(--home-go-open) var(--ease-out);
+  }
 
   /* The wide card: the words on the left, the work on the right, the
      title in the serif heading. */
@@ -307,7 +328,7 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
       inset 0 0 0 calc(0.75px * var(--s)) var(--phone-metal-4),
       inset calc(1.5px * var(--s)) calc(1.5px * var(--s)) calc(2px * var(--s)) var(--phone-metal-hi),
       var(--phone-shadow);
-    transition: transform var(--home-card-dur) var(--ease-out);
+    transition: transform var(--home-work-dur) var(--ease-out);
   }
   /* Buttons: Action and volume on the left, the side button and Camera
      Control on the right. */
@@ -390,7 +411,7 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
     max-width: calc(100% - 2 * var(--phone-stage-pad)); max-height: calc(100% - 2 * var(--phone-stage-pad));
     object-fit: contain;
     display: block;
-    transition: transform var(--home-card-dur) var(--ease-out);
+    transition: transform var(--home-work-dur) var(--ease-out);
   }
 
   /* The work grows a touch inside its stage. */
@@ -408,8 +429,7 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .pc, .pc::after, .pc :global(.pc__cta), .pc__device, .pc__desktop { transition: none; }
-    .pc:hover, .pc:has(.pc__link:focus-visible) { transform: none; }
+    .pc__device, .pc__desktop, .pc__go, .pc__go * { transition: none !important; }
     .pc:hover :is(.pc__device, .pc__desktop),
     .pc:has(.pc__link:focus-visible) :is(.pc__device, .pc__desktop) { transform: none; }
   }
