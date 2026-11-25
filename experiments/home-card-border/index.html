@@ -52,7 +52,10 @@
             shadow deepens a little
     hue     D · The card's hue: the card's ground deepened a touch, ink
             arrow; on hover it deepens a little more
-    grey    E · Grey: our grey (#707070) filled, white arrow; on hover ink Nothing under the text. "View all work" is the old CTA again: the
+    grey    E · Grey: our grey (#707070) filled, white arrow; on hover ink
+    ghostink F · Ghost to ink: the Ghost at rest (no fill, a 1px ring at
+            18% ink, ink arrow); on hover it fills with ink as it opens,
+            the ring goes, and the arrow and "View" turn white Nothing under the text. "View all work" is the old CTA again: the
   mono caps link with its underline and a nudging arrow (.btn--link in
   global.css), not the pill pair.
 -->
@@ -162,6 +165,8 @@
   .t-paper .peek2{--b-bg:#fff;--b-fg:var(--ink);--b-ring:color-mix(in srgb,var(--ink) 6%,transparent);--b-sh:0 1px 2px rgb(38 38 38/.06),0 4px 10px -4px rgb(38 38 38/.12);
     --b-bg-h:#fff;--b-fg-h:var(--ink);--b-ring-h:color-mix(in srgb,var(--ink) 8%,transparent);--b-sh-h:0 1px 2px rgb(38 38 38/.08),0 8px 18px -6px rgb(38 38 38/.2)}
   .t-hue .peek2{--b-bg:color-mix(in oklab,var(--g),var(--ink) 8%);--b-fg:var(--ink);--b-bg-h:color-mix(in oklab,var(--g),var(--ink) 16%);--b-fg-h:var(--ink)}
+  .t-ghostink .peek2{--b-bg:transparent;--b-fg:var(--ink);--b-ring:color-mix(in srgb,var(--ink) 18%,transparent);
+    --b-bg-h:var(--ink);--b-fg-h:var(--bg);--b-ring-h:transparent}
   .t-grey .peek2{--b-bg:var(--grey);--b-fg:#fff;--b-bg-h:var(--ink);--b-fg-h:#fff}
   .peek2 i{position:absolute;left:0;top:0;width:40px;height:40px;display:grid;place-items:center;transition:transform .6s var(--ease)}
   .peek2 svg{width:15px;height:15px}
@@ -286,7 +291,7 @@ const LB = new URLSearchParams(location.search).get('labels') === 'mono' ? 'mono
 const CTAS = [['hover', '1 · Appears on hover'], ['corner', '2 · Arrow on image'], ['below', '3 · Arrow under text']];
 const cq = new URLSearchParams(location.search).get('cta');
 const CT = CTAS.some(([k]) => k === cq) ? cq : 'corner';
-const TONES = [['ink', 'Ink'], ['ghost', 'A · Ghost'], ['tint', 'B · Soft fill'], ['paper', 'C · Paper'], ['hue', 'D · Card hue'], ['grey', 'E · Grey']];
+const TONES = [['ink', 'Ink'], ['ghost', 'A · Ghost'], ['tint', 'B · Soft fill'], ['paper', 'C · Paper'], ['hue', 'D · Card hue'], ['grey', 'E · Grey'], ['ghostink', 'F · Ghost to ink']];
 const tq = new URLSearchParams(location.search).get('tone');
 const TN = TONES.some(([k]) => k === tq) ? tq : 'ghost';
 const href = (o) => '?' + new URLSearchParams({ edge: E, labels: LB, cta: CT, tone: TN, ...o });
