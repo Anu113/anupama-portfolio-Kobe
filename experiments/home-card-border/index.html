@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home cards · a faint border at rest</title>
+<!--
+  On request (2026-11-25): the live home cards ("A · Two wides", Scan & Go
+  with its scan and cart) with a very light border at rest, so a card reads
+  as a card before the pointer reaches it. Hover stays as live: the faint
+  oxblood line (16%), a 3px rise on the soft shadow, the work grows, the
+  pill fades up. Pick one with the bar (?edge=):
+    none      Today: no line at rest (for comparison)
+    ink4      A · Ink 4%: barely there
+    ink7      B · Ink 7%: a hairline you notice on a second look
+    ink10     C · Ink 10%: clearly drawn, still quiet
+    ox8       D · Oxblood 8%: the hover line's hue, half its strength
+    zoom      E · Like Andreas: no border and no line on hover, no rise,
+              no shadow. The card stays put; only the work inside grows
+              to 1.05 on his slower ease (cubic-bezier(.16,1,.3,1), 700ms),
+              and "View case study" fades up as today. Measured off
+              andreas.vision's cards in experiments/home-explore/inspired.html
+              ("Work grows").
+  Values would go under HOME CARDS in tokens.css (--home-card-edge).
+  Labels (?labels=): chips = his (andreas.vision, measured in
+  experiments/andreas-home): one small chip per label, 12px sans in grey
+  (nudged darker, ~4.9:1, since our #707070 on the fill is 4.4:1) on a 5% ink fill, 6px corners, 21px tall, 4px apart, the company first;
+  mono = today's "PAYPAL · FINTECH · …" line in 11px mono caps.
+  On hover (or keyboard focus) a round black arrow appears in the top-right
+  corner of the card's work, as on andreas.vision, and opens to the left
+  into a pill reading "View" (on request), in one motion: clip-path,
+  opacity and transform only, on the one curve (smoothed 2026-11-25; it
+  used to animate max-width in three staggered steps).
+  Button (?cta=), on request:
+    hover   1 · Appears on hover: nothing at rest; on hover the arrow
+            comes up in the work's top-right corner and opens to "View".
+    corner  2 · Arrow on the image: the round arrow is always in the
+            work's top-right corner; on hover it opens left to "View".
+    below   3 · Arrow under the text: the round arrow always sits under
+            the words, where the pill used to be; on hover it opens right,
+            the arrow sliding to the end and "View" coming in before it.
+            Built as a fixed 92 x 40 box with a fill inside that grows from
+            a 40px circle, so nothing around it moves and rings and
+            shadows stay round.
+  Colour of 3 (?tone=), on request: black read too strong. Each is a
+  rest look and a hover look; the arrow stays at least 3:1 on its fill.
+    ink     Ink: today's black, at rest and on hover (for comparison)
+    ghost   A · Ghost: no fill, a 1px ring at 18% ink, ink arrow; on hover
+            a 6% ink fill comes in and the ring goes to 28%
+    tint    B · Soft fill: a 6% ink fill, ink arrow; on hover 10%
+    paper   C · Paper: white with a soft shadow, ink arrow; on hover the
+            shadow deepens a little
+    hue     D · The card's hue: the card's ground deepened a touch, ink
+            arrow; on hover it deepens a little more
+    grey    E · Grey: our grey (#707070) filled, white arrow; on hover ink
+    ghostink F · Ghost to ink: the Ghost at rest (no fill, a 1px ring at
+            18% ink, ink arrow). On hover the ink spreads out from the arrow
+            as a circle: the ring fills with ink (the arrow turning white
+            with it), then the ink grows into the whole pill (clip-path, so
+            it never passes through grey) while the arrow rides it to the
+            end and "View" comes in white. Leaving plays it back: the ink
+            draws in to the circle, and there it and the arrow's colour
+            fade together, so the arrow is never white on white. Nothing under the text. "View all work" is the old CTA again: the
+  mono caps link with its underline and a nudging arrow (.btn--link in
+  global.css), not the pill pair.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600&family=Crimson+Pro:ital,wght@0,300;1,300&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#fcfcfc;--ink:#262626;--grey:#707070;--ox:#5c1712;--land:#9e6743;
+    --serif:'Crimson Pro',Georgia,serif;--sans:'Manrope',system-ui,sans-serif;--mono:'Azeret Mono',monospace;
+    --gutter:clamp(20px,6vw,88px);--ease:cubic-bezier(.16,1,.3,1);--dur:.5s;--gap:1.5rem;
+    --line:color-mix(in srgb,var(--ox) 16%,transparent);
+    --shadow:0 1px 2px rgb(38 38 38/.04),0 8px 16px -6px rgb(38 38 38/.07),0 28px 48px -18px rgb(38 38 38/.14)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:600 14px/1.6 var(--sans)}
+  .label{font:400 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  .work{padding:6rem var(--gutter) 8rem}
+  .work > h2{text-align:center;font:300 40px/1 var(--serif);margin-bottom:3rem}
+  .work > h2 em{font-style:italic}
+  .work > h2 i{display:inline-block;width:.12em;height:.12em;background:var(--land);margin-left:.05em}
+  .grid{max-width:1180px;margin:0 auto;display:grid;gap:var(--gap)}
+
+  /* ---- the card (the live one) ---- */
+  .card{position:relative;border-radius:28px;background:var(--bg);padding:1.5rem 1.5rem 1.75rem;display:flex;flex-direction:column;gap:1.25rem;
+    transition:box-shadow var(--dur) var(--ease),transform var(--dur) var(--ease)}
+  .card{box-shadow:inset 0 0 0 1px var(--edge,transparent)}
+  .card:is(:hover,:focus-within){box-shadow:inset 0 0 0 1px var(--line),var(--shadow);transform:translateY(-3px)}
+  .e-ink4{--edge:color-mix(in srgb,var(--ink) 4%,transparent)}
+  .e-ink7{--edge:color-mix(in srgb,var(--ink) 7%,transparent)}
+  .e-ink10{--edge:color-mix(in srgb,var(--ink) 10%,transparent)}
+  .e-ox8{--edge:color-mix(in srgb,var(--ox) 8%,transparent)}
+  /* E · Like Andreas: the card never moves or outlines; the work zooms inside its frame */
+  .e-zoom .card:is(:hover,:focus-within){box-shadow:none;transform:none}
+  .e-zoom .stage > :not(.peek){transition:transform .7s var(--ease)}
+  .e-zoom .card:is(:hover,:focus-within) .stage > :not(.peek){transform:scale(1.05)}
+  .e-zoom .card a.cover:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .card a.cover{position:absolute;inset:0;border-radius:inherit;z-index:1}
+  .card a.cover:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .stage{height:30rem;display:grid;place-items:center;border-radius:20px;overflow:hidden;background:var(--g)}
+  .stage > :not(.peek){transition:transform .7s var(--ease)}
+  .card:is(:hover,:focus-within) .stage > :not(.peek){transform:scale(1.035)}
+  .stage img.desk{max-width:80%;border-radius:8px;box-shadow:0 30px 50px -30px rgba(0,0,0,.35)}
+  .phone{width:200px;aspect-ratio:9/19.5;border-radius:34px;background:#111;padding:7px;box-shadow:0 30px 50px -28px rgba(0,0,0,.4),inset 0 0 0 2px #cfd0d3}
+  .phone div{width:100%;height:100%;border-radius:28px;overflow:hidden;background:#fff}
+  .phone img{width:100%;display:block}
+  .meta{color:var(--grey)}
+  /* his chips */
+  .chips{display:flex;flex-wrap:wrap;gap:4px}
+  .chips span{font:600 12px/21px var(--sans);color:color-mix(in srgb,var(--grey) 85%,var(--ink));background:color-mix(in srgb,var(--ink) 5%,var(--bg));padding:0 8px;border-radius:6px;white-space:nowrap}
+  .chips + h3{margin-top:10px}
+  .card h3{font:600 18px/1.3 var(--sans);margin-top:6px}
+  .card p{color:var(--grey);font-size:12px;line-height:1.8;margin-top:4px;max-width:46ch}
+  .pills{display:inline-flex;gap:8px;color:var(--bg);font:600 14px/1 var(--sans);margin-top:16px;position:relative;z-index:2;pointer-events:none;
+    opacity:0;transform:translateY(6px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+  .card:is(:hover,:focus-within) .pills{opacity:1;transform:none}
+  @media (hover:none){.pills{opacity:1;transform:none}}
+  .pills .pill{height:36px;padding:0 15px;font-size:13px;display:inline-flex;align-items:center;border-radius:999px;background:var(--ink);transition:transform .1s ease-out}
+  .pills .arrow{width:36px;height:36px;border-radius:50%;background:var(--ink);position:relative;overflow:hidden;flex:none}
+  .pills .arrow svg{position:absolute;inset:0;margin:auto;width:16px;height:16px;transition:transform .6s cubic-bezier(.77,0,.175,1)}
+  .pills .arrow svg + svg{transform:translateX(-200%)}
+  .card:is(:hover,:focus-within) .pills .pill{transform:scale(1.015)}
+  .card:is(:hover,:focus-within) .pills .arrow svg:first-child{transform:translateX(200%)}
+  .card:is(:hover,:focus-within) .pills .arrow svg + svg{transform:none}
+  a.pills{pointer-events:auto;opacity:1;transform:none;text-decoration:none;margin:0}
+  a.pills .pill{height:42px;padding:0 18px;font-size:14px}a.pills .arrow{width:42px;height:42px}
+  a.pills:hover .pill,a.pills:focus-visible .pill{transform:scale(1.015)}
+  a.pills:hover .arrow svg:first-child,a.pills:focus-visible .arrow svg:first-child{transform:translateX(200%)}
+  a.pills:hover .arrow svg + svg,a.pills:focus-visible .arrow svg + svg{transform:none}
+  a.pills:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:999px}
+  .more{display:flex;justify-content:center;margin-top:3rem}
+  /* the corner arrow: appears, then widens into "View" */
+  .card .words .pills{display:none}
+  .stage{position:relative}
+  /* Drawn at full width always; at rest only the round arrow on its right
+     is shown (clip-path), and on hover the clip opens to the left. Only
+     clip-path, opacity and transform move: no layout per frame, one
+     curve, one start, so it opens and closes in one smooth stroke. */
+  .peek{position:absolute;top:14px;right:14px;z-index:2;height:40px;display:flex;align-items:center;
+    border-radius:20px;background:var(--ink);color:var(--bg);white-space:nowrap;pointer-events:none;
+    clip-path:inset(0 0 0 calc(100% - 40px) round 20px);
+    opacity:0;transform:scale(.85);transform-origin:calc(100% - 20px) 20px;
+    transition:opacity .3s var(--ease),transform .5s var(--ease),clip-path .6s var(--ease);will-change:clip-path,transform}
+  .peek b{font:600 13px/1 var(--sans);padding:0 0 0 16px;opacity:0;transform:translateX(8px);transition:opacity .3s var(--ease),transform .6s var(--ease)}
+  .peek i{flex:none;width:40px;height:40px;display:grid;place-items:center}
+  .peek svg{width:15px;height:15px}
+  .card:is(:hover,:focus-within) .peek{opacity:1;transform:none;clip-path:inset(0 round 20px)}
+  .card:is(:hover,:focus-within) .peek b{opacity:1;transform:none;transition:opacity .35s var(--ease) .08s,transform .6s var(--ease)}
+  @media (hover:none){.peek{opacity:1;transform:none}}
+  /* 2 · always on the image */
+  .c-corner .peek{opacity:1;transform:none}
+  /* 3 · always under the text: a fixed 92px pill, the left 40px shown at
+     rest; on hover the clip opens right while the arrow slides to the end */
+  .c-below .stage .peek,.c-hover .words .peek2,.c-corner .words .peek2{display:none}
+  /* a fixed 92 x 40 box, so nothing around it ever moves; inside it the
+     fill (ring, shadow and colour) grows from a 40px circle to the full
+     pill, the arrow slides to the end and "View" fades in before it */
+  .peek2{position:relative;display:block;width:92px;height:40px;margin-top:16px;pointer-events:none;color:var(--b-fg);transition:color .4s var(--ease)}
+  .peek2 s{position:absolute;left:0;top:0;width:40px;height:40px;border-radius:20px;text-decoration:none;
+    background:var(--b-bg);box-shadow:inset 0 0 0 1px var(--b-ring,transparent),var(--b-sh,0 0 0 transparent);
+    transition:width .6s var(--ease),background-color .4s var(--ease),box-shadow .4s var(--ease)}
+  .card:is(:hover,:focus-within) .peek2{color:var(--b-fg-h)}
+  .card:is(:hover,:focus-within) .peek2 s{width:92px;background:var(--b-bg-h);box-shadow:inset 0 0 0 1px var(--b-ring-h,transparent),var(--b-sh-h,0 0 0 transparent)}
+  /* tones: rest, then hover */
+  .t-ink .peek2{--b-bg:var(--ink);--b-fg:var(--bg);--b-bg-h:var(--ink);--b-fg-h:var(--bg)}
+  .t-ghost .peek2{--b-bg:transparent;--b-fg:var(--ink);--b-ring:color-mix(in srgb,var(--ink) 18%,transparent);
+    --b-bg-h:color-mix(in srgb,var(--ink) 6%,var(--bg));--b-fg-h:var(--ink);--b-ring-h:color-mix(in srgb,var(--ink) 28%,transparent)}
+  .t-tint .peek2{--b-bg:color-mix(in srgb,var(--ink) 6%,var(--bg));--b-fg:var(--ink);--b-bg-h:color-mix(in srgb,var(--ink) 10%,var(--bg));--b-fg-h:var(--ink)}
+  .t-paper .peek2{--b-bg:#fff;--b-fg:var(--ink);--b-ring:color-mix(in srgb,var(--ink) 6%,transparent);--b-sh:0 1px 2px rgb(38 38 38/.06),0 4px 10px -4px rgb(38 38 38/.12);
+    --b-bg-h:#fff;--b-fg-h:var(--ink);--b-ring-h:color-mix(in srgb,var(--ink) 8%,transparent);--b-sh-h:0 1px 2px rgb(38 38 38/.08),0 8px 18px -6px rgb(38 38 38/.2)}
+  .t-hue .peek2{--b-bg:color-mix(in oklab,var(--g),var(--ink) 8%);--b-fg:var(--ink);--b-bg-h:color-mix(in oklab,var(--g),var(--ink) 16%);--b-fg-h:var(--ink)}
+  .t-ghostink .peek2{--b-bg:transparent;--b-fg:var(--ink);--b-ring:color-mix(in srgb,var(--ink) 18%,transparent);
+    --b-bg-h:transparent;--b-fg-h:var(--bg);--b-ring-h:color-mix(in srgb,var(--ink) 18%,transparent)}
+  /* F · the ink layer: a full pill revealed by a circle growing from the arrow */
+  .peek2 u{display:none}
+  .t-ghostink .peek2 u{display:block;position:absolute;inset:0;border-radius:20px;background:var(--ink);
+    clip-path:circle(20px at 20px 20px);opacity:0;
+    transition:clip-path .45s cubic-bezier(.4,0,.2,1),opacity .2s linear .35s;will-change:clip-path,opacity}
+  .t-ghostink .card:is(:hover,:focus-within) .peek2 u{clip-path:circle(80px at 20px 20px);opacity:1;
+    transition:opacity .15s linear,clip-path .6s var(--ease) .05s}
+  .t-ghostink .card:is(:hover,:focus-within) .peek2 s{width:40px;box-shadow:inset 0 0 0 1px var(--b-ring)}
+  .t-ghostink .peek2{transition:color .2s linear .35s}
+  .t-ghostink .card:is(:hover,:focus-within) .peek2{transition:color .15s linear}
+  .t-ghostink .peek2 b,.t-ghostink .peek2 i{z-index:1}
+  .t-ghostink .card:is(:hover,:focus-within) .peek2 i{transition:transform .6s var(--ease) .05s}
+  .t-grey .peek2{--b-bg:var(--grey);--b-fg:#fff;--b-bg-h:var(--ink);--b-fg-h:#fff}
+  .peek2 i{position:absolute;left:0;top:0;width:40px;height:40px;display:grid;place-items:center;transition:transform .6s var(--ease)}
+  .peek2 svg{width:15px;height:15px}
+  .peek2 b{position:absolute;left:16px;top:0;line-height:40px;font:600 13px/40px var(--sans);opacity:0;transform:translateX(-6px);transition:opacity .25s var(--ease),transform .6s var(--ease)}
+  .card:is(:hover,:focus-within) .peek2 i{transform:translateX(52px)}
+  .card:is(:hover,:focus-within) .peek2 b{opacity:1;transform:none;transition:opacity .35s var(--ease) .1s,transform .6s var(--ease)}
+  @media (prefers-reduced-motion:reduce){.peek2,.peek2 s,.peek2 u,.peek2 i,.peek2 b{transition:none!important}}
+  @media (prefers-reduced-motion:reduce){.peek,.peek b{transition:none!important}}
+  /* the old "View all work" CTA (.btn--link) */
+  .btn--link{display:inline-flex;align-items:center;gap:.4em;font:400 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink);
+    text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--ink) 45%,transparent);text-decoration-thickness:1px;text-underline-offset:3px;transition:text-decoration-color .2s var(--ease)}
+  .btn--link:hover,.btn--link:focus-visible{text-decoration-color:var(--ink);text-decoration-thickness:2px}
+  .btn--link:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+  .btn__arrow{display:inline-block;transition:transform .2s var(--ease)}
+  .btn--link:hover .btn__arrow,.btn--link:focus-visible .btn__arrow{transform:translateX(3px)}
+
+  /* Scan & Go's scan, from src/styles/work-play.css (end state at rest; plays while .is-live) */
+  .sg{position:relative;container-type:inline-size;height:100%}
+  .sg > img:first-child{height:100%;object-fit:cover;object-position:top}
+  .sg-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+  .sg-band{position:absolute;overflow:hidden;border-radius:1.5cqw;--c:rgb(255 255 255/.95);
+    background:linear-gradient(var(--c),var(--c)) top left/7.6cqw .8cqw no-repeat,linear-gradient(var(--c),var(--c)) top left/.8cqw 7.6cqw no-repeat,
+      linear-gradient(var(--c),var(--c)) top right/7.6cqw .8cqw no-repeat,linear-gradient(var(--c),var(--c)) top right/.8cqw 7.6cqw no-repeat,
+      linear-gradient(var(--c),var(--c)) bottom left/7.6cqw .8cqw no-repeat,linear-gradient(var(--c),var(--c)) bottom left/.8cqw 7.6cqw no-repeat,
+      linear-gradient(var(--c),var(--c)) bottom right/7.6cqw .8cqw no-repeat,linear-gradient(var(--c),var(--c)) bottom right/.8cqw 7.6cqw no-repeat}
+  .sg-band::after{content:'';position:absolute;left:0;right:0;top:0;height:.8cqw;border-radius:1cqw;background:#ffc220;box-shadow:0 0 4cqw 1.3cqw rgb(255 194 32/.65);opacity:0}
+  .sg-hit{position:absolute;border:.8cqw solid #2a8703;border-radius:1.5cqw;box-shadow:0 0 0 1cqw rgb(42 135 3/.28)}
+  .sg-flash{position:absolute;inset:0;background:#fff;opacity:0}
+  .sg.is-live .sg-band::after{animation:sg-sweep 1500ms ease-in-out 200ms both}
+  .sg.is-live .sg-hit{animation:sg-hit 420ms cubic-bezier(.2,.9,.3,1.2) 1650ms both}
+  .sg.is-live .sg-flash{animation:sg-flash 380ms ease-out 1650ms both}
+  .sg.is-live .sg-sheet{animation:sg-rise 560ms cubic-bezier(.32,.72,0,1) 2050ms both}
+  .sg.is-live .sg-bar{animation:sg-fade 300ms ease-out 2400ms both}
+  @keyframes sg-sweep{0%{top:0;opacity:0}8%{opacity:1}55%{top:calc(100% - .8cqw)}92%{top:62%;opacity:1}100%{top:62%;opacity:0}}
+  @keyframes sg-hit{from{opacity:0;transform:scale(1.35)}}
+  @keyframes sg-flash{0%{opacity:0}30%{opacity:.5}100%{opacity:0}}
+  @keyframes sg-rise{from{transform:translateY(40%);opacity:0}30%{opacity:1}}
+  @keyframes sg-fade{from{opacity:0}}
+
+  /* words beside the work (wide cards) */
+  .beside{display:grid;grid-template-columns:.8fr 1.6fr;align-items:center;gap:2rem}
+  .beside .words{order:-1;padding-left:1rem}
+  .beside.flip{grid-template-columns:1.6fr .8fr}
+  .beside.flip .words{order:0;padding:0 1rem 0 0}
+  .beside h3{font:300 32px/1.1 var(--serif)}
+  .beside .stage{height:28rem}
+  /* two phones side by side, with air above and below them (~2rem each way) */
+  .pair{display:flex;gap:24px}
+  .pair .phone{width:176px}
+
+  /* A · Two wides */
+  .l-wides{grid-template-columns:1fr 1fr}
+  .l-wides .wide{grid-column:1/-1}
+
+  /* B · Like the reference: a wide left column of big cases, tiles two across on the right */
+  .l-reference{grid-template-columns:1.62fr 1fr;align-items:start}
+  .l-reference .col{display:grid;gap:var(--gap);align-content:start}
+  .l-reference .tiles{grid-template-columns:1fr 1fr;position:sticky;top:2rem}
+  .l-reference .big .stage{height:34rem}
+  .l-reference .big h3{font:300 32px/1.1 var(--serif)}
+  .tile{padding:.75rem .75rem 1rem;gap:.75rem;border-radius:22px}
+  .tile .stage{height:auto;aspect-ratio:3/2;border-radius:14px;place-items:end center}
+  .tile .phone{width:62%;transform-origin:50% 100%;margin-bottom:-58%;border-radius:22px;padding:5px}
+  .tile .phone div{border-radius:18px}
+  .card.tile:is(:hover,:focus-within) .stage > .phone{transform:translateY(-6%) scale(1.035)}
+  .tile h3{font-size:14px;line-height:1.35;margin-top:4px}
+  .tile .meta{font-size:10px}
+  .tile p,.tile .pills{display:none}
+  .tile.all{justify-content:center;align-items:flex-start;background:color-mix(in srgb,var(--ink) 3%,var(--bg));padding:1.25rem;aspect-ratio:auto}
+  .tile.all h3{font:300 26px/1.1 var(--serif);margin:0 0 10px}
+  .tile.all h3 em{font-style:italic}
+  .tile.all .pills{display:inline-flex;margin-top:6px;white-space:nowrap}
+  .tile .meta{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+  /* C · Bento: two-thirds and a third, alternating, then a pair */
+  .l-bento{grid-template-columns:repeat(6,1fr)}
+  .l-bento .s2{grid-column:span 4}.l-bento .s1{grid-column:span 2}.l-bento .s3{grid-column:span 3}
+  .l-bento .s1 .phone{width:180px}
+  .l-bento .s1 .stage{height:30rem}
+
+  /* D · Three across */
+  .l-threes{grid-template-columns:repeat(3,1fr)}
+  .l-threes .stage{height:26rem}
+  .l-threes .phone{width:176px}
+  .l-threes .stage img.desk{max-width:none;width:150%;margin-left:42%;border-radius:8px}
+
+  @media (max-width:1100px){
+    .l-reference{grid-template-columns:1fr}.l-reference .tiles{position:static;grid-template-columns:repeat(4,1fr)}
+    .l-bento{grid-template-columns:1fr 1fr}.l-bento .s2,.l-bento .s1,.l-bento .s3{grid-column:auto}.l-bento .s2{grid-column:1/-1}
+    .l-threes{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:860px){
+    .grid,.l-wides,.l-bento,.l-threes{grid-template-columns:1fr}
+    .l-wides .wide,.l-bento .s2{grid-column:auto}
+    .l-reference .tiles{grid-template-columns:1fr 1fr}
+    .beside,.beside.flip{grid-template-columns:1fr}.beside .words,.beside.flip .words{order:0;padding:0}
+    .stage,.beside .stage,.l-reference .big .stage{height:22rem}.phone{width:150px}.pair{gap:14px}.pair .phone{width:140px}
+  }
+  @media (prefers-reduced-motion:reduce){.card,.stage > :not(.peek),.pills,.pills *{transition:none!important}.card:is(:hover,:focus-within){transform:none}.card:is(:hover,:focus-within) .stage > :not(.peek){transform:none!important}}
+
+  /* the option bar */
+  .bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99;display:flex;gap:2px;flex-wrap:wrap;justify-content:center;background:#111;border-radius:999px;padding:4px;font:500 12px/1 system-ui;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+  .bar span{color:#777;padding:9px 6px 9px 10px}
+  .bar a{color:#bbb;padding:9px 11px;border-radius:999px;text-decoration:none;white-space:nowrap}
+  .bar a[aria-current="true"]{background:#fff;color:#000}
+</style>
+</head>
+<body>
+<nav class="bar" id="bar" aria-label="Border options"></nav>
+<section class="work">
+  <h2>Selected <em>work</em><i></i></h2>
+  <div class="grid" id="grid"></div>
+  <div class="more" id="more"></div>
+</section>
+
+<script type="module">
+const EDGES = [['none', 'Today'], ['ink4', 'A · Ink 4%'], ['ink7', 'B · Ink 7%'], ['ink10', 'C · Ink 10%'], ['ox8', 'D · Oxblood 8%'], ['zoom', 'E · Like Andreas']];
+const q = new URLSearchParams(location.search).get('edge');
+const E = EDGES.some(([k]) => k === q) ? q : 'ink7';
+const L = 'wides';
+const LB = new URLSearchParams(location.search).get('labels') === 'mono' ? 'mono' : 'chips';
+const CTAS = [['hover', '1 · Appears on hover'], ['corner', '2 · Arrow on image'], ['below', '3 · Arrow under text']];
+const cq = new URLSearchParams(location.search).get('cta');
+const CT = CTAS.some(([k]) => k === cq) ? cq : 'corner';
+const TONES = [['ink', 'Ink'], ['ghost', 'A · Ghost'], ['tint', 'B · Soft fill'], ['paper', 'C · Paper'], ['hue', 'D · Card hue'], ['grey', 'E · Grey'], ['ghostink', 'F · Ghost to ink']];
+const tq = new URLSearchParams(location.search).get('tone');
+const TN = TONES.some(([k]) => k === tq) ? tq : 'ghost';
+const href = (o) => '?' + new URLSearchParams({ edge: E, labels: LB, cta: CT, tone: TN, ...o });
+document.getElementById('bar').innerHTML = '<span>Border at rest</span>' + EDGES.map(([k, l]) => `<a href="${href({ edge: k })}" aria-current="${k === E}">${l}</a>`).join('')
+  + '<span>Labels</span>' + [['chips', 'His chips'], ['mono', 'Today']].map(([k, l]) => `<a href="${href({ labels: k })}" aria-current="${k === LB}">${l}</a>`).join('')
+  + '<span>Button</span>' + CTAS.map(([k, l]) => `<a href="${href({ cta: k })}" aria-current="${k === CT}">${l}</a>`).join('')
+  + (CT === 'below' ? '<span>Colour</span>' + TONES.map(([k, l]) => `<a href="${href({ tone: k })}" aria-current="${k === TN}">${l}</a>`).join('') : '');
+
+const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+const UP = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg>';
+const pillA = (label) => `<a class="pills" href="#"><span class="pill">${label}</span><span class="arrow">${ARROW}${ARROW}</span></a>`;
+const I = '../../public/images/work-play/';
+const phone = (src) => `<div class="phone"><div><img src="${I}${src}" alt=""></div></div>`;
+
+// Words from src/data/work.ts and the live home cards.
+const C = {
+  okta: { g: '#c9dcf2', co: 'Okta', tags: 'Identity & security · Design systems', title: 'Rebuilding IAM for enterprise admins', line: 'A ground-up rebuild of the admin console, shipped under live tenants.', media: `<img class="desk" src="${I}okta-desk.webp" alt="">` },
+  privacy: { g: '#e0d6ef', co: 'PayPal', tags: 'Fintech · Privacy & data', title: 'Privacy settings people can read', line: 'Data & Privacy settings rebuilt from card sorts and testing, launched to 80M+ people.', media: phone('pv-hub.webp') },
+  ads: { g: '#f6dcc6', co: 'PayPal', tags: 'Fintech · Ads & personalization', title: 'Privacy-first ad personalization', line: 'Ad data sharing moved from opted in by default to asking first.', media: phone('ads-privacy.webp') },
+  debit: { g: '#cfe7d8', co: 'PayPal', tags: 'Fintech · Growth', title: 'A debit card people finish signing up for', line: 'Card enrollment and cash back rebuilt inside the PayPal app.', media: phone('debit-intro.webp') },
+  chase: { g: '#f4dc9c', co: 'Walmart Labs', tags: 'Fintech · Growth · Research', title: 'Chase Pay inside Walmart Pay', line: 'Brought Chase Pay into Walmart Pay, validated with real customers in-store.', media: phone('ch-setup.webp') },
+  scango: { g: '#dde5cc', co: 'Walmart Labs', tags: 'Retail · 0→1 · Research', title: 'Scan & Go, in-store', line: 'Scan as you shop, pay on your phone, skip the line. Research to store pilot in a year.',
+    // One phone, its scan screen only, playing the /work tile's scan (work-play.css, positions from workPlay.ts):
+    // the line sweeps the frame, the jar's barcode catches green, the item card rises; holds, then again.
+    media: `<div class="phone"><div class="sg">
+      <img src="${I}sg-scan-base.webp" alt="">
+      <span class="sg-band" style="left:22.65%;top:24.765%;width:54.2%;height:30.63%"></span>
+      <span class="sg-hit" style="left:15.01%;top:43.43%;width:20.36%;height:6.34%"></span>
+      <span class="sg-flash"></span>
+      <img class="sg-layer sg-sheet" src="${I}sg-scan-sheet.webp" alt="">
+      <img class="sg-layer sg-bar" src="${I}sg-scan-bar.webp" alt="">
+    </div></div>` },
+};
+// Its wide card: the scanning phone beside the cart.
+const scangoWide = `<div class="pair">${C.scango.media}${phone('sg-cart.webp')}</div>`;
+
+const card = (k, cls = '', media) => { const c = C[k]; return `
+  <article class="card ${cls}" style="--g:${c.g}">
+    <div class="stage" style="--g:${c.g}">${media || c.media}<span class="peek" aria-hidden="true"><b>View</b><i>${UP}</i></span></div>
+    <div class="words">
+      ${LB === 'chips' ? `<div class="chips">${[c.co, ...c.tags.split(' · ')].map(t => `<span>${t}</span>`).join('')}</div>` : `<span class="label meta">${c.co} · ${c.tags}</span>`}
+      <h3>${c.title}</h3>
+      <p>${c.line}</p>
+      <span class="peek2" aria-hidden="true"><s></s><u></u><b>View</b><i>${UP}</i></span>
+      <span class="pills" aria-hidden="true"><span class="pill">View case study</span><span class="arrow">${ARROW}${ARROW}</span></span>
+    </div>
+    <a class="cover" href="#" aria-label="${c.title}, view case study"></a>
+  </article>`; };
+
+const grid = document.getElementById('grid'), more = document.getElementById('more');
+grid.classList.add('l-' + L, 'e-' + E, 'c-' + CT, 't-' + TN);
+grid.innerHTML = {
+  wides: card('okta', 'wide beside') + card('privacy') + card('ads') + card('scango', 'wide beside flip', scangoWide) + card('debit') + card('chase'),
+  reference: `<div class="col">${card('okta', 'big')}${card('privacy', 'big')}${card('scango', 'big', scangoWide)}</div>
+    <div class="col tiles">${card('ads', 'tile')}${card('debit', 'tile')}${card('chase', 'tile')}
+      <div class="card tile all"><h3>More <em>on Work</em></h3>${pillA('View all work')}</div></div>`,
+  bento: card('okta', 's2') + card('privacy', 's1') + card('ads', 's1') + card('scango', 's2', scangoWide) + card('debit', 's3') + card('chase', 's3'),
+  threes: card('okta') + card('privacy') + card('scango') + card('ads') + card('debit') + card('chase'),
+}[L];
+more.innerHTML = '<a class="btn--link" href="#">View all work <span class="btn__arrow" aria-hidden="true">→</span></a>';
+
+// Scan & Go's scan: plays on its own (as the home phones do), restarting every 6.5s; still under reduced motion.
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const loop = () => document.querySelectorAll('.sg').forEach(s => { s.classList.remove('is-live'); void s.offsetWidth; s.classList.add('is-live'); });
+  loop(); setInterval(loop, 6500);
+}
+</script>
+</body>
+</html>

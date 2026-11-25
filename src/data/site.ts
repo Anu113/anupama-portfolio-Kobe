@@ -21,6 +21,11 @@ export const site = {
   seeking: 'Staff or Lead Product Designer',
   ask: 'Staff or Lead Product Designer role',
 
+  // The home page's browser tab: "Anupama Mishra, Growth-focused Staff
+  // Product Designer" (on request, 2026-11-25, after andreas.vision's
+  // "name, what I do" tab). Also its share title (og:title).
+  tabLine: 'Growth-focused Staff Product Designer',
+
   // The footer's location line and its live clock. `timezone` is an IANA
   // zone — the clock reads in her time, not the visitor's, which is the
   // point of it. Confirmed: she's in Bangalore, IST.
