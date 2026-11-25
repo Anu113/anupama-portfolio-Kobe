@@ -15,6 +15,12 @@
     ink7      B · Ink 7%: a hairline you notice on a second look
     ink10     C · Ink 10%: clearly drawn, still quiet
     ox8       D · Oxblood 8%: the hover line's hue, half its strength
+    zoom      E · Like Andreas: no border and no line on hover, no rise,
+              no shadow. The card stays put; only the work inside grows
+              to 1.05 on his slower ease (cubic-bezier(.16,1,.3,1), 700ms),
+              and "View case study" fades up as today. Measured off
+              andreas.vision's cards in experiments/home-explore/inspired.html
+              ("Work grows").
   Values would go under HOME CARDS in tokens.css (--home-card-edge).
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,6 +50,11 @@
   .e-ink7{--edge:color-mix(in srgb,var(--ink) 7%,transparent)}
   .e-ink10{--edge:color-mix(in srgb,var(--ink) 10%,transparent)}
   .e-ox8{--edge:color-mix(in srgb,var(--ox) 8%,transparent)}
+  /* E · Like Andreas: the card never moves or outlines; the work zooms inside its frame */
+  .e-zoom .card:is(:hover,:focus-within){box-shadow:none;transform:none}
+  .e-zoom .stage > *{transition:transform .7s var(--ease)}
+  .e-zoom .card:is(:hover,:focus-within) .stage > *{transform:scale(1.05)}
+  .e-zoom .card a.cover:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
   .card a.cover{position:absolute;inset:0;border-radius:inherit;z-index:1}
   .card a.cover:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
   .stage{height:30rem;display:grid;place-items:center;border-radius:20px;overflow:hidden;background:var(--g)}
@@ -175,7 +186,7 @@
 </section>
 
 <script type="module">
-const EDGES = [['none', 'Today'], ['ink4', 'A · Ink 4%'], ['ink7', 'B · Ink 7%'], ['ink10', 'C · Ink 10%'], ['ox8', 'D · Oxblood 8%']];
+const EDGES = [['none', 'Today'], ['ink4', 'A · Ink 4%'], ['ink7', 'B · Ink 7%'], ['ink10', 'C · Ink 10%'], ['ox8', 'D · Oxblood 8%'], ['zoom', 'E · Like Andreas']];
 const q = new URLSearchParams(location.search).get('edge');
 const E = EDGES.some(([k]) => k === q) ? q : 'ink7';
 const L = 'wides';
