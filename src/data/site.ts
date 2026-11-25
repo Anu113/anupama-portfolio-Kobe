@@ -56,7 +56,7 @@ export const site = {
   // A static site has nowhere to check a passcode but the browser, so
   // this deters casual visitors; it is not confidentiality. For real
   // privacy, password-protect the deployment at the host (Vercel/Netlify).
-  // [Placeholder passcode — replace before sharing the link.]
+  // Passcode chosen by her (2026-11-25): keep okta2026.
   lock: {
     passcode: 'okta2026',
     site: false,
@@ -66,7 +66,7 @@ export const site = {
 
   // "Now" on the home page (Now.astro), in her words.
   now: {
-    text: "Right now I'm thinking about trust: specifically, how much of it AI tools have actually earned versus assumed. Watching how background agents and parallel workflows are reshaping what engineering work even needs to be real-time anymore.",
+    text: "Lately I keep thinking about trust: how much of it AI tools have earned, and how much we've just handed them. And with agents running in the background, I wonder how much engineering work still needs someone watching it happen.",
   },
 };
 

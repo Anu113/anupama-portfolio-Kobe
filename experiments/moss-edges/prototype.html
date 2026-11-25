@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moss — working prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Prototype of Moss's panel with the new cut-out, the lamp-lit big Moss
+     and the header Moss popping out of his disc. Conversation is the real
+     tree (ask.json, exported from src/data/ask.ts). Values copied from
+     tokens.css (Pixel and ASK DOCK blocks). */
+  :root {
+    --bg:#fcfcfc; --fg:#262626; --fg-dim:#707070; --rule:#e4e4e4;
+    --pixel-bg:#17120f; --pixel-raised:#1e1814; --pixel-high:#2a221d;
+    --pixel-fg:#f4ece1; --pixel-dim:#a2968a; --pixel-rule:#322a24; --pixel-rule-strong:#4a3f37;
+    --pixel-accent:#e8613c; --accent:#b4482a;
+    --pixel-scrim:rgb(58 20 10 / .28); --pixel-shadow:0 28px 70px -24px rgb(20 8 4 / .6);
+    --sage-deep:#3a3d2b;
+    --glow:255 214 170;
+    --mono:'Roboto Mono', ui-monospace, monospace;
+    --lab:'Azeret Mono', ui-monospace, monospace;
+    --serif:'Crimson Pro', Georgia, serif;
+    --sans:'Manrope', system-ui, sans-serif;
+    --ease-out:cubic-bezier(.16,1,.3,1);
+    --ease-pixel:cubic-bezier(.2,.8,.2,1);
+    --spring:cubic-bezier(.34,1.56,.64,1);
+    --dur-pixel:250ms;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:var(--bg); color:var(--fg); font:600 12px/1.8 var(--sans); }
+  .label { font:400 11px/1.4 var(--lab); text-transform:uppercase; letter-spacing:.04em; color:var(--fg-dim); }
+
+  /* ---------- the page behind ---------- */
+  .page { max-width:1100px; margin:0 auto; padding:140px 40px 200px; }
+  .page h1 { font:300 50px/1.08 var(--serif); margin:12px 0 16px; max-width:20ch; }
+  .page h1 em { font-style:italic; }
+  .page p { max-width:52ch; color:var(--fg-dim); margin:0; }
+  .page { padding-top:380px; }
+
+  /* ---------- prototype controls (not part of the design) ---------- */
+  .ctl-wrap { position:fixed; top:16px; left:16px; z-index:1100; width:min(22rem, calc(100vw - 32px));
+    background:#fff; border:1px solid var(--rule); border-radius:14px; box-shadow:0 10px 30px -14px rgb(0 0 0 / .25); }
+  .ctl-wrap summary { cursor:pointer; padding:12px 16px; color:var(--fg); }
+  .ctl { display:grid; gap:10px; padding:0 16px 14px; }
+  .ctl fieldset { border:0; margin:0; padding:0; display:grid; gap:6px; }
+  .ctl legend { padding:0; margin-bottom:6px; }
+  .seg { display:flex; flex-wrap:wrap; gap:4px; }
+  .seg label { position:relative; }
+  .seg input { position:absolute; opacity:0; inset:0; margin:0; cursor:pointer; }
+  .seg span { display:block; font:400 11px/1 var(--lab); padding:7px 9px; border-radius:999px; border:1px solid var(--rule); color:var(--fg-dim); white-space:nowrap; }
+  .seg input:checked + span { background:var(--fg); border-color:var(--fg); color:var(--bg); }
+  .seg input:focus-visible + span { outline:2px solid var(--fg); outline-offset:2px; }
+  .ctl .hint { margin:0; color:var(--fg-dim); font-size:11px; line-height:1.5; }
+
+  /* ---------- the dock pill (ASK DOCK) ---------- */
+  .dock { position:fixed; right:1.25rem; bottom:1.25rem; z-index:900; }
+  .dock__btn { display:flex; align-items:flex-end; gap:.375rem; padding:0; border:0; background:none; color:var(--fg); cursor:pointer; text-align:left; font-family:var(--mono); }
+  .dock__btn[aria-expanded="true"] { opacity:0; pointer-events:none; }
+  .dock__btn:focus-visible { outline:none; }
+  .dock__btn:focus-visible .dock__msg { outline:2px solid var(--fg); outline-offset:3px; }
+  .dock__msg { display:grid; gap:.2rem; margin-bottom:1.375rem; padding:.625rem .875rem; background:var(--bg);
+    border:1px solid var(--rule); border-radius:1rem 1rem .25rem 1rem; box-shadow:0 10px 30px -12px rgb(0 0 0 / .22);
+    transition:transform .5s var(--ease-out), border-color .5s var(--ease-out); }
+  .dock__who { font:500 11px/1.2 var(--mono); color:var(--fg-dim); }
+  .dock__line { font:600 14px/1.35 var(--mono); }
+  .dock__moss { width:4rem; transition:transform .5s var(--ease-out); transform-origin:53% 96%; }
+  .dock__moss img { display:block; width:100%; }
+  .dock__btn:hover .dock__msg { transform:translateY(-2px); border-color:var(--fg-dim); }
+  .dock__btn:hover .dock__moss { transform:translateY(-3px) scale(1.05); }
+
+  /* ---------- panel ---------- */
+  .scrim { position:fixed; inset:0; z-index:1000; background:var(--pixel-scrim); opacity:0; pointer-events:none; transition:opacity var(--dur-pixel) var(--ease-pixel); }
+  .scrim.is-open { opacity:1; pointer-events:auto; }
+  .panel { position:fixed; right:1.25rem; bottom:1.25rem; z-index:1001; width:min(26rem, calc(100vw - 2.5rem)); height:min(40rem, calc(100svh - 2.5rem));
+    display:flex; flex-direction:column; overflow:hidden; background:var(--pixel-bg); color:var(--pixel-fg); border-radius:24px; box-shadow:var(--pixel-shadow);
+    font-family:var(--mono); text-align:left; opacity:0; transform:translateY(12px); visibility:hidden; pointer-events:none;
+    transition:opacity var(--dur-pixel) var(--ease-pixel), transform var(--dur-pixel) var(--ease-pixel), visibility 0s var(--dur-pixel); }
+  .panel.is-open { opacity:1; transform:none; visibility:visible; pointer-events:auto; transition-delay:0s; }
+  .head { flex:none; display:flex; justify-content:space-between; align-items:center; padding:1.1rem 1.1rem 1.1rem 1.4rem; border-bottom:1px solid var(--pixel-rule); }
+  .title { display:flex; align-items:center; gap:.7rem; margin:0; font:500 14px/1 var(--mono); }
+  .title small { font:400 12px/1.3 var(--mono); color:var(--pixel-dim); }
+  .acts { display:flex; gap:.25rem; }
+  .icon-btn { width:2rem; height:2rem; display:grid; place-items:center; border:0; border-radius:50%; background:none; color:var(--pixel-dim); cursor:pointer;
+    transition:background var(--dur-pixel) var(--ease-pixel), color var(--dur-pixel) var(--ease-pixel); }
+  .icon-btn:hover { background:var(--pixel-high); color:var(--pixel-fg); }
+  .icon-btn svg { width:1rem; height:1rem; }
+  .thread { flex:1; display:flex; flex-direction:column; gap:1rem; padding:1.25rem 1.5rem 1.5rem; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; }
+  .msg { max-width:92%; font:400 13px/1.6 var(--mono); animation:rise var(--dur-pixel) var(--ease-pixel) both; }
+  .msg p { margin:0 0 .5rem; } .msg p:last-child { margin:0; }
+  .msg strong { font-weight:500; }
+  .msg--user { align-self:flex-end; background:var(--pixel-high); line-height:1.45; padding:.6rem 1rem; border-radius:18px 18px 6px 18px; }
+  @keyframes rise { from { opacity:0; transform:translateY(6px); } }
+  .status { display:inline-flex; align-items:center; gap:.5rem; font-size:12px; line-height:1; color:var(--pixel-dim); white-space:nowrap; }
+  .status__dots { display:inline-flex; gap:3px; }
+  .status__dots i { width:4px; height:4px; border-radius:50%; background:var(--pixel-dim); animation:blink 1.2s infinite; }
+  .status__dots i:nth-child(2) { animation-delay:.2s; } .status__dots i:nth-child(3) { animation-delay:.4s; }
+  @keyframes blink { 0%,100% { opacity:.25; } 50% { opacity:1; } }
+  .shimmer { color:transparent; background:linear-gradient(90deg, var(--pixel-dim) 0%, var(--pixel-dim) 40%, var(--pixel-fg) 50%, var(--pixel-dim) 60%, var(--pixel-dim) 100%);
+    background-size:220% 100%; -webkit-background-clip:text; background-clip:text; animation:shimmer 1.5s linear infinite; }
+  @keyframes shimmer { from { background-position:100% 0; } to { background-position:-120% 0; } }
+  .cursor::after { content:''; display:inline-block; width:.5ch; height:1em; margin-left:2px; vertical-align:-.15em; background:var(--pixel-accent); animation:caret 1.06s steps(2, jump-none) infinite; }
+  @keyframes caret { 50% { opacity:0; } }
+  .card { display:block; margin-top:.75rem; padding:.95rem 1.1rem; text-decoration:none; background:var(--pixel-raised); border:1px solid var(--pixel-rule-strong); border-radius:16px; }
+  .card:hover { border-color:var(--pixel-dim); background:var(--pixel-high); }
+  .card__label { font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--pixel-dim); margin-bottom:.35rem; }
+  .card__title { color:var(--pixel-fg); font-size:13px; font-weight:500; line-height:1.35; }
+  .card__sub { color:var(--pixel-dim); font-size:12px; margin-top:.15rem; }
+  .chips { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.25rem; }
+  .chip { display:inline-block; padding:.5rem .9rem; border:1px solid var(--pixel-rule-strong); border-radius:999px; background:none; color:var(--pixel-fg);
+    font:400 12px/1.3 var(--mono); text-decoration:none; cursor:pointer; animation:rise var(--dur-pixel) var(--ease-pixel) backwards; animation-delay:calc(var(--i, 0) * 90ms);
+    transition:background var(--dur-pixel) var(--ease-pixel), border-color var(--dur-pixel) var(--ease-pixel); }
+  .chip:hover { border-color:var(--pixel-fg); background:var(--pixel-high); }
+  .chip--exit { background:var(--pixel-fg); border-color:var(--pixel-fg); color:var(--pixel-bg); font-weight:500; letter-spacing:.04em; text-transform:uppercase; padding:.65rem 1.15rem; }
+  .chips.is-done .chip { opacity:.35; pointer-events:none; }
+  .icon-btn:focus-visible, .chip:focus-visible, .card:focus-visible { outline:2px solid var(--pixel-fg); outline-offset:2px; }
+  @media (max-width:640px) {
+    .panel { left:0; right:0; bottom:0; width:100%; height:88dvh; border-radius:24px 24px 0 0; transform:translateY(24px); }
+    .thread { padding-inline:1.25rem; }
+  }
+
+  /* ---------- big Moss: lamp-lit ---------- */
+  .avatar { position:relative; align-self:center; display:grid; place-items:center; padding:.75rem 0; animation:rise var(--dur-pixel) var(--ease-pixel) both; }
+  .avatar::before { content:''; position:absolute; left:50%; bottom:2px; width:190px; height:126px; transform:translateX(-50%);
+    background:radial-gradient(50% 50% at 50% 70%, rgb(var(--glow) / .16), rgb(var(--glow) / .05) 55%, transparent 75%);
+    transition:opacity .6s var(--ease-pixel); }
+  .avatar::after { content:''; position:absolute; left:50%; bottom:12px; width:74px; height:10px; transform:translateX(-50%);
+    background:radial-gradient(50% 50% at 50% 50%, rgb(0 0 0 / .55), transparent 70%); }
+  .avatar.is-asleep::before { opacity:.35; }   /* the lamp comes up as he wakes */
+  .cat { position:relative; z-index:1; display:block; width:96px; transform-origin:50% 100%; transition:opacity .4s var(--ease-pixel), filter .4s var(--ease-pixel); }
+  .cat img { display:block; width:100%; height:auto; }
+  .cat.is-asleep { opacity:.55; filter:saturate(.4); }
+  .cat.is-happy { animation:hop .5s var(--ease-pixel); }
+  @keyframes hop { 40% { transform:translateY(-6%); } }
+  .cat.is-waving { animation:wave .4s ease-in-out 4 alternate; }
+  @keyframes wave { from { transform:rotate(-3deg); } to { transform:rotate(3deg); } }
+
+  /* ================= header Moss: the pop =================
+     .av is the disc's box; .pop is Moss masked to (everything above the
+     disc's centre) + (the disc), so he's inside it below and out of it
+     above. The img slides inside .pop, so sinking puts him into the disc. */
+  .av { --d:32px; --w:44px; --x:-6px; --y:-12px; position:relative; display:block; flex:none; width:var(--d); height:var(--d); }
+  .av .disc { position:absolute; inset:0; border-radius:50%; background:var(--pixel-high); box-shadow:inset 0 0 0 1px var(--pixel-rule-strong); transition:background .6s var(--ease-pixel); }
+  .av .pop { position:absolute; left:var(--x); top:var(--y); width:var(--w); height:calc(var(--w) * 287 / 240 + 12px);
+    --cx:calc(var(--d) / 2 - var(--x)); --cy:calc(var(--d) / 2 - var(--y));
+    -webkit-mask:linear-gradient(#000,#000) 0 0 / 100% var(--cy) no-repeat, radial-gradient(circle calc(var(--d) / 2) at var(--cx) var(--cy), #000 97%, transparent 100%) 0 0 / 100% 100% no-repeat;
+            mask:linear-gradient(#000,#000) 0 0 / 100% var(--cy) no-repeat, radial-gradient(circle calc(var(--d) / 2) at var(--cx) var(--cy), #000 97%, transparent 100%) 0 0 / 100% 100% no-repeat; }
+  .av .pop img { display:block; width:100%; height:auto; transform:translateY(var(--sink, 0px)); transition:transform 650ms var(--spring), opacity .4s var(--ease-pixel), filter .4s var(--ease-pixel); }
+  .av .front { display:none; }
+  .av.is-asleep .pop img { opacity:.55; filter:saturate(.4); }
+  /* where he sits: set by the script from the motion choice */
+  .av[data-pos="down"] { --sink:24px; }
+  .av[data-pos="low"]  { --sink:9px; }
+  .av[data-pos="dip"]  { --sink:6px; }
+  .av[data-pos="dip"] .pop img { transition-duration:180ms; transition-timing-function:var(--ease-pixel); }
+
+  /* looks */
+  .look-leaf .av .disc { background:var(--sage-deep); box-shadow:none; }
+  .look-lamp .av .disc { background:radial-gradient(70% 70% at 50% 85%, rgb(var(--glow) / .32), rgb(var(--glow) / .08) 60%, transparent 85%), var(--pixel-high); box-shadow:inset 0 0 0 1px rgb(var(--glow) / .14); }
+  .look-lamp .av .pop img { filter:drop-shadow(0 1px 1.5px rgb(0 0 0 / .5)); }
+  .look-lamp .av.is-asleep .disc { background:var(--pixel-high); }
+  .look-ring .av .disc { background:none; box-shadow:inset 0 0 0 1px var(--pixel-dim); }
+  .look-bighead .av { --w:52px; --x:-10px; --y:-16px; }
+  .look-burrow .av { --y:-9px; }
+  .look-burrow .av .disc { inset:auto 0 0; height:12px; border-radius:50%; background:radial-gradient(closest-side, #0b0807, #0f0b09 70%, var(--pixel-rule-strong) 96%, transparent); box-shadow:none; }
+  .look-burrow .av .pop { -webkit-mask:linear-gradient(#000,#000) 0 0 / 100% calc(var(--d) - 6px - var(--y)) no-repeat; mask:linear-gradient(#000,#000) 0 0 / 100% calc(var(--d) - 6px - var(--y)) no-repeat; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel, .scrim, .panel *, .dock * { animation:none !important; transition:none !important; }
+    .av { --sink:0px !important; }
+    .shimmer { color:var(--pixel-dim); background:none; }
+  }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<details class="ctl-wrap" open data-ctl-wrap><summary class="label">Prototype controls</summary>
+<form class="ctl" aria-label="Prototype controls" data-ctl>
+  <fieldset>
+    <legend class="label">Small Moss · look</legend>
+    <div class="seg">
+      <label><input type="radio" name="look" value="dark" checked><span>1 Dark</span></label>
+      <label><input type="radio" name="look" value="leaf"><span>2 Leaf</span></label>
+      <label><input type="radio" name="look" value="lamp"><span>3 Lamp</span></label>
+      <label><input type="radio" name="look" value="ring"><span>4 Ring</span></label>
+      <label><input type="radio" name="look" value="bighead"><span>5 Big head</span></label>
+      <label><input type="radio" name="look" value="burrow"><span>6 Burrow</span></label>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend class="label">Small Moss · motion</legend>
+    <div class="seg">
+      <label><input type="radio" name="motion" value="none"><span>Still</span></label>
+      <label><input type="radio" name="motion" value="open"><span>Up on open</span></label>
+      <label><input type="radio" name="motion" value="talk"><span>When he talks</span></label>
+      <label><input type="radio" name="motion" value="both"><span>Open + talk</span></label>
+      <label><input type="radio" name="motion" value="peek" checked><span>Peek</span></label>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend class="label">Big Moss</legend>
+    <div class="seg">
+      <label><input type="radio" name="big" value="none" checked><span>H None</span></label>
+      <label><input type="radio" name="big" value="centre"><span>A Centred</span></label>
+    </div>
+  </fieldset>
+  <p class="hint">Changing any of these restarts the panel, so you see him wake again.</p>
+</form>
+</details>
+
+<main class="page">
+  <p class="label">Prototype · Moss in his panel</p>
+  <h1>Press Moss in the <em>corner</em> to open his panel.</h1>
+  <p>The conversation is his real one from the site. Your picks are set: no big Moss (H), and the header Moss in his dark disc, peeking. The controls on the left still switch them, to compare.</p>
+</main>
+
+<div class="dock">
+  <button class="dock__btn" type="button" aria-controls="panel" aria-expanded="false" data-open>
+    <span class="dock__msg"><span class="dock__who">Moss</span><span class="dock__line">Short on time? Let Moss help.</span></span>
+    <span class="dock__moss" aria-hidden="true"><img src="img/moss-smart.png" alt=""></span>
+  </button>
+</div>
+
+<div class="scrim" data-scrim></div>
+<div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title" data-panel>
+  <div class="head">
+    <p class="title" id="panel-title">
+      <span class="av is-asleep" data-av aria-hidden="true"><span class="disc"></span><span class="pop"><img src="img/moss-smart.png" alt=""></span></span>
+      <span>Moss</span> <small>looks after this portfolio</small>
+    </p>
+    <div class="acts">
+      <button class="icon-btn" type="button" data-reset aria-label="Start over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+      <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+  </div>
+  <div class="thread" data-thread></div>
+  <div class="sr-only" aria-live="polite" data-live></div>
+</div>
+
+<script type="module">
+  const { tree, status } = await (await fetch('ask.json')).json();
+  const wakeLines = ['Moss is waking up…', 'Moss is stretching…', 'Moss is pretending he wasn’t asleep…', 'Moss is finding his good side…', 'Moss is closing 37 tabs…'];
+
+  const panel = document.querySelector('[data-panel]');
+  const scrim = document.querySelector('[data-scrim]');
+  const thread = document.querySelector('[data-thread]');
+  const live = document.querySelector('[data-live]');
+  const av = document.querySelector('[data-av]');
+  const opener = document.querySelector('[data-open]');
+  const closeBtn = panel.querySelector('[data-close]');
+  const ctl = document.querySelector('[data-ctl]');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wait = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
+  let run = 0, started = false;
+
+  // ---- the header Moss: where he sits, by motion choice ----
+  const motion = () => ctl.motion.value;
+  const pos = (p) => { av.dataset.pos = p; };
+  let peekTimer;
+  const moss = {
+    asleep() { av.classList.add('is-asleep'); pos(['open', 'both'].includes(motion()) ? 'down' : motion() === 'peek' ? 'low' : 'up'); },
+    awake()  { av.classList.remove('is-asleep'); pos(motion() === 'peek' ? 'low' : 'up'); },
+    thinking() { clearTimeout(peekTimer); if (['talk', 'both'].includes(motion())) pos('dip'); if (motion() === 'peek') pos('up'); },
+    talking()  { if (['talk', 'both'].includes(motion())) pos('up'); if (motion() === 'peek') pos('up'); },
+    done()     { if (motion() === 'peek') { clearTimeout(peekTimer); peekTimer = setTimeout(() => { if (!panel.matches(':hover')) pos('low'); }, 1400); } },
+  };
+  panel.addEventListener('pointerenter', () => { if (motion() === 'peek' && !av.classList.contains('is-asleep')) pos('up'); });
+  panel.addEventListener('pointerleave', () => { if (motion() === 'peek' && !av.classList.contains('is-asleep')) moss.done(); });
+
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+  const scrollEnd = () => { thread.scrollTop = thread.scrollHeight; };
+  const pulse = (c, cls, ms) => { c.classList.add(cls); setTimeout(() => c.classList.remove(cls), ms); };
+  const statusEl = (text) => { const s = el('span', 'status', '<span class="status__dots"><i></i><i></i><i></i></span><span class="shimmer"></span>'); s.querySelector('.shimmer').textContent = text; return s; };
+
+  async function typeInto(p, html, id) {
+    const text = el('div', null, html).textContent;
+    if (!reduce) {
+      p.classList.add('cursor');
+      for (let i = 1; i <= text.length; i++) {
+        if (id !== run) return;
+        p.textContent = text.slice(0, i);
+        if (i % 4 === 0) scrollEnd();
+        const ch = text[i - 1];
+        await wait(/[.?!…]/.test(ch) ? 260 : ch === ',' ? 120 : 30);
+      }
+      p.classList.remove('cursor');
+    }
+    p.innerHTML = html;
+  }
+
+  async function say(key, id) {
+    const node = tree[key];
+    const msg = el('div', 'msg');
+    thread.append(msg); scrollEnd();
+    if (key !== 'start') {
+      moss.thinking();
+      const s = statusEl(''); msg.append(s);
+      for (let k = 0; k < 2 && id === run; k++) { s.querySelector('.shimmer').textContent = status[(Math.random() * status.length) | 0]; await wait(k === 0 ? 900 : 1100); }
+      s.remove();
+    }
+    if (id !== run) return;
+    moss.talking();
+    for (const para of node.say) { const p = el('p'); msg.append(p); await typeInto(p, para, id); if (id !== run) return; }
+    (node.cards ?? []).forEach((c) => {
+      const a = el('a', 'card', '<div class="card__label"></div><div class="card__title"></div><div class="card__sub"></div>');
+      a.href = c.href;
+      a.querySelector('.card__label').textContent = c.label; a.querySelector('.card__title').textContent = c.title; a.querySelector('.card__sub').textContent = c.sub;
+      msg.append(a);
+    });
+    live.textContent = msg.textContent;
+    moss.done();
+    const chips = el('div', 'chips');
+    (node.exits ?? []).forEach((x) => {
+      const a = el('a', 'chip chip--exit'); a.href = x.href; a.textContent = x.label;
+      if (x.external) { a.target = '_blank'; a.rel = 'noopener'; a.append(' ↗'); }
+      a.style.setProperty('--i', chips.children.length); chips.append(a);
+    });
+    (node.next ?? []).forEach((k) => {
+      const b = el('button', 'chip'); b.type = 'button'; b.textContent = tree[k].q;
+      b.addEventListener('click', () => pick(k, chips));
+      b.style.setProperty('--i', chips.children.length); chips.append(b);
+    });
+    thread.append(chips); scrollEnd();
+    chips.querySelector('.chip')?.focus({ preventScroll: true });
+  }
+
+  async function pick(key, chips) {
+    chips.classList.add('is-done');
+    chips.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+    if (key === 'bye') { close(); return; }
+    closeBtn.focus({ preventScroll: true });
+    const q = el('div', 'msg msg--user'); q.textContent = tree[key].q;
+    thread.append(q); scrollEnd();
+    await say(key, run);
+  }
+
+  async function start() {
+    const id = ++run; started = true;
+    thread.replaceChildren();
+    moss.asleep();
+    const hasBig = ctl.big.value === 'centre';
+    const ava = el('div', 'avatar is-asleep');
+    const big = el('span', 'cat is-asleep', '<img src="img/moss-smart.png" alt="">');
+    ava.append(big); if (hasBig) thread.append(ava);
+    const wake = el('div', 'msg'); wake.append(statusEl(wakeLines[(Math.random() * wakeLines.length) | 0])); thread.append(wake);
+    await wait(1300);
+    if (id !== run) return;
+    wake.remove();
+    big.classList.remove('is-asleep'); ava.classList.remove('is-asleep');
+    moss.awake();
+    if (hasBig) { pulse(big, 'is-happy', 500); setTimeout(() => pulse(big, 'is-waving', 1600), 250); }
+    await say('start', id);
+  }
+
+  const isOpen = () => panel.classList.contains('is-open');
+  function open() {
+    if (innerWidth < 1000) document.querySelector('[data-ctl-wrap]').open = false;
+    panel.classList.add('is-open'); scrim.classList.add('is-open');
+    opener.setAttribute('aria-expanded', 'true');
+    closeBtn.focus({ preventScroll: true });
+    if (!started) start();
+  }
+  function close() {
+    panel.classList.remove('is-open'); scrim.classList.remove('is-open');
+    opener.setAttribute('aria-expanded', 'false');
+    run++; started = false; moss.asleep();
+    opener.focus({ preventScroll: true });
+  }
+  opener.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  scrim.addEventListener('click', close);
+  panel.querySelector('[data-reset]').addEventListener('click', () => start());
+  document.addEventListener('keydown', (e) => {
+    if (!isOpen()) return;
+    if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+    if (e.key !== 'Tab' || ctl.contains(document.activeElement)) return;
+    const f = [...panel.querySelectorAll('button:not([disabled]), a[href]')].filter((x) => x.offsetParent);
+    if (!f.length) return;
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f.at(-1).focus(); }
+    else if (!e.shiftKey && document.activeElement === f.at(-1)) { e.preventDefault(); f[0].focus(); }
+  });
+
+  // ---- controls ----
+  const applyLook = () => { panel.className = panel.className.replace(/\blook-\S+/g, '').trim() + ' look-' + ctl.look.value; };
+  ctl.addEventListener('change', () => { applyLook(); if (isOpen()) start(); else moss.asleep(); });
+  applyLook(); moss.asleep();
+  // ?open opens straight away (for checking)
+  if (location.search.includes('open')) open();
+</script>
+</body>
+</html>

@@ -203,7 +203,17 @@ effect:
     rounded corners. That's one of two sanctioned exceptions to the square
     `--radius` rule (the other is the page's curved end over the black
     footer, below); the site's own cards stay square. Colours, corners and
-    timing live in the "Pixel" block of `tokens.css`.
+    timing live in the "Pixel" block of `tokens.css`. One Moss in the
+    panel, in the header beside his name (on request, 2026-11-25,
+    `experiments/moss-edges/`: "1 · Dark disc" + "Peek", and "H · No
+    big Moss"; the white avatar circle and the big Moss over the greeting
+    are gone): his body sits in a dark disc, his head and ears out over
+    its rim. At rest he peeks, half down in it; he comes up while he
+    thinks and answers or the pointer is on the panel, and sinks back
+    after. Still and up under reduced motion. Values under PIXEL MOSS.
+    His image, `moss-sm.webp`, has its pale rim and the white smear
+    under his feet cleaned by `scripts/moss-defringe.py` (run by
+    `moss-sprite.py`).
   - Content: a conversation tree in `src/data/ask.ts` — buttons only, no
     free text, no model, no backend. Moss's voice comes from her character
     brief (summarised at the top of `ask.ts`): curious, dry, slightly
@@ -633,7 +643,8 @@ walked back. Concretely, in the current implementation:
   over): a slash when off, two waves drawing in when on, on the
   sun/moon's 15px grid. The rules and sounds are the old dock's, in
   `scripts/sound.ts`: off by default, on for the tab once pressed (a
-  reload starts off), synthesised in the browser (no files): a tap as
+  reload starts off), synthesised in the browser (no files, bar the
+  wall's piano, below): a tap as
   sound turns on and a short tone on Light/Dark. The name
   and links make no sound on hover or click (removed on request,
   2026-11-13); don't add one back. Since 2026-11-17, on request, six
@@ -650,11 +661,17 @@ walked back. Concretely, in the current implementation:
   as the Beyond ring is thrown or turned (not on its drift), and counter
   ticks on a case's numbers (first count only). Footsteps on the
   playground wall were mocked and left out, on request. A seventh, on
-  request (2026-11-17, "A · Detent" of `experiments/sound-scroll/`): on
-  the playground wall, a soft wooden click as each piece's centre crosses
-  the middle of the screen while the page scrolls, like a date-picker
-  wheel (`playWallTick`); silent when still and when panning sideways.
-  Rounds of other wall sounds (knock, wind bell, koto, per-painting
+  request (2026-11-25, "C · Piano settle" of `experiments/sound-scroll-5/`,
+  replacing the 2026-11-17 detent click, which sounded "froggish" live):
+  on the playground wall, silent while the page scrolls, and when the
+  scroll comes to rest, one soft chord on a real piano (`wallScroll`). It
+  is the one recorded sound: four short notes in `public/sounds/wall/`,
+  cut from the University of Iowa Electronic Music Studios' piano (free
+  "for any projects, without restrictions"), fetched only once sound is
+  on there; everything else stays synthesised. Rounds 9–12
+  (`experiments/sound-scroll-2` to `-5`) tried quieter ticks, softened
+  hums, vinyl, a brook, marimba and pencil; the research behind round 11
+  and what other sites do is noted in those pages. Rounds of other wall sounds (knock, wind bell, koto, per-painting
   scenes, techno music, single notes) were mocked in `experiments/sound-*`
   and turned down; a curtain sound for the preloader was mocked too but
   can't be heard (sound is always off on a first visit or reload). Nothing else has
@@ -1025,7 +1042,13 @@ walked back. Concretely, in the current implementation:
   to show a phone on a case study, reuse it; its corners are a requested
   exception to the square `--radius` rule. The PayPal prototypes get the
   same look in their case-study view; their home-page autoplay phones
-  keep PHONE CARDS. Values under DEVICE BOX in `tokens.css`. On the
+  keep PHONE CARDS. Values under DEVICE BOX in `tokens.css`.
+  Phones that play or can be tapped through (the PayPal prototypes,
+  Privacy's working phones, the Chase recording) carry a round replay
+  button beside their label pill, the pill's glass and height, that
+  puts the phone back to its start (`DeviceFoot.astro`; "C · Beside the
+  pill" of `experiments/device-replay/`, on request, 2026-11-25).
+  Still screenshots don't get one. On the
   PayPal Debit Card case the work (prototypes, then screens) comes first,
   before the situation, on request. Section
   heads follow the reference: a centred serif line with an italic phrase,
@@ -1051,8 +1074,8 @@ walked back. Concretely, in the current implementation:
   finding) rather than paragraphs; one gap is named mid-story (`aside`);
   and scope carries one teamwork moment as rows (the pull, my call, what
   it cost, what held). Ink, no hairlines, no accent; values under CASE
-  STORY in `tokens.css`. Privacy's teamwork moment is a stand-in, on her
-  request, marked in `cases.ts`: replace it with her real account.
+  STORY in `tokens.css`. The teamwork moment (now on Data rights) was
+  written as a stand-in and confirmed by her, 2026-11-25.
 - **The Privacy case's versions** (on request, 2026-11-18): Before (the
   old list) → First version (four tiles) → Second version (the
   illustrated screens with the blue reminder card, which never launched)
@@ -1060,7 +1083,7 @@ walked back. Concretely, in the current implementation:
   its card, explanations ending on their switch; drawn from
   `experiments/privacy-case-learnings/redesign.html`). "What shipped",
   after The hard call, says why the second version didn't ship; the
-  reasons there are drafted from the screens and need her confirmation.
+  reasons there were drafted from the screens and confirmed by her.
   The compares, the craft rows and the cover show Shipped (`it-*`
   screens in `PrivacyScreen.astro`); the illustrated screens appear only
   as the Second version (`v2-*` pairs and the evolution row). Shipped
@@ -1078,7 +1101,7 @@ walked back. Concretely, in the current implementation:
   (the settings: hub, versions, craft, context, web sub-nav; 60% fewer
   calls), `paypal-data-rights` (new: get a copy, delete part and keep the
   account, the six steps, the delete screen's one call; 76% faster data
-  access; timeline, team and a second number to confirm with her; cover
+  access, its one number (timeline and team confirmed, 2026-11-25); cover
   `public/images/paypal-data-rights/hero.webp`, rendered from its coded
   screens) and `paypal-ads-consent`, whose Auto Privacy Advisor now shows
   the yearly checkup as live screens (`ck-*`, set `checkup`). The hub's

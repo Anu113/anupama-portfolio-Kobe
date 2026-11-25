@@ -36,9 +36,12 @@
    alone, inert and hidden from screen readers (the card describes it),
    tapping through the whole flow by itself — DOB and SSN typed in, the
    default address confirmed — then starting again. phone-loop.ts runs
-   it only while the card is on screen and motion is allowed. */
+   it only while the card is on screen and motion is allowed. 
+   Replay: in the case-study view, a round button beside the phone's
+   label (DeviceFoot.astro) does what "Start again" does. */
 import '../styles/pp-proto.css';
 import '../styles/device-box.css';
+import DeviceFoot from './DeviceFoot.astro';
 interface Props { caption?: string; autoplay?: boolean }
 const { caption, autoplay = false } = Astro.props;
 
@@ -206,7 +209,7 @@ const steps = [
         </section>
       </div>
     </div>
-    {!autoplay && <span class="device-box__pill" aria-hidden="true">Card sign-up</span>}
+    {!autoplay && <DeviceFoot label="Card sign-up" replay />}
   </div>
 
   <div class="proto__side">
@@ -299,7 +302,7 @@ const steps = [
       } else if (t.hasAttribute('data-jump')) {
         history = [];
         show(t.dataset.jump!, { focus: true, push: false });
-      } else if (t.hasAttribute('data-restart')) {
+      } else if (t.matches('[data-restart], [data-replay]')) {
         history = [];
         resetForm();
         show('hub', { focus: true, push: false });

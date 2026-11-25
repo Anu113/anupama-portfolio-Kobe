@@ -64,8 +64,9 @@ idle = Image.new('RGBA', (CW, CH), (0, 0, 0, 0))
 idle.paste(frames[0].resize((FW, FH), Image.LANCZOS), (PAD, PAD))
 idle.save(f'{OUT}/moss-idle.webp', 'WEBP', quality=88, alpha_quality=90, method=6)
 
-# panel avatar and header crop come from the same frame, so the chat shows the same Moss
-frames[0].resize((240, round(240 * frames[0].height / frames[0].width)), Image.LANCZOS) \
-    .save(f'{OUT}/moss-sm.webp', 'WEBP', quality=88, method=6)
-Image.open(FRAMES[0]).convert('RGB').crop((200, 420, 920, 1140)).resize((128, 128), Image.LANCZOS) \
-    .save(f'{OUT}/moss-head.webp', 'WEBP', quality=90, method=6)
+# the panel's header Moss (and the Small talk field, the globe) from the same
+# frame, its pale rim cleaned for the dark panel — see moss-defringe.py
+from importlib.machinery import SourceFileLoader
+defringe = SourceFileLoader('moss_defringe', 'scripts/moss-defringe.py').load_module().defringe
+defringe(frames[0].resize((240, round(240 * frames[0].height / frames[0].width)), Image.LANCZOS)) \
+    .save(f'{OUT}/moss-sm.webp', 'WEBP', quality=88, alpha_quality=95, method=6)

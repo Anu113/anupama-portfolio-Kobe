@@ -1,6 +1,6 @@
 ---
 /* AdsConsentPrototype.astro — PayPal interest-based ads consent, rebuilt
-   as a phone you can use. The prototype in the "Privacy-first ad personalization" case
+   as a phone you can use. The prototype in the Ads consent case
    (the `prototype` block, name 'paypal-ads-consent').
 
    Why it exists: the case is about a default flipping from opted in to
@@ -30,9 +30,12 @@
    is a dialog: focus moves in and stays in, Escape or ✕ closes it
    without changing anything and returns focus. "How it works" is a
    disclosure (aria-expanded). Toasts and screen changes are announced
-   once through a live region. Shared phone styles: styles/pp-proto.css. */
+   once through a live region. Shared phone styles: styles/pp-proto.css. 
+   Replay: in the case-study view, a round button beside the phone's
+   label (DeviceFoot.astro) does what "Start again" does. */
 import '../styles/pp-proto.css';
 import '../styles/device-box.css';
+import DeviceFoot from './DeviceFoot.astro';
 interface Props { caption?: string }
 const { caption } = Astro.props;
 
@@ -143,7 +146,7 @@ const OFF_COPY = 'When this is off, you may still get a PayPal ad on other sites
         </div>
       </div>
     </div>
-    <span class="device-box__pill" aria-hidden="true">Ad data sharing</span>
+    <DeviceFoot label="Ad data sharing" replay />
   </div>
 
   <div class="proto__side">
@@ -369,7 +372,7 @@ const OFF_COPY = 'When this is off, you may still get a PayPal ad on other sites
         $('[data-checkup]').hidden = true;
         showToast('privacy', 'Checkup skipped. Nothing changed.');
         screens.privacy.querySelector<HTMLElement>('h3')?.focus({ preventScroll: true });
-      } else if (b.hasAttribute('data-restart')) {
+      } else if (b.matches('[data-restart], [data-replay]')) {
         reset(); go('privacy', { focus: true });
       } else if (b.dataset.jump) {
         const j = b.dataset.jump;

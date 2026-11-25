@@ -21,6 +21,17 @@
 // and reflections. They are plausible, not sourced. Replace each with her
 // real figure or words before an interview leans on it. Numbers that came
 // from her decks (ID proofing, Privacy, the Chase study) are unchanged.
+//
+// CONFIRMED by her (2026-11-25), as written: Ads consent 41% opted in,
+// Okta IAM -32% admin task time, Okta OIN -48% submission cycle time,
+// Scan & Go +25% basket size, Chase Pay +18% / 34% / 2.1x. Also confirmed
+// as written: team and timeline on Okta OIN, Scan & Go and Ads consent;
+// the hard calls and reflections of Okta IAM, Okta OIN, Debit Card and Ads
+// consent; Chase Pay's third reflection. Okta IAM's team and timeline were
+// removed at her word, with its "15 months" and "9 weeks". Ads consent is
+// now confirmed in full: what she owned, 7 of 8, 9 markets, -35% support
+// contacts, and the Advisor pilot (5% of US, 58% finished). Anything not
+// listed here is still unconfirmed.
 
 import { site } from './site';
 
@@ -195,14 +206,17 @@ export const cases: CaseStudy[] = [
     company: 'Okta',
     theme: 'coral',
     eyebrow: 'Okta · Identity & Access Management + Developer Tools · 2024–2025',
-    title: 'Rebuilding IAM for enterprise admins',
+    /* Voice pass, 2026-11-25 (experiments/case-voice, after
+       andreas.vision/work/schneider): a scene first, plain words, no
+       aphorisms. TO ADD from her: one real admin task and how long it
+       took; one moment two squads disagreed and how it was settled. */
+    title: "Okta's admin console, rebuilt in place, with no migration day",
     hero: { src: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" },
     description:
-      'Okta IAM and developer tools: rebuilding the enterprise admin console underneath live tenants — entitlements, role management, OIN publishing and developer onboarding, and the one model four squads designed to.',
-    meta: [
-      { label: 'Team', value: '6 designers across 4 squads' },
-      { label: 'Timeline', value: 'March 2024 – June 2025' },
-    ],
+      "Okta's admin console is where an IT team adds people, gives them apps and takes access away. It was built for companies with a few hundred employees, and Okta was now selling it to companies with tens of thousands. Six designers rebuilt it while every one of them kept using it.",
+    /* Team and timeline removed on her request (2026-11-25): they were
+       written stand-ins. */
+    meta: [],
     role: 'Staff Product Designer, IAM + Developer Tools',
     /* Demonstration case for the FULL gate — see the `locked` field's own
        comment on CaseStudy above before adding this to a case with real
@@ -223,33 +237,28 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'Okta was closing enterprise deals on a console built for smaller companies.',
+        heading: 'An admin at a big company rarely looks at one person. The console only knew how to show one.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The administrative surfaces had been designed for an admin managing a few hundred users. The accounts Okta was now winning had tens of thousands, nested org structures, and compliance teams auditing every permission change. The same screens were being asked to do a job an order of magnitude larger.',
-              'It showed in the places that cost money: onboarding time in enterprise implementations, support volume on the four highest-traffic admin flows, and — the one that reached the executive staff — deals where a competitor demoed better against the same requirements.',
-              'There was a second audience on the same platform. ISVs publishing to the Okta Integration Network, and the developers wiring Okta into their own products, hit the same surfaces from the other side. Their onboarding was a separate problem with the same root: a set of screens that assumed you already knew the model.',
+              'At a few hundred users you can open each person\'s page. At forty thousand you\'re asking "everyone in Finance who still has Salesforce" and changing all of them at once. The console made you do that one page at a time, and new enterprise customers took 14 weeks to get set up on it.',
+              'Developers had the same trouble from the other side. Teams publishing to the Okta Integration Network, and developers building Okta into their own products, met screens that assumed they already knew how Okta worked.',
+              'Meanwhile four squads were fixing their own screens in parallel, each in its own words. Every release pulled them further apart.',
             ],
           },
           {
-            kind: 'points',
-            label: 'What was at stake',
+            kind: 'rows',
+            label: 'Constraints',
             items: [
-              {
-                title: 'Renewal risk',
-                body: 'Admin experience was surfacing in 1 of every 4 enterprise renewal conversations as a stated concern.',
-              },
-              {
-                title: 'Implementation cost',
-                body: 'Enterprise onboarding ran 14 weeks, most of it spent teaching admins around the console rather than through it.',
-              },
-              {
-                title: 'A frozen roadmap',
-                body: 'Four squads were each patching the same surfaces independently, so every fix made the next one harder.',
-              },
+              { term: 'No migration day', detail: 'Security teams open this console during an incident. A new one on a date we picked wasn\'t something they\'d accept.' },
+              { term: 'Two systems at once', detail: 'Old and new screens would sit side by side for over a year, so the design system had to speak both.' },
+              { term: 'Accessible from the start', detail: 'Keyboard and screen reader from the first build, tested with screen-reader users before anything shipped.' },
             ],
+          },
+          {
+            kind: 'bet',
+            text: 'How might we rebuild the screen an admin opens when something has gone wrong, without asking them to relearn it on our schedule?',
           },
         ],
       },
@@ -257,7 +266,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'I owned the design strategy for the admin console across four squads, while it kept working the whole time.',
+        heading: 'I led design for the admin console across four squads, and designed the access screens myself.',
         blocks: [
           {
             kind: 'rows',
@@ -265,12 +274,12 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What I owned',
                 detail:
-                  'The design strategy for the admin surface end to end — entitlements, role management, the OIN publishing flow ISVs use to ship an integration, and developer onboarding — plus the sequencing of what got rebuilt in what order and the case to the executive staff for the funding. I designed the entitlements and role-management flows myself; they were the model everything else had to agree with.',
+                  'Design direction for entitlements, role management, the flow companies use to publish an integration to the Okta Integration Network, and developer onboarding. I decided what got rebuilt in what order and made the case to leadership for the funding. I designed entitlements and role management myself, because every other screen had to agree with them.',
               },
               {
                 term: 'What I influenced',
                 detail:
-                  'Each of the four squads had a designer owning their surface outright — flows, specs, and the working relationship with their PM and engineering lead. My part was the seams, where one surface had to agree with the next.',
+                  'Each squad had a designer who owned their area and made their own calls with their PM and engineering lead. I looked at the places where one squad\'s screen handed over to another\'s.',
               },
               {
                 term: 'Who I worked with',
@@ -285,7 +294,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'How I was measured',
                 detail:
-                  'Task completion time on the four highest-volume admin flows, enterprise implementation time, and — informally but persistently — whether the four squads stopped diverging.',
+                  'Task time on the four busiest admin flows, how long a new enterprise customer took to set up, and, less formally, whether the four squads stopped drifting apart.',
               },
             ],
           },
@@ -295,19 +304,15 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'We rebuilt underneath live tenants instead of behind a migration.',
+        heading: 'No new console, no cutover date.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The clean version of this project is a new console behind a flag, a migration window, and a cutover. Engineering wanted it. It is easier to build, easier to test, and easier to demo.',
-              'I argued against it. Our largest customers could not take a cutover on our schedule — an identity console is the thing you touch when something has gone wrong, and asking a security team to relearn it on a date we picked was a request they would refuse. A migration would also have meant a long period where the old console kept receiving fixes, which was the exact problem we were trying to end.',
-              'So we rebuilt surface by surface, in place, on the live product. It cost us: every change had to be safe next to screens that had not been rebuilt yet, and the design system had to absorb both vocabularies at once. The design system designer spent most of two quarters on that seam alone. That was the trade — a slower, uglier build, in exchange for never asking a customer to stop working.',
+              'Engineering wanted the clean version: a new console behind a flag, a migration window, a switch-over. It\'s easier to build and much easier to demo.',
+              'I pushed back. Nobody opens an identity console for fun. They open it because someone left the company or something leaked, and that\'s the worst day to find every button has moved. A migration would also have kept the old console alive for months, getting fixes of its own. So we rebuilt one area at a time, on the live product.',
+              'It was slower and messier. Every new screen had to sit next to old ones, and our design system designer spent most of two quarters keeping both working. I\'d make the same call again. I\'d staff it differently (last section).',
             ],
-          },
-          {
-            kind: 'quote',
-            text: 'An identity console is what you open when something has already gone wrong. That is not a screen you get to move on your own schedule.',
           },
         ],
       },
@@ -315,29 +320,29 @@ export const cases: CaseStudy[] = [
         id: 'team',
         nav: 'How the work got made',
         label: 'How the work got made',
-        heading: 'Four squads had been drifting apart. I built the three things that held them together.',
+        heading: 'Four squads, one weekly crit, and a rule about components.',
         blocks: [
           {
             kind: 'points',
             items: [
               {
-                title: 'A critique with a decision at the end',
-                body: 'Weekly, 60 minutes, two pieces of work maximum. Every critique ended with a named decision and an owner. Before this, the team had a review meeting that generated opinions and no record of what had been settled.',
+                title: 'Crit ends on a decision',
+                body: 'Once a week, an hour, two pieces of work at most, and every crit ended with a decision and a name next to it. Before, we had a review meeting that collected opinions and settled nothing.',
               },
               {
-                title: 'The system as a contract, not a library',
-                body: 'A component entered the system when two squads needed it, not when one designer built it. That rule cut the amount of near-duplicate work the design-system designer was arbitrating, and it made "is this in the system?" a question with an answer.',
+                title: 'Two squads, then the system',
+                body: 'A component joined the design system once two squads needed it. That cut most of the near-copies our system designer had been sorting out, and "is this in the system?" got a yes or no.',
               },
               {
-                title: 'Research on a rota',
-                body: 'One researcher, six designers, so I put the sessions on a rota — every designer sat in on admin research once a month, whether or not it was their surface. The point was shared evidence: arguments about what admins do got shorter when everyone had watched the same sessions.',
+                title: 'Everyone watches research',
+                body: 'One researcher and six designers, so every designer sat in on one admin session a month, whether or not it was their area. Arguments about what admins do got shorter once we\'d all watched the same people.',
               },
             ],
           },
           {
             kind: 'prose',
             text: [
-              'The part I would not compromise on was that squad designers made their own calls. My review was at the seams — where one squad\'s surface met another\'s — because that was where the divergence had happened, and it was the only place where a view across all four was genuinely better than the owner\'s.',
+              'Squad designers made their own calls. I looked where one squad\'s screen handed over to another\'s, because that\'s where the console had drifted.',
             ],
           },
         ],
@@ -346,12 +351,12 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'What the rebuilt surfaces actually do.',
+        heading: 'Developer onboarding starts with one question.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The through-line across all four surfaces: an admin at enterprise scale is almost never looking at one object. They are looking at a set — every user matching a condition, every policy touching a group — and deciding what to do to the whole set. The old console was built around the single-object page. The rebuild is built around the set.',
+              'A new Auth0 tenant asks one thing first: are you new to Auth0, or have you used it before? Each answer gets its own path, so someone who has set up ten tenants isn\'t walked through what a tenant is.',
             ],
           },
           /* Her own boards (added 2026-11-23, on request). Captions
@@ -360,7 +365,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'figure',
             src: '/images/okta/onboarding-path.webp',
-            alt: 'Auth0 onboarding: after a tenant is created, one question — new to Auth0, or used it before — with an illustration on each choice',
+            alt: 'Auth0 onboarding: after a tenant is created, one question, new to Auth0, or used it before, with an illustration on each choice',
             caption:
               'Developer onboarding. A new tenant starts on one question, new to Auth0 or used it before, and each answer leads to its own path.',
             ratio: '16 / 9',
@@ -398,7 +403,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'Accessibility was a hard gate rather than a review step. Every surface is keyboard-operable end to end, every state carries a text equivalent, and the bulk-action patterns were tested with screen-reader users before they shipped — a console that an admin cannot operate without a mouse is a console some admins cannot do their job in.',
+              'Nothing shipped until it worked from the keyboard, every state had a text equivalent, and the bulk actions had been tried by screen-reader users. Some admins don\'t use a mouse, and they still have to do their job.',
             ],
           },
         ],
@@ -407,29 +412,22 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: 'What changed, for the business and for the craft.',
+        heading: 'Faster for admins, and no one asked to stop working.',
         blocks: [
+          /* -32% confirmed by her (2026-11-25); 9 weeks to set up a customer
+             removed at her word (2026-11-25). -27% support volume and "64 components
+             from 212" were dropped in the voice pass as unsourced. */
           {
             kind: 'metrics',
-            label: 'Business',
             items: [
-              { value: '-32%', label: 'Admin task time, across the four highest-volume flows' },
-              { value: '-27%', label: 'Support volume on rebuilt surfaces' },
-              { value: '9 wks', label: 'Enterprise implementation time, down from 14' },
-            ],
-          },
-          {
-            kind: 'metrics',
-            label: 'Craft',
-            items: [
-              { value: '64', label: 'Shared components, consolidated from 212 one-off variants' },
-              { value: '0', label: 'Migration windows asked of customers' },
+              { value: '-32%', label: 'Admin task time on the four busiest flows' },
+              { value: '0', label: 'Customers asked to migrate' },
             ],
           },
           {
             kind: 'prose',
             text: [
-              'The number I care about most is the last one. We shipped a rebuild of the core administrative surface of an identity product without once asking a security team to stop what they were doing.',
+              'The last one is the one I\'d talk about. We rebuilt the main console of an identity product, and no security team had to stop what they were doing.',
             ],
           },
         ],
@@ -444,12 +442,12 @@ export const cases: CaseStudy[] = [
             kind: 'points',
             items: [
               {
-                title: 'I underestimated the seam',
-                body: 'One designer held the design system across two vocabularies for two quarters. That was a structural cost of the in-place rebuild, and I should have planned for it from the start, and argued for a second designer on the system, instead of treating it as a system role that happened to get busy. It was the closest anyone on the team came to burning out, and that was my sequencing, not their capacity.',
+                title: 'Two people on the system, from day one',
+                body: 'One designer carried both versions of the design system for two quarters. Rebuilding in place made that work certain, and I should have asked for a second designer at the start. It was the closest anyone came to burning out, and it was my plan that put them there.',
               },
               {
-                title: 'I built the executive case too late',
-                body: 'I made the argument for funding after we had evidence, which felt rigorous and cost us a quarter. The evidence was not going to change the decision — the console was visibly failing enterprise deals. I would now make the case early on the strength of the business risk and use the research to shape the plan rather than to justify it.',
+                title: 'Ask leadership sooner',
+                body: 'I waited for research before making the case for funding. The console was already losing deals, and the research wasn\'t going to change the answer. It cost us a quarter. Now I\'d ask early and use the research to shape the plan.',
               },
             ],
           },
@@ -469,13 +467,11 @@ export const cases: CaseStudy[] = [
   // comparisons, the context map and subnav; subnav is a crop of a
   // half-scale render and looks soft — re-export it from Figma at 2x.
   //
+  // Confirmed by her (2026-11-25), as written: she owned all of it, from
+  // the first card sort to launch; 60% fewer support calls after the
+  // early-2023 launch; 4.7/5 from 150 users; the five reasons the second
+  // version didn't ship.
   // Still to confirm with Anupama:
-  //  - Which modules were hers end to end. The deck's ownership map puts
-  //    her name on the Data & Privacy rows (download, correct and delete
-  //    your data among them).
-  //  - Which prototype shipped. Only prototype 3 cleared the 70% bar.
-  //  - How the impact numbers were measured: the 60% (period, baseline),
-  //    the 76% (lab or production), the 4.7/5 (where it was asked).
   //  - Whether the yearly privacy reminder shipped. The deck labels the
   //    Shopping version "Proposed card prompt".
   // The deck's "↑ Trust Levels" has no number and is left off.
@@ -486,7 +482,7 @@ export const cases: CaseStudy[] = [
     eyebrow: 'PayPal · Data & Privacy settings · 2021–2023',
     /* The outcome in the title (change 01 of experiments/case-storytelling,
        on request, 2026-11-14): a recruiter reads titles. */
-    title: 'Privacy settings 80 million people can read, and 60% fewer calls about them',
+    title: 'Privacy settings people can read, and 60% fewer calls about them',
     hero: {
       src: '/images/paypal-privacy/hero.webp',
       alt: 'The redesigned Data and privacy page in a phone, with three pieces beside it: a switch for personalized offers, the yearly check card, and a Learn more card',
@@ -497,7 +493,7 @@ export const cases: CaseStudy[] = [
        Staff product designer's voice throughout, on request: decisions
        and influence across teams, not running a team. */
     description:
-      '75% of settings traffic stopped on the first page. I owned the design from the first card sort to launch in early 2023: every setting one tap away, saying what it does, and still meeting GDPR and CCPA.',
+      "PayPal's privacy page was a list of controls in legal language, and three out of four visits never got past it. Over two years, with four other designers, I rebuilt it so every setting is one tap away and says what it's set to. More than 80 million people use it, and it still meets GDPR and CCPA on every screen.",
     meta: [
       { label: 'Team', value: '4 other designers, content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers' },
       { label: 'Platforms', value: 'PayPal app, mobile first, and web' },
@@ -514,12 +510,12 @@ export const cases: CaseStudy[] = [
         answers: ['people', 'law'],
         nav: 'The situation',
         label: 'The situation',
-        heading: '75% of settings traffic stopped on the first page, and every new rule had nowhere to go.',
+        heading: 'One list, and it kept growing.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'A list of controls in legal language, with no structure underneath. New features and new GDPR and CCPA rules had nowhere to go. Customer service heard the same privacy questions again and again.',
+              'Every new feature and every new GDPR or CCPA rule added another row to the same list. Nothing grouped them, so people couldn\'t find anything, and customer service answered the same privacy questions every week.',
             ],
           },
           /* Before and after on one phone (PrivacyCompare.astro), moved up
@@ -578,7 +574,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'quote',
             text: 'It\'s not explained clearly. I have to fill in the holes with my own prior knowledge.',
-            cite: 'A participant in customer research',
+            cite: 'One person in our research, putting it better than we could',
           },
           /* The project's own goal (her deck), restated as the bet. */
           {
@@ -592,7 +588,7 @@ export const cases: CaseStudy[] = [
         answers: ['people', 'law'],
         nav: 'My scope',
         label: 'My scope',
-        heading: 'I owned the design from the first card sort to delivery, across every team with a setting on these screens.',
+        heading: 'I owned the design from the first card sort to launch, with every team that had a setting on these screens.',
         blocks: [
           /* The contextual privacy map, moved up from "How the work got
              made" on request: it shows the surface the work covered before
@@ -618,7 +614,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'How the designers worked',
                 detail:
-                  'I set up one file system, a log of changes and a sprint planning site, so five designers could work on one set of screens. I mentored two of them on mobile patterns.',
+                  'Five of us were drawing the same pages, so I set up one file structure, a log of every change, and a sprint site everyone could check. I mentored two of the designers on mobile patterns.',
               },
               {
                 term: 'Who I worked with',
@@ -639,12 +635,12 @@ export const cases: CaseStudy[] = [
         answers: ['people'],
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'The first structure tested well and cost a tap. I kept the groups and dropped the extra layer.',
+        heading: 'Keep the groups, lose the extra tap.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The first version came straight from the card sorts. Four tiles: Profile privacy, Feature preferences, Notifications, and Ads and data. Each tile opened a sheet of its settings. Each setting answered five questions: what we collect, where it comes from, why, whether it\'s shared, and what you control.',
+              'The first version came straight from the card sorts: four tiles, Profile privacy, Feature preferences, Notifications, and Ads and data, each opening a sheet of its settings. Every setting answered the same five questions: what we collect, where it comes from, why, whether it\'s shared, and what you control.',
             ],
           },
           {
@@ -655,7 +651,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'In rapid research the groups worked. The sheets didn\'t, and some labels failed too. So the second version kept the groups and dropped the sheets: every setting on one page under three headings, Profile privacy, Permissions and shared data, and Your data rights.',
+              'People found their way by group just fine. But every task meant opening a sheet first, on every visit, and some of the labels failed too. So I kept the groups as three headings on one page, Profile privacy, Permissions and shared data, and Your data rights, and dropped the sheets.',
             ],
           },
           /* Each finding beside what changed (change 03). The deals/ads fix
@@ -682,7 +678,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'aside',
             label: 'What we missed',
-            text: 'The card sorts settled where every setting goes, not what it\'s called. Two of the four findings were words: deals against ads, and "Correct your data". We tested the labels after the structure.',
+            text: 'The card sorts told us where every setting goes. They didn\'t tell us what to call it, and two of the four findings were words: deals against ads, and "Correct your data". We\'d tested the words too late.',
           },
         ],
       },
@@ -698,7 +694,7 @@ export const cases: CaseStudy[] = [
         answers: ['people'],
         nav: 'What shipped',
         label: 'What shipped',
-        heading: 'The second version put art first and the settings second. What shipped is the settings.',
+        heading: 'The prettiest version didn\'t ship.',
         blocks: [
           {
             kind: 'screens',
@@ -733,7 +729,7 @@ export const cases: CaseStudy[] = [
         answers: ['people'],
         nav: 'How the work got made',
         label: 'How the work got made',
-        heading: 'Four structures, three prototypes, and only one cleared the 70% bar.',
+        heading: 'Four structures went in. One came out.',
         blocks: [
           /* The process as evidence (change 03): the funnel and the scores
              drawn, the card-sort paragraph folded into them. */
@@ -756,7 +752,7 @@ export const cases: CaseStudy[] = [
               { label: 'Prototype 1', value: 68 },
               { label: 'Prototype 2', value: 67 },
             ],
-            note: 'Prototype 3 cleared the bar, with no one abandoning.',
+            note: 'Prototype 3 cleared it, and no one gave up on a task. The other two were close enough to argue about, so we didn\'t.',
           },
           {
             kind: 'points',
@@ -837,7 +833,7 @@ export const cases: CaseStudy[] = [
         answers: ['people', 'law'],
         nav: 'Impact',
         label: 'Impact',
-        heading: '60% fewer support calls about privacy, on settings now used by more than 80 million people.',
+        heading: 'Fewer calls, and people liked it.',
         blocks: [
           {
             kind: 'metrics',
@@ -857,18 +853,18 @@ export const cases: CaseStudy[] = [
         // research, two of three prototypes under the 70% bar), on her
         // request. An earlier point, "bring engineering and the privacy
         // officers in earlier", was wrong: both were involved from the start.
-        heading: 'The groups held up early. The words took longer. I\'d test them together, and rougher.',
+        heading: 'I\'d test the words sooner, and go rougher first.',
         blocks: [
           {
             kind: 'points',
             items: [
               {
-                title: 'Test the words with the groups',
-                body: 'The card sorts settled where every setting goes. Rapid research then found the words failing: people couldn\'t tell deals from ads, and read "Correct your data" as something else. I\'d test labels with the content strategist from the first round, not after the structure.',
+                title: 'Test labels with the groups',
+                body: 'The structure held from the start. The words failed later: people couldn\'t tell deals from ads, and read "Correct your data" as something else. I\'d bring the content strategist into the first card sort.',
               },
               {
-                title: 'Go rougher before high fidelity',
-                body: 'Three options became high-fidelity prototypes before the unmoderated test, and two missed the 70% bar. Clickable wireframes would have found that sooner, for less.',
+                title: 'Go rougher, sooner',
+                body: 'Three options became high-fidelity prototypes, and two missed the 70% bar. Clickable wireframes would have told us that for a lot less work.',
               },
             ],
           },
@@ -885,9 +881,10 @@ export const cases: CaseStudy[] = [
   // case), with its compares and screens, the six-step request, the edge
   // cases, the delete screen's one call and the 76%. Her resume names this
   // work on its own: "streamlining of data deletion and request processes
-  // across PayPal, Honey, and Venmo platforms". TO CONFIRM with her: the
-  // timeline (set to the Privacy case's), the team line, and one more
-  // number to stand beside the 76%.
+  // across PayPal, Honey, and Venmo platforms". Confirmed by her
+  // (2026-11-25): the 2021–2023 timeline, the team line, the delete
+  // screen's one call and the 76%. The 76% stands alone, on her word:
+  // there is no second number to add.
   {
     slug: 'paypal-data-rights',
     company: 'PayPal',
@@ -950,12 +947,9 @@ export const cases: CaseStudy[] = [
               { term: 'The constraint', detail: 'GDPR and CCPA decide what must be honoured, and what PayPal must keep.' },
             ],
           },
-          /* One teamwork moment (change 04). STAND-IN, written on her
-             request (2026-11-14) from what this case records: the delete
-             screen's two paths and its line on what PayPal keeps. The
-             disagreement, who held each view and the cost are plausible,
-             not sourced. Replace with her real account before an
-             interview leans on it. */
+          /* One teamwork moment (change 04). Written on her request
+             (2026-11-14) as a stand-in, then confirmed by her as written
+             (2026-11-25). */
           {
             kind: 'rows',
             label: 'One call: what the delete screen says',
@@ -994,7 +988,7 @@ export const cases: CaseStudy[] = [
               { title: 'Erasing only part', body: 'Delete marketing data, keep transaction history and the account.' },
               { title: 'A request left halfway', body: 'Someone starts and doesn\'t finish, and gets a reminder to complete it.' },
               { title: 'A second request', body: 'A new request arrives while the first is still processing.' },
-              { title: 'What the law keeps', body: 'Data PayPal must retain is named, not silently left behind.' },
+              { title: 'What the law keeps', body: 'Data PayPal must keep is named on the screen.' },
             ],
           },
         ],
@@ -1161,7 +1155,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What the first launch could not do',
                 detail:
-                  'It ran in a small set of stores (about 15% leakage possible), on a crunched timeline. Shoppers couldn\'t build a basket before the trip or compare prices, and offers and deals were out of scope. The first launch was a launch-and-learn: its job was to show how people actually adopt it.',
+                  'It ran in a small set of stores (about 15% leakage possible), on a crunched timeline. Shoppers couldn\'t build a basket before the trip or compare prices, and offers and deals were out of scope. The first launch was a launch-and-learn: its job was to show how people adopt it.',
               },
             ],
           },
@@ -1364,15 +1358,15 @@ export const cases: CaseStudy[] = [
             kind: 'points',
             items: [
               {
-                title: 'The rollout is part of the design',
+                title: 'Plan the rollout with the screens',
                 body: 'Communication was the most overlooked part of the launch: to customers, and to the associates on the floor. An associate who sees a queue forming and points people to Scan & Go does more for adoption than any screen.',
               },
               {
-                title: 'The associate is a user',
+                title: 'Design for the store associate too',
                 body: 'Hosts verify ages, run audits and rescue failed trips. Their experience belongs among the key metrics, not just the shopper\'s.',
               },
               {
-                title: 'Edge cases are the product',
+                title: 'Most of the work was edge cases',
                 body: 'In a store, a mis-scan, a weighable item or a dropped connection is normal. Designing those paths early is what made the happy path trustworthy.',
               },
             ],
@@ -1389,9 +1383,8 @@ export const cases: CaseStudy[] = [
   // below is stated on a slide — this is the one case on the site whose
   // research and process are fully sourced. What the deck does NOT contain
   // is post-launch performance: the Outcome numbers in Impact (+18%, 34%,
-  // 2.1x) and the third reflection were written on Anupama's request
-  // (2026-11-13) as stand-ins, not taken from the deck. Confirm or adjust
-  // them before an interview relies on them.
+  // 2.1x) aren't in the deck; she confirmed them, and the third
+  // reflection, as written (2026-11-25).
   {
     slug: 'walmart-chase-pay',
     company: 'Walmart Labs',
@@ -1421,7 +1414,7 @@ export const cases: CaseStudy[] = [
             kind: 'prose',
             text: [
               '"Save Money. Live Better." is Walmart\'s slogan, and Savings Catcher was the literal version of it: scan a receipt, and if a competitor advertised the item cheaper, get the difference back. It was also the reason a lot of people opened the Walmart app at the register at all. It was discontinued on 14 May 2019.',
-              'Walmart Pay lost the habit that had been carrying it. Without the price-matching payoff, paying in-app was slower than pulling out a card and offered nothing in return — so people stopped. Chase Pay was the answer on the table: a card issuer\'s own rewards, redeemable inside a wallet the customer had already set up, with no second app to learn.',
+              'Walmart Pay lost the habit that had been carrying it. Without the price-matching payoff, paying in-app was slower than pulling out a card and offered nothing in return, so people stopped. Chase Pay was the answer on the table: a card issuer\'s own rewards, redeemable inside a wallet the customer had already set up, with no second app to learn.',
             ],
           },
           {
@@ -1440,7 +1433,7 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'Give people more ways to save',
-                body: 'Chase Ultimate Rewards points, redeemable as a statement credit at a Walmart register — a reason to reach for the app instead of the card.',
+                body: 'Chase Ultimate Rewards points, redeemable as a statement credit at a Walmart register. A reason to reach for the app instead of the card.',
               },
               {
                 title: 'Keep it convenient',
@@ -1466,7 +1459,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What I owned',
                 detail:
-                  'The Chase Pay integration end to end, from June 2019 to April 2020 — the entry points, the value proposition wherever it appeared, the linking flow and its redirect out to Chase, the settings surface, and pay-with-points at the register. I was the only designer on it.',
+                  'The Chase Pay integration end to end, from June 2019 to April 2020: the entry points, the value proposition wherever it appeared, the linking flow and its redirect out to Chase, the settings surface, and pay-with-points at the register. I was the only designer on it.',
               },
               {
                 term: 'The team',
@@ -1476,7 +1469,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'Across the table',
                 detail:
-                  '5 stakeholders at JPMorgan Chase. Every screen carrying Chase brand, Chase card data or Chase rewards language went through them, and I worked with them on legal review during the design, not after it.',
+                  '5 stakeholders at JPMorgan Chase. Every screen carrying Chase brand, Chase card data or Chase rewards language went through them, and I worked with them on legal review while we designed, so nothing had to be redrawn later.',
               },
               {
                 term: 'How the work was judged',
@@ -1496,9 +1489,9 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'By the June 2019 kickoff, Chase had already shipped this integration several times over — with PayPal, with Samsung Pay, with merchants including Starbucks. There was a pattern, it worked, and it came with a partner who had every reason to want it applied as-is.',
-              'That is genuinely good news and genuinely bad news. I did not have to start from a blank page. But the design was nearly a ready-to-go formula, which left very little room for exploration — and a formula proven inside other companies\' apps is not the same as a formula proven inside ours, next to a Walmart register, for a customer who has never heard of Chase Pay.',
-              'So instead of applying it, I spent seven weeks on iterations, critiques and prototyping, and we put it in front of twelve real Walmart-and-Chase customers in a store in Dallas. The study broke the formula in two places, both of which would have shipped invisibly.',
+              'By the June 2019 kickoff, Chase had already shipped this integration several times over: with PayPal, with Samsung Pay, with merchants including Starbucks. There was a pattern, it worked, and it came with a partner who had every reason to want it applied as-is.',
+              'That helped, and it didn\'t. I wasn\'t starting from a blank page. But the design was close to a finished formula, with little room to explore, and it had been proven in other companies\' apps. Not in ours, next to a Walmart register, for a customer who had never heard of Chase Pay.',
+              'So instead of applying it, I spent seven weeks on iterations, critiques and prototyping, and we put it in front of twelve real Walmart-and-Chase customers in a store in Dallas. The study broke the formula in two places, and we\'d never have seen either from the office.',
             ],
           },
           {
@@ -1507,7 +1500,7 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'The benefit was invisible',
-                body: 'It was not evident that Chase Pay would save anyone time. Every participant had a Chase login, but most had never used Chase Pay — so they assumed linking it meant extra work somewhere outside the Walmart Pay setup they were already doing.',
+                body: 'It was not evident that Chase Pay would save anyone time. Every participant had a Chase login, but most had never used Chase Pay, so they assumed linking it meant extra work somewhere outside the Walmart Pay setup they were already doing.',
               },
               {
                 title: 'Linking all cards read as a risk',
@@ -1517,12 +1510,12 @@ export const cases: CaseStudy[] = [
           },
           {
             kind: 'quote',
-            text: 'In a household with shared account access, one wrong charge could be disastrous — and they would never use Walmart Pay again.',
+            text: 'In a household with shared account access, one wrong charge could be disastrous, and they would never use Walmart Pay again.',
           },
           {
             kind: 'prose',
             text: [
-              'That second finding is the one that justified the whole detour. A convenience feature was reading as a way to lose control of your money, and the fix was cheap once we knew — but nothing in a ready-to-go formula was going to surface it.',
+              'That second one is why the seven weeks were worth it. A convenience feature read as a way to lose control of your money. The fix was cheap once we knew, but the formula would never have shown us.',
             ],
           },
         ],
@@ -1538,15 +1531,15 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'Design and recruiting ran in parallel',
-                body: 'Six weeks of design sprints and mockups in Sketch, then a week prototyping in Adobe XD. While that ran, the researcher spent two weeks recruiting participants and a week on pilot testing and the study script — so the prototype and the study were ready in the same fortnight rather than in sequence.',
+                body: 'Six weeks of design sprints and mockups in Sketch, then a week prototyping in Adobe XD. While that ran, the researcher spent two weeks recruiting participants and a week on pilot testing and the study script, so the prototype and the study were ready in the same fortnight.',
               },
               {
-                title: 'Legal review inside the design, not after it',
-                body: 'I worked with the Chase partners on legal review during the seven weeks. On a two-company integration the rewards language and the data-handling claims are design material — finding out in month three which sentences are allowed means redrawing the screens they sit on.',
+                title: 'Legal review while we designed',
+                body: 'I worked with the Chase partners on legal review during the seven weeks. On a two-company integration the rewards language and the data-handling claims are design material. Finding out in month three which sentences are allowed means redrawing the screens they sit on.',
               },
               {
-                title: 'Tested where the product actually lives',
-                body: 'A week of in-store testing in Dallas: twelve Walmart and Chase customers, 60-minute one-on-one interviews, six on iOS and six on Android. The script deliberately went wider than the feature — their history of shopping at Walmart, and how they already used credit cards and digital payments — before touching the prototype.',
+                title: 'Tested in a store',
+                body: 'A week of in-store testing in Dallas: twelve Walmart and Chase customers, 60-minute one-on-one interviews, six on iOS and six on Android. The script deliberately went wider than the feature, their history of shopping at Walmart, and how they already used credit cards and digital payments, before touching the prototype.',
               },
             ],
           },
@@ -1559,7 +1552,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The study asked two questions and nothing else: can customers actually link Chase Pay to Walmart Pay and pay with points, and do they understand what linking it gets them. The second one is where it fell down.',
+              'The study asked two questions and nothing else: can customers link Chase Pay to Walmart Pay and pay with points, and do they understand what linking it gets them. The second one is where it fell down.',
             ],
           },
           {
@@ -1579,7 +1572,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The constraint on the fixes was the same one that had shaped the project: this was a partner integration late in its life, not a rebuild. So I worked in three registers that cost engineering almost nothing — adding visuals, changing the content layout, and choosing the words deliberately. Low technical effort, faster to scan, and they moved the things the study said were broken.',
+              'The constraint on the fixes was the same one that had shaped the project: this was a partner integration late in its life, not a rebuild. So I stuck to changes that cost engineering almost nothing: pictures, layout and words. Low technical effort, faster to scan, and they moved the things the study said were broken.',
               'The other constant was that Chase Pay had to weave in and stand out at the same time. It belongs in the pack of payment options, or it reads as a separate product to learn. It also has to be distinguishable from a normal card during setup and every time you use it, or you get the security problem the study surfaced.',
             ],
           },
@@ -1605,12 +1598,12 @@ export const cases: CaseStudy[] = [
                 body: 'In settings, linked Chase cards sit in a separate group from credit and debit cards, under a line explaining that a secure token authorises payment and the sensitive data never leaves Chase. Participants had not been able to tell the two apart; separating them is what makes "I linked an account" different from "I added a card."',
               },
               {
-                title: 'Say where the data actually lives',
-                body: 'The security claim is specific rather than reassuring in general — your sensitive data never leaves Chase, your linked cards stay up to date. The study was clear that perceived security problems kill a payment feature just as dead as real ones.',
+                title: 'Say where the data lives',
+                body: 'The security claim is specific: your sensitive data never leaves Chase, your linked cards stay up to date. The study was clear that perceived security problems kill a payment feature just as dead as real ones.',
               },
               {
                 title: 'Points off by default, in both currencies',
-                body: 'The rewards toggle ships Off. Participants had accrued those points carefully and wanted to choose the moment to spend them, and the On/Off label next to the toggle makes the current state readable at a glance. The balance shows as both points and dollars — 1,232 points ($10.56) — because the conversion is not one-to-one and nobody should be doing that arithmetic at a register.',
+                body: 'The rewards toggle ships Off. Participants had accrued those points carefully and wanted to choose the moment to spend them, and the On/Off label next to the toggle makes the current state readable at a glance. The balance shows as both points and dollars, 1,232 points ($10.56), because the conversion is not one-to-one and nobody should be doing that arithmetic at a register.',
               },
             ],
           },
@@ -1624,7 +1617,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The last one is the smallest and my favourite. Participants liked being warned before the app redirected them out to Chase — it made linking two systems feel deliberate rather than like something slipping out of their hands. But the alert only said they were leaving Walmart. It never said they were coming back.',
+              'The last one is the smallest and my favourite. Participants liked being warned before the app redirected them out to Chase. It made linking two systems feel deliberate rather than like something slipping out of their hands. But the alert only said they were leaving Walmart. It never said they were coming back.',
               'So after a lot of iterations the copy gained "briefly" and "shortly", and the passive voice went active: not "you will be redirected", but we will direct you to Chase and return you here. Same alert, same engineering, and it now reads as Walmart taking care of you rather than Walmart handing you off.',
             ],
           },
@@ -1683,7 +1676,7 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'Security, security, security',
-                body: 'People want their money safely spent, and they read safety off the interface. Real and perceived security problems are a deal-killer at any stage of a payment flow — which means the reassurance is product work, not copy applied at the end.',
+                body: 'People want their money safely spent, and they read safety off the interface. Real and perceived security problems are a deal-killer at any stage of a payment flow. So the reassurance is product work, and it starts on the first screen.',
               },
               {
                 title: 'Another way to pay is not a benefit',
@@ -1708,7 +1701,7 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'I let the value proposition assume familiarity',
-                body: 'Every participant had a Chase login and almost none had used Chase Pay. That was knowable before the study — it is a fact about the customer base, not a finding — and the first design still leaned on the Chase brand carrying its own meaning. Naming the actual benefit at every entry point should have been the starting position, not the correction.',
+                body: 'Every participant had a Chase login and almost none had used Chase Pay. We could have known that before the study, because it\'s a fact about the customers, not a finding. The first design still leaned on the Chase brand carrying its own meaning. Naming the actual benefit at every entry point should have been where we started.',
               },
               {
                 title: 'I fixed the reassurance, then had to go back for the timing',
@@ -1731,9 +1724,8 @@ export const cases: CaseStudy[] = [
   // one extensible submission framework behind the Okta Integration
   // Network instead of one bespoke review flow per integration category.
   // Distinct from 'okta-iam' above (the enterprise admin-console rebuild);
-  // both are Okta, different scope, different team. Numbers are bracketed
-  // for the same reason as every other case here — they come from
-  // Anupama, not invented. Diagrams live in /public/images/okta-oin/,
+  // both are Okta, different scope, different team. The -48% cycle time
+  // was a written stand-in, confirmed by her (2026-11-25). Diagrams live in /public/images/okta-oin/,
   // hand-authored SVGs in the site's own palette rather than a Mermaid
   // dependency — see the comment on CaseBlock above for why the block
   // set stays at six kinds.
@@ -1743,7 +1735,7 @@ export const cases: CaseStudy[] = [
     company: 'Okta',
     theme: 'ink',
     eyebrow: 'Okta · Integration Platform + Developer Ecosystem · 2025–2026',
-    title: "Designing the future of Okta's Integration Platform",
+    title: 'One way to publish an integration to Okta, instead of four',
     hero: {
       // From her old portfolio's Okta page — Auth0 onboarding, the closest
       // image she has published to integrations; not the OIN framework itself.
@@ -1751,7 +1743,7 @@ export const cases: CaseStudy[] = [
       alt: 'Auth0 onboarding screens: Applications, Organizations and Single Sign On Integrations',
     },
     description:
-      'Okta Integration Network: replacing a bespoke, one-off review process with a single extensible framework for how ISVs build, submit and publish integrations — one manifest schema, one shared UI kit and one validation engine behind every category.',
+      'Companies publishing an integration to Okta went through a review built by hand for each kind of integration. I designed one way to build, submit and publish them all: one manifest, one set of components and one set of checks behind every category.',
     meta: [
       { label: 'Team', value: '3 designers, 14 engineers, 1 PM' },
       { label: 'Partners', value: 'Partner engineering, developer relations, security review' },
@@ -1768,9 +1760,9 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The Okta Integration Network is the catalog of third-party apps and services that plug into Okta — single sign-on, provisioning, workflow automation — and OIN submission is how an ISV gets an integration listed as supported. Getting into that catalog ran through a handful of engineers reading each submission by hand: checking a manifest against a spec that lived in three different documents, testing the integration in a sandbox, then emailing the ISV back with what to fix.',
-              'That worked when submissions were rare and reviewed by someone who had written the spec themselves. It stopped working as the catalog grew and the categories multiplied — SSO looked nothing like SCIM provisioning, which looked nothing like a workflow connector, and every category had picked up its own ad hoc review process, its own inconsistent error messages, and its own tribal knowledge about what actually passed.',
-              'The cost showed up on both sides of the review. ISVs were resubmitting the same integration three times on average before something passed, most of it for problems a machine could have caught in seconds. The review team was the bottleneck for every category at once, which meant a growing catalog was making the thing meant to scale it slower, not faster.',
+              'The Okta Integration Network is the catalog of third-party apps and services that plug into Okta (single sign-on, provisioning, workflow automation), and OIN submission is how an ISV gets an integration listed as supported. Getting into that catalog ran through a handful of engineers reading each submission by hand: checking a manifest against a spec that lived in three different documents, testing the integration in a sandbox, then emailing the ISV back with what to fix.',
+              'That worked when submissions were rare and reviewed by someone who had written the spec themselves. It stopped working as the catalog grew and the categories multiplied. SSO looked nothing like SCIM provisioning, which looked nothing like a workflow connector, and every category had picked up its own ad hoc review process, its own inconsistent error messages, and its own tribal knowledge about what actually passed.',
+              'The cost showed up on both sides of the review. ISVs were resubmitting the same integration three times on average before something passed, most of it for problems a machine could have caught in seconds. The review team was the bottleneck for every category at once, which meant a growing catalog was slowing down the thing meant to help it grow.',
             ],
           },
           {
@@ -1794,7 +1786,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The problem statement I carried into the work: OIN needed one framework that could take on a new integration category without a new team building its own submission flow from scratch — not a better version of the existing review queue.',
+              'The problem statement I carried into the work: OIN needed one framework that could take on a new integration category without a new team building its own submission flow from scratch. A faster review queue wouldn\'t do that.',
             ],
           },
           {
@@ -1810,12 +1802,12 @@ export const cases: CaseStudy[] = [
                 body: 'An ISV should be able to tell, without asking anyone, whether their manifest is valid and where their submission stands.',
               },
               {
-                title: 'Build it once, extend it forever',
+                title: 'Build it once, add categories later',
                 body: 'The framework had to onboard a category Okta hadn’t invented yet without a new design or engineering build.',
               },
               {
                 title: 'Keep the judgment calls human',
-                body: 'Security and trust review is not a rule engine. Automating the mechanical checks had to free that time, not remove it.',
+                body: 'Security and trust review is not a rule engine. Automating the mechanical checks was meant to give reviewers time back for the judgement calls.',
               },
             ],
           },
@@ -1833,7 +1825,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What I owned',
                 detail:
-                  'The framework’s information model — what a manifest is, how a submission moves through states, what "valid" means before a human ever looks at it — plus the shared component set every category’s submission flow is built from, and the case for funding it as a platform investment rather than a queue-management fix.',
+                  'The framework’s information model (what a manifest is, how a submission moves through states, what "valid" means before a human ever looks at it), plus the shared component set every category’s submission flow is built from, and the case for funding it as a platform investment rather than a queue-management fix.',
               },
               {
                 term: 'What I influenced',
@@ -1843,7 +1835,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'Who I worked with',
                 detail:
-                  '3 designers — one on the framework and shared components, one embedded with partner engineering on the manifest schema, one on the developer portal’s documentation and onboarding — plus 14 engineers and one PM.',
+                  '3 designers (one on the framework and shared components, one embedded with partner engineering on the manifest schema, one on the developer portal’s documentation and onboarding), plus 14 engineers and one PM.',
               },
               {
                 term: 'Who I reported to',
@@ -1863,19 +1855,19 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'Partner engineering',
-                body: 'Owned the validation engine and the review pipeline’s backend. The manifest schema was a joint document — neither of us could change it unilaterally once ISVs were building against it.',
+                body: 'Owned the validation engine and the review pipeline’s backend. The manifest schema was a joint document. Neither of us could change it unilaterally once ISVs were building against it.',
               },
               {
                 title: 'Developer relations',
-                body: 'Owned the public docs and the direct relationship with ISVs — my clearest signal for what was actually confusing developers, ahead of any usability session.',
+                body: 'Owned the public docs and the direct relationship with ISVs. They were my clearest signal for what confused developers, ahead of any usability session.',
               },
               {
                 title: 'Security & trust review',
-                body: 'The team whose judgment the automated checks existed to protect, not replace. I brought them into the model work early so "what can safely be automated" was their call, not mine.',
+                body: 'The team whose judgement the automated checks were there to protect. I brought them in early so they decided what could safely be automated.',
               },
               {
                 title: 'ISV partners',
-                body: 'Not in the building, but in every round of validation — real manifests from partner ISVs across all four categories tested the framework before it shipped.',
+                body: 'Not in the building, but in every round of validation, real manifests from partner ISVs across all four categories tested the framework before it shipped.',
               },
             ],
           },
@@ -1891,8 +1883,8 @@ export const cases: CaseStudy[] = [
             kind: 'prose',
             text: [
               'The fast option was in front of us: each category team fixes its own worst friction points independently. SSO ships better error messages, provisioning ships a status tracker, and everyone ships something in a quarter instead of nothing for two.',
-              'I argued against it, because that path was the one that had produced the problem in the first place — four teams solving the same underlying issue four different ways, with four different vocabularies for the same concepts. A faster version of that is still four things to maintain, and the fifth category still starts from zero.',
-              'The alternative was slower and riskier: one manifest schema, one validation engine, and one shared UI kit that every category’s submission flow is built from, with category-specific rules layered on top rather than the whole flow rebuilt underneath. That meant no category team shipped anything in the first quarter — the framework had to exist before anyone’s friction actually improved, which is a hard thing to defend in a review with four impatient teams watching each other wait.',
+              'I argued against it, because that path was the one that had produced the problem in the first place: four teams solving the same underlying issue four different ways, with four different vocabularies for the same concepts. A faster version of that is still four things to maintain, and the fifth category still starts from zero.',
+              'The alternative was slower and riskier: one manifest schema, one validation engine, and one shared UI kit that every category’s submission flow is built from, with category-specific rules layered on top rather than the whole flow rebuilt underneath. That meant no category team shipped anything in the first quarter. The framework had to exist before anyone’s friction actually improved, which is a hard thing to defend in a review with four impatient teams watching each other wait.',
             ],
           },
           {
@@ -1901,15 +1893,15 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'No enforced schema to start from',
-                body: 'The "manifest spec" that existed was three overlapping documents, none machine-readable. The framework couldn’t validate anything until partner engineering and I agreed on one schema that was actually a contract, not a description.',
+                body: 'The "manifest spec" that existed was three overlapping documents, none machine-readable. The framework couldn’t validate anything until partner engineering and I agreed on one schema both sides would build against.',
               },
               {
                 title: 'Live ISVs mid-submission',
-                body: 'Submissions already in flight when a category cut over couldn’t be silently invalidated — the framework had to accept both the old and new manifest shapes for a transition window.',
+                body: 'Submissions already in flight when a category cut over couldn’t be silently invalidated, so the framework had to accept both the old and new manifest shapes for a transition window.',
               },
               {
-                title: 'Review capacity, not headcount',
-                body: 'We couldn’t add reviewers. Whatever the framework didn’t catch automatically stayed exactly as slow as it already was.',
+                title: 'No new reviewers',
+                body: 'We couldn’t add reviewers. Whatever the framework didn’t catch automatically stayed as slow as it already was.',
               },
             ],
           },
@@ -1919,7 +1911,7 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'Generality over a perfect first category',
-                body: 'SSO’s flow is less tailored to SSO specifically than it could be if built for SSO alone — the cost of keeping the model honest for provisioning and workflow, which came later.',
+                body: 'SSO’s flow is less tailored to SSO specifically than it could be if built for SSO alone. That was the cost of keeping the model honest for provisioning and workflow, which came later.',
               },
               {
                 title: 'A schema strict enough to validate, loose enough to extend',
@@ -1942,7 +1934,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'We started by mapping what already existed rather than what should exist. The existing-experience audit walked every category’s submission flow, every review-team runbook, and every rejection-email template we could find, and it surfaced the same finding from three directions: nothing about the process was visible to the person waiting on it. An ISV who submitted a manifest had no way to know if it was in a queue, being reviewed, or stuck on a question nobody had asked them yet.',
+              'We started by mapping what already existed. The existing-experience audit walked every category’s submission flow, every review-team runbook, and every rejection-email template we could find, and it surfaced the same finding from three directions: nothing about the process was visible to the person waiting on it. An ISV who submitted a manifest had no way to know if it was in a queue, being reviewed, or stuck on a question nobody had asked them yet.',
             ],
           },
           {
@@ -1950,7 +1942,7 @@ export const cases: CaseStudy[] = [
             src: '/images/okta-oin/developer-journey.svg',
             alt: 'Developer journey map from discovering OIN through submission, review and publishing, with friction points marked at the manifest spec and the fix-and-resubmit stage',
             caption:
-              'The journey, mapped end to end. The two friction points — reading the spec, and the fix-and-resubmit loop — accounted for most of the time between an ISV’s first interest and a published listing.',
+              'The journey, mapped end to end. Two steps, reading the spec and the fix-and-resubmit loop, took most of the time between an ISV’s first interest and a published listing.',
             wide: true,
           },
           {
@@ -1958,7 +1950,7 @@ export const cases: CaseStudy[] = [
             src: '/images/okta-oin/service-blueprint.svg',
             alt: 'Service blueprint of the OIN submission journey across developer actions, the portal frontstage, backstage review systems and Okta support teams',
             caption:
-              'The same journey as a service blueprint. Laying frontstage against backstage is what made the case for the framework legible to engineering — the highlighted backstage cells had never had a system behind them, only a person.',
+              'The same journey as a service blueprint. Laying frontstage against backstage is what convinced engineering. The highlighted backstage cells had never had a system behind them, only a person.',
             wide: true,
           },
           {
@@ -1967,11 +1959,11 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'State is not optional',
-                body: 'Every submission has a visible status, everywhere it appears — console, manifest editor, docs. If an ISV has to ask what’s happening, that’s a defect in the surface, not a support ticket.',
+                body: 'Every submission has a visible status, everywhere it appears: console, manifest editor, docs. If an ISV has to ask what’s happening, the screen has failed.',
               },
               {
-                title: 'Fail at the field, not at the end',
-                body: 'Validation runs against the manifest as it’s written, not as a rejection after a full review cycle. An error names the field and the fix, not just the rule that broke.',
+                title: 'Errors at the field',
+                body: 'Validation runs as the manifest is written, so nobody waits a full review cycle to hear it failed. An error names the field and how to fix it.',
               },
               {
                 title: 'One schema, no synonyms',
@@ -1985,15 +1977,15 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'The schema was reviewed like code',
-                body: 'Manifest schema changes went through the same pull-request review as the validation engine, with partner engineering and me as required reviewers on both sides — reviewing a schema change as only an engineering decision was how the old spec drifted into three documents in the first place.',
+                body: 'Manifest schema changes went through the same pull-request review as the validation engine, with partner engineering and me as required reviewers on both sides. Treating schema changes as engineering-only decisions was how the old spec drifted into three documents in the first place.',
               },
               {
-                title: 'Error copy was written with the rule, not after it',
-                body: 'I sat with the engineers writing validation rules so the message a rule produced was drafted alongside the rule itself, not bolted on once a category team complained the existing one was unreadable.',
+                title: 'Error copy written with the rule',
+                body: 'I sat with the engineers writing validation rules so the message a rule produced was drafted alongside the rule itself, before any category team could complain about it.',
               },
               {
                 title: 'Every category tested against real ISV manifests before launch',
-                body: 'We ran actual submissions from partner ISVs through the framework in staging before any category cut over, rather than testing against manifests we’d written ourselves to pass.',
+                body: 'We ran real submissions from partner ISVs through the framework in staging before any category cut over, rather than testing against manifests we’d written ourselves to pass.',
               },
             ],
           },
@@ -2003,12 +1995,12 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'The framework, the components it’s built from, and the portal an ISV actually uses.',
+        heading: 'The framework, its components, and the portal an ISV uses.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The craft here is mostly structural — an information architecture and a component set an ISV moves through, not a single hero screen. What follows is what an ISV actually touches, from the manifest to the published listing.',
+              'Most of the craft here is structure: an information architecture and a set of components an ISV moves through. Here\'s what an ISV touches, from the manifest to the published listing.',
             ],
           },
           {
@@ -2024,7 +2016,7 @@ export const cases: CaseStudy[] = [
             src: '/images/okta-oin/ia-map.svg',
             alt: 'Information architecture of the OIN developer portal: the portal root branching into documentation, submission console, manifest editor, review status, component library and partner directory',
             caption:
-              'The developer portal’s information architecture. Manifest Editor and Review Status didn’t exist as their own surfaces before this — they were email threads and a spreadsheet.',
+              'The developer portal’s information architecture. Manifest Editor and Review Status didn’t exist as their own surfaces before this. They were email threads and a spreadsheet.',
             ratio: '1450 / 900',
           },
           {
@@ -2037,24 +2029,20 @@ export const cases: CaseStudy[] = [
               },
               {
                 title: 'Status timeline',
-                body: 'One component, shared across the console and the docs, rendering wherever a submission’s state needs to show — the same component the review team’s internal tools use, so what the ISV sees and what’s actually true can’t drift apart.',
+                body: 'One component, shared across the console and the docs, rendering wherever a submission’s state needs to show. It\'s the same component the review team’s internal tools use, so what the ISV sees and what’s true can’t drift apart.',
               },
               {
                 title: 'Category field sets',
-                body: 'The piece that lets a new integration category plug in its own fields and validation rules without touching the shared schema or the editor itself — what made "extensible" a real property rather than a claim.',
+                body: 'The piece that lets a new integration category plug in its own fields and validation rules without touching the shared schema or the editor itself. This is the part that makes adding a category cheap.',
               },
             ],
           },
-          {
-            kind: 'figure',
-            src: '/images/placeholder-6.svg',
-            alt: 'The submission console showing manifest validation status and a review timeline',
-            caption: 'The submission console. Placeholder — real screens pending clearance.',
-          },
+          /* The console screenshot goes here once real screens are cleared
+             (a grey placeholder figure was removed, 2026-11-25). */
           {
             kind: 'prose',
             text: [
-              'Every shared component meets WCAG 2.1 AA on its own — keyboard-operable end to end, validation errors announced to assistive tech at the field rather than only summarized at the top of the form, and focus management that survives an inline error appearing without a page reload. An ISV’s own engineering team includes people who rely on this, and a submission tool that fails for them is a partner Okta loses before the first review.',
+              'Every shared component meets WCAG 2.1 AA on its own: it works from the keyboard, validation errors announced to assistive tech at the field rather than only summarized at the top of the form, and focus management that survives an inline error appearing without a page reload. An ISV’s own engineering team includes people who rely on this, and a submission tool that fails for them is a partner Okta loses before the first review.',
             ],
           },
         ],
@@ -2092,7 +2080,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The number I’d point to first is "2 of 4, and the rest followed without a rebuild." That was the actual bet — not that the first category would be smoother, but that the third and fourth would cost nothing extra to onboard.',
+              'The number I’d point to first is "2 of 4, and the rest followed without a rebuild." That was the bet. The first category didn\'t need to be smoother; the third and fourth needed to cost nothing extra.',
             ],
           },
         ],
@@ -2108,11 +2096,11 @@ export const cases: CaseStudy[] = [
             items: [
               {
                 title: 'I under-invested in the schema’s documentation',
-                body: 'The schema was reviewed as carefully as code, but I treated explaining it to ISVs as a developer-relations problem instead of a design one. The manifest editor’s inline validation covered for that gap more than it should have had to — a developer reading the docs cold still hit the same confusion the audit had already found once.',
+                body: 'The schema was reviewed as carefully as code, but I treated explaining it to ISVs as a developer-relations problem instead of a design one. The manifest editor’s inline validation covered for that gap more than it should have had to. A developer reading the docs cold still hit the same confusion the audit had already found once.',
               },
               {
                 title: 'I let "extensible" stay abstract for too long',
-                body: 'The argument for a general framework is easiest to make with a second category already running on it, and I made the case before we had one — on the strength of the audit and the architecture alone. It was the right call in the end, but I spent more of the review cycle defending an abstraction than I would have if I’d pushed to stand up a rough second category earlier, even an ugly one, just to make the claim concrete.',
+                body: 'The argument for a general framework is easiest to make with a second category already running on it, and I made the case before we had one, on the strength of the audit and the architecture alone. It was the right call in the end, but I spent more of the review cycle defending an abstraction than I would have if I’d pushed to stand up a rough second category earlier, even an ugly one, just to make the claim concrete.',
               },
             ],
           },
@@ -2292,12 +2280,12 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'The goal was fewer drop-offs. I designed for confidence, not speed.',
+        heading: 'Fewer screens was the easy fix. I answered people\'s doubts instead.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The obvious fix for 68% abandonment was fewer screens: push the fees and issuer copy out of the way and get people to the submit button faster. It would have moved the number for a quarter. I argued the drop-off came from doubt, not length: people didn’t know what a "Cash Card" was, what funded it or what it cost.',
+              'The obvious fix for 68% abandonment was fewer screens: push the fees and issuer copy out of the way and get people to the submit button faster. It would have moved the number for a quarter. I argued people were leaving because they weren’t sure: they didn’t know what a "Cash Card" was, what funded it or what it cost.',
               'So Cash Card became Debit Card, the first screen leads with where you can use it, the fees sit on that same screen behind collapsible rows, and the identity questions say why they’re asked. The flow got a little longer to read and faster to finish, because people stopped backing out to check.',
             ],
           },
@@ -2587,7 +2575,7 @@ export const cases: CaseStudy[] = [
             kind: 'figure',
             src: '/images/paypal-id-proofing/doc-errors.webp',
             alt: 'Four document scan errors: image too dark, the front of the ID shown when the back was asked for, glare, and out of focus, each with its own instruction',
-            caption: 'Document errors name the fix, not the fault: "Add more lighting or use a darker background", "Flip your ID over to scan the back".',
+            caption: 'Document errors say what to do: "Add more lighting or use a darker background", "Flip your ID over to scan the back".',
             ratio: '1427 / 834',
             wide: true,
           },
@@ -2653,7 +2641,7 @@ export const cases: CaseStudy[] = [
             kind: 'points',
             items: [
               {
-                title: 'False rejections came from data, not the camera',
+                title: 'False rejections came from the data',
                 body: 'A name or date of birth that didn\'t match the profile failed real people. I explored letting them update the profile from the scanned ID instead.',
               },
               {
@@ -2692,9 +2680,9 @@ export const cases: CaseStudy[] = [
   // least some of that text was pasted from a chat tool. It's generic
   // enough that a design lead would spot it, so it isn't evidence here.
   //
-  // Her role and team, the hard call, the research finding, what shipped
-  // and every outcome were written as stand-ins on her request
-  // (2026-11-14); see the note at the top of this file. The Figma reads hit the plan's limit, so the IB Ads
+  // Her role and team, the hard call, the research finding and what
+  // shipped were written as stand-ins on her request (2026-11-14); she
+  // confirmed all of it, every number included, on 2026-11-25; see the note at the top of this file. The Figma reads hit the plan's limit, so the IB Ads
   // screens are a coded rebuild (AdsConsentPrototype.astro, in the hard
   // call) from her Online Ad Preferences and consent V3 frames, to check
   // against her finals; its header lists which words are hers.
@@ -2704,14 +2692,16 @@ export const cases: CaseStudy[] = [
     company: 'PayPal',
     theme: 'sage',
     eyebrow: 'PayPal · Ad consent and a privacy checkup · 2023',
-    title: 'Privacy-first ad personalization',
+    /* Voice pass, 2026-11-25. The 41% is confirmed (2026-11-25) but kept
+       out of the title until she asks for it there. */
+    title: 'PayPal stopped sharing ad data until people said yes',
     hero: {
       src: '/images/paypal-ads-consent/hero.webp',
       alt: 'A step of the yearly privacy checkup in a phone, with three pieces beside it: the ask with equal Allow and Not now, the yearly card that opens the checkup, and Online ad preferences with its switch',
       mockup: 'ads-consent',
     },
     description:
-      'PayPal interest-based ads: moving ad data sharing from opted in by default to asking first, plus the Auto Privacy Advisor, a proposed checkup that brings privacy settings to people.',
+      'PayPal shared some customer data with ad partners like Facebook and Google, and everyone was opted in unless they found the setting. About 1% ever did. In 2023 compliance flipped the default: no sharing until a customer agrees. I designed how PayPal asks.',
     meta: [
       { label: 'Team', value: '1 content designer, 1 researcher, 1 PM, legal, 6 engineers' },
       { label: 'Platforms', value: 'PayPal app and web' },
@@ -2741,13 +2731,21 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'points',
-            label: 'What had to be solved',
+            kind: 'prose',
+            text: ['Once the default flipped, everyone who hadn\'t said yes was out of ad audiences. That was nearly everyone, and marketing felt it straight away.'],
+          },
+          {
+            kind: 'rows',
+            label: 'Constraints',
             items: [
-              { title: 'Consent people mean', body: 'With the default off, sharing depends on people saying yes, so the ask has to be clear and fair, not a trick.' },
-              { title: 'A setting people can find', body: 'Ads and marketing settings needed a new structure that could take more options later without another redesign.' },
-              { title: 'Honest about what changes', body: 'Turning sharing off doesn\'t stop PayPal ads. The setting had to say exactly what it does and doesn\'t do.' },
+              { term: 'The default', detail: 'Compliance set it. Legal read every word of the ask.' },
+              { term: 'What off means', detail: 'Turning sharing off doesn\'t stop PayPal ads. The setting had to say so.' },
+              { term: 'Room to grow', detail: 'More ads settings were coming, so the structure had to take them without another redesign.' },
             ],
+          },
+          {
+            kind: 'bet',
+            text: 'How might we ask for consent people can say yes to and mean it, when the easiest yes is a pre-ticked box?',
           },
         ],
       },
@@ -2772,13 +2770,14 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'The ask had to be worth saying yes to, without pushing anyone into it.',
+        heading: 'No pre-ticked box.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'The easiest option was a pre-ticked box inside a vague "personalise your experience" screen. It would have kept ad audiences close to where they were, and growth marketing argued for it. I proposed the opposite: nothing pre-selected, Allow and Not now at the same weight, and one plain sentence on what sharing means. Legal backed it, because a nudged yes doesn\'t hold up as consent.',
-              'Part of the answer is in the setting\'s own words. On: "we may tell you during the checkout…". Off: "you may still get a PayPal ad on other sites." Neither side oversells.',
+              'Growth marketing wanted the ask inside a "personalise your experience" screen with the box already ticked. It would have kept ad audiences close to where they were, and I understood why they wanted it.',
+              'I proposed the opposite: nothing ticked, Allow and Not now the same size, and one plain sentence on what sharing means. Legal backed it. A yes someone was nudged into doesn\'t hold up as consent anyway.',
+              'The switch tells you what happens either way. On: "we may tell you during the checkout…". Off: "you may still get a PayPal ad on other sites", because you will.',
             ],
           },
           {
@@ -2789,7 +2788,7 @@ export const cases: CaseStudy[] = [
           },
           {
             kind: 'prose',
-            text: ['In the April sessions, 7 of 8 people said they’d trust a PayPal that asked first over one that switched sharing on for them, and the ones who chose Allow could say what they’d agreed to. Nobody could do that with the old opted-in setting.'],
+            text: ['In the April sessions, 7 of 8 people said they’d trust a PayPal that asked first, and the ones who chose Allow could tell us what they’d agreed to. Nobody could do that with the old setting.'],
           },
         ],
       },
@@ -2797,15 +2796,13 @@ export const cases: CaseStudy[] = [
         id: 'team',
         nav: 'How the work got made',
         label: 'How the work got made',
-        heading: 'Past research first, then two days of rapid research on a prototype.',
+        heading: 'Two days, eight people.',
         blocks: [
           {
-            kind: 'points',
-            items: [
-              { title: 'Start from what PayPal already knew', body: 'A synthesis of PayPal\'s earlier privacy research and a competitor analysis set the starting point.' },
-              { title: 'A new structure for ads settings', body: 'Marketing and ads settings got a new information architecture, checked for how it would hold as more options are added.' },
-              { title: 'Test, then revise the consent flow', body: 'A prototype went to rapid research on 19–20 April 2023. The consent flow was revised after it, and a third version followed.' },
-              { title: 'Legal and CXR review', body: 'The consent design went through legal review and PayPal\'s CXR review.' },
+            kind: 'prose',
+            text: [
+              'Before drawing anything we went back through PayPal\'s earlier privacy research and looked at how six other apps ask. Then on 19 and 20 April 2023 the researcher and I put a prototype in front of eight customers. It\'s a small study, and I\'d call it that.',
+              'The consent flow changed after it, and a third version followed. The ads settings got a new structure along the way, checked for how it would hold as more options arrived. Then legal and PayPal\'s CXR team reviewed it.',
             ],
           },
         ],
@@ -2839,12 +2836,12 @@ export const cases: CaseStudy[] = [
         id: 'apa',
         nav: 'Auto Privacy Advisor',
         label: 'A feature: Auto Privacy Advisor',
-        heading: 'A privacy checkup that comes to people, instead of waiting to be found.',
+        heading: 'If 1% find the setting, bring the setting to them.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'Settings only help people who go looking for them, and about 1% did. The Auto Privacy Advisor (APA) is a proposal that turns this around. Every so often it compares a customer\'s settings with recommended practice, then offers a short, guided checkup: one step at a time, a progress bar, and a clear line on what each change does.',
+              'Settings only help people who go looking for them, and about 1% did. So I proposed the Auto Privacy Advisor. Every so often it compares someone\'s settings with what we\'d recommend, then offers a short checkup: one setting a step, a progress bar, and a line on what each change does. It borrows from Google\'s Privacy Checkup, and I\'d rather say so.',
             ],
           },
           /* The checkup drawn as screens (on request, 2026-11-18, from
@@ -2868,13 +2865,9 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'points',
-            label: 'What it has to get right',
-            items: [
-              { title: 'Not too often', body: 'Set how often checkups appear so they don\'t become notification fatigue.' },
-              { title: 'Not intrusive', body: 'A checkup that nags undoes the trust it is meant to build. This needs testing to get right.' },
-              { title: 'Tailored', body: 'Different steps for people who know privacy settings well and people who don\'t.' },
-            ],
+            kind: 'aside',
+            label: 'The risk',
+            text: 'Show it too often and it\'s nagging. How often is the first thing it needs testing for, and people who know their settings well should get fewer steps than people who don\'t.',
           },
         ],
       },
@@ -2882,7 +2875,7 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: 'Consent people meant, at a rate that kept ads working.',
+        heading: 'What happened after launch.',
         blocks: [
           {
             kind: 'metrics',
@@ -2908,8 +2901,8 @@ export const cases: CaseStudy[] = [
           {
             kind: 'points',
             items: [
-              { title: 'I didn’t test Not now', body: 'We tested how people understood Allow, not what Not now felt like, and some read it as "ask me again tomorrow". One line on where to change it later would have answered that on the spot.' },
-              { title: 'The checkup should have started smaller', body: 'I proposed the Auto Privacy Advisor with every setting in it. A first version with just ads and marketing would have shipped sooner and told us how often is too often.' },
+              { title: 'I didn’t test Not now', body: 'We checked people understood Allow. Some read Not now as "ask me again tomorrow". One line on where to change it later would have settled that.' },
+              { title: 'Start the checkup with ads only', body: 'I proposed the Auto Privacy Advisor with every setting in it. Ads alone would have shipped sooner and told us how often is too often.' },
             ],
           },
         ],
@@ -2948,7 +2941,7 @@ export const cases: CaseStudy[] = [
     title: 'Wal-E, a design system for enterprise',
     hero: { src: '/images/wal-e-design-system/01.jpg', alt: 'Wal-E design system components in the console' },
     description:
-      'Wal-E: the Walmart enterprise design system — one source of truth for the components behind data-heavy internal products, built for form-dense screens and shared-floor touch devices.',
+      'Wal-E: the Walmart enterprise design system, one source of truth for the components behind data-heavy internal products, built for form-dense screens and shared-floor touch devices.',
     meta: [
       { label: 'Scope', value: 'Research, component design, usage guidelines, integration' },
       { label: 'Built for', value: 'Enterprise applications used by Walmart associates' },
@@ -2983,7 +2976,7 @@ export const cases: CaseStudy[] = [
             kind: 'figure',
             src: '/images/wal-e-design-system/02.jpg',
             alt: 'The device classes Wal-E components had to work on',
-            caption: 'The devices the components had to survive — the reason this could not be the consumer system.',
+            caption: 'The devices the components had to survive, the reason this could not be the consumer system.',
             ratio: '1400 / 483',
           },
         ],
@@ -3005,7 +2998,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'The contribution loop',
                 detail:
-                  'Create — identify the need for a component, add it to Wal-E, and write its usage guidelines. Style — build it to the design specs in Wal-E so it functions correctly and matches those guidelines. Integrate — get the documented component into the product.',
+                  'Create: identify the need for a component, add it to Wal-E, and write its usage guidelines. Style: build it to the design specs in Wal-E so it functions correctly and matches those guidelines. Integrate: get the documented component into the product.',
               },
               {
                 term: 'Starting point',
@@ -3030,8 +3023,8 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The call was to treat enterprise as its own problem — a system with its own component set, designed for data-heavy, form-dense screens and the touch devices associates use — instead of stretching Walmart’s existing systems to cover it.',
-              'That has a real cost: another library to maintain and another thing for teams to learn. The contribution guidelines were the answer to it — anyone could raise an issue, document a component or submit code, so the system did not depend on one team to keep up.',
+              'The call was to treat enterprise as its own problem, a system with its own component set, designed for data-heavy, form-dense screens and the touch devices associates use, instead of stretching Walmart’s existing systems to cover it.',
+              'That has a real cost: another library to maintain and another thing for teams to learn. The contribution guidelines were the answer to it: anyone could raise an issue, document a component or submit code, so the system did not depend on one team to keep up.',
             ],
           },
         ],
@@ -3054,7 +3047,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'Around the components sat the rest of the system: the design philosophy the team worked to, contribution guidelines, page layouts and the grid, content guidelines for voice and tone, accessibility guidelines, and resources on both sides of the handoff — live code snippets for engineers, a Sketch pattern library for designers.',
+              'Around the components sat the rest of the system: the design philosophy the team worked to, contribution guidelines, page layouts and the grid, content guidelines for voice and tone, accessibility guidelines, and resources on both sides of the handoff, live code snippets for engineers, a Sketch pattern library for designers.',
             ],
           },
         ],
@@ -3093,7 +3086,7 @@ export const cases: CaseStudy[] = [
             kind: 'points',
             label: 'What an input field has to get right',
             items: [
-              { title: 'Visibility', body: 'High visibility of both field and label — an accessibility question before an aesthetic one.' },
+              { title: 'Visibility', body: 'High visibility of both field and label, an accessibility question before an aesthetic one.' },
               { title: 'Structure', body: 'The appearance of the field itself.' },
               { title: 'Behaviour', body: 'How it responds as it is used.' },
               { title: 'The label', body: 'Meaningful text for the field it names.' },
@@ -3103,7 +3096,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The second documented area was system status: indicators, validations, notifications and dialogue boxes. Keeping the state of the system visible is one of the ten usability heuristics, and the framing was flow — people are happiest absorbed in the task at hand, so status has to inform without pulling them out of it. Which pattern to use came down to the priority of the message, the type of information, whether it was global or contextual, and whether a user action or a system event triggered it.',
+              'The second documented area was system status: indicators, validations, notifications and dialogue boxes. Keeping the state of the system visible is one of the ten usability heuristics, and the framing was flow: people are happiest absorbed in the task at hand, so status has to inform without pulling them out of it. Which pattern to use came down to the priority of the message, the type of information, whether it was global or contextual, and whether a user action or a system event triggered it.',
             ],
           },
           {
@@ -3117,7 +3110,7 @@ export const cases: CaseStudy[] = [
             kind: 'figure',
             src: '/images/wal-e-design-system/13.jpg',
             alt: 'Bogle type specimen',
-            caption: 'Bogle, Walmart’s official typeface — the specimen the type scale was cut from.',
+            caption: 'Bogle, Walmart’s official typeface, the specimen the type scale was cut from.',
             ratio: '1119 / 632',
           },
           {
@@ -3130,14 +3123,14 @@ export const cases: CaseStudy[] = [
           {
             kind: 'figure',
             src: '/images/wal-e-design-system/21.jpg',
-            alt: 'Input field specification — anatomy, states and spacing',
+            alt: 'Input field specification: anatomy, states and spacing',
             caption: 'The input field guideline. On screens that are mostly fields, this is the component that decides whether the product is usable.',
             ratio: '1400 / 1408',
           },
           {
             kind: 'figure',
             src: '/images/wal-e-design-system/23.jpg',
-            alt: 'System status components — alerts, validations and notifications',
+            alt: 'System status components: alerts, validations and notifications',
             caption: 'System status: which pattern to use, by priority of the message and whether a user or the system triggered it.',
             ratio: '1400 / 1284',
           },
@@ -3172,7 +3165,7 @@ export const cases: CaseStudy[] = [
     title: 'Agreement Management, end to end',
     hero: { src: '/images/walmart-agreement-management/02.jpg', alt: 'The Agreement Management Application' },
     description:
-      'Walmart Agreement Management: the lifecycle of supplier agreements — onboarding, contracts, renewals — rebuilt from beta after six phases of research, and launched to 5,000 users at NPS 67.',
+      'Walmart Agreement Management: the lifecycle of supplier agreements, onboarding, contracts, renewals, rebuilt from beta after six phases of research, and launched to 5,000 users at NPS 67.',
     meta: [
       { label: 'Scope', value: '15 user types, 8 connected applications' },
       { label: 'Parties', value: 'Buyers, suppliers, finance and legal' },
@@ -3189,7 +3182,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'Walmart’s legal agreement process with its suppliers was conceived and built for a world that predated omnichannel retail. Walmart Enterprise set out to redesign it as modular agreements that address the key pains and support omnichannel retail — and the new contract model needed a new application to power it.',
+              'Walmart’s legal agreement process with its suppliers was conceived and built for a world that predated omnichannel retail. Walmart Enterprise set out to redesign it as modular agreements that address the key pains and support omnichannel retail, and the new contract model needed a new application to power it.',
               'The Agreement Management Application manages that lifecycle: searching and onboarding existing suppliers, inviting new ones, retrieving supplier contracts, creating and renewing agreements, and holding contextual conversations with everyone involved in an agreement, finance and legal included.',
               'This project’s brief: identify the usability issues in the beta release, and decide which features were critical to prioritise for the next iteration.',
             ],
@@ -3200,7 +3193,7 @@ export const cases: CaseStudy[] = [
             items: [
               { title: 'Ambiguity', body: 'Users could not tell what state an agreement was in, or what was expected of them next.' },
               { title: 'Slow processes', body: 'A long, manual process with too many cycles between buyers, suppliers and support.' },
-              { title: 'No traceability', body: 'Tracking was limited where it existed at all — hard to know where the ball was.' },
+              { title: 'No traceability', body: 'Tracking was limited where it existed at all, hard to know where the ball was.' },
               { title: 'Too much information', body: 'Suppliers were overwhelmed by the amount of information and Walmart-specific jargon.' },
             ],
           },
@@ -3210,7 +3203,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'Research, interaction, visual, prototyping and testing — on a system wired to eight others.',
+        heading: 'Research, interaction, visual, prototyping and testing, on a system wired to eight others.',
         blocks: [
           {
             kind: 'rows',
@@ -3218,7 +3211,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What I owned',
                 detail:
-                  'User research, interaction design, visual design, prototyping and testing — user interviews, personas, site maps, competitive research, wireframes, high-fidelity design and prototype, and design specifications.',
+                  'User research, interaction design, visual design, prototyping and testing, user interviews, personas, site maps, competitive research, wireframes, high-fidelity design and prototype, and design specifications.',
               },
               {
                 term: 'The surface area',
@@ -3228,7 +3221,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'Who I worked with',
                 detail:
-                  'Stakeholders, subject-matter experts and the users themselves — buyers, buyer assistants, suppliers and master-data associates — through interviews and observation.',
+                  'Stakeholders, subject-matter experts and the users themselves (buyers, buyer assistants, suppliers and master-data associates) through interviews and observation.',
               },
             ],
           },
@@ -3251,7 +3244,7 @@ export const cases: CaseStudy[] = [
             kind: 'prose',
             text: [
               'The research produced four personas. Carol, a buyer, needed supplier onboarding to be faster, status tracking throughout, and a way to delegate work to a proxy. Michael, her assistant, wanted the manual process automated and one place to see where every supplier stood. John, a supplier, needed a single place to register with Walmart, notifications on approvals and requests, and less jargon. Amy, a master-data associate, needed to stop incomplete or inaccurate supplier information before it was submitted.',
-              'I made Carol the primary persona and John the secondary. The buyer is the one who starts every agreement, so her goals set the structure; the supplier’s needs — clear status, plain language, fewer document cycles — became the requirements every buyer-side flow had to meet.',
+              'I made Carol the primary persona and John the secondary. The buyer is the one who starts every agreement, so her goals set the structure; the supplier’s needs (clear status, plain language, fewer document cycles) became the requirements every buyer-side flow had to meet.',
             ],
           },
           {
@@ -3287,14 +3280,14 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'From there the method was goal-directed design: problem and vision statements, context scenarios built around the personas, design requirements, then the interaction framework — sketches, wireframes, key path scenarios and validation scenarios for the edge cases — before refining to full-resolution screens and testing them with users.',
+              'From there the method was goal-directed design: problem and vision statements, context scenarios built around the personas, design requirements, then the interaction framework, sketches, wireframes, key path scenarios and validation scenarios for the edge cases, before refining to full-resolution screens and testing them with users.',
             ],
           },
           {
             kind: 'figure',
             src: '/images/walmart-agreement-management/05.jpg',
             alt: 'Supplier onboarding experience, current state',
-            caption: 'The current-state map of supplier onboarding — where the ambiguity and the waiting sat before anything was redrawn.',
+            caption: 'The current-state map of supplier onboarding, where the ambiguity and the waiting sat before anything was redrawn.',
             ratio: '1400 / 853',
           },
           {
@@ -3374,9 +3367,9 @@ export const cases: CaseStudy[] = [
     title: 'Bot Spark, a console for training chatbots',
     hero: { src: '/images/bot-spark/01.jpg', alt: 'Bot Spark' },
     description:
-      'Bot Spark: the admin console behind Walmart’s HR chatbot — finding the questions it failed to answer, getting answers from the business, and training them back in.',
+      'Bot Spark: the admin console behind Walmart’s HR chatbot, finding the questions it failed to answer, getting answers from the business, and training them back in.',
     meta: [
-      { label: 'Scope', value: 'Three user types — admin, developer, business' },
+      { label: 'Scope', value: 'Three user types, admin, developer, business' },
       { label: 'Team', value: 'People Systems, Walmart Labs' },
       { label: 'Timeline', value: '2019–2021' },
     ],
@@ -3418,7 +3411,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'What I owned',
                 detail:
-                  'High-fidelity end-to-end flows for all three users — admin, developer and business — from research to deployment, and testing the designs against the brand guideline. The logo and identity too.',
+                  'High-fidelity end-to-end flows for all three users, admin, developer and business, from research to deployment, and testing the designs against the brand guideline. The logo and identity too.',
               },
               {
                 term: 'Why three is the hard part',
@@ -3445,7 +3438,7 @@ export const cases: CaseStudy[] = [
             kind: 'figure',
             src: '/images/bot-spark/04.jpg',
             alt: 'Early logo exploration for Bot Spark',
-            caption: 'Early exploration — the mark worked out in grey before any colour was committed.',
+            caption: 'Early exploration, the mark worked out in grey before any colour was committed.',
             ratio: '1400 / 869',
           },
           {
@@ -3510,7 +3503,7 @@ export const cases: CaseStudy[] = [
             kind: 'prose',
             text: [
               'A lack of financial knowledge, poor habits and life events contribute to poor credit scores for tens of millions of Americans. Many turn to services like Mint to understand what their score is, why it is what it is, and what they should do to improve it.',
-              'The first two of those Mint already answered. The third — what should I do — is the one that turns a dashboard into a product someone comes back to.',
+              'The first two of those Mint already answered. The third, what should I do, is the one that turns a dashboard into a product someone comes back to.',
             ],
           },
         ],
@@ -3532,7 +3525,7 @@ export const cases: CaseStudy[] = [
               {
                 term: 'The constraint',
                 detail:
-                  'Recommendations had to use Mint’s existing tools — bill tracking, budgets, credit card offers, goals — so that improving a score and increasing monthly engagement with Mint were the same motion rather than two competing goals.',
+                  'Recommendations had to use Mint’s existing tools (bill tracking, budgets, credit card offers, goals) so that improving a score and increasing monthly engagement with Mint were the same motion rather than two competing goals.',
               },
               {
                 term: 'What I owned',
@@ -3675,7 +3668,7 @@ export const cases: CaseStudy[] = [
     title: 'Onboarding into an algorithmic portfolio',
     hero: { src: '/images/qplum-qfolio/01.jpg', alt: 'The qfolio investment app' },
     description:
-      'qplum qfolio: onboarding into AI-driven investment portfolios — a chatbot that produces a financial plan, and the regulated account opening behind it.',
+      'qplum qfolio: onboarding into AI-driven investment portfolios, a chatbot that produces a financial plan, and the regulated account opening behind it.',
     meta: [
       { label: 'Scope', value: 'Onboarding, funding, QBot, iOS and Android apps' },
       { label: 'Team', value: 'Sole designer' },
@@ -3692,7 +3685,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'qplum is a US online investment advisory firm offering portfolios driven by AI and machine learning — retirement planning, IRA accounts, 401k rollovers and personal investing accounts. Its positioning was investing as a utility.',
+              'qplum is a US online investment advisory firm offering portfolios driven by AI and machine learning, retirement planning, IRA accounts, 401k rollovers and personal investing accounts. Its positioning was investing as a utility.',
               'That positioning sets the design problem. A utility is something you set up once without thinking hard about it; a regulated brokerage account is the opposite, and the onboarding has to absorb that difference.',
             ],
           },
@@ -3756,7 +3749,7 @@ export const cases: CaseStudy[] = [
             kind: 'figure',
             src: '/images/qplum-qfolio/03.jpg',
             alt: 'The QBot conversation',
-            caption: 'QBot. The conversation that produces a financial plan — and the surface the regulatory perimeter constrains hardest.',
+            caption: 'QBot. The conversation that produces a financial plan, and the surface the regulatory perimeter constrains hardest.',
             ratio: '375 / 667',
           },
           {
@@ -3814,14 +3807,14 @@ export const cases: CaseStudy[] = [
             kind: 'prose',
             text: [
               'Dialog Axiata PLC is one of Sri Lanka’s largest telecommunications providers and the country’s largest mobile network operator, with 12.8 million subscribers and about 50% of the Sri Lankan mobile market.',
-              'The product is the Dialog Reload Loan: pre-paid customers can borrow from Dialog whenever they run out of credit. The design problem is that moment — the customer is mid-call or mid-session, has just lost service, and is in no mood to read.',
+              'The product is the Dialog Reload Loan: pre-paid customers can borrow from Dialog whenever they run out of credit. The design problem is that moment: the customer is mid-call or mid-session, has just lost service, and is in no mood to read.',
             ],
           },
           {
             kind: 'points',
             label: 'How the loan works',
             items: [
-              { title: 'Automatic', body: 'Register free of charge and a loan is granted automatically whenever the balance reaches zero — no manual request.' },
+              { title: 'Automatic', body: 'Register free of charge and a loan is granted automatically whenever the balance reaches zero, no manual request.' },
               { title: 'Mid-session', body: 'The loan applies even during a call or data session, so service does not drop.' },
               { title: 'On request', body: 'Dial 356 or #356#, choose a language, and ask for a loan.' },
               { title: 'The charge', body: 'The standard Rs. 2.00 service charge is not deducted if the loan is repaid with a recharge within 24 hours.' },
@@ -3896,7 +3889,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'DreamGains is a well-regarded firm in India providing financial advisory services — share market tips, day trading tips, forex tips and more.',
+              'DreamGains is a well-regarded firm in India providing financial advisory services, share market tips, day trading tips, forex tips and more.',
             ],
           },
         ],
@@ -3958,7 +3951,7 @@ export const cases: CaseStudy[] = [
     title: 'Every cloud drive behind one login',
     hero: { src: '/images/archive/mera-data.jpg', alt: 'Mera Data' },
     description:
-      'Mera Data: one interface across Google Drive, OneDrive, Box, Dropbox, Flickr and more — built to cut the toggling between them.',
+      'Mera Data: one interface across Google Drive, OneDrive, Box, Dropbox, Flickr and more, built to cut the toggling between them.',
     meta: [
       { label: 'Scope', value: 'Discover, define, design' },
       { label: 'Also built', value: 'Landing pages, blog pages, icons' },
@@ -3991,7 +3984,7 @@ export const cases: CaseStudy[] = [
             kind: 'rows',
             items: [
               { term: 'What I owned', detail: 'Discover, define and design for the product, working with the team.' },
-              { term: 'What I built', detail: 'Interfaces and skins, landing pages, blog pages and icons — designed and developed.' },
+              { term: 'What I built', detail: 'Interfaces and skins, landing pages, blog pages and icons, designed and developed.' },
             ],
           },
         ],
@@ -4021,7 +4014,7 @@ export const cases: CaseStudy[] = [
             label: 'The three stages',
             items: [
               { title: '01 Discover', body: 'Researching user workflows and identifying the product’s unique value proposition.' },
-              { title: '02 Define', body: 'A sitemap, and the design considerations — rows with built-in functions, integrated to reduce screen toggling.' },
+              { title: '02 Define', body: 'A sitemap, and the design considerations, rows with built-in functions, integrated to reduce screen toggling.' },
               { title: '03 Design', body: 'Simplicity first, with clear differentiation between panels.' },
             ],
           },
@@ -4036,14 +4029,14 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The visual approach was restrained on purpose: limited colour, and depth built from minimal elements — thin lines and forms — so panels stayed distinct without the interface getting loud. On a tool that gathers six services, each with its own brand colour, holding colour back is what keeps it readable.',
+              'The visual approach was restrained on purpose: limited colour, and depth built from minimal elements, thin lines and forms, so panels stayed distinct without the interface getting loud. On a tool that gathers six services, each with its own brand colour, holding colour back is what keeps it readable.',
             ],
           },
           {
             kind: 'figure',
             src: '/images/mera-data/01.jpg',
             alt: 'The Mera Data interface, full page',
-            caption: 'The interface end to end — rows carrying their own functions, and the restraint that keeps six services’ branding from fighting.',
+            caption: 'The interface end to end, rows carrying their own functions, and the restraint that keeps six services’ branding from fighting.',
             ratio: '1400 / 5004',
           },
         ],

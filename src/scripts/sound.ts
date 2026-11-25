@@ -8,7 +8,8 @@
 //     unlock rules make a remembered "on" unreliable there).
 //   - Nothing plays until the visitor turns it on.
 // The sounds are synthesised with Web Audio rather than loaded as files:
-// no assets to license or download, and each is well under a second.
+// no assets to license or download, and each is well under a second. The
+// one exception is the playground wall's piano chord (below), recorded.
 //   tick   — unused (hover sound removed on request, 2026-11-13)
 //   tap    — once as sound turns on, so the press is heard (turning
 //            off is silent). Links no longer tap on click (2026-11-13).
@@ -37,12 +38,19 @@
 //   count   — case-study numbers counting up (CaseNumbers): ticks that slow
 //             with the count, then a soft landed note ("A · Counter")
 //
-// One more, chosen on request (2026-11-17, "A · Detent" of
-// experiments/sound-scroll/, after rounds of wall sounds she turned down):
-//   wall    — the playground wall (PlayDepth): a soft wooden click as each
-//             piece's centre crosses the middle of the screen while the page
-//             scrolls, like a date-picker wheel; quicker and brighter on a
-//             flick. Silent when the page is still, and on sideways panning.
+// One more, chosen on request (2026-11-25, "C · Piano settle" of
+// experiments/sound-scroll-5/, after twelve rounds of wall sounds; it
+// replaced "A · Detent", whose falling-pitch click sounded like a frog
+// on the live site):
+//   wall    — the playground wall (PlayDepth): silent while the page
+//             scrolls; when the scroll comes to rest, one soft chord on a
+//             real piano (D, A, D, F#, strummed 55ms apart), as if the wall
+//             has found its place. The one sound here that isn't
+//             synthesised: four short recordings in public/sounds/wall/,
+//             cut from the University of Iowa Electronic Music Studios'
+//             piano played pp (free "for any projects, without
+//             restrictions"), trimmed, softened above 5kHz and levelled.
+//             Fetched only the first time sound is on on the playground.
 
 const KEY = 'page-sound:enabled';
 const CHANGE = 'page-sound:change';
@@ -265,23 +273,48 @@ export function playDetent(strength: number) {
   blip(a, 2400, 0.008 * k, 0.001, 0.02, 0, 'square');
 }
 
-let lastWallTick = 0;
-/** The playground wall: a piece's centre crossing the middle of the screen
- *  as the page scrolls, like the notched wheel of a phone's date picker.
- *  A short wooden click with a crisp top; `strength` 0–1 from the scroll's
- *  speed, so a flick runs the clicks into a soft purr. */
-export function playWallTick(strength: number) {
-  const a = ready(); if (!a) return;
-  const now = performance.now();
-  if (now - lastWallTick < 30) return;   // a fast flick purrs, never buzzes
-  lastWallTick = now;
-  const k = Math.min(1, strength), lvl = 0.5 + 0.5 * k, t = a.currentTime;
-  const o = a.createOscillator();
-  o.frequency.setValueAtTime(1300 + k * 500, t);
-  o.frequency.exponentialRampToValueAtTime(700, t + 0.025);
-  o.connect(envelope(a, 0.18 * lvl, 0.001, 0.03, t));
-  o.start(t); o.stop(t + 0.05);
-  hit(a, 4200, 3, 0.08 * lvl, 0.001, 0.012);
+// --- The playground wall's settle --------------------------------------
+const WALL_NOTES = ['D3', 'A3', 'D4', 'Gb4'];
+let wallBufs: AudioBuffer[] | null = null;
+let wallLoading = false;
+function loadWall(a: AudioContext) {
+  if (wallBufs || wallLoading) return;
+  wallLoading = true;
+  Promise.all(WALL_NOTES.map((n) =>
+    fetch(`/sounds/wall/piano-${n}.mp3`)
+      .then((r) => r.arrayBuffer())
+      .then((b) => new Promise<AudioBuffer>((ok, no) => a.decodeAudioData(b, ok, no)))))
+    .then((bufs) => { wallBufs = bufs; })
+    .catch(() => {})
+    .finally(() => { wallLoading = false; });
+}
+function playWallChord(a: AudioContext) {
+  if (!wallBufs) return;
+  const t = a.currentTime;
+  wallBufs.forEach((buf, i) => {
+    const s = a.createBufferSource(), g = a.createGain();
+    s.buffer = buf; g.gain.value = 0.28 - i * 0.03;
+    s.connect(g); g.connect(a.destination);
+    s.start(t + i * 0.055);
+  });
+}
+let wallMoving = false, wallMovedFor = 0, wallStillFor = 0;
+/** The playground wall, called every frame with how fast the page's scroll
+ *  is carrying it (0–1) and the frame's time in ms. Silent while it moves;
+ *  once a scroll of at least a quarter second comes to rest for 160ms,
+ *  one soft piano chord. */
+export function wallScroll(k: number, dt: number) {
+  const a = ready();
+  if (!a) { wallMoving = false; wallMovedFor = 0; return; }
+  loadWall(a);
+  if (k > 0.06) { wallStillFor = 0; wallMovedFor += dt; wallMoving = true; return; }
+  if (k < 0.02 && wallMoving) {
+    wallStillFor += dt;
+    if (wallStillFor > 160) {
+      if (wallMovedFor > 250) playWallChord(a);
+      wallMoving = false; wallMovedFor = 0;
+    }
+  }
 }
 
 /** One tick of a number counting up. */
