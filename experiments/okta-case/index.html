@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Okta IAM — rebuilt after marygans.com/case-studies/ai-dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-26. The Okta IAM case rebuilt on the structure of
+  marygans.com/case-studies/ai-dashboard (Microsoft Entra's admin
+  dashboard: the closest thing to Okta's console on anyone's portfolio).
+  Her order, mapped to ours:
+    Header + meta + hero        → split head, facts, My Apps on Okta sky
+    The Problem                 → 01 The problem (one line + a diagram)
+    Design Goals                → 02 Goals (four)
+    My Role                     → 03 My role (chips + owned / influenced)
+    Research / Journey          → 04 The plan (migration day vs in place)
+    Decision framework          → 05 One way to change access (anatomy)
+    Three recommendation cards  → 06 The craft (three areas, one each)
+    Designing for Trust         → 07 Built for the worst day
+    Outcome + Beyond numbers    → 08 Outcome (32%, 0, then four lines)
+    End-to-end demo             → 10 Walkthrough (ask her; it's under NDA)
+  Facts come only from src/data/cases.ts (okta-iam). The two numbers
+  (32%, 0) are confirmed. She has no entitlements or role management
+  screens (2026-11-26), so 05 is a diagram of the model, plainly
+  labelled, and 06 shows only her onboarding boards. [X] = hers to
+  confirm.
+  Serve from the repo root (case-v2-mockup in launch.json):
+  /experiments/okta-case/index.html
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070;
+    --card: color-mix(in srgb, #262626 3%, #fcfcfc);
+    --card-2: color-mix(in srgb, #262626 6%, #fcfcfc);
+    --hue: #c9dcf2;                    /* Okta sky (PROJECT HUES) */
+    --hue-deep: color-mix(in srgb, #c9dcf2 55%, #262626);
+    --wash: color-mix(in srgb, #f8b800 42%, transparent);
+    --pin: #2f6fd6;                    /* case pages: plain blue, never the accent */
+    --ease: cubic-bezier(.16,1,.3,1);
+    --dur: 550ms;
+    --r-card: 28px;
+    --gutter: clamp(20px, 4vw, 56px);
+    --measure: 62ch;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 600 14px/1.7 var(--font-sans); }
+  img { display: block; max-width: 100%; }
+  em { font-style: italic; }
+  a { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--fg) 45%, transparent); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--fg); text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+
+  .x { font: 400 10px/1 var(--font-mono); background: var(--card-2); padding: 3px 6px; border-radius: 3px; color: var(--dim); white-space: nowrap; }
+
+  /* ---- mock banner ---- */
+  .banner { background: #262626; color: #ecebe8; padding: 14px var(--gutter); font: 400 11px/1.6 var(--font-mono); }
+  .banner b { font-weight: 400; color: #fff; }
+  .banner a { color: #fff; }
+
+  /* ---- shell: rail + page ---- */
+  .shell { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 0 56px; padding: 0 var(--gutter); max-width: 1440px; margin: 0 auto; }
+  @media (max-width: 1080px) { .shell { grid-template-columns: 1fr; } .rail { display: none; } }
+  .rail { position: sticky; top: 32px; align-self: start; padding-top: 72px; }
+  .rail p { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin: 0 0 16px; }
+  .rail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .rail a { font: 400 11px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--dim); text-decoration: none; display: grid; grid-template-columns: 3px 1fr; gap: 10px; }
+  .rail a::before { content: ''; background: var(--card-2); border-radius: 2px; }
+  .rail a.is-on { color: var(--fg); }
+  .rail a.is-on::before { background: var(--fg); }
+
+  main { padding: 72px 0 160px; min-width: 0; }
+
+  /* ---- head ---- */
+  .head { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 48px; align-items: end; margin-bottom: 40px; }
+  @media (max-width: 860px) { .head { grid-template-columns: 1fr; gap: 28px; } }
+  .tags { display: flex; gap: 10px; align-items: baseline; margin-bottom: 18px; flex-wrap: wrap; }
+  .tags .co { font: 400 12px/1 var(--font-mono); background: linear-gradient(transparent 45%, var(--wash) 45%, var(--wash) 92%, transparent 92%); padding: 0 2px; }
+  .tags .t { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  h1 { font: 300 clamp(30px, 3.4vw, 40px)/1.12 var(--font-serif); margin: 0 0 16px; letter-spacing: -0.01em; max-width: 22ch; }
+  .snippet { color: var(--dim); max-width: var(--measure); margin: 0; font-size: 14px; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; margin: 0; }
+  .facts dt { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin-bottom: 6px; }
+  .facts dd { margin: 0; font-size: 13px; line-height: 1.5; }
+
+  .cover { background: var(--hue); border-radius: 20px; padding: clamp(24px, 5vw, 64px); display: grid; place-items: center; overflow: hidden; }
+  .cover img { width: min(100%, 980px); mix-blend-mode: multiply; }
+
+  /* ---- sections ---- */
+  section.s { margin-top: 128px; scroll-margin-top: 32px; }
+  .opener { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin: 0 0 18px; display: flex; gap: 14px; }
+  .opener b { font-weight: 400; color: var(--fg); }
+  h2 { font: 300 clamp(26px, 2.6vw, 32px)/1.18 var(--font-serif); margin: 0 0 16px; max-width: 30ch; letter-spacing: -0.005em; }
+  h3 { font: 600 18px/1.35 var(--font-sans); margin: 0 0 8px; }
+  .lead { max-width: var(--measure); margin: 0 0 40px; }
+  .lead + .lead { margin-top: -24px; }
+  .cap { font: 400 11px/1.6 var(--font-mono); color: var(--dim); margin: 14px 0 0; max-width: 80ch; }
+
+  /* ---- 01 problem: one at a time vs a group ---- */
+  .scale { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 860px) { .scale { grid-template-columns: 1fr; } }
+  .scale__panel { background: var(--card); border-radius: var(--r-card); padding: 32px; }
+  .scale__panel .lbl { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin-bottom: 20px; display: block; }
+  .people { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin-bottom: 20px; }
+  .people i { aspect-ratio: 1; border-radius: 50%; background: color-mix(in srgb, var(--fg) 14%, transparent); }
+  .people i.on { background: var(--fg); }
+  .people--group i.on { background: var(--pin); }
+  .scale__panel p { margin: 0; font-size: 13px; }
+  .scale__panel .big { font: 300 32px/1 var(--font-serif); display: block; margin-bottom: 8px; }
+  .query { font: 400 11px/1.6 var(--font-mono); background: var(--bg); border-radius: 10px; padding: 10px 14px; margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .query span { background: var(--card-2); padding: 2px 8px; border-radius: 999px; }
+
+  /* ---- 02 goals ---- */
+  .goals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; list-style: none; margin: 0; padding: 0; counter-reset: g; }
+  @media (max-width: 1100px) { .goals { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .goals { grid-template-columns: 1fr; } }
+  .goals li { background: var(--card); border-radius: var(--r-card); padding: 28px 24px 32px; counter-increment: g; }
+  .goals li::before { content: counter(g, decimal-leading-zero); font: 400 11px/1 var(--font-mono); color: var(--dim); display: block; margin-bottom: 36px; }
+  .goals p { margin: 0; font-size: 12px; color: var(--dim); }
+
+  /* ---- 03 role ---- */
+  .role { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 48px; }
+  @media (max-width: 860px) { .role { grid-template-columns: 1fr; } }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; align-content: start; }
+  .chips li { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; padding: 9px 12px; border-radius: 999px; background: var(--card-2); }
+  .chips li.me { background: var(--fg); color: var(--bg); }
+  .rows { display: grid; gap: 24px; margin: 0; }
+  .rows div { display: grid; grid-template-columns: 140px 1fr; gap: 16px; }
+  @media (max-width: 560px) { .rows div { grid-template-columns: 1fr; gap: 4px; } }
+  .rows dt { font: 400 11px/1.7 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--dim); }
+  .rows dd { margin: 0; font-size: 13px; }
+
+  /* ---- 04 the plan: two timelines ---- */
+  .seg { display: inline-flex; background: var(--card-2); border-radius: 999px; padding: 4px; margin-bottom: 24px; }
+  .seg button { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; border: 0; background: none; color: var(--dim); padding: 10px 16px; border-radius: 999px; cursor: pointer; transition: background 200ms var(--ease), color 200ms var(--ease); }
+  .seg button[aria-pressed="true"] { background: var(--bg); color: var(--fg); box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+  .plan { background: var(--card); border-radius: var(--r-card); padding: 32px; overflow-x: auto; }
+  .plan__grid { display: grid; grid-template-columns: 150px repeat(6, minmax(64px, 1fr)); gap: 6px; min-width: 640px; }
+  .plan__grid .q { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); padding-bottom: 8px; }
+  .plan__grid .area { font: 400 11px/1.3 var(--font-mono); padding: 10px 0; align-self: center; }
+  .cell { height: 36px; border-radius: 8px; background: color-mix(in srgb, var(--fg) 10%, transparent); transition: background var(--dur) var(--ease), transform var(--dur) var(--ease); transition-delay: calc(var(--i, 0) * 30ms); position: relative; }
+  .cell.new { background: var(--pin); }
+  .cell.dual { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--fg) 10%, transparent) 0 6px, color-mix(in srgb, var(--pin) 55%, transparent) 6px 12px); }
+  .cell.cut::after { content: 'Switch-over'; position: absolute; inset: 0; display: grid; place-items: center; font: 400 10px/1 var(--font-mono); text-transform: uppercase; color: #fff; letter-spacing: .04em; }
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .legend span { display: inline-flex; gap: 8px; align-items: center; }
+  .legend i { width: 14px; height: 14px; border-radius: 4px; background: color-mix(in srgb, var(--fg) 10%, transparent); }
+  .legend i.new { background: var(--pin); }
+  .legend i.dual { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--fg) 10%, transparent) 0 3px, color-mix(in srgb, var(--pin) 55%, transparent) 3px 6px); }
+  .verdict { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  @media (max-width: 860px) { .verdict { grid-template-columns: 1fr; } }
+  .verdict div { padding: 24px 28px; border-radius: var(--r-card); background: var(--card); font-size: 12px; color: var(--dim); }
+  .verdict div.is-on { background: var(--fg); color: var(--bg); }
+  .verdict strong { display: block; font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+
+  /* ---- 05 anatomy ---- */
+  .anat { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+  @media (max-width: 960px) { .anat { grid-template-columns: 1fr; } }
+  .stage { background: var(--hue); border-radius: var(--r-card); padding: clamp(20px, 4vw, 48px); }
+  .dia { background: var(--bg); border-radius: 16px; padding: 12px; display: grid; gap: 8px; font: 400 11px/1.4 var(--font-mono); }
+  .dia__step { display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: center; padding: 14px 16px; border-radius: 10px; background: var(--card); }
+  .dia__k { text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+  .dia__v { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .dia__tok { background: var(--bg); border-radius: 999px; padding: 4px 10px; }
+  .dia__n { font: 300 22px/1 var(--font-serif); }
+  .dia__bars { display: grid; gap: 6px; width: 100%; }
+  .dia__bars i { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--fg) 14%, transparent); }
+  .dia__bars i:nth-child(2) { width: 80%; } .dia__bars i:nth-child(3) { width: 45%; }
+  .dia__btn { background: var(--fg); color: var(--bg); border-radius: 999px; padding: 6px 12px; }
+  @media (max-width: 560px) { .dia__step { grid-template-columns: 1fr; gap: 8px; } }
+  [data-part] { position: relative; transition: box-shadow var(--dur) var(--ease); border-radius: 6px; }
+  [data-part].lit { box-shadow: 0 0 0 2px var(--pin); }
+  .pinmark { position: absolute; top: -9px; right: -9px; width: 20px; height: 20px; border-radius: 50%; background: var(--pin); color: #fff; font: 400 10px/20px var(--font-mono); text-align: center; z-index: 2; }
+  .parts { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .parts button { width: 100%; text-align: left; border: 0; background: none; font: inherit; color: inherit; padding: 14px 16px; border-radius: 14px; display: grid; grid-template-columns: 28px 1fr; gap: 4px 12px; cursor: pointer; transition: background 200ms var(--ease); }
+  .parts button:hover, .parts button.lit { background: var(--card); }
+  .parts .n { width: 20px; height: 20px; border-radius: 50%; background: var(--pin); color: #fff; font: 400 10px/20px var(--font-mono); text-align: center; grid-row: span 2; margin-top: 2px; }
+  .parts .t { font-size: 14px; }
+  .parts .d { font-size: 12px; color: var(--dim); grid-column: 2; }
+
+  /* ---- 06 craft ---- */
+  .area-block { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 40px; margin-bottom: 72px; align-items: start; }
+  .area-block:last-child { margin-bottom: 0; }
+  @media (max-width: 960px) { .area-block { grid-template-columns: 1fr; gap: 20px; } }
+  .area-block .k { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); display: block; margin-bottom: 12px; }
+  .area-block p { margin: 0 0 12px; font-size: 13px; }
+
+  /* ===== Okta redraws: the work's own colours, not page chrome ===== */
+  :root { --ok-blue: #1662dd; --ok-blue-d: #0f4fb8; --ok-ink: #1d1d21; --ok-grey: #6e6e78; --ok-line: #e4e4ea; --ok-soft: #f4f4f7; --ok-amber: #b35c00; --ok-amber-bg: #fff3e3; --ok-green: #137d4f; }
+  .okfig { margin: 0; }
+  .okpair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; align-items: start; }
+  @media (max-width: 960px) { .okpair { grid-template-columns: 1fr; } }
+  .okstage { background: var(--hue); border-radius: 20px; padding: clamp(14px, 2.6vw, 32px); }
+  .okstage--flat { display: grid; place-items: center; min-height: 100%; }
+  section.s > .okfig { margin-top: 24px; }
+
+  .okw { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 14px 36px rgb(20 40 80 / .14); font: 500 11px/1.45 system-ui, -apple-system, 'Segoe UI', sans-serif; color: var(--ok-ink); }
+  .okw__top { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--ok-soft); border-bottom: 1px solid var(--ok-line); }
+  .okw__top i { width: 8px; height: 8px; border-radius: 50%; background: #d6d6dc; }
+  .okw__url { margin-left: 10px; flex: 1; background: #fff; border-radius: 5px; padding: 3px 10px; color: var(--ok-grey); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .okw__app { display: grid; grid-template-columns: 132px 1fr; min-height: 300px; }
+  .okw__nav { border-right: 1px solid var(--ok-line); padding: 14px 10px; display: grid; align-content: start; gap: 2px; color: var(--ok-grey); }
+  .okw__nav span { padding: 6px 8px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .okw__nav span.on, [data-page="dash"] [data-n="dash"], [data-page="dir"] [data-n="dir"], [data-page="apps"] [data-n="apps"] { background: #eef3fb; color: var(--ok-blue); }
+  .okw__logo { font: 700 17px/1 system-ui, sans-serif; color: var(--ok-blue); letter-spacing: -.02em; padding: 0 8px 12px; }
+  .okw__main { padding: 16px 18px; position: relative; min-width: 0; }
+  .okw__h { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  @media (max-width: 560px) { .okw__app { grid-template-columns: 1fr; } .okw__nav { display: none; } }
+
+  /* landing */
+  .land__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+  .land__row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 10px; }
+  .blk { position: relative; border: 1px solid var(--ok-line); border-radius: 8px; padding: 12px; min-height: 58px; }
+  .blk__sk { position: absolute; inset: 0; border-radius: inherit; opacity: 0; pointer-events: none; z-index: 1;
+    background: linear-gradient(100deg, var(--ok-soft) 30%, #fff 50%, var(--ok-soft) 70%) 0 0 / 300% 100%; }
+  .st__k { display: block; color: var(--ok-grey); font-size: 10px; }
+  .st__v { font-size: 20px; font-weight: 600; letter-spacing: -.01em; }
+  .pn__h { font-weight: 600; margin-bottom: 8px; }
+  .att { display: grid; grid-template-columns: 8px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--ok-soft); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot--amber { background: var(--ok-amber); } .dot--blue { background: var(--ok-blue); } .dot--grey { background: #b9b9c2; }
+  .lnk { color: var(--ok-blue); }
+  .bars { display: flex; align-items: flex-end; gap: 6px; height: 74px; }
+  .bar { flex: 1; height: var(--h); background: var(--ok-blue); border-radius: 3px 3px 0 0; transform-origin: bottom; opacity: .85; }
+  .bars__x { display: flex; justify-content: space-between; color: var(--ok-grey); font-size: 9px; margin-top: 4px; }
+  .go .blk__sk { opacity: 1; }
+  .go .blk > .c { opacity: 0; }
+  .go .bar { transform: scaleY(0); }
+  .go.play .blk__sk { animation: ok-sk 1.2s linear infinite, ok-fade .3s var(--d) forwards; }
+  .go.play .blk > .c { animation: ok-in .6s var(--ease) calc(var(--d) + .15s) forwards; }
+  .go.play .bar { animation: ok-grow .8s var(--ease) calc(1.2s + var(--i) * 70ms) forwards; }
+  @keyframes ok-sk { to { background-position: -150% 0; } }
+  @keyframes ok-fade { to { opacity: 0; } }
+  @keyframes ok-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes ok-grow { to { transform: none; } }
+
+  /* flow diagram */
+  .flow { width: 100%; max-width: 460px; height: auto; font: 400 10px/1 var(--font-mono); }
+  .flow text { text-anchor: middle; fill: var(--fg); }
+  .flow__lines path { fill: none; stroke: color-mix(in srgb, var(--ok-blue) 45%, transparent); stroke-width: 1.5; }
+  .flow__src rect, .flow__out rect { fill: #fff; stroke: var(--ok-line); }
+  .flow__core rect { fill: var(--ok-blue); }
+  .flow__core text { fill: #fff; opacity: .85; }
+  .flow__core .t1 { font: 600 12px/1 system-ui, sans-serif; opacity: 1; }
+  .flow__dots circle { fill: var(--ok-blue); }
+
+  /* scrolling prototype */
+  .okw--tall .okw__app { height: 330px; min-height: 0; }
+  .okw--tall .okw__main { padding: 0; overflow: hidden; }
+  .scr { height: 100%; overflow: hidden; }
+  .scr__track { padding: 16px 18px; }
+  .go.play .scr__track { animation: ok-scroll 14s cubic-bezier(.65,0,.35,1) 1s infinite alternate; }
+  @keyframes ok-scroll { 0%, 12% { transform: translateY(0); } 88%, 100% { transform: translateY(calc(-100% + 300px)); } }
+  .scr__filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .scr__filters span { border: 1px solid var(--ok-line); border-radius: 999px; padding: 3px 9px; }
+  .scr__filters span.on { background: #eef3fb; border-color: #c9d9f4; color: var(--ok-blue); }
+  .grp { display: flex; justify-content: space-between; align-items: center; background: var(--ok-soft); border-radius: 6px; padding: 7px 10px; margin: 10px 0 4px; font-weight: 600; }
+  .grp .lnk { font-weight: 500; }
+  .prow { display: grid; grid-template-columns: 22px 1fr 1fr auto; gap: 8px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--ok-soft); }
+  .av { width: 20px; height: 20px; border-radius: 50%; background: #dfe7f5; color: var(--ok-blue); display: grid; place-items: center; font-size: 8px; font-weight: 700; }
+  .mut { color: var(--ok-grey); }
+  .last--old { color: var(--ok-amber); }
+
+  /* cards */
+  .okcard { background: #fff; border-radius: 12px; padding: 16px; font: 500 11px/1.45 system-ui, -apple-system, 'Segoe UI', sans-serif; color: var(--ok-ink); box-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 10px 28px rgb(20 40 80 / .12); }
+  .okfig--card { background: var(--hue); border-radius: 20px; padding: clamp(14px, 2.4vw, 28px); }
+  .okcard__h { display: grid; grid-template-columns: 32px 1fr auto; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .okcard__h b { display: block; font-size: 12px; font-weight: 600; }
+  .appic { width: 32px; height: 32px; border-radius: 8px; background: #e6f0fd; color: var(--ok-blue); display: grid; place-items: center; font-weight: 700; font-size: 11px; }
+  .appic--grey { background: var(--ok-soft); color: var(--ok-grey); font-size: 15px; }
+  .appic--ink { background: var(--ok-ink); color: #fff; }
+  .pill { border-radius: 999px; padding: 3px 9px; background: var(--ok-soft); color: var(--ok-grey); font-size: 10px; white-space: nowrap; }
+  .pill--amber { background: var(--ok-amber-bg); color: var(--ok-amber); }
+  .usage__bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--ok-soft); }
+  .usage__bar i { width: var(--w); }
+  .usage__used { background: var(--ok-blue); } .usage__un { background: var(--ok-amber); }
+  .usage__k { display: grid; gap: 4px; margin-top: 10px; color: var(--ok-grey); }
+  .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+  .sw--used { background: var(--ok-blue); } .sw--un { background: var(--ok-amber); }
+  .okcard__f { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ok-soft); }
+  .btn1 { background: var(--ok-blue); color: #fff; border-radius: 6px; padding: 6px 12px; white-space: nowrap; }
+  .btn2 { border: 1px solid var(--ok-line); border-radius: 6px; padding: 5px 11px; white-space: nowrap; }
+  .go .usage__bar i { transform: scaleX(0); transform-origin: left; }
+  .go.play .usage__bar i { animation: ok-grow .9s var(--ease) .3s forwards; }
+  .go.play .usage__un { animation-delay: .9s !important; }
+  .trend { width: 100%; height: auto; display: block; }
+  .trend__grid { stroke: var(--ok-soft); fill: none; }
+  .trend__line { fill: none; stroke: var(--ok-blue); stroke-width: 2; stroke-linejoin: round; }
+  .trend__pt { fill: var(--ok-amber); }
+  .trend__lbl { font: 500 9px/1 system-ui, sans-serif; fill: var(--ok-amber); }
+  .go .trend__line { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .go .trend__pt, .go .trend__lbl { opacity: 0; }
+  .go.play .trend__line { animation: ok-draw 1.6s var(--ease) .2s forwards; }
+  .go.play .trend__pt, .go.play .trend__lbl { animation: ok-in .5s var(--ease) 1.5s forwards; }
+  @keyframes ok-draw { to { stroke-dashoffset: 0; } }
+  .perms { display: grid; gap: 2px; }
+  .perm { display: flex; justify-content: space-between; align-items: center; padding: 8px 2px; border-bottom: 1px solid var(--ok-soft); }
+  .tg { width: 26px; height: 15px; border-radius: 999px; background: #cfcfd6; position: relative; transition: background .25s; }
+  .tg::after { content: ''; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: #fff; transition: transform .25s var(--ease); }
+  .tg.on { background: var(--ok-blue); } .tg.on::after { transform: translateX(11px); }
+  .perm--flip .tg { background: var(--ok-blue); } .perm--flip .tg::after { transform: translateX(11px); }
+  .go .perm--flip .tg { background: #cfcfd6; } .go .perm--flip .tg::after { transform: none; }
+  .go .okcard__f--review { opacity: 0; }
+  .go.play .perm--flip .tg { animation: ok-tg-bg 6s steps(1) 1s infinite; }
+  .go.play .perm--flip .tg::after { animation: ok-tg-knob 6s var(--ease) 1s infinite; }
+  .go.play .okcard__f--review { animation: ok-review 6s var(--ease) 1s infinite; }
+  @keyframes ok-tg-bg { 0% { background: #cfcfd6; } 8%, 85% { background: var(--ok-blue); } 92% { background: #cfcfd6; } }
+  @keyframes ok-tg-knob { 0%, 4% { transform: none; } 10%, 85% { transform: translateX(11px); } 92%, 100% { transform: none; } }
+  @keyframes ok-review { 0%, 12% { opacity: 0; transform: translateY(6px); } 20%, 82% { opacity: 1; transform: none; } 90%, 100% { opacity: 0; } }
+
+  /* review step */
+  .okw--review .okw__app { min-height: 330px; }
+  .rv__bg { display: grid; gap: 8px; }
+  .rv__bg i { height: 24px; border-radius: 5px; background: var(--ok-soft); }
+  .rv__scrim { position: absolute; inset: 0; background: rgb(29 29 33 / .32); }
+  .rv__modal { position: absolute; left: 50%; top: 50%; width: min(300px, 88%); transform: translate(-50%, -50%); background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 18px 40px rgb(0 0 0 / .22); }
+  .rv__t { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .rv__s { margin: 0 0 10px; color: var(--ok-grey); }
+  .tok { background: #eef3fb; color: var(--ok-blue); border-radius: 4px; padding: 0 5px; }
+  .rv__ck { display: flex; gap: 8px; align-items: center; padding: 3px 0; }
+  .ck { width: 15px; height: 15px; border-radius: 50%; background: var(--ok-green); color: #fff; display: grid; place-items: center; font-size: 9px; }
+  .rv__ok { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--ok-soft); }
+  .box { width: 14px; height: 14px; border-radius: 3px; background: var(--ok-blue); color: #fff; display: grid; place-items: center; font-size: 9px; }
+  .rv__f { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+  .rv__toast { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); background: var(--ok-ink); color: #fff; border-radius: 8px; padding: 9px 12px; display: flex; gap: 10px; align-items: center; white-space: nowrap; opacity: 0; }
+  .rv__toast span { color: #7ddca8; } .rv__toast b { color: #9cc0ff; font-weight: 600; }
+  .go .ck, .go .box { transform: scale(0); }
+  .go.play .rv__modal, .go.play .rv__scrim { animation: rv-modal 9s var(--ease) infinite; }
+  .go.play .ck1 { animation: rv-pop 9s var(--ease) infinite; animation-delay: 0s; }
+  .go.play .ck2 { animation: rv-pop2 9s var(--ease) infinite; }
+  .go.play .ck3 { animation: rv-pop3 9s var(--ease) infinite; }
+  .go.play .box { animation: rv-box 9s var(--ease) infinite; }
+  .go.play .rv__go { animation: rv-press 9s var(--ease) infinite; }
+  .go.play .rv__toast { animation: rv-toast 9s var(--ease) infinite; }
+  @keyframes rv-modal { 0%, 66% { opacity: 1; } 70%, 95% { opacity: 0; } 100% { opacity: 1; } }
+  @keyframes rv-pop  { 0%, 10% { transform: scale(0); } 14%, 66% { transform: scale(1); } 70%, 100% { transform: scale(0); } }
+  @keyframes rv-pop2 { 0%, 17% { transform: scale(0); } 21%, 66% { transform: scale(1); } 70%, 100% { transform: scale(0); } }
+  @keyframes rv-pop3 { 0%, 24% { transform: scale(0); } 28%, 66% { transform: scale(1); } 70%, 100% { transform: scale(0); } }
+  @keyframes rv-box  { 0%, 38% { transform: scale(0); } 42%, 66% { transform: scale(1); } 70%, 100% { transform: scale(0); } }
+  @keyframes rv-press { 0%, 54% { transform: none; background: var(--ok-blue); } 57% { transform: scale(.94); background: var(--ok-blue-d); } 60%, 100% { transform: none; background: var(--ok-blue); } }
+  @keyframes rv-toast { 0%, 70% { opacity: 0; transform: translate(-50%, 8px); } 74%, 90% { opacity: 1; transform: translate(-50%, 0); } 94%, 100% { opacity: 0; transform: translate(-50%, 0); } }
+  .okw--review:not(.x) .rv__toast { }
+  .cover--ok { margin: 0; display: flex; align-items: flex-end; justify-content: center; gap: 0; padding: clamp(24px, 5vw, 64px) clamp(20px, 4vw, 56px); }
+  .cover__desk { flex: 1 1 auto; max-width: 860px; min-width: 0; }
+  .cover--ok .ph { margin-left: -28px; margin-bottom: -16px; position: relative; z-index: 1; }
+  @media (max-width: 760px) { .cover__desk { display: none; } .cover--ok .ph { margin: 0; } }
+  .ph { flex: none; width: 214px; padding: 7px; border-radius: 38px; background: #1b1b1d; box-shadow: inset 0 0 0 1px #3a3a3e, 0 20px 44px rgb(20 40 80 / .28); }
+  .ph__scr { height: 440px; border-radius: 31px; overflow: hidden; background: #fff; position: relative; font: 500 10px/1.4 system-ui, -apple-system, sans-serif; color: var(--ok-ink); display: flex; flex-direction: column; }
+  .ph__status { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px 4px; font-weight: 600; font-size: 10px; }
+  .ph__island { width: 62px; height: 18px; border-radius: 999px; background: #1b1b1d; }
+  .ph__sig { display: flex; gap: 2px; align-items: flex-end; }
+  .ph__sig i { width: 3px; background: var(--ok-ink); border-radius: 1px; } .ph__sig i:nth-child(1) { height: 4px; } .ph__sig i:nth-child(2) { height: 6px; } .ph__sig i:nth-child(3) { height: 8px; }
+  .ph__bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--ok-line); }
+  .ph__bar .okw__logo { padding: 0; font-size: 15px; }
+  .ph__menu { display: grid; gap: 3px; } .ph__menu i { width: 14px; height: 1.5px; background: var(--ok-ink); }
+  .ph__body { padding: 12px; display: grid; gap: 8px; align-content: start; flex: 1; }
+  .ph__body .okw__h { font-size: 13px; margin-bottom: 2px; }
+  .ph__body .blk { padding: 9px 10px; min-height: 0; }
+  .ph__body .st__v { font-size: 16px; }
+  .ph__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ph__body .att { grid-template-columns: 7px 1fr 8px; gap: 6px; padding: 5px 0; font-size: 9.5px; line-height: 1.3; }
+  .ph__body .pn__h { margin-bottom: 4px; }
+  .bars--sm { height: 40px; gap: 4px; }
+  .ph__home { width: 72px; height: 4px; border-radius: 2px; background: var(--ok-ink); margin: 6px auto 7px; opacity: .8; }
+  .shot { background: var(--hue); border-radius: 20px; padding: clamp(16px, 3vw, 32px); }
+  .shot img { border-radius: 8px; width: 100%; }
+  .shot--swap { display: grid; gap: 12px; }
+  .thumbs { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .thumbs button { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; border: 0; border-radius: 999px; padding: 8px 12px; background: var(--card-2); color: var(--dim); cursor: pointer; }
+  .thumbs button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+
+  /* ---- 07 worst day ---- */
+  .day { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; list-style: none; margin: 0; padding: 0; }
+  @media (max-width: 1100px) { .day { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .day { grid-template-columns: 1fr; } }
+  .day li { padding: 0; }
+  .day .glyph { height: 120px; border-radius: 20px; background: var(--card); margin-bottom: 18px; display: grid; place-items: center; }
+  .day .glyph svg { width: 64px; height: 64px; stroke: var(--fg); fill: none; stroke-width: 1.4; }
+  .day p { margin: 0; font-size: 12px; color: var(--dim); }
+
+  /* ---- 08 outcome ---- */
+  .nums { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
+  @media (max-width: 560px) { .nums { grid-template-columns: 1fr; } }
+  .nums div { background: var(--card); border-radius: var(--r-card); padding: 32px; }
+  .nums b { font: 300 64px/1 var(--font-serif); display: block; margin-bottom: 12px; font-variant-numeric: tabular-nums; }
+  .nums span { font: 400 11px/1.6 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--dim); }
+  .beyond { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 48px; list-style: none; padding: 0; margin: 0; }
+  @media (max-width: 760px) { .beyond { grid-template-columns: 1fr; } }
+  .beyond li { display: grid; grid-template-columns: 28px 1fr; font-size: 13px; }
+  .beyond li::before { content: '→'; font-family: var(--font-mono); color: var(--dim); }
+
+  /* ---- 09 differently ---- */
+  .diff { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  @media (max-width: 760px) { .diff { grid-template-columns: 1fr; } }
+  .diff p { margin: 0; font-size: 13px; color: var(--dim); }
+
+  /* ---- 10 walkthrough ---- */
+  .walk { background: var(--card); border-radius: var(--r-card); padding: 48px; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+  @media (max-width: 760px) { .walk { grid-template-columns: 1fr; padding: 32px; } }
+  .walk h2 { margin: 0 0 8px; }
+  .walk p { margin: 0; color: var(--dim); font-size: 13px; }
+  .btn { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; background: var(--fg); color: var(--bg); padding: 14px 20px; border-radius: 999px; text-decoration: none; white-space: nowrap; }
+  .btn:hover { text-decoration: none; }
+
+  .next { margin-top: 96px; display: flex; justify-content: space-between; font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <b>Mock</b> · Okta IAM, rebuilt on the shape of <a href="https://marygans.com/case-studies/ai-dashboard/" target="_blank" rel="noopener">marygans.com's Entra dashboard case</a>: problem → goals → role → plan → one pattern → the craft → trust → outcome → walkthrough. Facts from cases.ts only. <span class="x" style="background:#3a3a3a;color:#ddd">[X]</span> = hers to confirm or replace.
+</div>
+
+<div class="shell">
+  <nav class="rail" aria-label="Contents">
+    <p>Contents</p>
+    <ol>
+      <li><a href="#start">Start</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#goals">Goals</a></li>
+      <li><a href="#role">My role</a></li>
+      <li><a href="#plan">The plan</a></li>
+      <li><a href="#pattern">One pattern</a></li>
+      <li><a href="#craft">The craft</a></li>
+      <li><a href="#day">The worst day</a></li>
+      <li><a href="#outcome">Outcome</a></li>
+      <li><a href="#differently">Differently</a></li>
+      <li><a href="#walk">Walkthrough</a></li>
+    </ol>
+  </nav>
+
+  <main id="start">
+    <!-- ========== HEAD ========== -->
+    <div class="head">
+      <div>
+        <div class="tags"><span class="co">Okta</span><span class="t">Identity &amp; Access</span><span class="t">Admin console</span><span class="t">Developer tools</span></div>
+        <h1>Okta's admin console, rebuilt in place, with <em>32% less</em> admin time</h1>
+        <p class="snippet">Okta's admin console was built for companies with hundreds of people and was being sold to companies with tens of thousands. Four squads rebuilt it on the live product, so no customer had to migrate. I set the design direction and made the case for funding.</p>
+      </div>
+      <dl class="facts">
+        <div><dt>Role</dt><dd>Staff Product Designer, IAM + Developer Tools</dd></div>
+        <div><dt>When</dt><dd>2024 – 2025</dd></div>
+        <div><dt>Scope</dt><dd>Entitlements, roles, OIN publishing, developer onboarding</dd></div>
+        <div><dt>Tools</dt><dd>Figma, FigJam, Figma AI, Claude <span class="x">[X] keep only what you used</span></dd></div>
+      </dl>
+    </div>
+    <figure class="cover cover--ok anim" data-anim="landing" role="img" aria-label="Redrawn Okta admin dashboard on a laptop screen and on a phone: counts of people, apps and access changes, a Needs attention list and a chart of access changes">
+      <div class="cover__desk"><div class="okw" data-page="dash" aria-hidden="true"><div class="okw__top" aria-hidden="true"><i></i><i></i><i></i><span class="okw__url">acme-admin.okta.com/admin/dashboard</span></div><div class="okw__app"><aside class="okw__nav" aria-hidden="true"><b class="okw__logo">okta</b><span data-n="dash">Dashboard</span><span data-n="dir">Directory</span><span data-n="apps">Applications</span><span>Security</span><span>Identity Governance</span><span>Reports</span><span>Settings</span></aside><div class="okw__main">
+<div class="okw__h">Dashboard</div>
+<div class="land__stats">
+  <div class="blk" style="--d:.15s"><div class="blk__sk"></div><div class="c"><span class="st__k">People</span><b class="st__v">41,280</b></div></div>
+  <div class="blk" style="--d:.3s"><div class="blk__sk"></div><div class="c"><span class="st__k">Applications</span><b class="st__v">312</b></div></div>
+  <div class="blk" style="--d:.45s"><div class="blk__sk"></div><div class="c"><span class="st__k">Access changes this week</span><b class="st__v">1,904</b></div></div>
+</div>
+<div class="land__row">
+  <div class="blk" style="--d:.65s"><div class="blk__sk"></div><div class="c">
+    <div class="pn__h">Needs attention</div>
+    <div class="att"><span class="dot dot--amber"></span><span>61 people in Finance haven't used Salesforce in 90 days</span><span class="lnk">Review</span></div>
+    <div class="att"><span class="dot dot--blue"></span><span>Contractor access ends Friday · 18 people</span><span class="lnk">Review</span></div>
+    <div class="att"><span class="dot dot--grey"></span><span>3 admin roles have no owner</span><span class="lnk">Assign</span></div>
+  </div></div>
+  <div class="blk" style="--d:.8s"><div class="blk__sk"></div><div class="c">
+    <div class="pn__h">Access changes · 7 days</div>
+    <div class="bars"><i class="bar" style="--h:42%;--i:0"></i><i class="bar" style="--h:55%;--i:1"></i><i class="bar" style="--h:38%;--i:2"></i><i class="bar" style="--h:70%;--i:3"></i><i class="bar" style="--h:92%;--i:4"></i><i class="bar" style="--h:30%;--i:5"></i><i class="bar" style="--h:24%;--i:6"></i></div>
+    <div class="bars__x"><span>Mon</span><span>Sun</span></div>
+  </div></div>
+</div></div></div></div></div>
+      <div class="ph" aria-hidden="true"><div class="ph__scr">
+  <div class="ph__status"><span>9:41</span><span class="ph__island"></span><span class="ph__sig"><i></i><i></i><i></i></span></div>
+  <div class="ph__bar"><b class="okw__logo">okta</b><span class="ph__menu"><i></i><i></i><i></i></span></div>
+  <div class="ph__body">
+    <div class="okw__h">Dashboard</div>
+    <div class="ph__stats">
+      <div class="blk" style="--d:.2s"><div class="blk__sk"></div><div class="c"><span class="st__k">People</span><b class="st__v">41,280</b></div></div>
+      <div class="blk" style="--d:.35s"><div class="blk__sk"></div><div class="c"><span class="st__k">Apps</span><b class="st__v">312</b></div></div>
+    </div>
+    <div class="blk" style="--d:.5s"><div class="blk__sk"></div><div class="c"><span class="st__k">Access changes this week</span><b class="st__v">1,904</b></div></div>
+    <div class="blk" style="--d:.7s"><div class="blk__sk"></div><div class="c">
+      <div class="pn__h">Needs attention</div>
+      <div class="att"><span class="dot dot--amber"></span><span>61 in Finance haven't used Salesforce in 90 days</span><span class="lnk">›</span></div>
+      <div class="att"><span class="dot dot--blue"></span><span>Contractor access ends Friday</span><span class="lnk">›</span></div>
+      <div class="att"><span class="dot dot--grey"></span><span>3 admin roles have no owner</span><span class="lnk">›</span></div>
+    </div></div>
+    <div class="blk" style="--d:.85s"><div class="blk__sk"></div><div class="c">
+      <div class="pn__h">Access changes · 7 days</div>
+      <div class="bars bars--sm"><i class="bar" style="--h:42%;--i:0"></i><i class="bar" style="--h:55%;--i:1"></i><i class="bar" style="--h:38%;--i:2"></i><i class="bar" style="--h:70%;--i:3"></i><i class="bar" style="--h:92%;--i:4"></i><i class="bar" style="--h:30%;--i:5"></i><i class="bar" style="--h:24%;--i:6"></i></div>
+    </div></div>
+  </div>
+  <div class="ph__home"></div>
+</div></div>
+    </figure>
+
+    <!-- ========== 01 PROBLEM ========== -->
+    <section class="s" id="problem">
+      <p class="opener"><span>01</span><b>The problem</b></p>
+      <h2>The console was built for one person at a time. Enterprise admins work on <em>whole groups</em>.</h2>
+      <p class="lead">It was a problem of scale, not of screens. At forty thousand people the question is "everyone in Finance who still has Salesforce", and every flow assumed one person. New enterprise customers took 14 weeks to set up, <span class="x">[X] confirm</span> and four squads patching their own areas pulled the console further apart with each release.</p>
+      <div class="scale" aria-label="One person at a time compared with a group at once">
+        <div class="scale__panel">
+          <span class="lbl">Before · one page per person</span>
+          <div class="people" id="peopleA" aria-hidden="true"></div>
+          <span class="big">1 of 240</span>
+          <p>Open a person, remove the app, go back, repeat.</p>
+        </div>
+        <div class="scale__panel">
+          <span class="lbl">After · one change for a group</span>
+          <div class="query"><span>Department is Finance</span>and<span>Has Salesforce</span></div>
+          <div class="people people--group" id="peopleB" aria-hidden="true"></div>
+          <span class="big">240 at once</span>
+          <p>Find them by what they share, change them together. <span class="x">[X] count is illustrative</span></p>
+        </div>
+      </div>
+      <figure class="okfig anim" data-anim="landing" role="img" aria-label="Redrawn Okta admin dashboard loading: three counts, a Needs attention list and a chart of access changes arrive in turn">
+  <div class="okstage"><div class="okw" data-page="dash"><div class="okw__top" aria-hidden="true"><i></i><i></i><i></i><span class="okw__url">acme-admin.okta.com/admin/dashboard</span></div><div class="okw__app"><aside class="okw__nav" aria-hidden="true"><b class="okw__logo">okta</b><span data-n="dash">Dashboard</span><span data-n="dir">Directory</span><span data-n="apps">Applications</span><span>Security</span><span>Identity Governance</span><span>Reports</span><span>Settings</span></aside><div class="okw__main">
+<div class="okw__h">Dashboard</div>
+<div class="land__stats">
+  <div class="blk" style="--d:.15s"><div class="blk__sk"></div><div class="c"><span class="st__k">People</span><b class="st__v">41,280</b></div></div>
+  <div class="blk" style="--d:.3s"><div class="blk__sk"></div><div class="c"><span class="st__k">Applications</span><b class="st__v">312</b></div></div>
+  <div class="blk" style="--d:.45s"><div class="blk__sk"></div><div class="c"><span class="st__k">Access changes this week</span><b class="st__v">1,904</b></div></div>
+</div>
+<div class="land__row">
+  <div class="blk" style="--d:.65s"><div class="blk__sk"></div><div class="c">
+    <div class="pn__h">Needs attention</div>
+    <div class="att"><span class="dot dot--amber"></span><span>61 people in Finance haven't used Salesforce in 90 days</span><span class="lnk">Review</span></div>
+    <div class="att"><span class="dot dot--blue"></span><span>Contractor access ends Friday · 18 people</span><span class="lnk">Review</span></div>
+    <div class="att"><span class="dot dot--grey"></span><span>3 admin roles have no owner</span><span class="lnk">Assign</span></div>
+  </div></div>
+  <div class="blk" style="--d:.8s"><div class="blk__sk"></div><div class="c">
+    <div class="pn__h">Access changes · 7 days</div>
+    <div class="bars"><i class="bar" style="--h:42%;--i:0"></i><i class="bar" style="--h:55%;--i:1"></i><i class="bar" style="--h:38%;--i:2"></i><i class="bar" style="--h:70%;--i:3"></i><i class="bar" style="--h:92%;--i:4"></i><i class="bar" style="--h:30%;--i:5"></i><i class="bar" style="--h:24%;--i:6"></i></div>
+    <div class="bars__x"><span>Mon</span><span>Sun</span></div>
+  </div></div>
+</div></div></div></div></div>
+  <figcaption class="cap">The console's front page: what needs an admin today, before anything else. <span class="x">[X] redrawn for this case · confirm against what shipped</span></figcaption>
+</figure>
+    </section>
+
+    <!-- ========== 02 GOALS ========== -->
+    <section class="s" id="goals">
+      <p class="opener"><span>02</span><b>Goals</b></p>
+      <h2>Four things every squad's work had to hold to</h2>
+      <ol class="goals">
+        <li><h3>Groups, not people</h3><p>Change access for everyone who shares something, in one step.</p></li>
+        <li><h3>Nothing moves on a bad day</h3><p>No migration date. Admins open this during incidents.</p></li>
+        <li><h3>One console, not four</h3><p>Four squads, one set of words and patterns.</p></li>
+        <li><h3>Accessible from the first build</h3><p>Keyboard and screen reader before anything shipped.</p></li>
+      </ol>
+    </section>
+
+    <!-- ========== 03 ROLE ========== -->
+    <section class="s" id="role">
+      <p class="opener"><span>03</span><b>My role</b></p>
+      <h2>Design direction for the console, across four squads</h2>
+      <div class="role">
+        <ul class="chips" aria-label="Areas">
+          <li class="me">Entitlements</li>
+          <li class="me">Role management</li>
+          <li>OIN publishing</li>
+          <li>Developer onboarding</li>
+          <li>Design system</li>
+          <li>Research</li>
+          <li>Funding case to leadership</li>
+        </ul>
+        <dl class="rows">
+          <div><dt>Owned</dt><dd>What got rebuilt in what order, and the case to leadership for funding.</dd></div>
+          <div><dt>Designed</dt><dd>Entitlements and role management, the model every other screen had to agree with.</dd></div>
+          <div><dt>Set direction for</dt><dd>OIN publishing and developer onboarding.</dd></div>
+          <div><dt>Worked with</dt><dd>Each squad's PM and engineering lead, and the IAM product leadership group every week. Squad designers made their own calls; the hand-offs between squads were mine.</dd></div>
+          <div><dt>Team</dt><dd>Six designers: four in squads, one on the design system, one on research.</dd></div>
+        </dl>
+      </div>
+      <p class="cap">Filled chips: designed by me. Grey: direction and review.</p>
+    </section>
+
+    <!-- ========== 04 PLAN ========== -->
+    <section class="s" id="plan">
+      <p class="opener"><span>04</span><b>The plan</b></p>
+      <h2>We rebuilt it <em>in place</em> instead of launching a new console.</h2>
+      <p class="lead">Engineering preferred a new console behind a flag and a switch-over day: easier to build, easier to demo. I argued against it. Admins open an identity console when someone has left or something has leaked, and that's the worst day for every button to move.</p>
+      <div class="seg" role="group" aria-label="Compare plans">
+        <button type="button" aria-pressed="false" data-plan="cut">Migration day</button>
+        <button type="button" aria-pressed="true" data-plan="place">In place</button>
+      </div>
+      <div class="plan">
+        <div class="plan__grid" id="planGrid"></div>
+        <div class="legend"><span><i></i>Old screens</span><span><i class="new"></i>New screens</span><span><i class="dual"></i>Two versions kept alive</span></div>
+      </div>
+      <div class="verdict">
+        <div data-v="cut"><strong>Migration day</strong>Every button moves on one date. The old console lives on for months, getting its own fixes.</div>
+        <div data-v="place" class="is-on"><strong>In place · my call</strong>One area at a time on the live product. It was slower, and our system designer spent two quarters keeping both versions working. Still the right call.</div>
+      </div>
+      <p class="cap">Order of areas and quarters are illustrative. <span class="x">[X] her real sequence</span></p>
+    </section>
+
+    <!-- ========== 05 PATTERN ========== -->
+    <section class="s" id="pattern">
+      <p class="opener"><span>05</span><b>One pattern</b></p>
+      <h2><em>One</em> access model for the whole console</h2>
+      <p class="lead">Entitlements and role management came first, because every other screen had to agree with them. Giving someone an app, a role or a group follows the same five steps, so admins learn it once and squads build on it instead of inventing their own.</p>
+      <div class="anat">
+        <div class="stage">
+          <div class="dia" role="img" aria-label="Diagram of one access change, in five steps: who, what changes, how many, who exactly, review and record">
+            <div class="dia__step" data-part="1"><span class="dia__k">Who</span><span class="dia__v"><span class="dia__tok">Department is Finance</span><span class="dia__tok">Has Salesforce</span></span></div>
+            <div class="dia__step" data-part="2"><span class="dia__k">What changes</span><span class="dia__v">Remove <span class="dia__tok">an app, role or entitlement</span></span></div>
+            <div class="dia__step" data-part="3"><span class="dia__k">How many</span><span class="dia__v"><b class="dia__n">n</b> people</span></div>
+            <div class="dia__step" data-part="4"><span class="dia__k">Who exactly</span><span class="dia__v dia__bars"><i></i><i></i><i></i></span></div>
+            <div class="dia__step" data-part="5"><span class="dia__k">Review, record</span><span class="dia__v"><span class="dia__btn">Review n changes</span><span>→ audit trail</span></span></div>
+          </div>
+        </div>
+        <ol class="parts" id="parts">
+          <li><button type="button" data-p="1"><span class="n">1</span><span class="t">Who, by what they share</span><span class="d">Filters, not names. The question admins actually ask.</span></button></li>
+          <li><button type="button" data-p="2"><span class="n">2</span><span class="t">What changes</span><span class="d">App, role or entitlement, in one sentence.</span></button></li>
+          <li><button type="button" data-p="3"><span class="n">3</span><span class="t">How many, before you commit</span><span class="d">The count updates as the filter changes.</span></button></li>
+          <li><button type="button" data-p="4"><span class="n">4</span><span class="t">Who exactly</span><span class="d">A few names to check the filter caught the right people.</span></button></li>
+          <li><button type="button" data-p="5"><span class="n">5</span><span class="t">Review, then record</span><span class="d">The button says what it will do. Every change is logged.</span></button></li>
+        </ol>
+      </div>
+      <p class="cap">A diagram of the model, not a product screen. Entitlements and roles both use it. <span class="x">[X] confirm the five parts</span></p>
+      <div class="okpair"><figure class="okfig anim" data-anim="flow">
+  <div class="okstage okstage--flat">
+    <svg class="flow" viewBox="0 0 420 260" role="img" aria-label="Diagram: a person's page, a group's page and an app's page all lead into one Change access step, which writes to the audit trail">
+      <g class="flow__lines">
+        <path id="fl1" d="M118 46 C 150 46, 150 130, 168 130"/>
+        <path id="fl2" d="M118 130 L 168 130"/>
+        <path id="fl3" d="M118 214 C 150 214, 150 130, 168 130"/>
+        <path id="fl4" d="M282 130 L 318 130"/>
+      </g>
+      <g class="flow__src">
+        <rect x="10" y="26" width="108" height="40" rx="8"/><text x="64" y="50">Person page</text>
+        <rect x="10" y="110" width="108" height="40" rx="8"/><text x="64" y="134">Group page</text>
+        <rect x="10" y="194" width="108" height="40" rx="8"/><text x="64" y="218">App page</text>
+      </g>
+      <g class="flow__core">
+        <rect x="168" y="78" width="114" height="104" rx="12"/>
+        <text x="225" y="104" class="t1">Change access</text>
+        <text x="225" y="124">who · what</text>
+        <text x="225" y="140">how many</text>
+        <text x="225" y="156">review</text>
+      </g>
+      <g class="flow__out"><rect x="318" y="108" width="92" height="44" rx="8"/><text x="364" y="134">Audit trail</text></g>
+      <g class="flow__dots">
+        <circle r="4"><animateMotion dur="3s" repeatCount="indefinite" begin="0s"><mpath href="#fl1"/></animateMotion></circle>
+        <circle r="4"><animateMotion dur="3s" repeatCount="indefinite" begin="1s"><mpath href="#fl2"/></animateMotion></circle>
+        <circle r="4"><animateMotion dur="3s" repeatCount="indefinite" begin="2s"><mpath href="#fl3"/></animateMotion></circle>
+        <circle r="4"><animateMotion dur="1.5s" repeatCount="indefinite" begin=".5s"><mpath href="#fl4"/></animateMotion></circle>
+      </g>
+    </svg>
+  </div>
+  <figcaption class="cap">Three ways in, one way to change access, one record. <span class="x">[X] redrawn for this case · confirm against what shipped</span></figcaption>
+</figure><figure class="okfig anim" data-anim="scroll" role="img" aria-label="Redrawn Okta entitlements page scrolling: Salesforce entitlements grouped by department, with a filter bar and a bulk action">
+  <div class="okstage"><div class="okw okw--tall" data-page="apps"><div class="okw__top" aria-hidden="true"><i></i><i></i><i></i><span class="okw__url">acme-admin.okta.com/admin/app/salesforce/entitlements</span></div><div class="okw__app"><aside class="okw__nav" aria-hidden="true"><b class="okw__logo">okta</b><span data-n="dash">Dashboard</span><span data-n="dir">Directory</span><span data-n="apps">Applications</span><span>Security</span><span>Identity Governance</span><span>Reports</span><span>Settings</span></aside><div class="okw__main">
+<div class="scr" aria-hidden="true"><div class="scr__track" id="scrTrack"></div></div></div></div></div></div>
+  <figcaption class="cap">The entitlements page, grouped by what people share. <span class="x">[X] redrawn for this case · confirm against what shipped</span></figcaption>
+</figure></div>
+    </section>
+
+    <!-- ========== 06 CRAFT ========== -->
+    <section class="s" id="craft">
+      <p class="opener"><span>06</span><b>The craft</b></p>
+      <h2>Three areas, <em>one</em> model</h2>
+      <p class="lead">The admin changing access, the admin deciding who can change it, and the developer building on Okta.</p>
+
+      <div class="area-block">
+        <div>
+          <span class="k">Entitlements · designed by me</span>
+          <h3>Select a group, act on all of them</h3>
+          <p>Find people by what they share, change their access together. <span class="x">[X] her words</span></p>
+        </div>
+        <div><div class="okpair"><figure class="okfig okfig--card" role="img" aria-label="Redrawn Okta card: Salesforce Standard user in Finance, 179 of 240 signed in within 90 days, 61 not, with a button to remove the 61"><div class="okcard anim" data-anim="group">
+  <div class="okcard__h"><span class="appic">SF</span><div><b>Salesforce · Standard user</b><span class="mut">Finance · 240 people</span></div><span class="pill pill--amber">61 unused</span></div>
+  <div class="usage"><div class="usage__bar"><i class="usage__used" style="--w:74.6%"></i><i class="usage__un" style="--w:25.4%"></i></div>
+  <div class="usage__k"><span><i class="sw sw--used"></i>Signed in, last 90 days · 179</span><span><i class="sw sw--un"></i>Not signed in · 61</span></div></div>
+  <div class="okcard__f"><span class="btn2">View people</span><span class="btn1">Remove from 61</span></div>
+</div></figure><figure class="okfig okfig--card" role="img" aria-label="Redrawn Okta chart: people with Salesforce in Finance rising over twelve weeks, then dropping by 61 after one bulk change"><div class="okcard anim" data-anim="trend">
+  <div class="okcard__h"><span class="appic appic--grey">↘</span><div><b>People with Salesforce · Finance</b><span class="mut">Last 12 weeks</span></div></div>
+  <svg class="trend" viewBox="0 0 300 120" aria-hidden="true">
+    <path class="trend__grid" d="M0 30H300M0 60H300M0 90H300"/>
+    <path class="trend__line" pathLength="1" d="M0 70 L27 66 L54 60 L81 56 L108 50 L135 44 L162 40 L189 34 L216 30 L230 30 L236 82 L270 80 L300 79"/>
+    <circle class="trend__pt" cx="236" cy="82" r="4"/>
+    <text class="trend__lbl" x="296" y="104" text-anchor="end">Bulk change · −61</text>
+  </svg>
+  <div class="okcard__f"><span class="mut">Logged · 1 change, 61 people</span><span class="btn2">Audit trail</span></div>
+</div></figure></div>
+        <p class="cap">One group, one change, and the result on a line. <span class="x">[X] redrawn for this case · confirm against what shipped</span></p></div>
+      </div>
+
+      <div class="area-block">
+        <div>
+          <span class="k">Role management · designed by me</span>
+          <h3>Who can change access</h3>
+          <p>Granting admin rights follows the same steps as granting an app. <span class="x">[X] her words</span></p>
+        </div>
+        <div><figure class="okfig okfig--card" role="img" aria-label="Redrawn Okta role card: Help desk admin, 12 admins, four permissions; turning on Manage app assignments shows a review step that says it reaches 12 admins"><div class="okcard okcard--wide anim" data-anim="role">
+  <div class="okcard__h"><span class="appic appic--ink">HD</span><div><b>Role · Help desk admin</b><span class="mut">12 admins</span></div><span class="pill">Custom role</span></div>
+  <div class="perms">
+    <div class="perm"><span>Reset passwords</span><i class="tg on"></i></div>
+    <div class="perm"><span>Unlock accounts</span><i class="tg on"></i></div>
+    <div class="perm perm--flip"><span>Manage app assignments</span><i class="tg"></i></div>
+    <div class="perm"><span>Change admin roles</span><i class="tg"></i></div>
+  </div>
+  <div class="okcard__f okcard__f--review"><span class="mut">1 change · reaches 12 admins</span><span class="btn1">Review</span></div>
+</div></figure>
+        <p class="cap">Changing a role uses the same review as changing access. <span class="x">[X] redrawn for this case · confirm against what shipped</span></p></div>
+      </div>
+
+      <div class="area-block">
+        <div>
+          <span class="k">Developer onboarding · direction</span>
+          <h3>New to Auth0, or used it before?</h3>
+          <p>Each answer gets its own path, so someone who has set up ten tenants isn't walked through what a tenant is.</p>
+        </div>
+        <div>
+          <div class="shot shot--swap"><img id="onbImg" src="/public/images/okta/onboarding-path.webp" alt="Auth0 onboarding: one question after a tenant is created, new to Auth0 or used it before"></div>
+          <div class="thumbs" role="group" aria-label="Onboarding screens">
+            <button type="button" aria-pressed="true" data-src="/public/images/okta/onboarding-path.webp" data-alt="Auth0 onboarding: one question after a tenant is created, new to Auth0 or used it before" data-cap="The first question, and two paths.">First question</button>
+            <button type="button" aria-pressed="false" data-src="/public/images/okta/onboarding-moments.webp" data-alt="A feedback prompt in the nav, an Organizations introduction, and an SSO empty state" data-cap="Past the first screen: feedback in the nav, Organizations before you start, an empty state that says what to do next.">After it</button>
+            <button type="button" aria-pressed="false" data-src="/public/images/okta/onboarding-modes.webp" data-alt="The Getting Started page in light mode and dark mode" data-cap="Getting started, light and dark.">Light / dark</button>
+            <button type="button" aria-pressed="false" data-src="/public/images/okta/illustration-system.webp" data-alt="Okta illustration system: eight line illustrations in blue, orange and green" data-cap="The illustration system behind those screens.">Illustrations</button>
+          </div>
+          <p class="cap" id="onbCap" aria-live="polite">The first question, and two paths.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 07 WORST DAY ========== -->
+    <section class="s" id="day">
+      <p class="opener"><span>07</span><b>The worst day</b></p>
+      <h2>Designed for the day <em>something leaked</em></h2>
+      <p class="lead">Every choice was tested against one day: the one an admin opens the console in a hurry.</p>
+      <ul class="day">
+        <li><div class="glyph"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="14" width="44" height="32" rx="3"/><path d="M10 22h44M22 54h20M32 46v8"/></svg></div><h3>Nothing moved on a date we picked</h3><p>Areas changed one at a time, next to the old ones.</p></li>
+        <li><div class="glyph"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="18"/><path d="M32 20v12l8 6"/></svg></div><h3>See the count before you commit</h3><p>Every bulk change shows who it reaches first.</p></li>
+        <li><div class="glyph"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="20" width="48" height="24" rx="4"/><path d="M16 30h4M24 30h4M32 30h4M40 30h8M16 37h32"/></svg></div><h3>Keyboard first</h3><p>Bulk actions tried by screen-reader users before they shipped.</p></li>
+        <li><div class="glyph"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M18 12h22l8 8v32H18z"/><path d="M40 12v8h8M24 30h18M24 37h18M24 44h10"/></svg></div><h3>Every state in words</h3><p>Each state had a text equivalent, not colour alone.</p></li>
+      </ul>
+      <figure class="okfig anim" data-anim="review" role="img" aria-label="Redrawn Okta review step: a dialog lists what a change reaches, the admin confirms, and a notice says 240 changes were applied and logged, with Undo">
+  <div class="okstage"><div class="okw okw--review" data-page="dir"><div class="okw__top" aria-hidden="true"><i></i><i></i><i></i><span class="okw__url">acme-admin.okta.com/admin/people</span></div><div class="okw__app"><aside class="okw__nav" aria-hidden="true"><b class="okw__logo">okta</b><span data-n="dash">Dashboard</span><span data-n="dir">Directory</span><span data-n="apps">Applications</span><span>Security</span><span>Identity Governance</span><span>Reports</span><span>Settings</span></aside><div class="okw__main">
+<div class="okw__h">People · Finance</div>
+<div class="rv__bg"><i></i><i></i><i></i><i></i><i></i></div>
+<div class="rv__scrim"></div>
+<div class="rv__modal">
+  <b class="rv__t">Review 240 changes</b>
+  <p class="rv__s">Remove <span class="tok">Salesforce · Standard user</span> from people in Finance.</p>
+  <div class="rv__ck"><span class="ck ck1">✓</span>240 people match the filter</div>
+  <div class="rv__ck"><span class="ck ck2">✓</span>No admins in this group</div>
+  <div class="rv__ck"><span class="ck ck3">✓</span>Can be undone for 30 days</div>
+  <label class="rv__ok"><span class="box">✓</span>I've checked who this reaches</label>
+  <div class="rv__f"><span class="btn2">Back</span><span class="btn1 rv__go">Remove from 240</span></div>
+</div>
+<div class="rv__toast"><span>✓</span>240 changes applied · logged to the audit trail<b>Undo</b></div></div></div></div></div>
+  <figcaption class="cap">The last step before a change goes out: what it reaches, in words, and a way back. <span class="x">[X] redrawn for this case · confirm against what shipped</span></figcaption>
+</figure>
+    </section>
+
+    <!-- ========== 08 OUTCOME ========== -->
+    <section class="s" id="outcome">
+      <p class="opener"><span>08</span><b>Outcome</b></p>
+      <h2>Admins got faster, and no one had to migrate.</h2>
+      <div class="nums">
+        <div><b data-count="32">32%</b><span>Less time on admins' four busiest tasks</span></div>
+        <div><b>0</b><span>Customers asked to migrate</span></div>
+      </div>
+      <p class="lead" style="margin-bottom:24px">What changed beyond the console:</p>
+      <ul class="beyond">
+        <li>Every squad built on one access model. <span class="x">[X] confirm</span></li>
+        <li>One design system served the old console and the new one for over a year.</li>
+        <li>Crits ended with a decision and an owner, not a list of opinions.</li>
+        <li>Every designer watched one admin research session a month, whatever their area.</li>
+      </ul>
+    </section>
+
+    <!-- ========== 09 DIFFERENTLY ========== -->
+    <section class="s" id="differently">
+      <p class="opener"><span>09</span><b>What I'd do differently</b></p>
+      <div class="diff">
+        <div><h3>Two people on the system, from day one</h3><p>One designer carried both versions for two quarters. My plan put them there; I should have asked for a second at the start.</p></div>
+        <div><h3>Ask leadership sooner</h3><p>I waited for research before asking for funding. It cost a quarter. Now I'd ask early and let research shape the plan.</p></div>
+      </div>
+    </section>
+
+    <!-- ========== 10 WALKTHROUGH ========== -->
+    <section class="s" id="walk">
+      <div class="walk">
+        <div>
+          <p class="opener" style="margin-bottom:12px"><span>10</span><b>Walkthrough</b></p>
+          <h2>The rest is under NDA. I'll walk you through it live.</h2>
+          <p>Thirty minutes, screens and all.</p>
+        </div>
+        <a class="btn" href="#">Email me</a>
+      </div>
+    </section>
+
+    <div class="next"><span>◂ Work</span><span>Next · PayPal Privacy ▸</span></div>
+  </main>
+</div>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 01 — dots: before, one lit; after, the group lit
+  const N = 120, group = new Set();
+  for (let i = 0; i < N; i++) if ((i * 37) % 7 < 2) group.add(i);
+  const fill = (el, isOn) => { el.innerHTML = Array.from({ length: N }, (_, i) => `<i class="${isOn(i) ? 'on' : ''}"></i>`).join(''); };
+  fill(document.getElementById('peopleA'), i => i === [...group][0]);
+  fill(document.getElementById('peopleB'), i => group.has(i));
+
+  // 04 — two plans on one grid
+  const areas = ['Entitlements', 'Role management', 'People & groups', 'OIN publishing', 'Dev onboarding'];
+  const quarters = ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6'];
+  const grid = document.getElementById('planGrid');
+  grid.innerHTML = '<span></span>' + quarters.map(q => `<span class="q">${q}</span>`).join('') +
+    areas.map((a, r) => `<span class="area">${a}</span>` + quarters.map((_, c) => `<span class="cell" data-r="${r}" data-c="${c}" style="--i:${r * 6 + c}"></span>`).join('')).join('');
+  const state = {
+    // in place: area r turns new at quarter r (staggered), dual for the quarter around it
+    place: (r, c) => c > r ? 'new' : c === r ? 'dual' : '',
+    // migration: everything old (and being rebuilt in parallel) until Q5's switch-over
+    cut: (r, c) => c < 4 ? (c >= 1 ? 'dual' : '') : c === 4 ? 'new cut' : 'new',
+  };
+  function show(plan) {
+    grid.querySelectorAll('.cell').forEach(el => {
+      const r = +el.dataset.r, c = +el.dataset.c;
+      el.className = 'cell ' + state[plan](r, c);
+      if (plan === 'cut' && c === 4 && r !== 2) el.classList.remove('cut');
+    });
+    document.querySelectorAll('[data-plan]').forEach(b => b.setAttribute('aria-pressed', b.dataset.plan === plan));
+    document.querySelectorAll('[data-v]').forEach(v => v.classList.toggle('is-on', v.dataset.v === plan));
+  }
+  document.querySelectorAll('[data-plan]').forEach(b => b.addEventListener('click', () => show(b.dataset.plan)));
+  show('place');
+
+  // 05 — parts light their region
+  const parts = document.querySelectorAll('#parts button');
+  const regions = document.querySelectorAll('[data-part]');
+  regions.forEach(el => { const m = document.createElement('span'); m.className = 'pinmark'; m.textContent = el.dataset.part; m.setAttribute('aria-hidden', 'true'); el.appendChild(m); });
+  const light = p => {
+    regions.forEach(el => el.classList.toggle('lit', el.dataset.part === p));
+    parts.forEach(b => b.classList.toggle('lit', b.dataset.p === p));
+  };
+  parts.forEach(b => {
+    b.addEventListener('mouseenter', () => light(b.dataset.p));
+    b.addEventListener('focus', () => light(b.dataset.p));
+    b.addEventListener('click', () => light(b.dataset.p));
+  });
+  document.getElementById('parts').addEventListener('mouseleave', () => light(null));
+
+  // 06 — onboarding screens
+  const img = document.getElementById('onbImg'), cap = document.getElementById('onbCap');
+  document.querySelectorAll('.thumbs button').forEach(b => b.addEventListener('click', () => {
+    img.src = b.dataset.src; img.alt = b.dataset.alt; cap.textContent = b.dataset.cap;
+    document.querySelectorAll('.thumbs button').forEach(o => o.setAttribute('aria-pressed', o === b));
+  }));
+
+  // 08 — count up once, in view
+  const num = document.querySelector('[data-count]');
+  if (!reduce && 'IntersectionObserver' in window) {
+    const to = +num.dataset.count; num.textContent = '0%';
+    new IntersectionObserver(([e], o) => {
+      if (!e.isIntersecting) return; o.disconnect();
+      const t0 = performance.now();
+      const step = t => { const k = Math.min(1, (t - t0) / 1200); num.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))) + '%'; if (k < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    }, { threshold: .6 }).observe(num);
+  }
+
+
+  // Okta redraws — build the scrolling list, play each animation while in view
+  (() => {
+    const track = document.getElementById('scrTrack');
+    if (track) {
+      const names = ['Priya N.', 'Marcus O.', 'Tomás R.', 'Aiko S.', 'Daniel F.', 'Ruth B.', 'Omar H.', 'Ines V.', 'Kwame A.', 'Sara L.', 'Jonas P.', 'Meera K.', 'Leo C.', 'Hana M.'];
+      const row = (n, i, dept) => `<div class="prow"><span class="av">${n.split(' ').map(w => w[0]).join('').replace('.', '')}</span><span>${n}</span><span class="mut">${dept}</span><span class="${i % 4 === 1 ? 'last--old' : 'mut'}">${i % 4 === 1 ? '94 days ago' : (i % 5 + 1) + ' days ago'}</span></div>`;
+      track.innerHTML = `<div class="okw__h">Salesforce · Entitlements</div>
+        <div class="scr__filters"><span class="on">Standard user</span><span class="on">Group by department</span><span>Last sign-in</span><span>+ Filter</span></div>
+        <div class="grp"><span>Finance · 240</span><span class="lnk">Change access for 240</span></div>${names.slice(0, 8).map((n, i) => row(n, i, 'Finance')).join('')}
+        <div class="grp"><span>Sales · 118</span><span class="lnk">Change access for 118</span></div>${names.slice(6).map((n, i) => row(n, i + 2, 'Sales')).join('')}
+        <div class="grp"><span>Support · 64</span><span class="lnk">Change access for 64</span></div>${names.slice(2, 7).map((n, i) => row(n, i + 3, 'Support')).join('')}`;
+    }
+    const figs = document.querySelectorAll('.anim');
+    const flow = document.querySelector('.flow');
+    if (reduce) { flow && flow.pauseAnimations(); return; }
+    figs.forEach(f => f.classList.add('go'));
+    const timers = new Map();
+    const restart = f => { f.classList.remove('play'); void f.offsetWidth; f.classList.add('play'); };
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      const f = e.target;
+      if (e.isIntersecting) {
+        restart(f);
+        // one-shot builds replay every few seconds so a reader who lingers sees them again
+        if (['landing', 'group', 'trend'].includes(f.dataset.anim)) timers.set(f, setInterval(() => restart(f), 7000));
+        if (f.dataset.anim === 'flow') flow.unpauseAnimations();
+      } else {
+        f.classList.remove('play'); clearInterval(timers.get(f));
+        if (f.dataset.anim === 'flow') flow.pauseAnimations();
+      }
+    }), { threshold: .35 });
+    figs.forEach(f => io.observe(f));
+  })();
+
+  // rail — current section
+  const links = [...document.querySelectorAll('.rail a')];
+  const secs = links.map(a => document.querySelector(a.getAttribute('href')));
+  addEventListener('scroll', () => {
+    let i = 0; secs.forEach((s, k) => { if (s.getBoundingClientRect().top < innerHeight * .35) i = k; });
+    links.forEach((a, k) => a.classList.toggle('is-on', k === i));
+  }, { passive: true });
+  dispatchEvent(new Event('scroll'));
+</script>
+</body>
+</html>

@@ -1826,3 +1826,62 @@
   --globe-line-left: 52%;              /* the closing words, beside the globe (wide screens) */
   --globe-copy-max: 30rem;
 }
+
+/* OKTA AI SCREENS (OktaAgent.astro) — the Okta AI agents case's product
+   screens, drawn in code in the Okta Admin Console's style (Odyssey-like:
+   Okta blue, white chrome, grey hairlines). These colours belong to the
+   work, like a screenshot's, so they stay the same in dark mode. The UI
+   is set in the system sans (close to Okta's own) so no fourth web font
+   loads. Each screen sits on the Okta hue, the case's stage. On request,
+   2026-11-26; mock in experiments/okta-perception. */
+:root {
+  --okta-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --okta-blue: #1662dd;
+  --okta-blue-d: #0f4fb8;
+  --okta-blue-l: #e9f0fc;
+  --okta-ink: #1d1d21;
+  --okta-ink-2: #3d3d44;
+  --okta-sub: #6e6e78;
+  --okta-line: #e1e1e6;
+  --okta-bg: #f4f4f6;
+  --okta-white: #ffffff;
+  --okta-chrome: #eef0f3;
+  --okta-chrome-dot: #d4d6db;
+  --okta-red: #da372c;
+  --okta-red-l: #fdecea;
+  --okta-green: #16884a;
+  --okta-green-l: #e6f4ec;
+  --okta-amber: #b46a00;
+  --okta-amber-l: #fff3dc;
+  --okta-violet: #6f47d8;          /* Okta AI's marks */
+  --okta-violet-l: #f0ebfc;
+  --okta-edge: #c3c7d1;
+  --okta-radio: #b6b8c0;
+  --okta-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 12px 40px rgb(15 40 90 / 0.14);
+  --okta-press-ring: 0 0 0 4px rgb(22 98 221 / 0.25);
+  --okta-hl-ring: 0 0 0 3px rgb(218 55 44 / 0.18);
+  --okta-stage-pad: clamp(16px, 3.5vw, 40px);
+  --radius-okta-stage: 28px;       /* the case cards' corners, CASE CARDS */
+  --radius-okta-frame: 12px;
+  --okta-demo-step: 3400ms;        /* one demo screen */
+  --okta-loop-step: 700ms;         /* one step of the loop lighting */
+}
+
+/* OKTA IAM (OktaIam.astro) — the Okta IAM case's redrawn product
+   pictures (on request, 2026-11-26; experiments/okta-case). Colours are
+   the OKTA AI SCREENS tokens above, plus the few below that only these
+   pictures use; they belong to the work, so they stay the same in dark
+   mode. Timing for the motion, which plays only on screen. */
+:root {
+  --okta-phone: #1b1b1d;           /* the phone's body and island */
+  --okta-phone-edge: #3a3a3e;
+  --okta-scrim: rgb(29 29 33 / 0.32);
+  --okta-toast-ok: #7ddca8;
+  --okta-toast-link: #9cc0ff;
+  --iam-cap-gap: 0.875rem;
+  --iam-in: 600ms;                 /* one block arriving */
+  --iam-replay: 7000ms;            /* the dashboard and cards replay while on screen */
+  --iam-scroll: 14s;               /* the entitlements page, one way */
+  --iam-loop: 6s;                  /* the role card's switch */
+  --iam-review: 9s;                /* the review dialog, start to Undo */
+}

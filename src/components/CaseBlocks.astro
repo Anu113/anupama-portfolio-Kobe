@@ -58,6 +58,7 @@ import SketchCollage from './SketchCollage.astro';
 import PrivacyArt from './PrivacyArt.astro';
 import SketchRows from './SketchRows.astro';
 import LearnCardParts from './LearnCardParts.astro';
+import OktaIam from './OktaIam.astro';
 
 interface Props { blocks: CaseBlock[] }
 const { blocks } = Astro.props;
@@ -261,6 +262,7 @@ const claimNum = blocks.map((b) =>
     {block.kind === 'sketches' && <SketchCollage label={block.label} items={block.items} />}
     {block.kind === 'illos' && <PrivacyArt door={block.door} items={block.items} palette={block.palette} credit={block.credit} />}
     {block.kind === 'sketchrows' && <SketchRows label={block.label} src={block.src} alt={block.alt} caption={block.caption} items={block.items} />}
+    {block.kind === 'iam' && <OktaIam view={block.view} caption={block.caption} />}
     {block.kind === 'cardparts' && <LearnCardParts notes={block.notes} cards={block.cards} />}
 
     {block.kind === 'metrics' && (
