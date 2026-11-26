@@ -712,7 +712,7 @@ walked back. Concretely, in the current implementation:
   pinging ring, `BANGALORE,IN`, a live weather icon, and 24h time with
   seconds on rolling digits. Two deliberate, requested exceptions live
   here: `--status` green is the one colour besides the accent and the
-  project hues (only on that dot), and the weather is fetched in the
+  project hues (only on that dot, and the locked gate's unlock tick), and the weather is fetched in the
   browser from Open-Meteo (no key, no cookies, but the visitor's IP
   reaches them). Don't extend either beyond this line.
 - **Project hues** are the one place colour appears beyond the accent: one
@@ -778,7 +778,14 @@ walked back. Concretely, in the current implementation:
   the passcode form. On request (2026-11-14, option A in grey of
   `experiments/locked-gate/soft-cards.html`) the numbered contents list
   with ink redaction bars and the hairlines were removed; don't bring
-  them back. Its corners are a requested exception to the square
+  them back. Since 2026-11-26, on request ("H · Arrow beside the field" of
+  `experiments/unlock-feedback/`), there's no Unlock pill: the pill
+  pair's round ink arrow beside the field sends the passcode. Right
+  passcode: the circle turns green (`--status`, a requested second use
+  of it, this tick only) with a tick that holds until the case's cover
+  has loaded, then the gate fades and the case rises at the top. Empty
+  asks for the passcode; wrong nudges the field. LOCKED GATE · UNLOCK in
+  `tokens.css`. Its corners are a requested exception to the square
   `--radius` rule, this page only.
 - **One passcode, and locks you can see before the click** (on request,
   2026-11-18, mocks in `experiments/password-lock/`). `site.lock` in

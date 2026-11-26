@@ -1428,6 +1428,28 @@
   --locked-card-gap: 0.75rem;
 }
 
+/* LOCKED GATE · UNLOCK (on request, 2026-11-26, "H · Arrow beside the
+   field" of experiments/unlock-feedback/): no Unlock pill; the passcode
+   goes with the pill pair's round ink arrow beside the field. Right
+   passcode: the circle turns --status green and the arrow becomes a
+   tick, which holds until the case's cover has loaded, then the gate
+   fades and the case rises at the top. The green is a requested second
+   use of --status, this tick only. Tick on green: 3.3 : 1 light (white),
+   6.9 : 1 dark (the ground), both over the 3 : 1 an icon needs. */
+:root {
+  --unlock-go: var(--pair-h);              /* the arrow's circle, 42px */
+  --unlock-gap: 10px;                      /* field to arrow */
+  --unlock-ok: var(--status);
+  --unlock-tick: #fff;
+  --unlock-hold: 900ms;                    /* the tick shows at least this long */
+  --unlock-wait-max: 2500ms;               /* never wait on the cover longer */
+  --unlock-slow: 1200ms;                   /* then "Opening the case…" shows */
+  --unlock-leave: 280ms;                   /* the gate fades out */
+  --unlock-nudge: 6px;                     /* a wrong passcode's shake */
+  --dur-unlock-nudge: 360ms;
+}
+:root[data-mode='dark'] { --unlock-tick: var(--bg); }
+
 /* ============================================================
    LOCK FROST (LockFrost.astro, SiteGate.astro): a locked case says so
    before the click (on request, 2026-11-18, "A · Frost" of
