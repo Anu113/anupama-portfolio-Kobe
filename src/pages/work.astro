@@ -16,10 +16,9 @@ import { workPlay } from '../data/workPlay';
 // lockFor() follows site.lock.cases (data/site.ts).
 const isLocked = (href: string) => isCaseLocked(href.replace('/work/', ''));
 
-/* One even grid after carlthomasiv.com/work: two columns, every tile the
-   same 3:2 picture, no stagger. The earlier staggered field (mixed spans,
-   drops and ratios) read as uneven, and its full-width tiles ran taller
-   than the window. */
+/* One even grid of two columns, the cards shaped as the home page's
+   (CaseCard.astro, 2026-11-26): every stage the same height, no stagger.
+   RATIO is no longer read by the card; kept for the prop. */
 const RATIO = '3 / 2';
 ---
 <Base
@@ -93,13 +92,11 @@ const RATIO = '3 / 2';
   .exp-wrap { margin-top: var(--space-band); }
 
   /* --- The grid ------------------------------------------------------
-     Two equal columns, rows aligned to the top. */
+     Two equal columns, spaced as the home page's cards. */
   .grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: clamp(1.5rem, 2.5vw, 2rem);
-    row-gap: clamp(3rem, 4.5vw, 3.5rem);
-    align-items: start;
+    gap: var(--home-card-gap);   /* the home cards' gap (HOME CARDS in tokens.css) */
   }
 
   /* --- Archive -------------------------------------------------------
@@ -107,7 +104,7 @@ const RATIO = '3 / 2';
   .arch__head { margin: 0 0 2rem; color: var(--fg-dim); }
 
   @media (max-width: 900px) {
-    .grid { grid-template-columns: minmax(0, 1fr); row-gap: clamp(3.5rem, 10vw, 5rem); }
+    .grid { grid-template-columns: minmax(0, 1fr); }
     .arch__row { grid-template-columns: minmax(0, 1fr) 5rem; }
     .arch__tag { grid-column: 1; }
     .arch__year { grid-column: 2; grid-row: 1; }

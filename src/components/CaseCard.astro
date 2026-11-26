@@ -17,10 +17,13 @@
    in data/work.ts) — the colour belongs to its thumbnail, while the meta
    text underneath stays in the page's own palette.
 
-   Laid out after carlthomasiv.com/work: the picture, then the company in
-   mono, the title, one short line (the impact) and the label chips last.
-   No role line and no paragraph, on request — every card is the same
-   four lines so the grid reads evenly. The page passes labelsFor(w).
+   Its shape and words are the home page's cards' (ProjectCard.astro),
+   on request 2026-11-26: the picture is a stage with 20px corners at the
+   home stage's height, and under it the company and labels as small grey
+   chips, the title in the item role, one 12px line (the impact) and the
+   round arrow that opens to "View" on hover (.card-chips and .card-go in
+   global.css, shared with the home cards). What's on the stage stays
+   /work's own: WorkStage's phones on their photo and colour grounds.
 
    A locked case (`locked`, from lockFor() in cases.ts) keeps the small
    lock by its title and, on hover or focus, frosts its picture with
@@ -50,81 +53,88 @@ const {
   stage,
 } = Astro.props;
 ---
-<a class="card" href={href} data-locked={locked || undefined}>
+<a class="card" href={href} data-card data-locked={locked || undefined}>
   <div class={`card__media${stage ? ' card__media--stage' : ''}`} data-theme={theme} data-hue={hueFor(company) ?? ''} style={`--ratio: ${ratio};`}>
     {stage ? <WorkStage stage={stage} /> : <img src={image} alt={alt} loading="lazy" decoding="async" />}
     {locked && <LockFrost />}
   </div>
-  {company && <p class="card__co u-label-mono">{company}</p>}
-  <h2 class="card__title">
-    {title}
-    {locked && <LockIcon class="card__lock" size="0.6em" />}
-    {locked && <span class="u-sr-only">, password protected</span>}
-  </h2>
-  {impact && <p class="card__impact">{impact}</p>}
-  {labels.length > 0 && (
-    <ul class="card__tags" aria-label="Domain and discipline">
-      {labels.map((t) => <li class="u-label-mono">{t}</li>)}
+  <div class="card__body">
+    <ul class="card-chips" aria-label="Company, domain and discipline">
+      {company && <li class="card__co">{locked && <LockIcon class="card__lock" size="1em" />}{company}</li>}
+      {labels.map((t) => <li>{t}</li>)}
     </ul>
-  )}
+    <h2 class="card__title">
+      {title}
+      {locked && <span class="u-sr-only">, password protected</span>}
+    </h2>
+    {impact && <p class="card__impact">{impact}</p>}
+    <span class="card-go" aria-hidden="true"><s></s><u></u><b>View</b><i><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></i></span>
+  </div>
 </a>
 
 <style>
-  .card { display: block; text-decoration: none; color: var(--fg); position: relative; }
+  /* The home card's shape: no fill or line, the stage is the card's edge;
+     room under the words before the next row (HOME CARDS in tokens.css). */
+  .card {
+    display: flex; flex-direction: column;
+    height: 100%;
+    padding: var(--home-card-pad);
+    text-decoration: none; color: var(--fg); position: relative;
+  }
+  .card:focus-visible { outline: none; }
+  .card:focus-visible .card__media { outline: 2px solid var(--focus); outline-offset: 4px; }
   .card__media {
+    position: relative;
     background: var(--hue);   /* the company's project hue (tokens.css, PROJECT HUES) */
-    aspect-ratio: var(--ratio);
+    height: var(--home-stage-h);
     overflow: hidden;
-    /* Contained inside a margin of the hue, not cropped to cover it —
-       same "wall, not a picture" treatment as ProjectCard's media. */
+    border-radius: var(--radius-home-stage);
+    /* Contained inside a margin of the hue, not cropped to cover it. */
     padding: clamp(1rem, 2.5vw, 1.75rem);
-    margin-bottom: 1rem;
   }
   .card__media--stage { padding: 0; }
-  .card__media { position: relative; }
   /* Locked: the frost is the hover, so the picture holds still under it. */
   .card[data-locked]:is(:hover, :focus-visible) .card__media > img { transform: none; }
   .card__media > img {
     width: 100%; height: 100%;
     object-fit: contain; display: block;
-    transition: transform 600ms var(--ease-out);
+    transition: transform var(--home-work-dur) var(--ease-out);
   }
   .card:hover .card__media > img,
-  .card:focus-visible .card__media > img { transform: scale(1.04); }
+  .card:focus-visible .card__media > img { transform: scale(var(--home-card-grow)); }
 
-  .card__co { margin: 0 0 0.5rem; }
-  /* 12px caps, as the reference's project titles (and the home cards). */
+  /* The words, left under the work, as on the home cards. */
+  .card__body {
+    display: flex; flex-direction: column; align-items: flex-start;
+    padding-top: var(--home-card-text-gap);
+    flex: 1;
+  }
+  .card__co :global(.card__lock) { display: inline-block; margin-right: 0.4em; vertical-align: -0.1em; }
   .card__title {
     font-family: var(--font-sans);
-    font-size: var(--step-label);
-    line-height: var(--leading-label);
-    letter-spacing: var(--tracking-label);
+    font-size: var(--step-item);
+    line-height: var(--leading-item);
+    letter-spacing: var(--tracking-item);
     font-weight: var(--weight-sans);
-    text-transform: uppercase;
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.375rem;
     text-wrap: balance;
   }
-  .card__title :global(.card__lock) { display: inline-block; margin-left: 0.4em; color: var(--fg-dim); vertical-align: middle; }
   .card__impact {
     font-size: var(--step-copy);
     line-height: var(--leading-copy);
     letter-spacing: var(--tracking-copy);
     color: var(--fg-dim);
-    margin: 0 0 1rem;
+    margin: 0;
+    max-width: var(--home-tagline-max);
     text-wrap: pretty;
   }
-  /* Same chip as ProjectCard's: hairline box, square, tracked caps. */
-  .card__tags {
-    display: flex; flex-wrap: wrap; gap: 0.4rem;
-    list-style: none; margin: 0; padding: 0;
-  }
-  .card__tags li {
-    border: 1px solid var(--rule);
-    border-radius: var(--radius);
-    padding: 0.2rem 0.5rem;
+
+  @media (max-width: 860px) {
+    .card__media { height: var(--home-stage-h-narrow); }
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .card__media > img { transition: none; }
     .card:hover .card__media > img,
     .card:focus-visible .card__media > img { transform: none; }
   }
