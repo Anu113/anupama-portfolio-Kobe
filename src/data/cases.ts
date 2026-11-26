@@ -520,7 +520,7 @@ export const cases: CaseStudy[] = [
     description:
       "PayPal's privacy page was a list of controls in legal language, and three out of four visits never got past it. Over two years, with four other designers, I rebuilt it so every setting is one tap away and says what it's set to. More than 80 million people use it, and it still meets GDPR and CCPA on every screen.",
     meta: [
-      { label: 'Team', value: '4 other designers, content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers' },
+      { label: 'Team', value: 'Me and 4 designers, 1 content strategist, 1 researcher, 3 PMs, 2 privacy officers, 15+ engineers' },
       { label: 'Platforms', value: 'PayPal app, mobile first, and web' },
       { label: 'Timeline', value: 'March 2021 – January 2023' },
     ],
@@ -528,7 +528,7 @@ export const cases: CaseStudy[] = [
        the regulation that decides what the screens must say and keep. Set
        out once in the situation; each section names the side it answers. */
     thread: { people: 'People', law: 'GDPR and CCPA' },
-    role: 'Owned the design · Research through delivery',
+    role: 'Lead designer · Research through delivery',
     sections: [
       {
         id: 'situation',
