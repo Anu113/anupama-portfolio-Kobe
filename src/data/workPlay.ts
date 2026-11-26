@@ -73,6 +73,14 @@ export const workPlay: Record<string, Play | Desk> = {
     ground: { kind: 'colour' },
   },
 
+  // Okta AI agents (on request, 2026-11-26): its laptop and phone screens,
+  // rendered from experiments/okta-perception (?shot=desk, ?shot=phone).
+  '/work/okta-ai-agents': {
+    label: 'Okta AI on a laptop and a phone: the Admin Console dashboard with a finding that needs the admin, and the same finding on mobile',
+    desk: I('okta-ai-desk'), phone: I('okta-ai-phone'),
+    ground: { kind: 'colour' },
+  },
+
   '/work/paypal-privacy': {
     label: 'The flow: Shopping, a reminder to review privacy settings, then the redesigned Data and privacy hub',
     ground: { kind: 'blur', photo: G('privacy-blur') },

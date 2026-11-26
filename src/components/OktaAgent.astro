@@ -1,0 +1,558 @@
+---
+/* OktaAgent.astro — the Okta AI agents case's product screens, drawn in
+   code in the Okta Admin Console's style (on request, 2026-11-26, after
+   marygans.com/case-studies/perception's storyline; mock in
+   experiments/okta-perception).
+
+   `screen` picks what to draw, each on the Okta hue:
+     dashboard  the Admin Console home: numbers, a finding that needs the
+                admin, and the agents' live feed (the case's cover image
+                is a render of this one)
+     attention  the same, with the finding and its Review button marked
+     summary    the Policy agent's write-up: what, why, what to do
+     audit      the evidence: a relationship graph and the checks it ran
+     decide     three fixes with their estimated impact, nothing applied
+     verify     after the fix: the chart and the checks that it held
+     loop       the human + AI loop, six steps lighting in turn
+     demo       dashboard → summary → audit → decide → verify, playing on
+                its own with a cursor pressing each next step; Pause/Play
+
+   Motion is tied to the screen arriving: the feed's lines come in, the
+   summary types its first line, the graph and chart draw, the impact bars
+   fill. Its reason: the agent's work is shown happening, not described.
+   Everything is still and complete under reduced motion, and the demo
+   waits for Play. Each frame is one picture for screen readers (role img
+   + a label); the "buttons" inside it are drawings, not controls.
+   Values under OKTA AI SCREENS in tokens.css. The org (Acme), people and
+   counts are made-up UI content. */
+type Screen = 'dashboard' | 'attention' | 'summary' | 'audit' | 'decide' | 'verify' | 'loop' | 'demo';
+interface Props { screen: Screen; caption?: string }
+const { screen, caption } = Astro.props;
+
+const icons: Record<string, string> = {
+  dash: 'M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z',
+  dir: 'M10.5 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0M3 14c0-2.8 2.2-4.5 5-4.5s5 1.7 5 4.5',
+  app: 'M2 3h12v10H2zM2 6h12',
+  sec: 'M8 1.8 13 4v4c0 3-2.2 5.2-5 6.2C5.2 13.2 3 11 3 8V4z',
+  gov: 'M2 6h12M3 6v7M13 6v7M8 6v7M1.5 13.5h13M8 1.5 14 5H2z',
+  ai: 'M8 1.5 9.3 6.7 14.5 8 9.3 9.3 8 14.5 6.7 9.3 1.5 8 6.7 6.7z',
+  wf: 'M6 4a2 2 0 1 1-4 0 2 2 0 0 1 4 0M14 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0M6 4h3a3 3 0 0 1 3 3v3',
+  rep: 'M3 13V8M8 13V3M13 13V6',
+  set: 'M10.2 8a2.2 2.2 0 1 1-4.4 0 2.2 2.2 0 0 1 4.4 0M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4',
+};
+const nav: [string, string][] = [
+  ['dash', 'Dashboard'], ['dir', 'Directory'], ['app', 'Applications'], ['sec', 'Security'],
+  ['gov', 'Identity Governance'], ['ai', 'Okta AI agents'], ['wf', 'Workflow'], ['rep', 'Reports'], ['set', 'Settings'],
+];
+const AI = icons.ai;
+
+const meta: Record<string, { url: string; nav: string; label: string; demo: string }> = {
+  dashboard: { url: 'acme-admin.okta.com/admin/dashboard', nav: 'dash', demo: 'Investigate',
+    label: 'Okta Admin Console dashboard. Okta AI agents watched 41,280 users and 1,126 apps overnight. One finding needs the admin: 38 users can reach the Admin Console without phishing-resistant MFA, with a Review button. Beside it, a live feed of what the agents did.' },
+  attention: { url: 'acme-admin.okta.com/admin/dashboard', nav: 'dash', demo: 'Investigate',
+    label: 'The dashboard with the Policy agent’s finding marked: 38 users can reach the Admin Console without phishing-resistant MFA, 6 of them Super Admins. Its Review button is ringed.' },
+  summary: { url: 'acme-admin.okta.com/admin/ai/findings/PA-1042', nav: 'ai', demo: 'Summary',
+    label: 'Finding PA-1042, Admin Console sign-on gap. The affected group, app and policy rule on the left; the Policy agent’s summary on the right: what it found, why it matters, and what it would do.' },
+  audit: { url: 'acme-admin.okta.com/admin/ai/findings/PA-1042/evidence', nav: 'ai', demo: 'Audit',
+    label: 'The evidence for the finding: a graph linking Rule 3 and the IT-Contractors group to 6 Super Admins and 32 read-only admins, and the five checks the agent ran, the last left for the admin to confirm.' },
+  decide: { url: 'acme-admin.okta.com/admin/ai/findings/PA-1042/fix', nav: 'ai', demo: 'Decide',
+    label: 'Choose a fix. Three options, the suggested one selected: require FastPass or a security key for IT-Contractors. Its estimated impact: risk fully closed, 7 people need to enrol, no sign-ins blocked today. An Approve and apply button.' },
+  verify: { url: 'acme-admin.okta.com/admin/ai/findings/PA-1042', nav: 'ai', demo: 'Verify',
+    label: 'After the fix: a chart of SMS sign-ins to the Admin Console dropping to zero on the day the fix was applied, and four checks, three passed and one scheduled.' },
+};
+const frames: Screen[] = screen === 'demo' ? ['dashboard', 'summary', 'audit', 'decide', 'verify'] : screen === 'loop' ? [] : [screen];
+const loop = [
+  { who: 'ai', step: 'Watch', note: 'Sign-ins, roles, policies, all day' },
+  { who: 'ai', step: 'Investigate', note: 'Links users, groups, rules and logs' },
+  { who: 'ai', step: 'Write a finding', note: 'What, why, what to do' },
+  { who: 'hu', step: 'Check the work', note: 'Evidence, against org policy' },
+  { who: 'hu', step: 'Decide', note: 'The suggested fix, or their own' },
+  { who: 'ai', step: 'Verify', note: 'Reports if the fix held' },
+];
+---
+<figure class="okta-ai" data-okta={screen}>
+  <div class="stage">
+    {screen === 'loop' && (
+      <>
+        <ol class="loop" data-okta-loop aria-label="The human and AI loop, six steps">
+          {loop.map((l) => (
+            <li>
+              <b class={l.who}>{l.who === 'ai' ? 'Agent' : 'Admin'}</b>
+              {l.step}
+              <small>{l.note}</small>
+            </li>
+          ))}
+        </ol>
+        <p class="loop-back">Back to Watch</p>
+      </>
+    )}
+
+    {screen === 'demo' && (
+      <svg class="cursor" viewBox="0 0 18 22" aria-hidden="true"><path d="M1 1v17l4.5-4.2 3 6.7 3-1.3-3-6.6H15z" /></svg>
+    )}
+
+    {frames.map((f, fi) => {
+      const m = meta[f];
+      return (
+        <div class:list={['okta', screen === 'demo' && 'scene', screen === 'demo' && fi === 0 && 'on']}
+          role="img" aria-label={m.label} data-name={m.demo}>
+          <div class="o-chrome" aria-hidden="true"><i></i><i></i><i></i><span>{m.url}</span></div>
+          <div class="o-top" aria-hidden="true">
+            <div class="o-logo">okta <small>Admin Console</small></div>
+            <div class="o-search"><svg viewBox="0 0 16 16"><path d="M11.5 7a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0M10.5 10.5l3 3" /></svg>Search people, apps, groups</div>
+            <div class="o-user"><span class="o-pill ai"><svg viewBox="0 0 16 16" class="fill"><path d={AI} /></svg>Okta AI on</span><span class="o-org">Acme Corp</span><span class="o-av">PR</span></div>
+          </div>
+          <div class="o-body" aria-hidden="true">
+            <div class="o-nav">
+              {nav.map(([k, name]) => (
+                <span class:list={['o-nav-a', k === m.nav && 'on']}><svg viewBox="0 0 16 16"><path d={icons[k]} /></svg>{name}</span>
+              ))}
+            </div>
+
+            {(f === 'dashboard' || f === 'attention') && (
+              <div class="o-main">
+                <p class="o-h">Good morning, Priya</p>
+                <p class="o-sub">Okta AI agents watched 41,280 users and 1,126 apps overnight.</p>
+                <div class="o-grid kpis">
+                  <div class="o-card o-kpi"><span>Active users</span><b>41,280</b><span class="o-muted">+312 this week</span></div>
+                  <div class="o-card o-kpi"><span>Apps</span><b>1,126</b><span class="o-muted">14 added</span></div>
+                  <div class="o-card o-kpi"><span>Open risks</span><b class="red">3</b><span class="o-muted">1 needs you</span></div>
+                  <div class="o-card o-kpi"><span>Agent actions</span><b>218</b><span class="o-muted">all within policy</span></div>
+                </div>
+                <div class="o-grid dash">
+                  <div class:list={['o-card', 'attn', f === 'attention' && 'hl']}>
+                    <div class="o-tags"><span class="o-pill red"><i class="o-dot"></i>Needs your attention</span><span class="o-pill ai"><svg viewBox="0 0 16 16" class="fill"><path d={AI} /></svg>Policy agent</span></div>
+                    <h4>38 users can reach the Admin Console without phishing-resistant MFA</h4>
+                    <p class="o-muted o-p">A sign-on rule for the IT-Contractors group falls back to SMS. 6 of them hold Super Admin.</p>
+                    <span class:list={['o-btn', 'pri', f === 'attention' && 'ring']} data-t="next">Review</span>
+                    <span class="o-btn">Later</span>
+                  </div>
+                  <div class="o-card">
+                    <div class="o-between"><h4>Agent activity</h4><span class="o-pill green"><i class="o-dot"></i>Live</span></div>
+                    <div class="scan"><i></i></div>
+                    <div class="feed">
+                      {['Deprovisioned 4 leavers from Workday sync|2m', 'Revoked 12 stale Salesforce tokens|9m', 'Mapped IT-Contractors → Super Admin|14m', 'Flagged sign-on rule fallback to SMS|15m'].map((r) => {
+                        const [t, w] = r.split('|');
+                        return <div class="o-row"><svg viewBox="0 0 16 16" class="fill spark"><path d={AI} /></svg>{t}<span class="o-sp o-muted">{w}</span></div>;
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {f === 'summary' && (
+              <div class="sum">
+                <div class="o-main">
+                  <p class="o-crumb">Okta AI agents › <b>Policy agent</b> › Finding PA-1042</p>
+                  <p class="o-h">Admin Console sign-on gap</p>
+                  <p class="o-sub">Opened 15 min ago · Severity high · Assigned to you</p>
+                  <div class="o-card gap">
+                    <h4>Affected</h4>
+                    <div class="o-row"><span class="o-av">IC</span><span>IT-Contractors <span class="o-muted">· 38 users</span></span><span class="o-sp o-pill red">6 Super Admin</span></div>
+                    <div class="o-row"><span class="o-av grey">AC</span><span>Admin Console <span class="o-muted">· app</span></span><span class="o-sp o-pill amber">SMS fallback</span></div>
+                    <div class="o-row"><span class="o-av grey">R3</span><span>Rule 3 <span class="o-muted">· policy</span></span><span class="o-sp o-muted">edited 41 days ago</span></div>
+                  </div>
+                  <div class="o-card"><h4>Last 30 days</h4><p class="o-muted o-p">212 Admin Console sign-ins from this group used SMS. 3 came from new devices in new countries.</p></div>
+                </div>
+                <div class="sum-panel">
+                  <span class="o-pill ai"><svg viewBox="0 0 16 16" class="fill"><path d={AI} /></svg>Policy agent · summary</span>
+                  <h5>What I found</h5>
+                  <p class="type" data-type>Rule 3 lets the IT-Contractors group fall back to SMS when signing in to the Admin Console. Six of them hold Super Admin.</p>
+                  <h5>Why it matters</h5>
+                  <p>An SMS code can be phished or SIM-swapped. With Super Admin, one stolen code can change every policy in the org.</p>
+                  <h5>What I'd do</h5>
+                  <p>Require Okta FastPass or a security key for the Admin Console, for this group only. Nobody loses access today.</p>
+                  <div class="sum-go"><span class="o-btn pri" data-t="next">See the evidence</span></div>
+                </div>
+              </div>
+            )}
+
+            {f === 'audit' && (
+              <div class="o-main">
+                <p class="o-crumb">Finding PA-1042 › <b>Evidence</b></p>
+                <div class="o-tags"><p class="o-h">How the agent got here</p><span class="o-pill blue">Read only</span></div>
+                <div class="o-grid audit">
+                  <div class="o-card graph">
+                    <svg viewBox="0 0 520 260">
+                      <path class="edge" d="M110 60 C170 60 170 130 220 130" />
+                      <path class="edge risk" d="M110 130 C160 130 160 130 220 130" />
+                      <path class="edge" d="M110 200 C170 200 170 130 220 130" />
+                      <path class="edge risk" d="M320 130 C370 130 370 70 410 70" />
+                      <path class="edge" d="M320 130 C370 130 370 190 410 190" />
+                      <g class="node"><rect x="10" y="40" width="100" height="40" rx="6" /><text x="20" y="57">Workday</text><text class="s" x="20" y="71">source · 38 users</text></g>
+                      <g class="node risk"><rect x="10" y="110" width="100" height="40" rx="6" /><text x="20" y="127">Rule 3</text><text class="s" x="20" y="141">SMS allowed</text></g>
+                      <g class="node"><rect x="10" y="180" width="100" height="40" rx="6" /><text x="20" y="197">Role assignment</text><text class="s" x="20" y="211">by J. Okafor, Mar</text></g>
+                      <g class="node ai"><rect x="220" y="105" width="100" height="50" rx="6" /><text x="230" y="125">IT-Contractors</text><text class="s" x="230" y="140">group · 38</text></g>
+                      <g class="node risk"><rect x="410" y="45" width="100" height="50" rx="6" /><text x="420" y="65">Super Admin</text><text class="s" x="420" y="80">6 people</text></g>
+                      <g class="node"><rect x="410" y="165" width="100" height="50" rx="6" /><text x="420" y="185">Read-only Admin</text><text class="s" x="420" y="200">32 people</text></g>
+                    </svg>
+                  </div>
+                  <div class="o-card ev">
+                    <h4>Checks the agent ran</h4>
+                    <div class="o-row"><span class="chk on"></span>Rule 3 matches policy "Admin sign-on"</div>
+                    <div class="o-row"><span class="chk on"></span>SMS used in 212 sign-ins (System Log)</div>
+                    <div class="o-row"><span class="chk on"></span>6 Super Admins in group</div>
+                    <div class="o-row"><span class="chk on"></span>No exception on file</div>
+                    <div class="o-row"><span class="chk"></span><span class="o-muted">Your org's contractor policy</span><span class="o-sp o-pill amber">You confirm</span></div>
+                    <div class="sum-go"><span class="o-btn pri" data-t="next">Looks right, choose a fix</span></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {f === 'decide' && (
+              <div class="o-main">
+                <p class="o-crumb">Finding PA-1042 › <b>Choose a fix</b></p>
+                <p class="o-h">Nothing changes until you approve</p>
+                <p class="o-sub">The agent estimates the impact of each option from the last 30 days of sign-ins.</p>
+                <div class="o-grid decide">
+                  <div>
+                    <div class="opt on"><span class="rad"></span><div><h4>Require FastPass or a security key for IT-Contractors <span class="o-pill ai">Suggested</span></h4><p>Applies to Admin Console sign-on only. 31 of 38 already have FastPass.</p></div><span class="o-pill green">Low impact</span></div>
+                    <div class="opt"><span class="rad"></span><div><h4>Remove SMS for Super Admins only</h4><p>Closes the worst path. 32 read-only admins keep SMS.</p></div><span class="o-pill amber">Partial</span></div>
+                    <div class="opt"><span class="rad"></span><div><h4>Edit the rule myself</h4><p>Opens Rule 3 with the agent's notes beside it.</p></div><span class="o-pill blue">Manual</span></div>
+                  </div>
+                  <div class="o-card">
+                    <h4>If you approve the suggested fix</h4>
+                    <div class="o-row">Risk closed<span class="o-sp">100%</span></div><div class="meter"><i style="--w: 100%"></i></div>
+                    <div class="o-row">People who need to enrol<span class="o-sp">7</span></div><div class="meter"><i class="amber" style="--w: 18%"></i></div>
+                    <div class="o-row">Sign-ins blocked today<span class="o-sp">0</span></div>
+                    <p class="o-muted o-small">The 7 get an enrolment email and a 7-day grace window.</p>
+                    <span class="o-btn pri" data-t="next">Approve and apply</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {f === 'verify' && (
+              <div class="o-main">
+                <p class="o-crumb">Finding PA-1042 › <b>Watching</b></p>
+                <div class="o-tags"><p class="o-h">Fix applied, the agent is checking it held</p><span class="o-pill green"><i class="o-dot"></i>Resolved</span></div>
+                <p class="o-sub">Applied by Priya R. · approved 7 days ago · watched by the Policy agent</p>
+                <div class="o-grid verify">
+                  <div class="o-card vchart">
+                    <h4>Admin Console sign-ins with SMS, IT-Contractors</h4>
+                    <svg viewBox="0 0 400 150">
+                      <path class="area" d="M10 40 L60 30 L110 45 L160 35 L210 50 L230 130 L280 132 L330 132 L390 132 L390 135 L10 135Z" />
+                      <path class="line" d="M10 40 L60 30 L110 45 L160 35 L210 50 L230 130 L280 132 L330 132 L390 132" />
+                      <line class="mark" x1="215" x2="215" y1="12" y2="135" />
+                      <text x="220" y="20">Fix applied</text>
+                      <text x="10" y="148">Day −7</text><text x="360" y="148">Day +7</text>
+                    </svg>
+                  </div>
+                  <div class="o-card">
+                    <h4>Checks since the fix</h4>
+                    <div class="o-row"><span class="o-pill green">Pass</span>No SMS sign-ins to Admin Console</div>
+                    <div class="o-row"><span class="o-pill green">Pass</span>7 of 7 enrolled in FastPass</div>
+                    <div class="o-row"><span class="o-pill green">Pass</span>No locked-out admins</div>
+                    <div class="o-row"><span class="o-pill ai">Next</span>Re-check weekly for 30 days</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+
+  {screen === 'demo' && (
+    <div class="demo-bar">
+      <button type="button" class="btn" data-play aria-pressed="false">Pause</button>
+      <span class="steps" aria-hidden="true">{frames.map(() => <i></i>)}</span>
+      <span class="u-label-mono" data-step aria-live="polite">Investigate</span>
+    </div>
+  )}
+  {caption && <figcaption class="u-label-mono cap">{caption}</figcaption>}
+</figure>
+
+<script>
+  import { cssMs } from '../scripts/css-time';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function type(el: HTMLElement | null) {
+    if (!el) return;
+    const full = el.dataset.full ?? el.textContent ?? '';
+    el.dataset.full = full;
+    el.classList.remove('done');
+    if (reduce) { el.textContent = full; el.classList.add('done'); return; }
+    el.textContent = '';
+    let i = 0;
+    const t = setInterval(() => { el.textContent = full.slice(0, ++i); if (i >= full.length) { clearInterval(t); el.classList.add('done'); } }, 18);
+  }
+
+  // Screens come in once, when they reach the screen.
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return;
+    const fig = e.target as HTMLElement;
+    fig.classList.add('is-in');
+    if (fig.dataset.okta !== 'demo') type(fig.querySelector<HTMLElement>('[data-type]'));
+    io.unobserve(fig);
+  }), { threshold: 0.3 });
+  document.querySelectorAll('.okta-ai:not([data-okta="loop"]):not([data-okta="demo"])').forEach((f) => {
+    if (reduce) { f.classList.add('is-in'); type(f.querySelector('[data-type]')); } else io.observe(f);
+  });
+
+  // The loop lights step by step while it's on screen.
+  document.querySelectorAll<HTMLElement>('[data-okta-loop]').forEach((ol) => {
+    const lis = [...ol.children];
+    if (reduce) { lis.forEach((l) => l.classList.add('lit')); return; }
+    let n = 0, t: number | undefined;
+    new IntersectionObserver(([e]) => {
+      clearInterval(t);
+      if (!e.isIntersecting) return;
+      t = window.setInterval(() => {
+        lis.forEach((l, i) => l.classList.toggle('lit', i <= n));
+        n = (n + 1) % (lis.length + 1);
+      }, cssMs('--okta-loop-step', 700));
+    }, { threshold: 0.4 }).observe(ol);
+  });
+
+  // The demo: one screen after another, a cursor pressing the next step.
+  document.querySelectorAll<HTMLElement>('.okta-ai[data-okta="demo"]').forEach((fig) => {
+    const stage = fig.querySelector<HTMLElement>('.stage')!;
+    const scenes = [...fig.querySelectorAll<HTMLElement>('.scene')];
+    const cursor = fig.querySelector<SVGElement>('.cursor')!;
+    const bars = [...fig.querySelectorAll<HTMLElement>('.steps i')];
+    const label = fig.querySelector<HTMLElement>('[data-step]')!;
+    const btn = fig.querySelector<HTMLButtonElement>('[data-play]')!;
+    const DUR = cssMs('--okta-demo-step', 3400);
+    let step = 0, timer: number | undefined, playing = !reduce, inView = false, started = false;
+    const later: number[] = [];
+
+    const setBtn = () => {
+      btn.textContent = playing ? 'Pause' : 'Play';
+      btn.setAttribute('aria-pressed', String(!playing));
+      fig.classList.toggle('paused', !playing);
+    };
+    function show(i: number) {
+      later.forEach(clearTimeout); later.length = 0;
+      step = i;
+      scenes.forEach((s, k) => s.classList.toggle('on', k === i));
+      bars.forEach((b, k) => { b.classList.toggle('done', k < i); b.classList.remove('on'); });
+      void bars[i].offsetWidth;
+      bars[i].classList.add('on');
+      label.textContent = scenes[i].dataset.name ?? '';
+      fig.classList.remove('is-in'); void fig.offsetWidth; fig.classList.add('is-in');
+      type(scenes[i].querySelector<HTMLElement>('[data-type]'));
+      const t = scenes[i].querySelector<HTMLElement>('[data-t="next"]');
+      if (t && !reduce) {
+        later.push(window.setTimeout(() => {
+          const d = stage.getBoundingClientRect(), r = t.getBoundingClientRect();
+          cursor.style.transform = `translate(${r.left - d.left + r.width * 0.5}px, ${r.top - d.top + r.height * 0.6}px)`;
+        }, DUR * 0.4));
+        later.push(window.setTimeout(() => {
+          t.classList.add('press');
+          later.push(window.setTimeout(() => t.classList.remove('press'), 250));
+        }, DUR * 0.8));
+      }
+    }
+    function tick() {
+      clearTimeout(timer);
+      if (!playing || !inView) return;
+      timer = window.setTimeout(() => { show((step + 1) % scenes.length); tick(); }, DUR);
+    }
+    btn.addEventListener('click', () => {
+      playing = !playing;
+      setBtn();
+      if (playing && reduce) show((step + 1) % scenes.length);
+      tick();
+    });
+    setBtn();
+    new IntersectionObserver(([e]) => {
+      inView = e.isIntersecting;
+      if (inView && !started) { started = true; show(0); }
+      tick();
+    }, { threshold: 0.4 }).observe(fig);
+  });
+</script>
+
+<style>
+  .okta-ai { margin: 0; }
+  .stage {
+    position: relative;
+    background: var(--hue-okta);
+    border-radius: var(--radius-okta-stage);
+    padding: var(--okta-stage-pad);
+    overflow: hidden;
+  }
+  .cap { margin: var(--space-label) 0 0; color: var(--fg-dim); max-width: var(--measure); text-transform: none; }
+
+  /* ---- the Okta Admin Console (product UI; its own sizes, like a screenshot) ---- */
+  .okta {
+    font: 400 13px/1.45 var(--okta-font);
+    color: var(--okta-ink);
+    background: var(--okta-white);
+    border-radius: var(--radius-okta-frame);
+    box-shadow: var(--okta-shadow);
+    overflow: hidden;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+  .okta p, .okta h4, .okta h5 { margin: 0; }
+  .okta svg { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; }
+  .okta svg.fill { width: 10px; height: 10px; fill: currentColor; stroke: none; }
+  .o-chrome { height: 30px; background: var(--okta-chrome); display: flex; align-items: center; gap: 6px; padding: 0 12px; border-bottom: 1px solid var(--okta-line); }
+  .o-chrome i { width: 9px; height: 9px; border-radius: 50%; background: var(--okta-chrome-dot); }
+  .o-chrome span { margin-left: 16px; font-size: 11px; color: var(--okta-sub); background: var(--okta-white); border-radius: 6px; padding: 3px 12px; flex: 0 1 340px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .o-top { height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 20px; border-bottom: 1px solid var(--okta-line); }
+  .o-logo { font: 700 22px/1 var(--okta-font); letter-spacing: -0.04em; color: var(--okta-ink); display: flex; align-items: center; gap: 10px; }
+  .o-logo small { font: 500 11px/1 var(--okta-font); letter-spacing: 0; color: var(--okta-sub); border-left: 1px solid var(--okta-line); padding-left: 10px; }
+  .o-search { flex: 1; max-width: 360px; height: 32px; border: 1px solid var(--okta-line); border-radius: 6px; display: flex; align-items: center; padding: 0 10px; color: var(--okta-sub); font-size: 12px; gap: 8px; }
+  .o-search svg { width: 13px; height: 13px; }
+  .o-user { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--okta-sub); }
+  .o-av { width: 28px; height: 28px; border-radius: 50%; background: var(--okta-blue-l); color: var(--okta-blue); display: grid; place-items: center; font: 600 11px/1 var(--okta-font); flex: none; }
+  .o-av.grey { background: var(--okta-bg); color: var(--okta-ink); }
+  .o-body { display: grid; grid-template-columns: 176px minmax(0, 1fr); min-height: 440px; }
+  .o-nav { border-right: 1px solid var(--okta-line); padding: 14px 8px; display: flex; flex-direction: column; gap: 1px; }
+  .o-nav-a { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 6px; color: var(--okta-ink-2); font-size: 12.5px; }
+  .o-nav-a.on { background: var(--okta-blue-l); color: var(--okta-blue); font-weight: 600; }
+  .o-main { background: var(--okta-bg); padding: 20px 24px; min-width: 0; }
+  .o-h { font: 600 18px/1.2 var(--okta-font); margin: 0 0 4px; }
+  .o-sub { color: var(--okta-sub); font-size: 12px; margin: 0 0 16px !important; }
+  .o-crumb { font-size: 11px; color: var(--okta-sub); margin: 0 0 8px !important; }
+  .o-crumb b { color: var(--okta-blue); font-weight: 500; }
+  .o-card { background: var(--okta-white); border: 1px solid var(--okta-line); border-radius: 8px; padding: 14px 16px; min-width: 0; }
+  .o-card h4 { font: 600 13px/1.3 var(--okta-font); margin: 0 0 4px; }
+  .o-card.gap { margin-bottom: 12px; }
+  .o-grid { display: grid; gap: 12px; }
+  .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .dash { grid-template-columns: 1.3fr 1fr; margin-top: 12px; }
+  .audit { grid-template-columns: 1.6fr 1fr; }
+  .decide { grid-template-columns: 1.4fr 1fr; }
+  .verify { grid-template-columns: 1.5fr 1fr; }
+  .o-kpi span { color: var(--okta-sub); font-size: 11px; }
+  .o-kpi b { display: block; font: 600 22px/1.1 var(--okta-font); margin: 4px 0 2px; }
+  .o-kpi b.red { color: var(--okta-red); }
+  .o-p { font-size: 12px; margin: 0 0 12px !important; }
+  .o-small { font-size: 11px; margin: 8px 0 12px !important; }
+  .o-tags { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .o-tags .o-h { margin: 0; }
+  .o-between { display: flex; justify-content: space-between; align-items: center; }
+  .o-btn {
+    display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: 6px;
+    font: 600 12px/1 var(--okta-font); border: 1px solid var(--okta-line); background: var(--okta-white); color: var(--okta-ink);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .o-btn.pri { background: var(--okta-blue); border-color: var(--okta-blue); color: var(--okta-white); }
+  .o-btn.press { transform: scale(0.96); box-shadow: var(--okta-press-ring); }
+  .o-pill { display: inline-flex; align-items: center; align-self: start; white-space: nowrap; gap: 5px; font: 600 10.5px/1 var(--okta-font); padding: 4px 8px; border-radius: 99px; }
+  .o-pill.red { background: var(--okta-red-l); color: var(--okta-red); }
+  .o-pill.green { background: var(--okta-green-l); color: var(--okta-green); }
+  .o-pill.amber { background: var(--okta-amber-l); color: var(--okta-amber); }
+  .o-pill.ai { background: var(--okta-violet-l); color: var(--okta-violet); }
+  .o-pill.blue { background: var(--okta-blue-l); color: var(--okta-blue); }
+  .o-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .o-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--okta-line); font-size: 12px; }
+  .o-card h4 + .o-row, .feed .o-row:first-child { border-top: 0; }
+  .o-sp { margin-left: auto; }
+  .o-muted { color: var(--okta-sub); }
+  .spark { color: var(--okta-violet); }
+
+  .attn { border-left: 3px solid var(--okta-red); }
+  .attn.hl { box-shadow: var(--okta-hl-ring); }
+  .ring { animation: okta-ring 2s ease-out infinite; }
+  @keyframes okta-ring {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--okta-red) 35%, transparent); }
+    70%, 100% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--okta-red) 0%, transparent); }
+  }
+  .scan { height: 3px; border-radius: 3px; background: var(--okta-violet-l); overflow: hidden; margin: 10px 0 2px; }
+  .scan i { display: block; height: 100%; width: 30%; background: var(--okta-violet); border-radius: 3px; animation: okta-scan 2.4s var(--ease-out, ease) infinite; }
+  @keyframes okta-scan { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+  .feed .o-row { opacity: 0; transform: translateY(6px); transition: opacity 0.5s var(--ease-out, ease), transform 0.5s var(--ease-out, ease); }
+  .is-in .feed .o-row { opacity: 1; transform: none; }
+  .is-in .feed .o-row:nth-child(2) { transition-delay: 0.25s; }
+  .is-in .feed .o-row:nth-child(3) { transition-delay: 0.5s; }
+  .is-in .feed .o-row:nth-child(4) { transition-delay: 0.75s; }
+
+  .sum { display: grid; grid-template-columns: minmax(0, 1fr) 280px; }
+  .sum-panel { background: var(--okta-white); border-left: 1px solid var(--okta-line); padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .sum-panel h5 { font: 600 10px/1 var(--okta-font); text-transform: uppercase; letter-spacing: 0.06em; color: var(--okta-sub); margin-top: 4px; }
+  .sum-panel p { font-size: 12px; }
+  .sum-go { margin-top: auto; padding-top: 12px; }
+  .type:not(.done)::after { content: '▍'; color: var(--okta-violet); animation: okta-blink 1s steps(1) infinite; }
+  @keyframes okta-blink { 50% { opacity: 0; } }
+
+  .graph svg { width: 100%; height: auto; display: block; }
+  .graph .edge { fill: none; stroke: var(--okta-edge); stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; transition: stroke-dashoffset 1.2s var(--ease-out, ease); }
+  .graph .edge.risk { stroke: var(--okta-red); stroke-width: 2; }
+  .is-in .graph .edge { stroke-dashoffset: 0; }
+  .graph .node { opacity: 0; transition: opacity 0.5s var(--ease-out, ease); }
+  .is-in .graph .node { opacity: 1; }
+  .graph .node rect { fill: var(--okta-white); stroke: var(--okta-line); stroke-width: 1; }
+  .graph .node.risk rect { stroke: var(--okta-red); fill: var(--okta-red-l); }
+  .graph .node.ai rect { stroke: var(--okta-violet); fill: var(--okta-violet-l); }
+  .graph text { font: 500 11px var(--okta-font); fill: var(--okta-ink); stroke: none; }
+  .graph text.s { font-size: 9.5px; fill: var(--okta-sub); font-weight: 400; }
+  .ev .o-row { font-size: 11.5px; }
+  .chk { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--okta-line); display: grid; place-items: center; flex: none; }
+  .chk.on { background: var(--okta-blue); border-color: var(--okta-blue); }
+  .chk.on::after { content: ''; width: 7px; height: 4px; border: 2px solid var(--okta-white); border-top: 0; border-right: 0; transform: rotate(-45deg) translate(1px, -1px); }
+
+  .opt { border: 1px solid var(--okta-line); border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: 18px 1fr auto; gap: 10px; background: var(--okta-white); }
+  .opt + .opt { margin-top: 8px; }
+  .rad { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--okta-radio); margin-top: 2px; }
+  .opt.on { border-color: var(--okta-blue); box-shadow: 0 0 0 1px var(--okta-blue); }
+  .opt.on .rad { border: 5px solid var(--okta-blue); }
+  .opt h4 { font: 600 12.5px/1.3 var(--okta-font); margin: 0 0 2px; }
+  .opt h4 .o-pill { margin-left: 4px; vertical-align: 1px; }
+  .opt p { font-size: 11.5px; color: var(--okta-sub); }
+  .meter { height: 6px; background: var(--okta-bg); border-radius: 6px; overflow: hidden; margin: 2px 0 6px; }
+  .meter i { display: block; height: 100%; width: 0; background: var(--okta-green); border-radius: 6px; transition: width 1s var(--ease-out, ease) 0.3s; }
+  .meter i.amber { background: var(--okta-amber); }
+  .is-in .meter i { width: var(--w); }
+
+  .vchart svg { width: 100%; height: auto; display: block; }
+  .vchart .line { fill: none; stroke: var(--okta-blue); stroke-width: 2; stroke-dasharray: 700; stroke-dashoffset: 700; transition: stroke-dashoffset 1.6s var(--ease-out, ease); }
+  .vchart .area { fill: var(--okta-blue-l); stroke: none; opacity: 0; transition: opacity 1s 0.6s; }
+  .vchart .mark { stroke: var(--okta-blue); stroke-dasharray: 3 3; stroke-width: 1; }
+  .is-in .vchart .line { stroke-dashoffset: 0; }
+  .is-in .vchart .area { opacity: 1; }
+  .vchart text { font: 400 9.5px var(--okta-font); fill: var(--okta-sub); stroke: none; }
+
+  /* ---- the loop ---- */
+  .loop { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .loop li {
+    background: var(--okta-white); border-radius: 16px; padding: 16px;
+    font: 500 13px/1.4 var(--okta-font); color: var(--okta-ink);
+    opacity: 0.35; transition: opacity 0.5s var(--ease-out, ease), transform 0.5s var(--ease-out, ease);
+  }
+  .loop li.lit { opacity: 1; transform: translateY(-4px); }
+  .loop b { display: block; font: 600 10px/1 var(--okta-font); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .loop b.ai { color: var(--okta-violet); }
+  .loop b.hu { color: var(--okta-blue); }
+  .loop small { display: block; font: 400 11px/1.4 var(--okta-font); color: var(--okta-sub); margin-top: 6px; }
+  .loop-back { font: 400 11px/1 var(--okta-font); color: var(--okta-ink-2); text-align: right; margin: 12px 0 0; }
+
+  /* ---- the demo ---- */
+  .scene { display: none; }
+  .scene.on { display: block; animation: okta-in 0.5s var(--ease-out, ease); }
+  @keyframes okta-in { from { opacity: 0; } to { opacity: 1; } }
+  .cursor { position: absolute; z-index: 2; left: 0; top: 0; width: 18px; height: 22px; pointer-events: none; transition: transform 0.9s var(--ease-out, ease); }
+  .cursor path { fill: var(--okta-white); stroke: var(--okta-ink); stroke-width: 1.3; stroke-linejoin: round; }
+  .demo-bar { display: flex; align-items: center; gap: var(--space-label); margin-top: var(--space-label); }
+  .steps { display: flex; gap: 6px; }
+  .steps i { width: 24px; height: 3px; border-radius: 3px; background: color-mix(in srgb, var(--fg) 14%, transparent); overflow: hidden; }
+  .steps i.done { background: var(--fg); }
+  .steps i.on::after { content: ''; display: block; height: 100%; background: var(--fg); animation: okta-fill var(--okta-demo-step) linear forwards; }
+  .paused .steps i.on::after { animation-play-state: paused; }
+  @keyframes okta-fill { from { width: 0; } to { width: 100%; } }
+
+  @media (max-width: 900px) {
+    .loop { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .o-nav { display: none; }
+    .o-body { grid-template-columns: minmax(0, 1fr); }
+    .o-search, .o-org { display: none; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dash, .audit, .decide, .verify, .sum { grid-template-columns: minmax(0, 1fr); }
+    .sum-panel { border-left: 0; border-top: 1px solid var(--okta-line); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .okta-ai *, .okta-ai *::before, .okta-ai *::after { animation: none !important; transition: none !important; }
+    .feed .o-row, .graph .node, .loop li { opacity: 1; transform: none; }
+    .graph .edge, .vchart .line { stroke-dashoffset: 0; }
+    .vchart .area { opacity: 1; }
+    .meter i { width: var(--w); }
+    .cursor { display: none; }
+  }
+</style>
