@@ -95,6 +95,10 @@ export type CaseBlock =
   | { kind: 'aside'; label: string; text: string }
   /** One line pointing to another case (or part of one): text, then a link. */
   | { kind: 'see'; text: string; href: string; label: string }
+  /** The Okta AI case's product screens, drawn in code in the Okta Admin
+      Console's style (OktaAgent.astro): one screen, the human + AI loop,
+      or the end-to-end demo that plays them in order. */
+  | { kind: 'okta'; screen: 'dashboard' | 'attention' | 'summary' | 'audit' | 'decide' | 'verify' | 'loop' | 'demo'; caption?: string }
   /** The Okta IAM case's product pictures, redrawn in code in the Okta
       Admin Console's style (OktaIam.astro). `view` picks the picture. */
   | { kind: 'iam'; view: 'dashboard' | 'scale' | 'plan' | 'model' | 'flow' | 'scroll' | 'cards' | 'role' | 'review'; caption?: string }
@@ -228,6 +232,240 @@ export interface CaseStudy {
 }
 
 export const cases: CaseStudy[] = [
+  // ==========================================================
+  // Okta AI agents — agentic identity security. On request (2026-11-26):
+  // marygans.com/case-studies/perception's storyline, beat for beat, told
+  // in Okta terms, with the screens drawn as Okta's Admin Console
+  // (OktaAgent.astro; mock in experiments/okta-perception). It took Okta
+  // OIN's place on /work; not on the home page. Copy is rewritten, not
+  // hers, and none of her numbers are used. The outcome and research
+  // numbers are written stand-ins (see the Outcome section's comment).
+  // The org (Acme), people and counts inside the screens are made-up UI
+  // content.
+  {
+    slug: 'okta-ai-agents',
+    company: 'Okta',
+    theme: 'coral',
+    eyebrow: 'Okta · Identity & Access Management · Okta AI · 2024–2025',
+    title: 'Agentic identity security: agents investigate, admins decide',
+    hero: { src: '/images/okta-ai/cover.webp', alt: 'Okta AI on a laptop and a phone: the Admin Console dashboard with a finding that needs the admin, and the same finding on mobile' },
+    description:
+      'Okta admins jumped between five tools to work out whether an identity alert mattered. I designed one continuous flow where Okta AI agents investigate risk, act inside the permissions they are given, and hand the admin a shared finding when a person has to decide.',
+    meta: [
+      // Her Okta dates, from her resume (Sep 2024 – Mar 2025); it ran
+      // alongside Okta IAM for those ~7 months (her word, 2026-11-26).
+      { label: 'Timeline', value: 'Sep 2024 – Mar 2025 · 7 months' },
+      { label: 'Team', value: 'Okta IAM' },
+      { label: 'Tools', value: 'Figma, FigJam, prototyping, product strategy' },
+    ],
+    role: 'Staff Product Designer',
+    sections: [
+      {
+        id: 'situation',
+        nav: 'The challenge',
+        label: 'The challenge',
+        heading: 'Five tabs to answer one question.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Okta admins jumped between the Admin Console, System Log, Identity Governance, Workflows and their own scripts to work out whether an alert mattered and who it touched.',
+              'That meant slower answers, context lost between tabs, and more risk on the calls that can lock a whole company out.',
+            ],
+          },
+          {
+            kind: 'bet',
+            text: 'Design one continuous flow where Okta AI agents investigate identity risk, carry out the tasks they are allowed to, and hand the admin a shared finding when a person has to decide.',
+          },
+        ],
+      },
+      {
+        id: 'research',
+        nav: 'Research',
+        label: 'Research',
+        heading: 'Admins didn’t need more alerts. They needed to trust the next step.',
+        /* Research story, on request (2026-11-26), after the methods and
+           findings in "Beyond the Breach: Forging a Unique UX for Identity
+           Security" (UXPA Magazine, Jan 2026, Sai Mohanty and Priyanka
+           Raju), paraphrased into this case's flow. The session counts
+           are written stand-ins (on request, 2026-11-26), not that
+           study's and not sourced: confirm them before an interview. */
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Before designing anything, we sat with the people who answer identity alerts, and watched them work a real one from start to finish.',
+            ],
+          },
+          {
+            kind: 'rows',
+            label: 'How we learned',
+            items: [
+              { term: 'Interviews', detail: '10 IAM admins, security engineers and IT managers, on how they decide what to fix first.' },
+              { term: 'Shadowing', detail: '6 sessions watching admins investigate and fix real identity risk, over 2 weeks.' },
+              { term: 'Tool review', detail: '6 identity security products, side by side.' },
+              { term: 'Usability tests', detail: '12 remote sessions with IAM admins and security leads on the prototype.' },
+            ],
+          },
+          {
+            kind: 'rows',
+            label: 'Who we designed for',
+            items: [
+              { term: 'IAM admin (first)', detail: 'Finds the riskiest identities, fixes them, proves it to audit. Too many alerts, no clear order.' },
+              { term: 'Security engineer', detail: 'Needs to see how far an attack could reach, fast. Works across too many tools.' },
+              { term: 'IT ops manager', detail: 'Keeps people working. Worries a fix will lock someone out.' },
+            ],
+          },
+          {
+            kind: 'fixes',
+            label: 'What we heard, and what it changed',
+            items: [
+              { tag: 'Scattered', found: 'Every alert meant opening four or five tools and lining them up by hand.', changed: 'One finding carries its users, groups, rules and logs, so Review never means looking things up again.' },
+              { tag: 'Trust', found: 'Admins wouldn’t act on a suggestion they couldn’t check first.', changed: 'Evidence and impact come before any fix, and we moved impact estimates up to must-have.' },
+              { tag: 'Priority', found: 'They weighed how risky a problem was against how hard it was to fix.', changed: 'Agents raise only what needs a person, ordered by risk and effort.' },
+              { tag: 'Time', found: 'Fixes took weeks, not minutes, and were easy to lose track of.', changed: 'The agent keeps watching after the fix and reports whether it held.' },
+              { tag: 'Scale', found: 'One admin looked after hundreds of identities at once.', changed: 'Critical first, detail on demand: summary, then evidence, then the fix.' },
+            ],
+          },
+          {
+            kind: 'aside',
+            label: 'What testing changed',
+            text: 'Everyone found the riskiest identity and valued the impact estimate. Fewer got through starting a fix: the confirm step was unclear, so we rewrote it as “Nothing changes until you approve”.',
+          },
+        ],
+      },
+      {
+        id: 'loop',
+        nav: 'Human + AI',
+        label: 'Human + AI collaboration',
+        heading: 'Agents do the legwork. People make the calls.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Agents watch the org, investigate what looks wrong and act inside the permissions an admin gave them. When judgement is needed they write up a finding the admin can check, change and approve before anything is fixed.',
+            ],
+          },
+          { kind: 'okta', screen: 'loop' },
+        ],
+      },
+      {
+        id: 'investigation',
+        nav: 'AI investigation',
+        label: 'AI investigation',
+        heading: 'The agent finds the pattern.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: ['It reads identity relationships, policy rules and sign-in signals across the org, and raises only what needs a person.'],
+          },
+          {
+            kind: 'okta',
+            screen: 'attention',
+            caption: 'Review moves the admin from the agent’s investigation into their own review. The finding, its signals and its context come along, so nothing has to be looked up again.',
+          },
+        ],
+      },
+      {
+        id: 'summary',
+        nav: 'Agent summary',
+        label: 'Policy agent summary',
+        heading: 'What it found, why it matters, what to do.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: ['The Policy agent states the gap, why it’s risky, and the safest next step, in three short parts.'],
+          },
+          { kind: 'okta', screen: 'summary' },
+        ],
+      },
+      {
+        id: 'audit',
+        nav: 'Human audit',
+        label: 'Human audit',
+        heading: 'The admin checks the agent’s work.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: ['The admin sees the relationships and checks behind the suggestion, and confirms it fits their org’s policy before going on. The one check only a person can make is left for them.'],
+          },
+          { kind: 'okta', screen: 'audit' },
+        ],
+      },
+      {
+        id: 'decision',
+        nav: 'Shared decision',
+        label: 'Shared decision making',
+        heading: 'Nothing changes until the admin picks.',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Once reviewed, the fix is framed as a shared decision: the agent suggests the best next step and estimates its impact.',
+              'The admin can take the suggestion or change it for their own context, policy or appetite for risk.',
+            ],
+          },
+          { kind: 'okta', screen: 'decide' },
+        ],
+      },
+      {
+        id: 'verify',
+        nav: 'Verification loop',
+        label: 'Verification loop',
+        heading: 'Did the fix hold?',
+        blocks: [
+          {
+            kind: 'prose',
+            text: ['After the fix, the agent keeps watching and reports whether it did what it was meant to.'],
+          },
+          { kind: 'okta', screen: 'verify' },
+        ],
+      },
+      {
+        id: 'demo',
+        nav: 'End-to-end demo',
+        label: 'End-to-end demo',
+        heading: 'One alert, start to finish.',
+        blocks: [{ kind: 'okta', screen: 'demo' }],
+      },
+      {
+        id: 'impact',
+        nav: 'Outcome',
+        label: 'Outcome',
+        heading: 'One place from alert to fix.',
+        /* Metrics chosen 2026-11-26 (on request, "go with your
+           recommendation"): time to triage, fixes approved as suggested,
+           task success in testing; fixes that held as the supporting
+           line. The values are WRITTEN STAND-INS (on request, 2026-11-26:
+           "remove X, add numbers"): plausible, not sourced, and not Mary
+           Gans's figures. Confirm or replace each before an interview
+           leans on it. */
+        blocks: [
+          {
+            kind: 'prose',
+            text: ['Shipped to early-access customers in the Admin Console, setting one pattern that joined investigation, decision support and the fix in one flow.'],
+          },
+          {
+            kind: 'metrics',
+            items: [
+              { value: '22 → 6 min', label: 'from a high-risk alert to the admin’s decision' },
+              { value: '68%', label: 'of agent findings approved with the suggested fix, unchanged' },
+              { value: '10 of 12', label: 'admins in testing went from review to approve without help' },
+            ],
+          },
+          {
+            kind: 'points',
+            items: [
+              { title: 'Fixes that held', body: '94% of applied fixes still held when the agent re-checked them 30 days later, with no admins locked out.' },
+              { title: 'Decisions admins can explain', body: 'Every suggestion shows its evidence and impact, so an admin can say why they approved it.' },
+              { title: 'A pattern to reuse', body: 'One reusable pattern for agent tasks across Okta.' },
+            ],
+          },
+        ],
+      },
+    ],
+    next: 'okta-iam',
+  },
   // ==========================================================
   {
     slug: 'okta-iam',

@@ -129,20 +129,19 @@ export const work = [
     tags: ['0→1', 'Research'], categories: ['retail'],
     href: '/work/walmart-scan-go', image: '/images/scan-go/hero.webp', alt: 'Scan & Go screens: scanning, cart and self-checkout' },
 
-  // The flagship. Appended rather than reordered to the front so the
-  // hand-tuned five-slot `layout` array on /work.astro stays untouched —
-  // this sixth tile falls back to /work.astro's documented full-width
-  // 16/10 treatment, which reads as an intentional close to the grid
-  // rather than a squeezed sixth card.
-  { company: 'Okta', theme: 'ember', device: 'desktop',
-    title: 'One way to publish an integration to Okta',
-    tagline: 'One way to publish an integration to Okta, instead of four.',
-    summary: 'Every new OIN integration category meant a bespoke review flow built by hand. I designed one framework instead, with a shared manifest, checks and components, so a category Okta hasn\'t invented yet can launch on it without a new build.',
-    role: 'Staff Product Designer · Integration Platform + Developer Ecosystem',
-    impact: 'Submission cycle time down 48%, on one framework instead of four',
+  // Okta AI agents (on request, 2026-11-26): replaced Okta OIN in this
+  // slot on /work (OIN's case page stays, linked from Moss). Its impact
+  // line states what the work does, not a number: her numbers are still
+  // [X] in cases.ts. Not on the home page, on request.
+  { company: 'Okta', theme: 'coral', device: 'desktop',
+    title: 'Agentic identity security',
+    tagline: 'Okta AI agents investigate identity risk; admins make the calls.',
+    summary: 'Okta admins jumped between five tools to work out whether an identity alert mattered. I designed one continuous flow where Okta AI agents investigate risk, act inside the permissions they are given, and hand the admin a shared finding when a person has to decide.',
+    role: 'Staff Product Designer · Okta IAM · Okta AI',
+    impact: 'Agents investigate, admins approve every fix',
     hoverState: 'case-study',
-    tags: ['Platform', 'Design Systems'], categories: ['devtools'],
-    href: '/work/okta-oin', image: '/images/okta/integrations.webp', alt: 'Auth0 onboarding screens: Applications, Organizations and Single Sign On Integrations' },
+    tags: ['Product Strategy'], categories: ['identity'],
+    href: '/work/okta-ai-agents', image: '/images/okta-ai/cover.webp', alt: 'Okta AI on a laptop and a phone: the Admin Console dashboard with a finding that needs the admin, and the same finding on mobile' },
 
   // Written from her "PayPal Debit Card" deck — see the header comment on
   // `paypal-debit-card` in cases.ts. Replaced the old Unified Card System

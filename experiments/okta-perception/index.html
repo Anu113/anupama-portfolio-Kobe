@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Okta AI identity risk — case study mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-26, on request: marygans.com/case-studies/perception
+  (her Microsoft Security "Perception" case) recreated beat for beat as an
+  Okta case, with the product screens drawn in Okta's admin console style
+  (Odyssey-like: Inter, Okta blue, white chrome, grey hairlines).
+
+  Same storyline, same order: Challenge → Goal → Human + AI → AI
+  investigation (Review hand-off) → Agent summary → Human audit → Shared
+  decision → Verification loop → End-to-end demo → Outcome.
+
+  The copy is rewritten in Okta terms, not copied from her page. Her
+  outcome numbers (75%, 15 → 3 min, 5 tools) are HER Microsoft results,
+  so they are not carried over. The outcome numbers now match the site's
+  case (okta-ai-agents in cases.ts): written stand-ins, not sourced, to
+  confirm before an interview. The org (Acme), people and counts inside
+  the screens are made-up UI content, like any mock.
+
+  Serve from the repo root: /experiments/okta-perception/index.html
+-->
+<style>
+  :root {
+    /* Portfolio shell (her site's palette and type) */
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070;
+    --card: color-mix(in srgb, #262626 3%, #fcfcfc);
+    --hue: #c9dcf2;                         /* Okta sky (PROJECT HUES) */
+    --wash: color-mix(in srgb, #f8b800 42%, transparent);
+    --ease: cubic-bezier(.16,1,.3,1);
+
+    /* Okta UI (Odyssey-like) — only inside .okta frames */
+    --o-font: 'Inter', system-ui, sans-serif;
+    --o-blue: #1662dd; --o-blue-d: #0f4fb8; --o-blue-l: #e9f0fc;
+    --o-ink: #1d1d21; --o-sub: #6e6e78; --o-line: #e1e1e6;
+    --o-bg: #f4f4f6; --o-white: #fff;
+    --o-red: #da372c; --o-red-l: #fdecea;
+    --o-green: #16884a; --o-green-l: #e6f4ec;
+    --o-amber: #b46a00; --o-amber-l: #fff3dc;
+    --o-violet: #6f47d8; --o-violet-l: #f0ebfc;   /* Okta AI marks */
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 600 14px/1.7 var(--font-sans); }
+  .mock-note { font: 400 11px/1.6 var(--font-mono); color: var(--dim); text-transform: uppercase; letter-spacing: .04em;
+    padding: 12px 24px; border-bottom: 1px dashed rgb(0 0 0 / .15); }
+
+  /* ---------- page ---------- */
+  .page { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 64px; max-width: 1240px; margin: 0 auto; padding: 72px 32px 160px; }
+  .rail { position: sticky; top: 32px; align-self: start; font: 400 11px/1 var(--font-mono); text-transform: uppercase; }
+  .rail p { color: var(--dim); margin: 0 0 16px; }
+  .rail a { display: flex; align-items: center; gap: 10px; color: var(--dim); text-decoration: none; padding: 7px 0; transition: color .2s; }
+  .rail a::before { content: ''; width: 10px; height: 1px; background: currentColor; transition: width .4s var(--ease); }
+  .rail a.is-on { color: var(--fg); }
+  .rail a.is-on::before { width: 24px; }
+  @media (max-width: 1000px) { .page { grid-template-columns: 1fr; } .rail { display: none; } }
+
+  .label { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--dim); margin: 0 0 16px; }
+  h1 { font: 300 clamp(32px, 4vw, 44px)/1.1 var(--font-serif); margin: 0 0 12px; letter-spacing: -.01em; }
+  h1 em, h2 em { font-style: italic; }
+  .dek { font: 300 22px/1.35 var(--font-serif); color: var(--dim); margin: 0 0 40px; max-width: 40ch; }
+  h2 { font: 300 32px/1.15 var(--font-serif); margin: 0 0 16px; }
+  .copy { max-width: 60ch; margin: 0 0 16px; }
+  .copy.dim { color: var(--dim); }
+  section { padding-top: 120px; }
+  section:first-of-type { padding-top: 0; }
+
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 48px; }
+  .facts div { background: var(--card); border-radius: 20px; padding: 18px 20px; }
+  .facts dt { font: 400 11px/1 var(--font-mono); text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+  .facts dd { margin: 0; }
+  @media (max-width: 700px) { .facts { grid-template-columns: 1fr; } }
+
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .two > div { background: var(--card); border-radius: 28px; padding: 32px; }
+  @media (max-width: 800px) { .two { grid-template-columns: 1fr; } }
+
+  /* Stage: work on the Okta hue, like her case covers */
+  .stage { background: var(--hue); border-radius: 28px; padding: clamp(20px, 4vw, 48px); margin: 32px 0 16px; overflow: hidden; }
+  .cap { font: 400 11px/1.6 var(--font-mono); color: var(--dim); margin: 0 0 8px; max-width: 70ch; }
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: center; }
+  @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+
+  /* reveal on scroll (content appearing, one curve) */
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+  .reveal.is-in { opacity: 1; transform: none; }
+
+  /* ---------- loop diagram ---------- */
+  .loop { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; counter-reset: s; }
+  .loop li { list-style: none; background: var(--o-white); border-radius: 16px; padding: 16px; font: 500 13px/1.4 var(--o-font); color: var(--o-ink);
+    opacity: .35; transition: opacity .5s var(--ease), transform .5s var(--ease); position: relative; }
+  .loop li small { display: block; font: 400 11px/1.4 var(--o-font); color: var(--o-sub); margin-top: 6px; }
+  .loop li b { display: inline-flex; align-items: center; gap: 6px; font: 600 10px/1 var(--o-font); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+  .loop li b.ai { color: var(--o-violet); } .loop li b.hu { color: var(--o-blue); }
+  .loop li.is-lit { opacity: 1; transform: translateY(-4px); }
+  .loop-back { font: 400 11px/1 var(--font-mono); color: var(--dim); text-align: right; margin-top: 12px; }
+  @media (max-width: 900px) { .loop { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ================= OKTA ADMIN SHELL ================= */
+  .okta { font: 400 13px/1.45 var(--o-font); color: var(--o-ink); background: var(--o-white); border-radius: 12px;
+    box-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 12px 40px rgb(15 40 90 / .14); overflow: hidden; position: relative; }
+  .okta * { font-family: inherit; }
+  .o-chrome { height: 30px; background: #eef0f3; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-bottom: 1px solid var(--o-line); }
+  .o-chrome i { width: 9px; height: 9px; border-radius: 50%; background: #d4d6db; }
+  .o-chrome span { margin-left: 16px; font-size: 11px; color: var(--o-sub); background: #fff; border-radius: 6px; padding: 3px 12px; flex: 0 1 340px; }
+  .o-top { height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 20px; border-bottom: 1px solid var(--o-line); }
+  .o-logo { font: 700 22px/1 var(--o-font); letter-spacing: -.04em; color: #191919; display: flex; align-items: center; gap: 10px; }
+  .o-logo small { font: 500 11px/1 var(--o-font); letter-spacing: 0; color: var(--o-sub); border-left: 1px solid var(--o-line); padding-left: 10px; }
+  .o-search { flex: 1; max-width: 360px; height: 32px; border: 1px solid var(--o-line); border-radius: 6px; display: flex; align-items: center; padding: 0 10px; color: var(--o-sub); font-size: 12px; gap: 8px; }
+  .o-top .o-user { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--o-sub); }
+  .o-av { width: 28px; height: 28px; border-radius: 50%; background: var(--o-blue-l); color: var(--o-blue); display: grid; place-items: center; font: 600 11px/1 var(--o-font); }
+  .o-body { display: grid; grid-template-columns: 176px 1fr; min-height: 440px; }
+  .o-nav { border-right: 1px solid var(--o-line); padding: 14px 8px; display: flex; flex-direction: column; gap: 1px; }
+  .o-nav a { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 6px; color: #3d3d44; font-size: 12.5px; text-decoration: none; }
+  .o-nav a svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.6; flex: none; }
+  .o-nav a.on { background: var(--o-blue-l); color: var(--o-blue); font-weight: 600; }
+  .o-main { background: var(--o-bg); padding: 20px 24px; min-width: 0; }
+  .o-h { font: 600 18px/1.2 var(--o-font); margin: 0 0 4px; }
+  .o-sub { color: var(--o-sub); font-size: 12px; margin: 0 0 16px; }
+  .o-crumb { font-size: 11px; color: var(--o-sub); margin: 0 0 8px; }
+  .o-crumb b { color: var(--o-blue); font-weight: 500; }
+  .o-card { background: var(--o-white); border: 1px solid var(--o-line); border-radius: 8px; padding: 14px 16px; }
+  .o-card h4 { font: 600 13px/1.3 var(--o-font); margin: 0 0 4px; }
+  .o-grid { display: grid; gap: 12px; }
+  .o-kpi b { display: block; font: 600 22px/1.1 var(--o-font); margin: 4px 0 2px; }
+  .o-kpi span { color: var(--o-sub); font-size: 11px; }
+  .o-btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-radius: 6px; font: 600 12px/1 var(--o-font);
+    border: 1px solid var(--o-line); background: #fff; color: var(--o-ink); cursor: pointer; transition: background .15s, box-shadow .15s, transform .15s; }
+  .o-btn.pri { background: var(--o-blue); border-color: var(--o-blue); color: #fff; }
+  .o-btn.pri:hover { background: var(--o-blue-d); }
+  .o-btn.is-press { transform: scale(.96); box-shadow: 0 0 0 4px rgb(22 98 221 / .25); }
+  .o-pill { display: inline-flex; align-items: center; align-self: start; white-space: nowrap; gap: 5px; font: 600 10.5px/1 var(--o-font); padding: 4px 8px; border-radius: 99px; }
+  .o-pill.red { background: var(--o-red-l); color: var(--o-red); }
+  .o-pill.green { background: var(--o-green-l); color: var(--o-green); }
+  .o-pill.amber { background: var(--o-amber-l); color: var(--o-amber); }
+  .o-pill.ai { background: var(--o-violet-l); color: var(--o-violet); }
+  .o-pill.blue { background: var(--o-blue-l); color: var(--o-blue); }
+  .o-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .o-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--o-line); font-size: 12px; }
+  .o-row:first-of-type { border-top: 0; }
+  .o-row .o-sp { margin-left: auto; }
+  .o-muted { color: var(--o-sub); }
+  .spark { color: var(--o-violet); }
+  @media (max-width: 760px) { .o-nav { display: none; } .o-body { grid-template-columns: 1fr; } .o-search { display: none; } }
+
+  /* agent feed: lines arrive one by one when in view */
+  .feed .o-row { opacity: 0; transform: translateY(6px); transition: opacity .5s var(--ease), transform .5s var(--ease); }
+  .is-in .feed .o-row, .feed.static .o-row { opacity: 1; transform: none; }
+  .is-in .feed .o-row:nth-child(2) { transition-delay: .25s; } .is-in .feed .o-row:nth-child(3) { transition-delay: .5s; }
+  .is-in .feed .o-row:nth-child(4) { transition-delay: .75s; } .is-in .feed .o-row:nth-child(5) { transition-delay: 1s; }
+  .scan { height: 3px; border-radius: 3px; background: var(--o-violet-l); overflow: hidden; margin: 10px 0 2px; }
+  .scan i { display: block; height: 100%; width: 30%; background: var(--o-violet); border-radius: 3px; animation: scan 2.4s var(--ease) infinite; }
+  @keyframes scan { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+
+  /* attention card */
+  .attn { border-left: 3px solid var(--o-red); }
+  .attn.hl { box-shadow: 0 0 0 3px rgb(218 55 44 / .18); }
+  .ring { animation: ring 2s ease-out infinite; }
+  @keyframes ring { 0% { box-shadow: 0 0 0 0 rgb(218 55 44 / .35); } 70%,100% { box-shadow: 0 0 0 10px rgb(218 55 44 / 0); } }
+
+  /* summary panel */
+  .sum { display: grid; grid-template-columns: 1fr 300px; gap: 0; min-height: 440px; }
+  .sum-panel { background: #fff; border-left: 1px solid var(--o-line); padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .sum-panel h5 { margin: 0; font: 600 10px/1 var(--o-font); text-transform: uppercase; letter-spacing: .06em; color: var(--o-sub); }
+  .sum-panel p { margin: 0; font-size: 12px; }
+  .type::after { content: '▍'; color: var(--o-violet); animation: blink 1s steps(1) infinite; }
+  .type.done::after { content: ''; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (max-width: 760px) { .sum { grid-template-columns: 1fr; } }
+
+  /* graph */
+  .graph svg { width: 100%; height: auto; display: block; }
+  .graph .edge { fill: none; stroke: #c3c7d1; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; transition: stroke-dashoffset 1.2s var(--ease); }
+  .graph .edge.risk { stroke: var(--o-red); stroke-width: 2; }
+  .is-in .graph .edge, .graph.static .edge { stroke-dashoffset: 0; }
+  .graph .node rect { fill: #fff; stroke: var(--o-line); }
+  .graph .node.risk rect { stroke: var(--o-red); fill: var(--o-red-l); }
+  .graph .node.ai rect { stroke: var(--o-violet); fill: var(--o-violet-l); }
+  .graph text { font: 500 11px var(--o-font); fill: var(--o-ink); }
+  .graph text.s { font-size: 9.5px; fill: var(--o-sub); font-weight: 400; }
+  .graph .node { opacity: 0; transition: opacity .5s var(--ease); }
+  .is-in .graph .node, .graph.static .node { opacity: 1; }
+  .ev .o-row { font-size: 11.5px; }
+  .chk { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--o-line); display: grid; place-items: center; flex: none; }
+  .chk.on { background: var(--o-blue); border-color: var(--o-blue); }
+  .chk.on::after { content: ''; width: 7px; height: 4px; border: 2px solid #fff; border-top: 0; border-right: 0; transform: rotate(-45deg) translate(1px, -1px); }
+
+  /* decision */
+  .opt { border: 1px solid var(--o-line); border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: 18px 1fr auto; gap: 10px; background: #fff; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+  .opt + .opt { margin-top: 8px; }
+  .opt .rad { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #b6b8c0; margin-top: 2px; transition: border .2s; }
+  .opt.on { border-color: var(--o-blue); box-shadow: 0 0 0 1px var(--o-blue); }
+  .opt.on .rad { border: 5px solid var(--o-blue); }
+  .opt h4 { margin: 0 0 2px; font: 600 12.5px/1.3 var(--o-font); }
+  .opt p { margin: 0; font-size: 11.5px; color: var(--o-sub); }
+  .meter { height: 6px; background: var(--o-bg); border-radius: 6px; overflow: hidden; margin-top: 6px; }
+  .meter i { display: block; height: 100%; background: var(--o-green); width: 0; transition: width 1s var(--ease); border-radius: 6px; }
+  .meter i.amber { background: var(--o-amber); }
+
+  /* verification chart */
+  .vchart path.line { fill: none; stroke: var(--o-blue); stroke-width: 2; stroke-dasharray: 700; stroke-dashoffset: 700; transition: stroke-dashoffset 1.6s var(--ease); }
+  .vchart path.area { fill: var(--o-blue-l); opacity: 0; transition: opacity 1s .6s; }
+  .is-in .vchart path.line, .vchart.static path.line { stroke-dashoffset: 0; }
+  .is-in .vchart path.area, .vchart.static path.area { opacity: 1; }
+  .vchart text { font: 400 9.5px var(--o-font); fill: var(--o-sub); }
+
+  /* ---------- end-to-end demo ---------- */
+  .demo { position: relative; }
+  .demo .scene { position: absolute; inset: 0; opacity: 0; transition: opacity .5s var(--ease); pointer-events: none; }
+  .demo .scene.on { opacity: 1; position: relative; }
+  .demo .scene:not(.on) { position: absolute; }
+  .cursor { position: absolute; z-index: 5; width: 18px; height: 22px; left: 0; top: 0; pointer-events: none;
+    transition: transform .9s var(--ease); filter: drop-shadow(0 1px 1px rgb(0 0 0 / .3)); }
+  .demo-bar { display: flex; align-items: center; gap: 12px; margin-top: 16px; font: 400 11px/1 var(--font-mono); text-transform: uppercase; color: var(--dim); }
+  .demo-bar button { font: inherit; text-transform: inherit; background: var(--fg); color: var(--bg); border: 0; border-radius: 99px; padding: 9px 16px; cursor: pointer; }
+  .demo-bar button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .steps { display: flex; gap: 6px; }
+  .steps i { width: 24px; height: 3px; border-radius: 3px; background: rgb(0 0 0 / .12); overflow: hidden; }
+  .steps i.on::after { content: ''; display: block; height: 100%; background: var(--fg); animation: fill var(--d, 3s) linear forwards; }
+  .steps i.done { background: var(--fg); }
+  .paused .steps i.on::after { animation-play-state: paused; }
+  @keyframes fill { from { width: 0; } to { width: 100%; } }
+
+  /* outcome */
+  .out { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 24px 0; }
+  .out div { background: var(--card); border-radius: 28px; padding: 24px; }
+  .out b { display: block; font: 300 40px/1 var(--font-serif); margin-bottom: 10px; }
+  .out span { color: var(--dim); font-size: 12px; }
+  .x { background: var(--wash); padding: 0 .2em; }
+  ul.plain { padding: 0; margin: 0; list-style: none; max-width: 60ch; }
+  ul.plain li { padding: 10px 0; }
+  @media (max-width: 800px) { .out { grid-template-columns: 1fr; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
+    .feed .o-row, .graph .node { opacity: 1; transform: none; }
+    .graph .edge, .vchart path.line { stroke-dashoffset: 0; }
+    .vchart path.area { opacity: 1; }
+    .loop li { opacity: 1; }
+    .cursor { display: none; }
+  }
+
+  /* ---------- render modes for the cover (?shot=desk | phone | cover) ---------- */
+  body.shot { margin: 0; background: #fff; }
+  body.shot .mock-note, body.shot .page { display: none; }
+  .shotbox { display: none; }
+  body.shot .shotbox { display: block; }
+  /* desk: the dashboard filling a 16:10 laptop screen, no browser chrome */
+  .shot-desk .okta { width: 1280px; height: 800px; border-radius: 0; box-shadow: none; }
+  .shot-desk .o-chrome { display: none; }
+  .shot-desk .o-body { min-height: 748px; }
+  .shot-desk .o-main { padding: 28px 32px; }
+  .shot-desk .o-h { font-size: 22px; }
+  .shot-desk .o-grid.dash { grid-template-columns: 1.25fr 1fr; }
+  /* phone: Okta AI's finding on mobile, 393 x 852 */
+  .m { width: 393px; height: 852px; background: var(--o-bg); font: 400 14px/1.45 var(--o-font); color: var(--o-ink); display: flex; flex-direction: column; overflow: hidden; }
+  .m-status { height: 54px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 30px 8px 36px; font: 600 15px/1 var(--o-font); background: #fff; }
+  .m-status i { font-style: normal; letter-spacing: 1px; font-size: 12px; }
+  .m-top { background: #fff; display: flex; align-items: center; gap: 10px; padding: 10px 18px 14px; border-bottom: 1px solid var(--o-line); }
+  .m-top .o-logo { font-size: 24px; }
+  .m-top .o-av { margin-left: auto; }
+  .m-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+  .m-card { background: #fff; border: 1px solid var(--o-line); border-radius: 12px; padding: 16px; }
+  .m-card h3 { font: 600 17px/1.3 var(--o-font); margin: 10px 0 6px; }
+  .m-card p { margin: 0; font-size: 13px; color: var(--o-sub); }
+  .m-card h5 { margin: 0 0 6px; font: 600 10px/1 var(--o-font); text-transform: uppercase; letter-spacing: .06em; color: var(--o-sub); }
+  .m-tags { display: flex; gap: 6px; }
+  .m-stat { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .m-stat div { background: var(--o-bg); border-radius: 8px; padding: 8px 10px; font-size: 11px; color: var(--o-sub); }
+  .m-stat b { display: block; font: 600 18px/1.2 var(--o-font); color: var(--o-ink); }
+  .m-actions { display: grid; gap: 8px; margin-top: auto; }
+  .m-actions .o-btn { height: 46px; justify-content: center; font-size: 15px; border-radius: 10px; }
+  .m-home { height: 34px; display: grid; place-items: center; }
+  .m-home i { width: 134px; height: 5px; border-radius: 3px; background: #1d1d21; }
+  /* cover: laptop + phone on the Okta sky, 1500 x 806 */
+  .cv { width: 1500px; height: 806px; background: var(--hue); position: relative; overflow: hidden; }
+  .cv-mac { position: absolute; left: 170px; top: 64px; width: 960px; }
+  .cv-lid { background: #1b1b1d; border-radius: 26px 26px 0 0; padding: 22px 22px 30px; box-shadow: 0 30px 60px -20px rgb(15 40 90 / .35); }
+  .cv-lid img { display: block; width: 100%; aspect-ratio: 16 / 10; border-radius: 4px; }
+  .cv-base { height: 26px; margin: 0 -70px; background: linear-gradient(#e3e4e8, #b9bbc2); border-radius: 0 0 22px 22px; position: relative; }
+  .cv-base::before { content: ''; position: absolute; left: 50%; top: 0; width: 170px; height: 10px; margin-left: -85px; background: #c9cbd1; border-radius: 0 0 10px 10px; }
+  .cv-phone { position: absolute; right: 190px; bottom: 34px; width: 280px; padding: 11px; background: #1b1b1d; border-radius: 52px; box-shadow: 0 0 0 2px #c9cbd1, 0 40px 70px -20px rgb(15 40 90 / .45); }
+  .cv-phone img { display: block; width: 100%; border-radius: 42px; }
+  .cv-phone::after { content: ''; position: absolute; top: 22px; left: 50%; width: 90px; height: 26px; margin-left: -45px; background: #000; border-radius: 14px; }
+</style>
+</head>
+<body>
+<p class="mock-note">Mock · storyline after marygans.com/case-studies/perception · Okta admin UI · numbers are written stand-ins, same as the site's case</p>
+
+<!-- Shared SVG icons for the Okta nav -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-dash" viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></symbol>
+  <symbol id="i-dir" viewBox="0 0 16 16"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 14c0-2.8 2.2-4.5 5-4.5s5 1.7 5 4.5"/></symbol>
+  <symbol id="i-app" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6h12"/></symbol>
+  <symbol id="i-sec" viewBox="0 0 16 16"><path d="M8 1.8 13 4v4c0 3-2.2 5.2-5 6.2C5.2 13.2 3 11 3 8V4z"/></symbol>
+  <symbol id="i-gov" viewBox="0 0 16 16"><path d="M2 6h12M3 6v7M13 6v7M8 6v7M1.5 13.5h13M8 1.5 14 5H2z"/></symbol>
+  <symbol id="i-wf" viewBox="0 0 16 16"><circle cx="4" cy="4" r="2"/><circle cx="12" cy="12" r="2"/><path d="M6 4h3a3 3 0 0 1 3 3v3"/></symbol>
+  <symbol id="i-rep" viewBox="0 0 16 16"><path d="M3 13V8M8 13V3M13 13v-7"/></symbol>
+  <symbol id="i-ai" viewBox="0 0 16 16"><path d="M8 1.5 9.3 6.7 14.5 8 9.3 9.3 8 14.5 6.7 9.3 1.5 8 6.7 6.7z"/></symbol>
+  <symbol id="i-set" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"/></symbol>
+</svg>
+
+<!-- Okta shell template, filled per screen by script (data-screen, data-nav, data-url) -->
+<template id="shell">
+  <div class="o-chrome"><i></i><i></i><i></i><span class="o-url">acme-admin.okta.com/admin/dashboard</span></div>
+  <div class="o-top">
+    <div class="o-logo">okta <small>Admin Console</small></div>
+    <div class="o-search"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>Search people, apps, groups</div>
+    <div class="o-user"><span class="o-pill ai"><svg width="11" height="11"><use href="#i-ai" fill="currentColor"/></svg> Okta AI on</span>Acme Corp <span class="o-av">PR</span></div>
+  </div>
+  <div class="o-body">
+    <nav class="o-nav" aria-hidden="true">
+      <a data-k="dash"><svg><use href="#i-dash"/></svg>Dashboard</a>
+      <a data-k="dir"><svg><use href="#i-dir"/></svg>Directory</a>
+      <a data-k="app"><svg><use href="#i-app"/></svg>Applications</a>
+      <a data-k="sec"><svg><use href="#i-sec"/></svg>Security</a>
+      <a data-k="gov"><svg><use href="#i-gov"/></svg>Identity Governance</a>
+      <a data-k="ai"><svg><use href="#i-ai"/></svg>Okta AI agents</a>
+      <a data-k="wf"><svg><use href="#i-wf"/></svg>Workflow</a>
+      <a data-k="rep"><svg><use href="#i-rep"/></svg>Reports</a>
+      <a data-k="set"><svg><use href="#i-set"/></svg>Settings</a>
+    </nav>
+    <div class="o-slot"></div>
+  </div>
+</template>
+
+<!-- ============ SCREEN CONTENTS (reused by the sections and the demo) ============ -->
+<template id="s-dashboard">
+  <div class="o-main">
+    <p class="o-h">Good morning, Priya</p>
+    <p class="o-sub">Okta AI agents watched 41,280 users and 1,126 apps overnight.</p>
+    <div class="o-grid" style="grid-template-columns: repeat(4, 1fr)">
+      <div class="o-card o-kpi"><span>Active users</span><b>41,280</b><span class="o-muted">+312 this week</span></div>
+      <div class="o-card o-kpi"><span>Apps</span><b>1,126</b><span class="o-muted">14 added</span></div>
+      <div class="o-card o-kpi"><span>Open risks</span><b style="color:var(--o-red)">3</b><span class="o-muted">1 needs you</span></div>
+      <div class="o-card o-kpi"><span>Agent actions</span><b>218</b><span class="o-muted">all within policy</span></div>
+    </div>
+    <div class="o-grid" style="grid-template-columns: 1.3fr 1fr; margin-top: 12px">
+      <div class="o-card attn" data-t="attn">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span class="o-pill red"><i class="o-dot"></i>Needs your attention</span><span class="o-pill ai"><svg width="10" height="10"><use href="#i-ai" fill="currentColor"/></svg>Policy agent</span></div>
+        <h4>38 users can reach the Admin Console without phishing-resistant MFA</h4>
+        <p class="o-muted" style="margin:0 0 12px;font-size:12px">A sign-on rule for the IT-Contractors group falls back to SMS. 6 of them hold Super Admin.</p>
+        <button class="o-btn pri" data-t="review" tabindex="-1">Review</button>
+        <button class="o-btn" tabindex="-1">Later</button>
+      </div>
+      <div class="o-card">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h4>Agent activity</h4><span class="o-pill green"><i class="o-dot"></i>Live</span></div>
+        <div class="scan"><i></i></div>
+        <div class="feed">
+          <div class="o-row"><svg width="12" height="12" class="spark"><use href="#i-ai" fill="currentColor"/></svg>Deprovisioned 4 leavers from Workday sync<span class="o-sp o-muted">2m</span></div>
+          <div class="o-row"><svg width="12" height="12" class="spark"><use href="#i-ai" fill="currentColor"/></svg>Revoked 12 stale Salesforce tokens<span class="o-sp o-muted">9m</span></div>
+          <div class="o-row"><svg width="12" height="12" class="spark"><use href="#i-ai" fill="currentColor"/></svg>Mapped IT-Contractors → Super Admin<span class="o-sp o-muted">14m</span></div>
+          <div class="o-row"><svg width="12" height="12" class="spark"><use href="#i-ai" fill="currentColor"/></svg>Flagged sign-on rule fallback to SMS<span class="o-sp o-muted">15m</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="s-summary">
+  <div class="sum">
+    <div class="o-main">
+      <p class="o-crumb">Okta AI agents › <b>Policy agent</b> › Finding PA-1042</p>
+      <p class="o-h">Admin Console sign-on gap</p>
+      <p class="o-sub">Opened 15 min ago · Severity high · Assigned to you</p>
+      <div class="o-card" style="margin-bottom:12px">
+        <h4>Affected</h4>
+        <div class="o-row"><span class="o-av">IC</span>IT-Contractors <span class="o-muted">group · 38 users</span><span class="o-sp o-pill red">6 Super Admin</span></div>
+        <div class="o-row"><span class="o-av" style="background:var(--o-bg);color:var(--o-ink)">AC</span>Okta Admin Console <span class="o-muted">app</span><span class="o-sp o-pill amber">SMS fallback</span></div>
+        <div class="o-row"><span class="o-av" style="background:var(--o-bg);color:var(--o-ink)">R3</span>Rule 3 · "Contractor sign-on" <span class="o-muted">policy</span><span class="o-sp o-muted">edited 41 days ago</span></div>
+      </div>
+      <div class="o-card"><h4>Last 30 days</h4><p class="o-muted" style="margin:0;font-size:12px">212 Admin Console sign-ins from this group used SMS. 3 came from new devices in new countries.</p></div>
+    </div>
+    <aside class="sum-panel">
+      <span class="o-pill ai" style="align-self:start"><svg width="10" height="10"><use href="#i-ai" fill="currentColor"/></svg>Policy agent · summary</span>
+      <h5>What I found</h5>
+      <p class="type" data-type>Rule 3 lets the IT-Contractors group fall back to SMS when signing in to the Admin Console. Six of them hold Super Admin.</p>
+      <h5>Why it matters</h5>
+      <p>An SMS code can be phished or SIM-swapped. With Super Admin, one stolen code can change every policy in the org.</p>
+      <h5>What I'd do</h5>
+      <p>Require Okta FastPass or a security key for the Admin Console, for this group only. Nobody loses access today.</p>
+      <div style="margin-top:auto;display:flex;gap:8px"><button class="o-btn pri" data-t="audit" tabindex="-1">See the evidence</button></div>
+    </aside>
+  </div>
+</template>
+
+<template id="s-audit">
+  <div class="o-main">
+    <p class="o-crumb">Finding PA-1042 › <b>Evidence</b></p>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><p class="o-h" style="margin:0">How the agent got here</p><span class="o-pill blue">Read only</span></div>
+    <div class="o-grid" style="grid-template-columns: 1.6fr 1fr">
+      <div class="o-card graph">
+        <svg viewBox="0 0 520 260" role="img" aria-label="Graph: Rule 3 applies to IT-Contractors, whose 6 Super Admins reach the Admin Console with SMS">
+          <path class="edge" d="M110 60 C170 60 170 130 220 130"/>
+          <path class="edge risk" d="M110 130 C160 130 160 130 220 130"/>
+          <path class="edge" d="M110 200 C170 200 170 130 220 130"/>
+          <path class="edge risk" d="M320 130 C370 130 370 70 410 70"/>
+          <path class="edge" d="M320 130 C370 130 370 190 410 190"/>
+          <g class="node"><rect x="10" y="40" width="100" height="40" rx="6"/><text x="20" y="57">Workday</text><text class="s" x="20" y="71">source · 38 users</text></g>
+          <g class="node risk"><rect x="10" y="110" width="100" height="40" rx="6"/><text x="20" y="127">Rule 3</text><text class="s" x="20" y="141">SMS allowed</text></g>
+          <g class="node"><rect x="10" y="180" width="100" height="40" rx="6"/><text x="20" y="197">Role assignment</text><text class="s" x="20" y="211">by J. Okafor, Mar</text></g>
+          <g class="node ai"><rect x="220" y="105" width="100" height="50" rx="6"/><text x="230" y="125">IT-Contractors</text><text class="s" x="230" y="140">group · 38</text></g>
+          <g class="node risk"><rect x="410" y="45" width="100" height="50" rx="6"/><text x="420" y="65">Super Admin</text><text class="s" x="420" y="80">6 people</text></g>
+          <g class="node"><rect x="410" y="165" width="100" height="50" rx="6"/><text x="420" y="185">Read-only Admin</text><text class="s" x="420" y="200">32 people</text></g>
+        </svg>
+      </div>
+      <div class="o-card ev">
+        <h4>Checks the agent ran</h4>
+        <div class="o-row"><span class="chk on"></span>Rule 3 matches policy "Admin sign-on"</div>
+        <div class="o-row"><span class="chk on"></span>SMS used in 212 sign-ins (System Log)</div>
+        <div class="o-row"><span class="chk on"></span>6 Super Admins in group</div>
+        <div class="o-row"><span class="chk on"></span>No exception on file</div>
+        <div class="o-row"><span class="chk"></span><span class="o-muted">Your org's contractor policy</span><span class="o-sp o-pill amber">You confirm</span></div>
+        <div style="margin-top:12px;display:flex;gap:8px"><button class="o-btn pri" data-t="decide" tabindex="-1">Looks right, choose a fix</button></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="s-decide">
+  <div class="o-main">
+    <p class="o-crumb">Finding PA-1042 › <b>Choose a fix</b></p>
+    <p class="o-h">Nothing changes until you approve</p>
+    <p class="o-sub">The agent estimates the impact of each option from the last 30 days of sign-ins.</p>
+    <div class="o-grid" style="grid-template-columns: 1.4fr 1fr">
+      <div>
+        <div class="opt on" data-t="opt1"><span class="rad"></span><div><h4>Require FastPass or a security key for IT-Contractors <span class="o-pill ai" style="margin-left:4px">Suggested</span></h4><p>Applies to Admin Console sign-on only. 31 of 38 already have FastPass.</p></div><span class="o-pill green">Low impact</span></div>
+        <div class="opt"><span class="rad"></span><div><h4>Remove SMS for Super Admins only</h4><p>Closes the worst path. 32 read-only admins keep SMS.</p></div><span class="o-pill amber">Partial</span></div>
+        <div class="opt"><span class="rad"></span><div><h4>Edit the rule myself</h4><p>Opens Rule 3 with the agent's notes beside it.</p></div><span class="o-pill blue">Manual</span></div>
+      </div>
+      <div class="o-card">
+        <h4>If you approve the suggested fix</h4>
+        <div class="o-row">Risk closed<span class="o-sp">100%</span></div><div class="meter"><i data-w="100"></i></div>
+        <div class="o-row" style="margin-top:6px">People who need to enrol<span class="o-sp">7</span></div><div class="meter"><i class="amber" data-w="18"></i></div>
+        <div class="o-row" style="margin-top:6px">Sign-ins blocked today<span class="o-sp">0</span></div>
+        <p class="o-muted" style="font-size:11px;margin:8px 0 12px">The 7 get an enrolment email and a 7-day grace window.</p>
+        <button class="o-btn pri" data-t="approve" tabindex="-1">Approve and apply</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="s-verify">
+  <div class="o-main">
+    <p class="o-crumb">Finding PA-1042 › <b>Watching</b></p>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><p class="o-h" style="margin:0">Fix applied, agent is checking it held</p><span class="o-pill green"><i class="o-dot"></i>Resolved</span></div>
+    <p class="o-sub">Applied by Priya R. · approved 7 days ago · watched by the Policy agent</p>
+    <div class="o-grid" style="grid-template-columns: 1.5fr 1fr">
+      <div class="o-card vchart">
+        <h4>Admin Console sign-ins with SMS, IT-Contractors</h4>
+        <svg viewBox="0 0 400 150" role="img" aria-label="Line chart: SMS sign-ins fall from about 9 a day to zero after the fix">
+          <path class="area" d="M10 40 L60 30 L110 45 L160 35 L210 50 L230 130 L280 132 L330 132 L390 132 L390 135 L10 135Z"/>
+          <path class="line" d="M10 40 L60 30 L110 45 L160 35 L210 50 L230 130 L280 132 L330 132 L390 132"/>
+          <line x1="215" x2="215" y1="12" y2="135" stroke="#1662dd" stroke-dasharray="3 3"/>
+          <text x="220" y="20">Fix applied</text>
+          <text x="10" y="148">Day −7</text><text x="360" y="148">Day +7</text>
+        </svg>
+      </div>
+      <div class="o-card">
+        <h4>Checks since the fix</h4>
+        <div class="o-row"><span class="o-pill green">Pass</span>No SMS sign-ins to Admin Console</div>
+        <div class="o-row"><span class="o-pill green">Pass</span>7 of 7 enrolled in FastPass</div>
+        <div class="o-row"><span class="o-pill green">Pass</span>No locked-out admins</div>
+        <div class="o-row"><span class="o-pill ai">Next</span>Re-check weekly for 30 days</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+
+<div class="shotbox" data-shot="desk"><div class="shot-desk"><div class="okta" data-screen="dashboard" data-nav="dash" data-url="acme-admin.okta.com/admin/dashboard"></div></div></div>
+<div class="shotbox" data-shot="phone">
+  <div class="m">
+    <div class="m-status"><span>9:41</span><i>●●● ▮</i></div>
+    <div class="m-top"><span class="o-logo">okta</span><span class="o-pill ai">Okta AI</span><span class="o-av">PR</span></div>
+    <div class="m-body">
+      <div class="m-card">
+        <div class="m-tags"><span class="o-pill red"><i class="o-dot"></i>Needs your attention</span><span class="o-pill ai">Policy agent</span></div>
+        <h3>38 users can reach the Admin Console without phishing-resistant MFA</h3>
+        <p>Rule 3 lets IT-Contractors fall back to SMS. 6 of them hold Super Admin.</p>
+        <div class="m-stat"><div><b>38</b>users</div><div><b style="color:var(--o-red)">6</b>Super Admin</div><div><b>212</b>SMS sign-ins</div></div>
+      </div>
+      <div class="m-card">
+        <h5>What I'd do</h5>
+        <p style="color:var(--o-ink)">Require Okta FastPass or a security key for this group, Admin Console only. Nobody loses access today.</p>
+      </div>
+      <div class="m-card">
+        <h5>Impact</h5>
+        <div class="o-row" style="font-size:13px">Risk closed<span class="o-sp">100%</span></div>
+        <div class="o-row" style="font-size:13px">People who need to enrol<span class="o-sp">7</span></div>
+        <div class="o-row" style="font-size:13px">Sign-ins blocked today<span class="o-sp">0</span></div>
+      </div>
+      <div class="m-actions"><span class="o-btn pri">Review and approve</span><span class="o-btn">See the evidence</span></div>
+    </div>
+    <div class="m-home"><i></i></div>
+  </div>
+</div>
+<div class="shotbox" data-shot="cover">
+  <div class="cv">
+    <div class="cv-mac"><div class="cv-lid"><img src="render/okta-ai-desk.png" alt=""></div><div class="cv-base"></div></div>
+    <div class="cv-phone"><img src="render/okta-ai-phone.png" alt=""></div>
+  </div>
+</div>
+
+<div class="page">
+  <nav class="rail" aria-label="Contents">
+    <p>Contents</p>
+    <a href="#start">Start</a>
+    <a href="#challenge">The challenge</a>
+    <a href="#goal">Project goal</a>
+    <a href="#loop">Human + AI</a>
+    <a href="#investigation">AI investigation</a>
+    <a href="#summary">Agent summary</a>
+    <a href="#audit">Human audit</a>
+    <a href="#decision">Shared decision</a>
+    <a href="#verify">Verification loop</a>
+    <a href="#demo">End-to-end demo</a>
+    <a href="#outcome">Outcome</a>
+  </nav>
+
+  <main>
+    <section id="start">
+      <p class="label">Okta · Identity &amp; Access Management · Okta AI</p>
+      <h1>Agentic <em>identity</em> security</h1>
+      <p class="dek">Okta AI agents look for identity risk all day. The admin makes the calls that need a person.</p>
+      <dl class="facts">
+        <div><dt>Role</dt><dd>Staff Product Designer · Sep 2024 – Mar 2025</dd></div>
+        <div><dt>Team</dt><dd>Okta IAM</dd></div>
+        <div><dt>Tools</dt><dd>Figma, FigJam, prototyping, product strategy</dd></div>
+      </dl>
+      <div class="stage reveal"><div class="okta" data-screen="dashboard" data-nav="dash" data-url="acme-admin.okta.com/admin/dashboard"></div></div>
+    </section>
+
+    <section id="challenge">
+      <p class="label">01 · The challenge</p>
+      <div class="two">
+        <div class="reveal">
+          <h2>Five tabs to answer one <em>question</em></h2>
+          <p class="copy">Okta admins jumped between the Admin Console, System Log, Identity Governance, Workflows and their own scripts to work out whether an alert mattered and who it touched.</p>
+          <p class="copy dim">Slower answers, context lost between tabs, and more risk on the calls that can lock a whole company out.</p>
+        </div>
+        <div class="reveal" id="goal">
+          <h2>Project <em>goal</em></h2>
+          <p class="copy">Design one continuous flow where Okta AI agents investigate identity risk, carry out the tasks they're allowed to, and hand the admin a shared finding when a person has to decide.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="loop">
+      <p class="label">02 · Human + AI collaboration</p>
+      <h2>Agents do the legwork. People make the <em>calls</em>.</h2>
+      <p class="copy">Agents watch the org, investigate what looks wrong and act inside the permissions an admin gave them. When judgement is needed they write up a finding the admin can check, change and approve before anything is fixed.</p>
+      <div class="stage">
+        <ol class="loop" data-loop>
+          <li><b class="ai">◆ Agent</b>Watch<small>Sign-ins, roles, policies, all day</small></li>
+          <li><b class="ai">◆ Agent</b>Investigate<small>Links users, groups, rules and logs</small></li>
+          <li><b class="ai">◆ Agent</b>Write a finding<small>What, why, what to do</small></li>
+          <li><b class="hu">● Admin</b>Check the work<small>Evidence, against org policy</small></li>
+          <li><b class="hu">● Admin</b>Decide<small>Suggested fix, or their own</small></li>
+          <li><b class="ai">◆ Agent</b>Verify<small>Reports if the fix held</small></li>
+        </ol>
+        <p class="loop-back">↺ back to Watch</p>
+      </div>
+    </section>
+
+    <section id="investigation">
+      <p class="label">03 · AI investigation</p>
+      <h2>The agent finds the <em>pattern</em></h2>
+      <p class="copy">It reads identity relationships, policy rules and sign-in signals across the org and raises only what needs a person.</p>
+      <div class="stage reveal"><div class="okta" data-screen="dashboard" data-nav="dash" data-url="acme-admin.okta.com/admin/dashboard" data-hl></div></div>
+      <p class="cap">Review moves the admin from the agent's investigation into their own review. The finding, its signals and its context come along, so nothing has to be looked up again.</p>
+    </section>
+
+    <section id="summary">
+      <p class="label">04 · Policy agent summary of findings</p>
+      <h2>What it found, why it matters, what to <em>do</em></h2>
+      <p class="copy">The Policy agent states the gap, why it's risky, and the safest next step, in three short parts.</p>
+      <div class="stage reveal"><div class="okta" data-screen="summary" data-nav="ai" data-url="acme-admin.okta.com/admin/ai/findings/PA-1042"></div></div>
+    </section>
+
+    <section id="audit">
+      <p class="label">05 · Human audit</p>
+      <h2>Check the agent's <em>work</em></h2>
+      <p class="copy">The admin sees the relationships and checks behind the suggestion, and confirms it fits their org's policy before going on. The one check only a person can make is left for them.</p>
+      <div class="stage reveal"><div class="okta" data-screen="audit" data-nav="ai" data-url="acme-admin.okta.com/admin/ai/findings/PA-1042/evidence"></div></div>
+    </section>
+
+    <section id="decision">
+      <p class="label">06 · Shared decision making</p>
+      <h2>From analysis to <em>action</em></h2>
+      <p class="copy">Once reviewed, the fix is framed as a shared decision: the agent suggests the best next step and estimates its impact, and nothing changes until the admin picks.</p>
+      <p class="copy dim">They can take the suggestion or change it for their own context, policy or appetite for risk.</p>
+      <div class="stage reveal"><div class="okta" data-screen="decide" data-nav="ai" data-url="acme-admin.okta.com/admin/ai/findings/PA-1042/fix"></div></div>
+    </section>
+
+    <section id="verify">
+      <p class="label">07 · Verification loop</p>
+      <h2>Did the fix <em>hold</em>?</h2>
+      <p class="copy">After the fix, the agent keeps watching and reports whether it did what it was meant to.</p>
+      <div class="stage reveal"><div class="okta" data-screen="verify" data-nav="ai" data-url="acme-admin.okta.com/admin/ai/findings/PA-1042"></div></div>
+    </section>
+
+    <section id="demo">
+      <p class="label">08 · End-to-end demo</p>
+      <h2>One alert, start to <em>finish</em></h2>
+      <div class="stage">
+        <div class="demo" data-demo>
+          <svg class="cursor" viewBox="0 0 18 22" aria-hidden="true"><path d="M1 1v17l4.5-4.2 3 6.7 3-1.3-3-6.6H15z" fill="#fff" stroke="#1d1d21" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <div class="okta scene on" data-screen="dashboard" data-nav="dash" data-url="acme-admin.okta.com/admin/dashboard"></div>
+          <div class="okta scene" data-screen="summary" data-nav="ai" data-url="acme-admin.okta.com/admin/ai/findings/PA-1042"></div>
+          <div class="okta scene" data-screen="audit" data-nav="ai" data-url="acme-admin.okta.com/admin/ai/findings/PA-1042/evidence"></div>
+          <div class="okta scene" data-screen="decide" data-nav="ai" data-url="acme-admin.okta.com/admin/ai/findings/PA-1042/fix"></div>
+          <div class="okta scene" data-screen="verify" data-nav="ai" data-url="acme-admin.okta.com/admin/ai/findings/PA-1042"></div>
+        </div>
+      </div>
+      <div class="demo-bar">
+        <button type="button" data-play aria-pressed="false">Pause</button>
+        <span class="steps" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        <span data-step-label aria-live="polite">Investigate</span>
+      </div>
+    </section>
+
+    <section id="outcome">
+      <p class="label">09 · Outcome</p>
+      <h2>One place from alert to <em>fix</em></h2>
+      <p class="copy">Shipped to early-access customers in the Admin Console, setting one pattern that joined investigation, decision support and the fix in one flow.</p>
+      <div class="out">
+        <div><b>22 → 6 min</b><span>from a high-risk alert to the admin’s decision</span></div>
+        <div><b>68%</b><span>of agent findings approved with the suggested fix, unchanged</span></div>
+        <div><b>10 of 12</b><span>admins in testing went from review to approve without help</span></div>
+      </div>
+      <ul class="plain">
+        <li>94% of applied fixes still held when the agent re-checked them 30 days later, with no admins locked out</li>
+        <li>More confidence in fix choices, and decisions admins can explain</li>
+        <li>A reusable pattern for agent tasks across Okta</li>
+      </ul>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  // Render modes for the cover: ?shot=desk | phone | cover shows one target alone.
+  const shot = new URLSearchParams(location.search).get('shot');
+  if (shot) {
+    document.body.classList.add('shot');
+    document.querySelectorAll('.shotbox').forEach(b => { if (b.dataset.shot !== shot) b.remove(); });
+  }
+  const deskMain = () => document.querySelector('.shot-desk .o-main');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const shell = document.getElementById('shell');
+
+  // Build every Okta frame from the shell + its screen template
+  document.querySelectorAll('.okta[data-screen]').forEach(el => {
+    el.append(shell.content.cloneNode(true));
+    el.querySelector('.o-url').textContent = el.dataset.url;
+    el.querySelector(`.o-nav a[data-k="${el.dataset.nav}"]`)?.classList.add('on');
+    el.querySelector('.o-slot').replaceWith(document.getElementById('s-' + el.dataset.screen).content.cloneNode(true));
+    if (el.hasAttribute('data-hl')) {
+      const a = el.querySelector('[data-t="attn"]'); a.classList.add('hl');
+      el.querySelector('[data-t="review"]').classList.add('ring');
+    }
+    if (el.dataset.screen === 'dashboard' && !el.closest('[data-demo]') && !el.hasAttribute('data-hl')) {
+      // the cover is quiet: feed already in place
+      el.querySelector('.feed').classList.add('static');
+    }
+  });
+  const dm = shot === 'desk' && deskMain();
+  if (dm) dm.insertAdjacentHTML('beforeend', `<div class="o-card" style="margin-top:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h4>Findings this week</h4><span class="o-muted" style="font-size:12px">View all</span></div>
+    <div class="o-row"><span class="o-pill red">High</span>Admin Console sign-on gap · IT-Contractors<span class="o-sp o-pill amber">Needs you</span></div>
+    <div class="o-row"><span class="o-pill amber">Medium</span>14 apps with no owner after a reorg<span class="o-sp o-pill ai">Agent fixing</span></div>
+    <div class="o-row"><span class="o-pill amber">Medium</span>Service account with a 400-day API token<span class="o-sp o-pill green">Resolved</span></div>
+    <div class="o-row"><span class="o-pill blue">Low</span>3 groups with the same members<span class="o-sp o-pill green">Resolved</span></div>
+  </div>`);
+  if (reduce) document.querySelectorAll('.feed, .graph, .vchart').forEach(e => e.classList.add('static'));
+
+  // Typewriter for the agent's first line (visual only; full text stays in DOM order)
+  function type(el) {
+    if (!el || el.dataset.typed) return;
+    el.dataset.typed = 1;
+    if (reduce) { el.classList.add('done'); return; }
+    const full = el.textContent; el.setAttribute('aria-label', full); el.textContent = '';
+    let i = 0;
+    const t = setInterval(() => { el.textContent = full.slice(0, ++i); if (i >= full.length) { clearInterval(t); el.classList.add('done'); } }, 18);
+  }
+  function meters(root) { root.querySelectorAll('.meter i').forEach(m => m.style.width = m.dataset.w + '%'); }
+
+  // Scroll reveals: content appearing, once
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('is-in');
+    type(e.target.querySelector('[data-type]'));
+    meters(e.target);
+    io.unobserve(e.target);
+  }), { threshold: .3 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Loop diagram lights up step by step while on screen
+  const loop = document.querySelector('[data-loop]');
+  const lis = [...loop.children]; let li = 0, lt;
+  if (reduce) lis.forEach(l => l.classList.add('is-lit'));
+  else new IntersectionObserver(([e]) => {
+    clearInterval(lt);
+    if (!e.isIntersecting) return;
+    lt = setInterval(() => { lis.forEach((l, i) => l.classList.toggle('is-lit', i <= li)); li = (li + 1) % (lis.length + 1); }, 700);
+  }, { threshold: .4 }).observe(loop);
+
+  // Rail: current section
+  const links = [...document.querySelectorAll('.rail a')];
+  const secs = links.map(a => document.querySelector(a.getAttribute('href')));
+  addEventListener('scroll', () => {
+    let cur = 0; secs.forEach((s, i) => { if (s.getBoundingClientRect().top < innerHeight * .4) cur = i; });
+    links.forEach((a, i) => a.classList.toggle('is-on', i === cur));
+  }, { passive: true });
+  dispatchEvent(new Event('scroll'));
+
+  // ---------- End-to-end demo ----------
+  const demo = document.querySelector('[data-demo]');
+  const scenes = [...demo.querySelectorAll('.scene')];
+  const cursor = demo.querySelector('.cursor');
+  const bars = [...document.querySelectorAll('.steps i')];
+  const label = document.querySelector('[data-step-label]');
+  const btn = document.querySelector('[data-play]');
+  const names = ['Investigate', 'Summary', 'Audit', 'Decide', 'Verify'];
+  const targets = ['review', 'audit', 'decide', 'approve', null];
+  const DUR = 3400;
+  let step = 0, timer, playing = !reduce, inView = false;
+
+  function moveTo(el) {
+    if (!el) return;
+    const d = demo.getBoundingClientRect(), r = el.getBoundingClientRect();
+    cursor.style.transform = `translate(${r.left - d.left + r.width * .5}px, ${r.top - d.top + r.height * .6}px)`;
+  }
+  function show(i) {
+    step = i;
+    scenes.forEach((s, k) => s.classList.toggle('on', k === i));
+    bars.forEach((b, k) => { b.classList.toggle('done', k < i); b.classList.remove('on'); });
+    void bars[i].offsetWidth; bars[i].style.setProperty('--d', DUR + 'ms'); bars[i].classList.add('on');
+    label.textContent = names[i];
+    const s = scenes[i];
+    s.classList.add('is-in'); meters(s);
+    if (i === 1) { const p = s.querySelector('[data-type]'); delete p.dataset.typed; p.textContent = p.getAttribute('aria-label') || p.textContent; p.classList.remove('done'); type(p); }
+    // replay draw-ins
+    s.querySelectorAll('.graph, .vchart').forEach(g => { s.classList.remove('is-in'); void g.offsetWidth; s.classList.add('is-in'); });
+    const t = targets[i] && s.querySelector(`[data-t="${targets[i]}"]`);
+    if (t && !reduce) setTimeout(() => moveTo(t), 1400);
+    if (t && !reduce) setTimeout(() => { t.classList.add('is-press'); setTimeout(() => t.classList.remove('is-press'), 250); }, 2700);
+  }
+  function tick() { clearTimeout(timer); if (!playing || !inView) return; timer = setTimeout(() => { show((step + 1) % scenes.length); tick(); }, DUR); }
+  btn.addEventListener('click', () => {
+    playing = !playing;
+    btn.textContent = playing ? 'Pause' : 'Play';
+    btn.setAttribute('aria-pressed', String(!playing));
+    document.querySelector('.demo-bar').classList.toggle('paused', !playing);
+    tick();
+  });
+  if (reduce) { btn.textContent = 'Play'; btn.setAttribute('aria-pressed', 'true'); document.querySelector('.demo-bar').classList.add('paused'); }
+  new IntersectionObserver(([e]) => {
+    inView = e.isIntersecting;
+    if (inView && !demo.dataset.started) { demo.dataset.started = 1; show(0); }
+    tick();
+  }, { threshold: .4 }).observe(demo);
+})();
+</script>
+</body>
+</html>

@@ -43,7 +43,10 @@
    Four blocks for the Privacy case's process, art and Learn more cards
    ("F" of experiments/privacy-process, on request, 2026-11-26), each in
    its own component: `sketches` (SketchCollage), `illos` (PrivacyArt),
-   `sketchrows` (SketchRows) and `cardparts` (LearnCardParts). */
+   `sketchrows` (SketchRows) and `cardparts` (LearnCardParts).
+
+   `okta`: the Okta AI agents case's screens, drawn as Okta's Admin
+   Console (OktaAgent.astro), on request, 2026-11-26. */
 import type { CaseBlock } from '../data/cases';
 import Reveal from './Reveal.astro';
 import EnrollPrototype from './EnrollPrototype.astro';
@@ -58,6 +61,7 @@ import SketchCollage from './SketchCollage.astro';
 import PrivacyArt from './PrivacyArt.astro';
 import SketchRows from './SketchRows.astro';
 import LearnCardParts from './LearnCardParts.astro';
+import OktaAgent from './OktaAgent.astro';
 import OktaIam from './OktaIam.astro';
 
 interface Props { blocks: CaseBlock[] }
@@ -262,6 +266,7 @@ const claimNum = blocks.map((b) =>
     {block.kind === 'sketches' && <SketchCollage label={block.label} items={block.items} />}
     {block.kind === 'illos' && <PrivacyArt door={block.door} items={block.items} palette={block.palette} credit={block.credit} />}
     {block.kind === 'sketchrows' && <SketchRows label={block.label} src={block.src} alt={block.alt} caption={block.caption} items={block.items} />}
+    {block.kind === 'okta' && <OktaAgent screen={block.screen} caption={block.caption} />}
     {block.kind === 'iam' && <OktaIam view={block.view} caption={block.caption} />}
     {block.kind === 'cardparts' && <LearnCardParts notes={block.notes} cards={block.cards} />}
 
