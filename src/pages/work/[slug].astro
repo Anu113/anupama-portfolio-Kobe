@@ -49,6 +49,7 @@ import CaseStrip from '../../components/CaseStrip.astro';
 import CaseBlocks from '../../components/CaseBlocks.astro';
 import CaseNumbers from '../../components/CaseNumbers.astro';
 import PrivacyCover from '../../components/PrivacyCover.astro';
+import OktaIam from '../../components/OktaIam.astro';
 import CaseGate from '../../components/CaseGate.astro';
 import LockedGate from '../../components/LockedGate.astro';
 import LockIcon from '../../components/LockIcon.astro';
@@ -183,7 +184,9 @@ const headline = impactMetrics?.kind === 'metrics'
         </Reveal>
         <Reveal still delay={240}>
           <div class="hero__frame" data-rise style="--rise-i:3" data-hue={hueFor(study.company) ?? ''}>
-            {study.hero.mockup
+            {study.hero.mockup === 'okta-iam'
+              ? <OktaIam view="cover" />
+              : study.hero.mockup
               ? <PrivacyCover kind={study.hero.mockup} alt={study.hero.alt} />
               : <img src={study.hero.src} alt={study.hero.alt} decoding="async" />}
           </div>

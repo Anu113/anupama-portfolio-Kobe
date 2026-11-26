@@ -1146,6 +1146,20 @@ walked back. Concretely, in the current implementation:
   under PRIVACY PROCESS in `tokens.css`. Copy mixes "we" (the team),
   "I" (what she owned, made or judged) and "me" (team listings), after
   andreas.vision.
+- **The Okta IAM case is redrawn, not screenshotted** (on request,
+  2026-11-26, from `experiments/okta-case`, which follows the order of
+  marygans.com/case-studies/ai-dashboard: problem, goals, role, plan, one
+  pattern, craft, outcome). She has no screens of her own for it, so
+  `OktaIam.astro` draws each picture in the Okta Admin Console's style
+  (the `iam` block, and `hero.mockup: 'okta-iam'` for the cover: the
+  dashboard on a laptop with a phone beside it). None of Mary Gans's
+  files are used, and none may be: her work is Microsoft's, a competitor's.
+  Motion plays only on screen; still under reduced motion. Captions say
+  "Redrawn for this case study". Names and counts inside are made-up UI
+  content; what's still hers to confirm is listed on the entry in
+  `cases.ts`. Tools list only what existed while she was at Okta (Sep
+  2024 – Mar 2025): Figma Make and Figma's MCP server came later. Values
+  under OKTA IAM in `tokens.css`; colours are OKTA AI SCREENS'.
 - `cases.ts` holds case-study content as structural prose with `[X]`
   placeholders for real numbers — written from what this file already
   records about each project, not confirmed by Anupama. It also currently
@@ -1211,3 +1225,53 @@ specific, and short — concrete numbers over adjectives, captions over
 paragraphs. Avoid "passionate," "seamless," "leverage," "storyteller." No
 emoji. If a sentence could appear on any designer's portfolio, cut it; if a
 paragraph could be a caption instead, make it one.
+
+### Staff, not senior (on request, 2026-11-26)
+
+Every page, case study and Moss answer should read as a **Staff Product
+Designer's** portfolio, not a senior designer's. A recruiter should place
+her at staff level from the words alone. Still plain words (the rules
+above hold): the level shows in *what* she says she did, not in bigger
+adjectives.
+
+What changes from senior to staff, and what the copy must show:
+
+| Senior designer | Staff designer — write this |
+|---|---|
+| Owns a feature or a product area | Owns a problem that crosses teams, surfaces or products |
+| Is handed a defined problem | Finds and frames the problem, and decides what not to do |
+| Designs the screens | Sets the model, pattern or principle other designers build on |
+| Partners with their PM and engineers | Aligns several teams and leadership |
+| Ships a good feature | Changes how the org builds: a system, a ritual, a standard others adopt |
+| Explains their process | Names the trade-off, the call she made, what it cost and what held |
+| Outcome for the feature | Outcome for the business and for other teams (adoption, time, money, risk) |
+| Quarter-long work | Multi-quarter bets, sequencing and the case for funding |
+
+How to apply it:
+- Open each case on the decision and its reach ("across four squads",
+  "every access change in the console"), not on the deliverable.
+- Verbs: *set, decided, defined, framed, made the case, aligned,
+  sequenced, standardised, unblocked, changed how*. Not *helped, worked
+  on, assisted, participated in, was responsible for, created
+  wireframes*.
+- Show influence through what happened, never by naming it: no
+  "influence without authority", "cross-functional leadership" or
+  "drove alignment" as phrases (on request, 2026-11-26).
+- Show the multiplier: who used her pattern, model or system beyond her
+  own screens, and what that saved them.
+- One hard call per case, with what it cost. Judgement over process: no
+  personas, empathy maps or "double diamond" walk-throughs.
+- Her hands stay on the craft (rule 3): staff designers still design. The
+  craft section shows what she drew herself.
+- It's an IC pitch, not a management one: leading designers is evidence
+  of influence, never the ask (`site.ask`).
+- Write her role the way andreas.vision/work/schneider does (on request,
+  2026-11-26): woven into the story, never labelled. "I" for what she
+  decided, designed, argued for or would change; "we" for what the team
+  did together; teammates by role, not name. No "My part", "My role" or
+  "My contribution" labels or lists: tagging some lines as hers reads as
+  if everything else was someone else's, and too many "I"s reads as a
+  pitch. One Teamwork section, before Impact, says how the work was
+  split, in a short paragraph (the Okta IAM case is the model).
+- Never inflate a fact to sound senior. Scope, numbers and titles come
+  only from what she has confirmed; anything else carries `[X]`.

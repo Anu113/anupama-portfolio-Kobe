@@ -144,10 +144,6 @@ const mailHref = gmailCompose(`Password for "${caseTitle}"`);
      for this feature. */
   /* "Reach out instead" is the site's standalone link (.btn--link). */
 
-  /* A one-line, no-drama acknowledgement once unlocked — replaces the form,
-     doesn't animate past what prefers-reduced-motion already governs
-     globally (the swap is instant either way, so there's nothing to gate). */
-  .gate__unlocked { color: var(--fg-dim); margin: 0; }
 </style>
 
 <script>
@@ -163,14 +159,18 @@ const mailHref = gmailCompose(`Password for "${caseTitle}"`);
     const peek = gate.querySelector<HTMLButtonElement>('[data-gate-peek]');
     if (!target || !form || !input) return;
 
+    // Once unlocked the panel goes entirely (on request, 2026-11-26: the
+    // old "Unlocked — the rest is below" box read as clutter); the case
+    // simply carries on. A visitor who just typed the passcode is moved to
+    // the first heading behind it, so focus isn't left on nothing.
     const reveal = () => {
+      const hadFocus = gate.contains(document.activeElement);
       target.hidden = false;
-      form.replaceWith(
-        Object.assign(document.createElement('p'), {
-          className: 'gate__unlocked',
-          textContent: 'Unlocked — the rest is below.',
-        })
-      );
+      gate.remove();
+      if (hadFocus) {
+        const h = target.querySelector<HTMLElement>('h2');
+        if (h) { h.tabIndex = -1; h.focus({ preventScroll: false }); }
+      }
     };
 
     onUnlocked(reveal);

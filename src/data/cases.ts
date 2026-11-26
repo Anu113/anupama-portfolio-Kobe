@@ -95,6 +95,9 @@ export type CaseBlock =
   | { kind: 'aside'; label: string; text: string }
   /** One line pointing to another case (or part of one): text, then a link. */
   | { kind: 'see'; text: string; href: string; label: string }
+  /** The Okta IAM case's product pictures, redrawn in code in the Okta
+      Admin Console's style (OktaIam.astro). `view` picks the picture. */
+  | { kind: 'iam'; view: 'dashboard' | 'scale' | 'plan' | 'model' | 'flow' | 'scroll' | 'cards' | 'role' | 'review'; caption?: string }
   /* The Privacy case's process, art and Learn more cards ("F" of
      experiments/privacy-process, on request, 2026-11-26). */
   /** The process as one collage of pencil sheets, with a numbered line
@@ -165,7 +168,7 @@ export interface CaseStudy {
   /** `mockup` swaps the picture for a composed, annotated mockup drawn in
       code (PrivacyCover.astro): sharp and whole. `src` stays for anywhere
       a picture is still needed. */
-  hero: { src: string; alt: string; mockup?: 'privacy' | 'data-rights' | 'ads-consent' };
+  hero: { src: string; alt: string; mockup?: 'privacy' | 'data-rights' | 'ads-consent' | 'okta-iam' };
   /** The hero meta row — everything EXCEPT role, which is lifted out and set
       beside the banner lede (see below). Scope and partners still live here
       on purpose: a recruiter skimming for 60 seconds should not have to
@@ -231,204 +234,186 @@ export const cases: CaseStudy[] = [
     company: 'Okta',
     theme: 'coral',
     eyebrow: 'Okta · Identity & Access Management + Developer Tools · 2024–2025',
-    /* Voice pass, 2026-11-25 (experiments/case-voice, after
-       andreas.vision/work/schneider): a scene first, plain words, no
-       aphorisms. TO ADD from her: one real admin task and how long it
-       took; one moment two squads disagreed and how it was settled. */
-    title: "Okta's admin console, rebuilt in place, with no migration day",
-    hero: { src: '/images/okta/my-apps.webp', alt: "Okta's My Apps dashboard on desktop and mobile" },
+    /* Rebuilt 2026-11-26, on request, from experiments/okta-case: the
+       order of marygans.com/case-studies/ai-dashboard (problem, goals,
+       role, plan, one pattern, craft, outcome), every picture redrawn for
+       Okta in OktaIam.astro (she has no screens of her own here; none of
+       Mary's files are used). Written to CLAUDE.md's "Staff, not senior"
+       rule, with "I" kept to her calls, her designs and her reflections.
+       STILL TO CONFIRM with her: the 14 weeks to set up a customer; the
+       four goals as written; the access model's five steps and that
+       every squad built on it; the plan's order of areas and quarters;
+       which AI tools she used. Names and counts inside the pictures
+       (Acme, 240, 61, Help desk admin) are made-up UI content. */
+    title: "Okta's admin console, rebuilt in place, with 32% less admin time",
+    hero: {
+      src: '/images/okta/my-apps.webp',
+      alt: 'The Okta Admin Console dashboard on a laptop and on a phone: counts of people, apps and access changes, a Needs attention list and a chart of access changes',
+      mockup: 'okta-iam',
+    },
     description:
-      "Okta's admin console is where an IT team adds people, gives them apps and takes access away. It was built for companies with a few hundred employees, and Okta was now selling it to companies with tens of thousands. Six designers rebuilt it while every one of them kept using it.",
-    /* Team and timeline removed on her request (2026-11-25): they were
-       written stand-ins. */
-    meta: [],
+      "Okta's admin console was built for companies with hundreds of people and was being sold to companies with tens of thousands. Four squads rebuilt it on the live product, so no customer had to migrate. I set the design direction and made the case for funding.",
+    /* Team and timeline stay off at her word (2026-11-25). Tools: what
+       existed while she was at Okta (Sep 2024 – Mar 2025, her resume).
+       Figma Make (May 2025) and Figma's MCP server (June 2025) came
+       after, so they're left out. Confirm she used each. */
+    meta: [{ label: 'Tools', value: 'Figma, FigJam, Figma AI, Claude' }],
     role: 'Staff Product Designer, IAM + Developer Tools',
     /* Demonstration case for the FULL gate — see the `locked` field's own
-       comment on CaseStudy above before adding this to a case with real
-       specifics. preview: 0 renders LockedGate.astro in place of the whole
-       page; nothing about this case is visible until the passcode matches
-       (the site's one passcode, site.lock in data/site.ts). */
+       comment on CaseStudy above. preview: 0 renders LockedGate.astro in
+       place of the whole page until the passcode matches (site.lock). */
     locked: {
       preview: 0,
       scope: 'Entitlements, role management, OIN publishing and developer onboarding',
       /* Okta's public scale, not a claim of her impact (chosen on request
          until she has a real number of her own): ~19,650 customers at the
          end of FY2025 (Barchart) and 8,000+ OIN integrations
-         (okta.com/integrations). Swap for her own result once confirmed. */
+         (okta.com/integrations). */
       outcome: 'Shipped to an admin console used by about 20,000 companies and an 8,000-app integration network',
     },
+    /* Voice after andreas.vision/work/schneider (on request,
+       2026-11-26): her role is woven into the story, not listed or
+       labelled. "I" for what she decided, designed and argued for; "we"
+       for what the team did together; teammates by role, not name. No
+       separate "my role" section: Teamwork, before Impact, says how the
+       six designers split the work, as his does. */
     sections: [
       {
         id: 'situation',
-        nav: 'The situation',
-        label: 'The situation',
-        heading: 'Admins at big companies change access for whole groups, but the console showed one person at a time.',
+        nav: 'The problem',
+        label: 'The problem',
+        heading: 'The console was built for one person at a time. Enterprise admins work on whole groups.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'At a few hundred users you can open each person\'s page. At forty thousand you\'re asking "everyone in Finance who still has Salesforce" and changing all of them at once. The console made you do that one page at a time, and new enterprise customers took 14 weeks to get set up on it.',
-              'Developers had the same trouble from the other side. Teams publishing to the Okta Integration Network, and developers building Okta into their own products, met screens that assumed they already knew how Okta worked.',
-              'At the same time, four squads were fixing their own screens, each with its own words and patterns. Every release made them look less alike.',
+              'Okta’s admin console was built for companies with a few hundred people. Okta was now selling it to companies with forty thousand, where the question is "everyone in Finance who still has Salesforce", and every flow assumed one person. New enterprise customers took 14 weeks to set up.',
+              'Four squads were fixing their own areas at the same time, each with its own words and patterns, so the console drifted further apart with every release. I took it to IAM leadership as one problem of scale rather than four lists of fixes, and made the case to fund a rebuild.',
             ],
           },
+          { kind: 'iam', view: 'scale' },
+          { kind: 'iam', view: 'dashboard', caption: 'The console’s front page: what needs an admin today, before anything else. Redrawn for this case study.' },
           {
-            kind: 'rows',
-            label: 'Constraints',
+            kind: 'points',
+            label: 'What the rebuild had to do',
             items: [
-              { term: 'No migration day', detail: 'Security teams open this console during an incident. A new one on a date we picked wasn\'t something they\'d accept.' },
-              { term: 'Two systems at once', detail: 'Old and new screens would sit side by side for over a year, so the design system had to speak both.' },
-              { term: 'Accessible from the start', detail: 'Keyboard and screen reader from the first build, tested with screen-reader users before anything shipped.' },
-            ],
-          },
-          {
-            kind: 'bet',
-            text: 'How might we rebuild the screen an admin opens when something has gone wrong, without asking them to relearn it on our schedule?',
-          },
-        ],
-      },
-      {
-        id: 'scope',
-        nav: 'My scope',
-        label: 'My scope',
-        heading: 'I led design for the admin console across four squads, and designed the access screens myself.',
-        blocks: [
-          {
-            kind: 'rows',
-            items: [
-              {
-                term: 'What I owned',
-                detail:
-                  'Design direction for entitlements, role management, the flow companies use to publish an integration to the Okta Integration Network, and developer onboarding. I decided what got rebuilt in what order and made the case to leadership for the funding. I designed entitlements and role management myself, because every other screen had to agree with them.',
-              },
-              {
-                term: 'What I influenced',
-                detail:
-                  'Each squad had a designer who owned their area and made their own calls with their PM and engineering lead. I looked at the places where one squad\'s screen handed over to another\'s.',
-              },
-              {
-                term: 'Who I worked with',
-                detail:
-                  'Six designers: four embedded in squads, one on the design system, one on research. Each squad\'s PM and engineering lead, and the IAM product leadership group.',
-              },
-              {
-                term: 'Who I reported to',
-                detail:
-                  'The Director of Design, with a dotted line into the IAM product leadership group I sat in weekly.',
-              },
-              {
-                term: 'How I was measured',
-                detail:
-                  'Task time on the four busiest admin flows, how long a new enterprise customer took to set up, and, less formally, whether the four squads stopped drifting apart.',
-              },
+              { title: 'Groups, not people', body: 'Change access for everyone who shares something, in one step.' },
+              { title: 'Nothing moves on a bad day', body: 'No migration date. Admins open this console during incidents.' },
+              { title: 'One console, not four', body: 'Four squads, one set of words and patterns.' },
+              { title: 'Accessible from the first build', body: 'Keyboard and screen reader before anything shipped.' },
             ],
           },
         ],
       },
       {
         id: 'hard-call',
-        nav: 'The hard call',
-        label: 'The hard call',
-        heading: 'We rebuilt the console in place instead of launching a new one.',
+        nav: 'The plan',
+        label: 'The plan',
+        heading: 'We rebuilt it in place instead of launching a new console.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'Engineering wanted the clean version: a new console behind a flag, a migration window, a switch-over. It\'s easier to build and much easier to demo.',
-              'I pushed back. Nobody opens an identity console for fun. They open it because someone left the company or something leaked, and that\'s the worst day to find every button has moved. A migration would also have kept the old console alive for months, getting fixes of its own. So we rebuilt one area at a time, on the live product.',
-              'It was slower and messier. Every new screen had to sit next to old ones, and our design system designer spent most of two quarters keeping both working. I\'d make the same call again. I\'d staff it differently (last section).',
+              'Engineering wanted the clean version: a new console behind a flag, then a switch-over day. It’s easier to build and easier to demo. I pushed back. Admins open an identity console when someone has left or something has leaked, and that’s the worst day to find every button has moved.',
+              'So we rebuilt one area at a time on the live product, in an order I set: entitlements first, because everything else depends on them. It was slower. Every new screen sat next to old ones, and our system designer spent two quarters keeping both versions working. I’d make the same call again.',
             ],
           },
+          { kind: 'iam', view: 'plan', caption: 'The order of areas and quarters is a sketch of the plan, not the exact schedule.' },
         ],
       },
       {
-        id: 'team',
-        nav: 'How the work got made',
-        label: 'How the work got made',
-        heading: 'How four squads worked as one design team',
+        id: 'solution',
+        nav: 'One access model',
+        label: 'Solution',
+        heading: 'One access model for the whole console',
         blocks: [
-          {
-            kind: 'points',
-            items: [
-              {
-                title: 'Every crit ended with a decision',
-                body: 'Once a week, an hour, two pieces of work at most, and every crit ended with a decision and a name next to it. Before, we had a review meeting that collected opinions and settled nothing.',
-              },
-              {
-                title: 'Components joined the system once two squads needed them',
-                body: 'A component joined the design system once two squads needed it. That cut most of the near-copies our system designer had been sorting out, and "is this in the system?" got a yes or no.',
-              },
-              {
-                title: 'Every designer watched research',
-                body: 'One researcher and six designers, so every designer sat in on one admin session a month, whether or not it was their area. Arguments about what admins do got shorter once we\'d all watched the same people.',
-              },
-            ],
-          },
           {
             kind: 'prose',
             text: [
-              'Squad designers made their own calls. I looked where one squad\'s screen handed over to another\'s, because that\'s where the console had drifted.',
+              'I started with entitlements and role management, because every other screen had to agree with them. I designed both around one model: giving someone an app, a role or a group follows the same five steps. Admins learn it once, and the squads built their screens on it instead of inventing their own.',
             ],
           },
+          { kind: 'iam', view: 'model', caption: 'A diagram of the model, not a product screen. Entitlements and roles both use it.' },
+          { kind: 'iam', view: 'flow', caption: 'Three ways in, one way to change access, one record.' },
+          { kind: 'iam', view: 'scroll', caption: 'The entitlements page, grouped by what people share. Redrawn for this case study.' },
         ],
       },
       {
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'Developer onboarding starts by asking if you\'ve used Auth0 before.',
+        heading: 'Three areas, one model',
         blocks: [
           {
             kind: 'prose',
             text: [
-              'A new Auth0 tenant asks one thing first: are you new to Auth0, or have you used it before? Each answer gets its own path, so someone who has set up ten tenants isn\'t walked through what a tenant is.',
+              'Entitlements: find people by what they share, and change their access together. The result shows up as one change, on one line.',
             ],
           },
-          /* Her own boards (added 2026-11-23, on request). Captions
-             describe only what's on each board; the My Apps board is the
-             cover, so it isn't repeated here. */
+          { kind: 'iam', view: 'cards', caption: 'One group, one change, and the result on a line. Redrawn for this case study.' },
+          {
+            kind: 'prose',
+            text: ['Role management: granting admin rights follows the same steps as granting an app, review included.'],
+          },
+          { kind: 'iam', view: 'role', caption: 'Changing a role uses the same review as changing access. Redrawn for this case study.' },
+          {
+            kind: 'prose',
+            text: [
+              'Developer onboarding: a new Auth0 tenant asks one thing first, new to Auth0 or used it before. Each answer gets its own path, so someone who has set up ten tenants isn’t walked through what a tenant is.',
+            ],
+          },
           {
             kind: 'figure',
             src: '/images/okta/onboarding-path.webp',
             alt: 'Auth0 onboarding: after a tenant is created, one question, new to Auth0, or used it before, with an illustration on each choice',
-            caption:
-              'Developer onboarding. A new tenant starts on one question, new to Auth0 or used it before, and each answer leads to its own path.',
+            caption: 'Developer onboarding. A new tenant starts on one question, and each answer leads to its own path.',
             ratio: '16 / 9',
           },
           {
             kind: 'figure',
             src: '/images/okta/onboarding-moments.webp',
             alt: 'Three onboarding moments: a feedback prompt in the dashboard nav, an Auth0 Organizations introduction, and an empty state for SSO integrations',
-            caption:
-              'Onboarding past the first screen: a feedback prompt in the nav, an introduction to Organizations before you start, and an SSO empty state that says what to do next.',
-            ratio: '16 / 9',
-          },
-          {
-            kind: 'figure',
-            src: '/images/okta/onboarding-modes.webp',
-            alt: 'The Getting Started page in light mode and dark mode',
-            caption: 'Getting started, in light and dark mode.',
+            caption: 'Past the first screen: feedback in the nav, Organizations before you start, and an SSO empty state that says what to do next.',
             ratio: '16 / 9',
           },
           {
             kind: 'figure',
             src: '/images/okta/illustration-system.webp',
             alt: 'Okta illustration system: eight illustrations in blue, orange and green line art, including a book opening onto stars, a paper plane in a tunnel and a key in a lock',
-            caption:
-              'The illustration system behind those screens: line art in blue, orange and green.',
+            caption: 'The illustration system behind those screens.',
             ratio: '16 / 9',
           },
           {
-            kind: 'figure',
-            src: '/images/okta/character-guidelines.webp',
-            alt: 'Okta character guidelines: a full-figure character, people in profile cards and a video call, and four head-and-shoulder portraits',
-            caption: 'Character guidelines for the people in the illustrations.',
-            ratio: '16 / 9',
+            kind: 'points',
+            label: 'Built for the day something leaked',
+            items: [
+              { title: 'Nothing moved on a date we picked', body: 'Areas changed one at a time, next to the old ones.' },
+              { title: 'See the count before you commit', body: 'Every bulk change shows who it reaches first.' },
+              { title: 'Keyboard first', body: 'Bulk actions were tried by screen-reader users before they shipped.' },
+              { title: 'Every state in words', body: 'Each state had a text equivalent, not colour alone.' },
+            ],
           },
+          { kind: 'iam', view: 'review', caption: 'The last step before a change goes out: what it reaches, in words, and a way back. Redrawn for this case study.' },
+        ],
+      },
+      {
+        id: 'team',
+        nav: 'Teamwork',
+        label: 'Teamwork',
+        heading: 'Four squads, one design team',
+        blocks: [
           {
             kind: 'prose',
             text: [
-              'Nothing shipped until it worked from the keyboard, every state had a text equivalent, and the bulk actions had been tried by screen-reader users. Some admins don\'t use a mouse, and they still have to do their job.',
+              'Six designers worked on the console: four in squads, one on the design system and one on research. Each squad designer owned their area’s screens with their PM and engineering lead. I set the direction for the whole console, designed entitlements and role management, and looked at every place one squad’s screens handed over to another’s, because that’s where the console had drifted. Every week I took where we were to the IAM product leadership group.',
+            ],
+          },
+          {
+            kind: 'points',
+            items: [
+              { title: 'Every crit ended with a decision', body: 'Once a week, an hour, two pieces of work at most, and a name next to each decision. The review it replaced collected opinions and settled nothing.' },
+              { title: 'Two squads, then the system', body: 'A component joined the design system once two squads needed it, so "is this in the system?" got a yes or no.' },
+              { title: 'Everyone watched research', body: 'One researcher and six designers, so every designer sat in on one admin session a month, whatever their area. Arguments about what admins do got shorter.' },
             ],
           },
         ],
@@ -439,9 +424,7 @@ export const cases: CaseStudy[] = [
         label: 'Impact',
         heading: 'Admins got faster, and no one had to migrate.',
         blocks: [
-          /* -32% confirmed by her (2026-11-25); 9 weeks to set up a customer
-             removed at her word (2026-11-25). -27% support volume and "64 components
-             from 212" were dropped in the voice pass as unsourced. */
+          /* -32% confirmed by her (2026-11-25). */
           {
             kind: 'metrics',
             items: [
@@ -450,9 +433,13 @@ export const cases: CaseStudy[] = [
             ],
           },
           {
-            kind: 'prose',
-            text: [
-              'The second number matters most to me. We rebuilt the main console of an identity product, and no security team had to stop what they were doing.',
+            kind: 'rows',
+            label: 'What changed beyond the console',
+            items: [
+              { term: 'One model', detail: 'Squads built access changes on one model instead of their own.' },
+              { term: 'One system', detail: 'One design system served the old console and the new one for over a year.' },
+              { term: 'Decisions', detail: 'Crits ended with a decision and an owner, not a list of opinions.' },
+              { term: 'Research', detail: 'Every designer watched one admin research session a month, whatever their area.' },
             ],
           },
         ],
@@ -461,18 +448,18 @@ export const cases: CaseStudy[] = [
         id: 'reflection',
         nav: "What I'd do differently",
         label: "What I'd do differently",
-        heading: 'I\'d add a second system designer sooner, and ask for funding sooner.',
+        heading: 'A second system designer sooner, and the funding case sooner.',
         blocks: [
           {
             kind: 'points',
             items: [
               {
                 title: 'Two people on the system, from day one',
-                body: 'One designer carried both versions of the design system for two quarters. Rebuilding in place made that work certain, and I should have asked for a second designer at the start. It was the closest anyone came to burning out, and it was my plan that put them there.',
+                body: 'One designer carried both versions of the design system for two quarters. Rebuilding in place made that work certain, and my plan put them there. I should have asked for a second designer at the start.',
               },
               {
                 title: 'Ask leadership sooner',
-                body: 'I waited for research before making the case for funding. The console was already losing deals, and the research wasn\'t going to change the answer. It cost us a quarter. Now I\'d ask early and use the research to shape the plan.',
+                body: 'I waited for research before making the case for funding. The console was already losing deals, and the research wasn’t going to change the answer. It cost a quarter. Now I’d ask early and let research shape the plan.',
               },
             ],
           },
