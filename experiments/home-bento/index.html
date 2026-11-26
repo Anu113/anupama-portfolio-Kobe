@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home · "A bit about me" bento, four options</title>
+<!--
+  On request (2026-11-26): a bento of cards on the home page with her
+  profile, resume, LinkedIn and a few things about her, after the
+  "A bit about me" block on marygans.com. Kept in our system, not hers:
+  the About page's soft cards (3% ink fill, no border, 28px corners),
+  Crimson Pro heading, Manrope item/copy, Azeret Mono labels, ink only,
+  no accent on text, no pastel tints (colour belongs to the work), and
+  the home cards' round arrow that fills with ink and opens on hover.
+
+    A · Like hers     profile card + four small cards (a line about her,
+                      LinkedIn, Resume, Email)
+    B · Resume first  profile + the resume's first page as a tall card
+                      that rises on hover; LinkedIn and Email small
+    C · With photos   profile + two of her photos with captions;
+                      Resume, LinkedIn, Email as a row under them
+    D · One quiet row portrait, words and three link rows in one band
+
+  Placement shown: after "View all work", before Beyond work.
+  The line about her (badminton, watercolour, Indian handloom and crafts,
+  building in handloom with artisans) is from her, 2026-11-26; wording hers to confirm.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600&family=Crimson+Pro:ital,wght@0,300;1,300&family=Azeret+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fcfcfc;--fg:#262626;--fg-dim:#707070;
+    --serif:'Crimson Pro',Georgia,serif;--sans:'Manrope',system-ui,sans-serif;--mono:'Azeret Mono',ui-monospace,monospace;
+    --gutter:clamp(20px,6vw,88px);
+    --ease-out:cubic-bezier(.16,1,.3,1);--ease-in-out-go:cubic-bezier(.4,0,.2,1);
+    --card:color-mix(in srgb,var(--fg) 3%,var(--bg));
+    --card-hover:color-mix(in srgb,var(--fg) 5%,var(--bg));
+    --radius-card:28px;--radius-inner:20px;
+    --gap:1.5rem;--pad:1.75rem;
+    --step-heading:clamp(2rem,1.814rem + .762vw,2.5rem);
+    --chip-fill:color-mix(in srgb,var(--fg) 5%,var(--bg));
+    --chip-fg:color-mix(in srgb,var(--fg-dim) 85%,var(--fg));
+    --go-w:92px;--go-h:40px;--go-ring:color-mix(in srgb,var(--fg) 18%,transparent);
+  }
+  :root[data-mode=dark]{--bg:#1b1a19;--fg:#ecebe8;--fg-dim:#a09d98}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg);color:var(--fg);transition:background .3s,color .3s}
+  body{font:600 14px/1.6 var(--sans)}
+  a{color:inherit;text-decoration:none}
+  .label{font:400 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fg-dim)}
+
+  /* review bar (not part of the design) */
+  .bar{position:sticky;top:0;z-index:20;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:10px var(--gutter);
+    background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid color-mix(in srgb,var(--fg) 8%,transparent)}
+  .bar a,.bar button{font:400 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:8px 12px;border-radius:999px;
+    background:var(--chip-fill);color:var(--fg);border:0;cursor:pointer}
+  .bar span{margin-left:auto}
+
+  .opt{padding:6rem var(--gutter) 2rem;border-bottom:1px dashed color-mix(in srgb,var(--fg) 14%,transparent)}
+  .opt > .tag{display:block;margin-bottom:2.5rem}
+  .opt > .tag b{color:var(--fg);font-weight:400}
+  .ctx{max-width:1180px;margin:0 auto}
+  .ctx.before{display:flex;justify-content:center;margin-bottom:var(--sp,8rem);opacity:.35}
+  .ctx.after{margin-top:8rem;text-align:center;opacity:.35;font:300 var(--step-heading)/1 var(--serif)}
+  .ctx.after em,h2 em{font-style:italic}
+  .wrap{max-width:1180px;margin:0 auto}
+  h2{font:300 var(--step-heading)/1.1 var(--serif);margin-bottom:3rem}
+  .note{max-width:1180px;margin:2.5rem auto 0;font-size:12px;line-height:1.8;color:var(--fg-dim);max-width:72ch;margin-left:max(0px,calc((100% - 1180px)/2))}
+
+  /* ---- the shared card ---- */
+  .c{position:relative;background:var(--card);border-radius:var(--radius-card);padding:var(--pad);display:flex;flex-direction:column;
+    transition:background .5s var(--ease-out)}
+  a.c:is(:hover,:focus-visible){background:var(--card-hover)}
+  a.c:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+  .c h3{font:600 18px/1.35 var(--sans);letter-spacing:-.01em}
+  .c p{font-size:12px;line-height:1.8;color:var(--fg-dim)}
+  .c .ico{width:22px;height:22px;stroke:var(--fg);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .push{margin-top:auto}
+
+  /* profile */
+  .hi{display:flex;gap:1.25rem;align-items:center}
+  .hi img{width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none}
+  .hi h3{font:300 30px/1.1 var(--serif);letter-spacing:0}
+  .hi h3 em{font-style:italic}
+  .seek{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;margin-bottom:1.5rem;
+    font:400 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fg);
+    padding:8px 12px;border-radius:999px;background:var(--chip-fill)}
+  .seek i{width:6px;height:6px;border-radius:50%;background:var(--fg)}
+  .bio{margin-top:1.25rem;max-width:52ch}
+  .bio + .bio{margin-top:.75rem}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;list-style:none;margin-top:1.25rem}
+  .chips li{font:600 12px/21px var(--sans);padding:0 8px;border-radius:999px;color:var(--chip-fg);background:var(--chip-fill)}
+
+  /* the round arrow, the home cards' .card-go */
+  .go{position:relative;display:block;flex:none;width:var(--go-w);height:var(--go-h);color:var(--fg);transition:color .2s linear .35s}
+  .go s{position:absolute;left:0;top:0;width:var(--go-h);height:var(--go-h);border-radius:999px;box-shadow:inset 0 0 0 1px var(--go-ring)}
+  .go u{position:absolute;inset:0;border-radius:999px;background:var(--fg);clip-path:circle(calc(var(--go-h) / 2) at calc(var(--go-h) / 2) 50%);opacity:0;
+    transition:clip-path .45s var(--ease-in-out-go),opacity .2s linear .35s}
+  .go i{position:absolute;left:0;top:0;z-index:1;width:var(--go-h);height:var(--go-h);display:grid;place-items:center;transition:transform .6s var(--ease-out)}
+  .go svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .go b{position:absolute;left:16px;top:0;z-index:1;font:600 13px/var(--go-h) var(--sans);opacity:0;transform:translateX(-6px);
+    transition:opacity .2s var(--ease-out),transform .6s var(--ease-out)}
+  a.c:is(:hover,:focus-visible) .go{color:var(--bg);transition:color .15s linear}
+  a.c:is(:hover,:focus-visible) .go u{clip-path:circle(var(--go-w) at calc(var(--go-h) / 2) 50%);opacity:1;transition:opacity .15s linear,clip-path .6s var(--ease-out) .05s}
+  a.c:is(:hover,:focus-visible) .go i{transform:translateX(calc(var(--go-w) - var(--go-h)));transition:transform .6s var(--ease-out) .05s}
+  a.c:is(:hover,:focus-visible) .go b{opacity:1;transform:none;transition:opacity .2s var(--ease-out) .1s,transform .6s var(--ease-out)}
+  .go.tr{position:absolute;top:var(--go-inset,1.25rem);right:var(--go-inset,1.25rem)}
+  /* top-right arrows open leftward so they stay inside the card */
+  .go.tr s,.go.tr i{left:auto;right:0}
+  .go.tr u{clip-path:circle(calc(var(--go-h) / 2) at calc(100% - calc(var(--go-h) / 2)) 50%)}
+  .go.tr b{left:auto;right:16px;transform:translateX(6px)}
+  a.c:is(:hover,:focus-visible) .go.tr u{clip-path:circle(var(--go-w) at calc(100% - calc(var(--go-h) / 2)) 50%)}
+  a.c:is(:hover,:focus-visible) .go.tr i{transform:translateX(calc(var(--go-h) - var(--go-w)))}
+
+  /* ============ A · Like hers ============ */
+  .A{display:grid;grid-template-columns:1.9fr 1fr 1fr;grid-template-rows:auto auto;gap:var(--gap)}
+  .A .profile{grid-row:span 2;padding:2.25rem}
+  .A .small{min-height:13.5rem;justify-content:flex-start;gap:.75rem}
+  .A .small h3{margin-top:auto}
+  .A .fact p{color:var(--fg);font-size:12px;line-height:1.8}
+
+  /* ============ B · Resume first ============ */
+  .B{display:grid;grid-template-columns:1.6fr 1fr .8fr;grid-template-rows:1fr 1fr;gap:var(--gap)}
+  .B .profile{grid-row:span 2;padding:2.25rem}
+  .B .resume{grid-row:span 2;overflow:hidden;padding-bottom:0;min-height:28rem}
+  .B .resume .page{margin:1.5rem -.25rem 0;flex:1;position:relative;border-radius:14px 14px 0 0;overflow:hidden;
+    box-shadow:0 1px 2px rgb(0 0 0/.05),0 14px 30px -14px rgb(0 0 0/.22)}
+  .B .resume .page img{position:absolute;top:0;left:0;width:100%;display:block;transform:translateY(14%);transition:transform .7s var(--ease-out)}
+  .B .resume:is(:hover,:focus-visible) .page img{transform:translateY(0)}
+  .B .small{gap:.75rem}
+  .B .small h3{margin-top:auto}
+
+  /* ============ C · With photos ============ */
+  .C{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:var(--gap)}
+  .C .profile{padding:2.25rem}
+  .C figure{position:relative;border-radius:var(--radius-card);overflow:hidden;background:var(--card);min-height:22rem}
+  .C figure img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s var(--ease-out)}
+  .C figure:hover img{transform:scale(1.04)}
+  .C figcaption{position:absolute;left:12px;bottom:12px;font:400 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;
+    padding:8px 10px;border-radius:999px;background:color-mix(in srgb,var(--bg) 88%,transparent);color:var(--fg)}
+  .C .row{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
+  .C .row .c{flex-direction:row;align-items:center;gap:1rem;padding:1.25rem 1.25rem 1.25rem 1.5rem}
+  .C .row .c h3{flex:1}
+  .C .row .c .sub{display:block;font:400 11px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--fg-dim);margin-top:2px}
+
+  /* ============ D · One quiet band ============ */
+  .D{display:grid;grid-template-columns:15rem 1fr 1fr;gap:var(--gap);background:var(--card);border-radius:var(--radius-card);padding:var(--gap)}
+  .D .pic{border-radius:var(--radius-inner);overflow:hidden;aspect-ratio:1}
+  .D .pic img{width:100%;height:100%;object-fit:cover;display:block}
+  .D .words{padding:.75rem .5rem;display:flex;flex-direction:column}
+  .D .words h3{font:300 30px/1.1 var(--serif)}
+  .D .words h3 em{font-style:italic}
+  .D .words p{font-size:12px;line-height:1.8;color:var(--fg-dim);margin-top:1rem;max-width:46ch}
+  .D .links{display:flex;flex-direction:column;justify-content:center;gap:4px}
+  .D .links a{display:flex;align-items:center;gap:1rem;padding:.9rem 1rem .9rem 1.25rem;border-radius:16px;transition:background .5s var(--ease-out)}
+  .D .links a:is(:hover,:focus-visible){background:var(--bg)}
+  .D .links a:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+  .D .links .ico{width:20px;height:20px;stroke:var(--fg);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .D .links span{flex:1;font:600 14px/1.3 var(--sans)}
+  .D .links small{font:400 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--fg-dim)}
+  .D .links .arr{width:16px;height:16px;stroke:var(--fg);fill:none;stroke-width:1.8;transition:transform .5s var(--ease-out)}
+  .D .links a:is(:hover,:focus-visible) .arr{transform:translate(2px,-2px)}
+
+  @media (max-width:980px){
+    .A,.B,.C{grid-template-columns:1fr 1fr}
+    .A .profile,.B .profile,.C .profile{grid-column:1/-1;grid-row:auto}
+    .B .resume{grid-row:span 2}
+    .C .row{grid-template-columns:1fr}
+    .D{grid-template-columns:1fr}
+    .D .pic{max-width:14rem}
+  }
+  @media (max-width:560px){.A,.B,.C{grid-template-columns:1fr}.B .resume{grid-row:auto}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style id="bento-tones">
+  /* Card colours and the "Open to" dot (on request, 2026-11-26: "bento
+     boxes with different colours … the light colours you're already
+     using", and a green dot that blinks or pulses, like the reference).
+     Colours are the site's own light hues: PROJECT HUES and the home
+     cards' grounds. In dark mode each hue is mixed far down into the
+     dark ground so the light text still reads. Copy on a tinted card is
+     a deeper grey so it keeps 4.5 : 1. */
+  [data-bt=sky]{--bt:var(--hue-okta,#c9dcf2)}
+  [data-bt=lilac]{--bt:var(--hue-paypal,#e0d6ef)}
+  [data-bt=butter]{--bt:var(--hue-walmart,#f4dc9c)}
+  [data-bt=sage]{--bt:var(--ground-sage,#dde5cc)}
+  [data-bt=apricot]{--bt:var(--ground-apricot,#f6dcc6)}
+  [data-bt=mint]{--bt:var(--ground-mint,#cfe7d8)}
+  :root{--bt-k:60%;--bt-k-hover:85%}
+  :root[data-mode=dark]{--bt-k:14%;--bt-k-hover:22%}
+  body[data-tones=hues] [data-bt]{background:color-mix(in srgb,var(--bt) var(--bt-k),var(--bg))}
+  body[data-tones=hues] a[data-bt]:is(:hover,:focus-visible){background:color-mix(in srgb,var(--bt) var(--bt-k-hover),var(--bg))}
+  body[data-tones=hues] [data-bt] :is(p,.label,.sub,small){color:color-mix(in srgb,var(--fg-dim) 55%,var(--fg))}
+  body[data-tones=hues] [data-bt] :is(.seek,.chips li){background:color-mix(in srgb,var(--bg) 55%,transparent)}
+  body[data-tones=hues] .D[data-bt] .links a:is(:hover,:focus-visible){background:color-mix(in srgb,var(--bg) 60%,transparent)}
+
+  i.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--fg);margin-right:10px;vertical-align:1px}
+  body:not([data-dot=ink]) :is(.seek i,i.dot){background:var(--status,#23a455);position:relative}
+  body[data-dot=blink] :is(.seek i,i.dot){animation:bt-blink 1.4s ease-in-out infinite}
+  body[data-dot=pulse] :is(.seek i,i.dot)::after{content:'';position:absolute;inset:-3px;border-radius:50%;
+    border:1px solid var(--status,#23a455);animation:bt-ping 2.5s cubic-bezier(0,0,.2,1) infinite}
+
+  /* Card size for option A (on request, 2026-11-26: "this looks too big").
+     L is the first mock; M and S shrink the padding, the small cards'
+     height, the portrait, the heading and the arrow, and give the
+     profile card less of the row so its words don't float in space. */
+  body[data-size=m] .A{grid-template-columns:1.55fr 1fr 1fr;gap:1rem}
+  body[data-size=m] .A .c{padding:1.5rem}
+  body[data-size=m] .A .profile{padding:1.75rem}
+  body[data-size=m] .A .small{min-height:9.5rem}
+  body[data-size=m] .A .seek{margin-bottom:1.25rem}
+  body[data-size=m] .A .hi{gap:1rem}
+  body[data-size=m] .A .hi img{width:52px;height:52px}
+  body[data-size=m] .A .hi h3{font-size:26px}
+  body[data-size=m] .A .bio{margin-top:1rem}
+  body[data-size=m] .A{--go-w:84px;--go-h:34px;--go-inset:1rem}
+
+  body[data-size=s] .A{grid-template-columns:1.4fr 1fr 1fr;gap:.75rem}
+  body[data-size=s] .A .c{padding:1.25rem;border-radius:22px}
+  body[data-size=s] .A .profile{padding:1.5rem}
+  body[data-size=s] .A .small{min-height:7.5rem;gap:.5rem}
+  body[data-size=s] .A .seek{margin-bottom:1rem;padding:6px 10px}
+  body[data-size=s] .A .hi{gap:.875rem}
+  body[data-size=s] .A .hi img{width:44px;height:44px}
+  body[data-size=s] .A .hi h3{font-size:22px}
+  body[data-size=s] .A .bio{margin-top:.75rem}
+  body[data-size=s] .A .bio + .bio{margin-top:.5rem}
+  body[data-size=s] .A .c .ico{width:20px;height:20px}
+  body[data-size=s] .A{--go-w:78px;--go-h:30px;--go-inset:.875rem}
+  body[data-size=s] .A .go svg{width:13px;height:13px}
+  body[data-size=s] .A .go b{font-size:12px;left:12px}
+  body[data-size=s] .A .go.tr b{left:auto;right:12px}
+
+  /* "Outside the work" wording, six versions (on request, 2026-11-26:
+     the first read as too vague). Only one shows, picked by data-line. */
+  [data-line].v{display:none}
+  body[data-line="1"] .v[data-line="1"],body[data-line="2"] .v[data-line="2"],body[data-line="4"] .v[data-line="4"],
+  body[data-line="5"] .v[data-line="5"],body[data-line="6"] .v[data-line="6"]{display:block}
+  body[data-line="3"] .v[data-line="3"]{display:grid}
+  .fact .v p{color:var(--fg)}
+  .fact .v p + p{margin-top:.5rem}
+  .fact .v p.big{font:600 18px/1.35 var(--sans);letter-spacing:-.01em}
+  .fact .rows{grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:12px;line-height:1.5}
+  .fact .rows dt{font:400 11px/1.6 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--fg-dim)}
+  .fact .rows dd{margin:0;color:var(--fg)}
+  body[data-tones=hues] .fact .v p{color:var(--fg)}
+  @keyframes bt-blink{50%{opacity:.2}}
+  @keyframes bt-ping{0%{transform:scale(.5);opacity:1}75%,100%{transform:scale(1.6);opacity:0}}
+  @media (prefers-reduced-motion:reduce){:is(.seek i,i.dot),:is(.seek i,i.dot)::after{animation:none!important}}
+</style>
+</head>
+<body data-tones="hues" data-dot="pulse" data-size="m" data-line="1">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+  <symbol id="right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="li" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></symbol>
+  <symbol id="doc" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/></symbol>
+  <symbol id="mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+</svg>
+
+<nav class="bar" aria-label="Options">
+  <a href="#A">A · Like hers</a><a href="#B">B · Resume first</a><a href="#C">C · With photos</a><a href="#D">D · One quiet band</a>
+  <span></span><button type="button" data-set="tones" data-v="hues">Colours</button><button type="button" data-set="tones" data-v="neutral">Neutral</button><button type="button" data-set="dot" data-v="ink">Ink dot</button><button type="button" data-set="dot" data-v="green">Green</button><button type="button" data-set="dot" data-v="blink">Blink</button><button type="button" data-set="dot" data-v="pulse">Pulse</button><button type="button" data-set="size" data-v="l">L</button><button type="button" data-set="size" data-v="m">M</button><button type="button" data-set="size" data-v="s">S</button><button type="button" data-set="line" data-v="1">1</button><button type="button" data-set="line" data-v="2">2</button><button type="button" data-set="line" data-v="3">3</button><button type="button" data-set="line" data-v="4">4</button><button type="button" data-set="line" data-v="5">5</button><button type="button" data-set="line" data-v="6">6</button><button id="mode" type="button">Dark</button>
+</nav>
+
+<!-- ======================= A ======================= -->
+<section class="opt" id="A">
+  <span class="label tag"><b>A · Like hers</b> — profile card, then four small cards</span>
+  <div class="ctx before"><span class="label" style="color:var(--fg)">View all work →</span></div>
+  <div class="wrap">
+    <h2>A bit <em>about me</em></h2>
+    <div class="A">
+      <a class="c profile" data-bt="apricot" href="/about">
+        <span class="go tr"><s></s><u></u><i><svg><use href="#arrow"/></svg></i><b>About</b></span>
+        <span class="seek"><i></i>Open to Staff or Lead Product Designer roles</span>
+        <div class="hi"><img src="portrait.webp" alt=""><h3>Hi, I’m Anupama, a <em>staff product designer.</em></h3></div>
+        <p class="bio">Based in Bangalore. 10+ years on fintech, identity and privacy products at Okta, PayPal and Walmart Labs. I take complex, regulated workflows from the first framing to shipped UI, and set the patterns other teams build on.</p>
+        <p class="bio">Most recently I led a team of six designers at Okta.</p>
+      </a>
+      <div class="c small fact" data-bt="sage">
+        <span class="label">Outside the work</span>
+        <div class="v" data-line="1"><p class="big">Badminton player, watercolour painter and Indian handloom lover.</p></div>
+        <div class="v" data-line="2"><p>I play badminton and paint in watercolour.</p><p>Next, I want to design with India’s handloom weavers.</p></div>
+        <dl class="v rows" data-line="3"><dt>Play</dt><dd>Badminton</dd><dt>Paint</dt><dd>Watercolour</dd><dt>Love</dt><dd>Indian handloom and crafts</dd><dt>Next</dt><dd>Design with handloom artisans</dd></dl>
+        <div class="v" data-line="4"><p>Off-screen: badminton and watercolour. I’m drawn to Indian handloom, where every pattern is a system someone designed by hand.</p></div>
+        <div class="v" data-line="5"><p class="big">Badminton, watercolour and handloom.</p><p>Someday: a product with the weavers who make it.</p></div>
+        <div class="v" data-line="6"><p>I play badminton, paint in watercolour and collect [Ikat] handloom.</p><p>Next: [a small label made with weavers in Pochampally].</p></div>
+      </div>
+      <a class="c small" data-bt="sky" href="https://www.linkedin.com/in/anupamamishra/" target="_blank" rel="noopener">
+        <span class="go tr"><s></s><u></u><i><svg><use href="#arrow"/></svg></i><b>Open</b></span>
+        <svg class="ico"><use href="#li"/></svg>
+        <h3>LinkedIn</h3>
+      </a>
+      <a class="c small" data-bt="butter" href="/resume.pdf" target="_blank" rel="noopener">
+        <span class="go tr"><s></s><u></u><i><svg><use href="#arrow"/></svg></i><b>PDF</b></span>
+        <svg class="ico"><use href="#doc"/></svg>
+        <h3>Resume</h3>
+      </a>
+      <a class="c small" data-bt="lilac" href="#">
+        <span class="go tr"><s></s><u></u><i><svg><use href="#arrow"/></svg></i><b>Write</b></span>
+        <svg class="ico"><use href="#mail"/></svg>
+        <h3>Email</h3>
+      </a>
+    </div>
+  </div>
+  <div class="ctx after">Beyond <em>work</em></div>
+  <p class="note">The closest to the reference, minus its pastel tints (those would break "colour belongs to the work"). The status pill uses an ink dot: the green one is reserved for the hero's location line.</p>
+</section>
+
+<!-- ======================= B ======================= -->
+<section class="opt" id="B">
+  <span class="label tag"><b>B · Resume first</b> — the resume's first page is the card</span>
+  <div class="wrap">
+    <h2>A bit <em>about me</em></h2>
+    <div class="B">
+      <a class="c profile" data-bt="apricot" href="/about">
+        <span class="go tr"><s></s><u></u><i><svg><use href="#arrow"/></svg></i><b>About</b></span>
+        <span class="seek"><i></i>Open to Staff or Lead Product Designer roles</span>
+        <div class="hi"><img src="portrait.webp" alt=""><h3>Hi, I’m <em>Anupama.</em></h3></div>
+        <p class="bio">Staff product designer in Bangalore. 10+ years on fintech, identity and privacy products. I take complex, regulated workflows from the first framing to shipped UI.</p>
+        <ul class="chips"><li>Okta</li><li>PayPal</li><li>Walmart Labs</li><li>Deloitte Digital</li><li>Zomato</li></ul>
+        <p class="bio push" style="margin-top:auto;padding-top:1.5rem">Outside the work: I play badminton and paint in watercolour. I love Indian handloom and crafts, and want to build in handloom, working with the artisans who make it.</p>
+      </a>
+      <a class="c resume" data-bt="butter" href="/resume.pdf" target="_blank" rel="noopener">
+        <span class="go tr"><s></s><u></u><i><svg><use href="#arrow"/></svg></i><b>PDF</b></span>
+        <span class="label">Resume · 1 page</span>
+        <h3 style="margin-top:.5rem">Ten years, one page</h3>
+        <div class="page"><img src="resume-p1.png" alt="The first page of Anupama’s resume"></div>
+      </a>
+      <a class="c small" data-bt="sky" href="https://www.linkedin.com/in/anupamamishra/" target="_blank" rel="noopener">
+        <span class="go tr"><s></s><u></u><i><svg><use href="#arrow"/></svg></i><b>Open</b></span>
+        <svg class="ico"><use href="#li"/></svg>
+        <h3>LinkedIn</h3>
+      </a>
+      <a class="c small" data-bt="lilac" href="#">
+        <span class="go tr"><s></s><u></u><i><svg><use href="#arrow"/></svg></i><b>Write</b></span>
+        <svg class="ico"><use href="#mail"/></svg>
+        <h3>Email</h3>
+      </a>
+    </div>
+  </div>
+  <p class="note">The resume is shown, not just linked: a recruiter sees it's real and one page before clicking. On hover the page rises into the card. Company names sit as the home cards' grey chips, not logos, so nothing competes with the work above.</p>
+</section>
+
+<!-- ======================= C ======================= -->
+<section class="opt" id="C">
+  <span class="label tag"><b>C · With photos</b> — the "certain things" are her photos</span>
+  <div class="wrap">
+    <h2>A bit <em>about me</em></h2>
+    <div class="C">
+      <a class="c profile" data-bt="apricot" href="/about">
+        <span class="go tr"><s></s><u></u><i><svg><use href="#arrow"/></svg></i><b>About</b></span>
+        <span class="seek"><i></i>Open to Staff or Lead roles</span>
+        <div class="hi"><img src="portrait.webp" alt=""><h3>Hi, I’m <em>Anupama.</em></h3></div>
+        <p class="bio">Staff product designer in Bangalore. 10+ years on fintech, identity and privacy products at Okta, PayPal and Walmart Labs. I take complex, regulated workflows from the first framing to shipped UI.</p>
+        <p class="bio">Outside the work: I play badminton and paint in watercolour. I love Indian handloom and crafts, and want to build in handloom, working with the artisans who make it.</p>
+      </a>
+      <figure><img src="art-porch.webp" alt="Her watercolour of a porch"><figcaption>I paint</figcaption></figure>
+      <figure><img src="talk-smile.webp" alt="Anupama giving a talk"><figcaption>I talk accessibility</figcaption></figure>
+      <div class="row">
+        <a class="c" data-bt="butter" href="/resume.pdf" target="_blank" rel="noopener"><svg class="ico"><use href="#doc"/></svg><h3>Resume<span class="sub">PDF · 1 page</span></h3><span class="go"><s></s><u></u><i><svg><use href="#right"/></svg></i><b>Open</b></span></a>
+        <a class="c" data-bt="sky" href="https://www.linkedin.com/in/anupamamishra/" target="_blank" rel="noopener"><svg class="ico"><use href="#li"/></svg><h3>LinkedIn<span class="sub">in/anupamamishra</span></h3><span class="go"><s></s><u></u><i><svg><use href="#right"/></svg></i><b>Open</b></span></a>
+        <a class="c" data-bt="lilac" href="#"><svg class="ico"><use href="#mail"/></svg><h3>Email<span class="sub">Replies within a day</span></h3><span class="go"><s></s><u></u><i><svg><use href="#right"/></svg></i><b>Write</b></span></a>
+      </div>
+    </div>
+  </div>
+  <p class="note">Warmest of the four, but it overlaps the Beyond work ring right under it (same photos, same job). If you pick this, I'd suggest it replaces the ring rather than sitting above it. "Replies within a day" is a stand-in, yours to confirm or cut. There are no badminton or handloom photos on the site yet; one of either would fit a tile here better than the talk photo.</p>
+</section>
+
+<!-- ======================= D ======================= -->
+<section class="opt" id="D">
+  <span class="label tag"><b>D · One quiet band</b> — one card, three link rows</span>
+  <div class="wrap">
+    <h2>A bit <em>about me</em></h2>
+    <div class="D" data-bt="apricot">
+      <div class="pic"><img src="portrait.webp" alt="Anupama Mishra"></div>
+      <div class="words">
+        <span class="label"><i class="dot"></i>Bangalore · Open to Staff or Lead roles</span>
+        <h3 style="margin-top:1rem">Hi, I’m <em>Anupama.</em></h3>
+        <p>10+ years on fintech, identity and privacy products at Okta, PayPal and Walmart Labs. I take complex, regulated workflows from the first framing to shipped UI, and set the patterns other teams build on.</p>
+        <p>Outside the work: I play badminton and paint in watercolour. I love Indian handloom and crafts, and want to build in handloom, working with the artisans who make it.</p>
+      </div>
+      <div class="links">
+        <a href="/resume.pdf" target="_blank" rel="noopener"><svg class="ico"><use href="#doc"/></svg><span>Resume</span><small>PDF</small><svg class="arr"><use href="#arrow"/></svg></a>
+        <a href="https://www.linkedin.com/in/anupamamishra/" target="_blank" rel="noopener"><svg class="ico"><use href="#li"/></svg><span>LinkedIn</span><small>Profile</small><svg class="arr"><use href="#arrow"/></svg></a>
+        <a href="#"><svg class="ico"><use href="#mail"/></svg><span>Email</span><small>Gmail</small><svg class="arr"><use href="#arrow"/></svg></a>
+        <a href="/about"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>More about me</span><small>About</small><svg class="arr"><use href="#arrow"/></svg></a>
+      </div>
+    </div>
+  </div>
+  <p class="note">Least bento, most restrained: one soft card, the same weight as Now or Small talk. Fastest to scan, least "portfolio template".</p>
+</section>
+
+<script>
+  const b=document.getElementById('mode'),h=document.documentElement;
+  document.querySelectorAll('[data-set]').forEach(x=>x.onclick=()=>document.body.dataset[x.dataset.set]=x.dataset.v);
+  b.onclick=()=>{const d=h.dataset.mode==='dark';h.dataset.mode=d?'light':'dark';b.textContent=d?'Dark':'Light'};
+</script>
+</body>
+</html>

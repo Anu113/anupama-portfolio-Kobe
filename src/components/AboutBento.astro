@@ -1,0 +1,220 @@
+---
+/* AboutBento.astro — "A bit about me", on the home page between Selected
+   work and Beyond work. On request (2026-11-26), after marygans.com's
+   "A bit about me" bento; picked in experiments/home-bento as "A · Like
+   hers", Colours, Pulse, size M, words 4, with the Email card removed
+   (the footer carries contact).
+
+   Four cards: her profile (the ask, her photo, two lines of bio) holding
+   the left; "Outside the work" across the top right; LinkedIn and Resume
+   under it. Each card is the site's soft card in one of the light hues
+   the site already uses (requested exception to rule 2): profile apricot,
+   outside sage, LinkedIn sky, Resume butter. The "Open to…" pill carries
+   the location line's green pulsing light (requested: the second place
+   for --status).
+
+   Hover: the card's colour deepens and its round arrow fills with ink and
+   opens to a word, the home cards' arrow mirrored to the top-right
+   corner. The whole profile card opens /about (one link laid over
+   it). Static under reduced motion.
+
+   UX reason: a recruiter who has just seen the work gets level, the ask,
+   who she is and the resume in one glance, without leaving the page.
+   Values under ABOUT BENTO in tokens.css. */
+import { site } from '../data/site';
+
+const arrow = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>';
+---
+<section class="u-shell bento" aria-labelledby="bento-h">
+  <h2 class="u-heading" id="bento-h">A bit <em>about me</em></h2>
+
+  <div class="bento__grid">
+    <div class="bento__card bento__card--profile">
+      <span class="bento__open"><i aria-hidden="true"></i>Open to {site.seeking} roles</span>
+      <div class="bento__hi">
+        <img src="/images/about/anupama-portrait.webp" alt="" width="52" height="52" loading="lazy" decoding="async" />
+        <h3>Hi, I’m Anupama, a <em>staff product designer.</em></h3>
+      </div>
+      <p class="bento__bio">Based in {site.location}. 10+ years on fintech, identity and privacy products at Okta, PayPal and Walmart Labs. I take complex, regulated workflows from the first framing to shipped UI, and set the patterns other teams build on.</p>
+      <p class="bento__bio">Most recently I led a team of six designers at Okta.</p>
+      <a class="bento__cover" href="/about"><span class="u-sr-only">More about me</span></a>
+      <span class="bento__go" aria-hidden="true"><s></s><u></u><i set:html={arrow} /><b>About</b></span>
+    </div>
+
+    <div class="bento__card bento__card--life">
+      <h3 class="u-label-mono bento__label">Outside the work</h3>
+      <p>Off-screen: badminton and watercolour. I’m drawn to Indian handloom, where every pattern is a system someone designed by hand.</p>
+    </div>
+
+    <a class="bento__card bento__card--link bento__card--linkedin" href={site.linkedin} target="_blank" rel="noopener">
+      <span class="bento__go" aria-hidden="true"><s></s><u></u><i set:html={arrow} /><b>Open</b></span>
+      <svg class="bento__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+      <h3 class="bento__name">LinkedIn<span class="u-sr-only"> (opens in a new tab)</span></h3>
+    </a>
+
+    <a class="bento__card bento__card--link bento__card--resume" href="/resume.pdf" target="_blank" rel="noopener" data-astro-prefetch="false">
+      <span class="bento__go" aria-hidden="true"><s></s><u></u><i set:html={arrow} /><b>PDF</b></span>
+      <svg class="bento__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/></svg>
+      <h3 class="bento__name">Resume<span class="u-sr-only"> (PDF, opens in a new tab)</span></h3>
+    </a>
+  </div>
+</section>
+
+<style>
+  .bento { padding-block: var(--space-home) 0; }
+  .bento h2 { margin: 0 0 var(--space-head-cards); }
+
+  .bento__grid {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr 1fr;
+    gap: var(--bento-gap);
+  }
+  .bento__card {
+    position: relative;
+    display: flex; flex-direction: column;
+    padding: var(--bento-pad);
+    border-radius: var(--radius-home-card);
+    color: var(--fg);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--bento-hue) var(--bento-k), var(--bg));
+    transition: background var(--dur-hover) var(--ease-out);
+  }
+  .bento__card:is(:hover, :focus-within) {
+    background: color-mix(in srgb, var(--bento-hue) var(--bento-k-hover), var(--bg));
+  }
+  .bento__card--profile { --bento-hue: var(--bento-profile); grid-row: span 2; padding: var(--bento-pad-profile); }
+  .bento__card--life { --bento-hue: var(--bento-life); grid-column: span 2; }
+  .bento__card--linkedin { --bento-hue: var(--bento-linkedin); }
+  .bento__card--resume { --bento-hue: var(--bento-resume); }
+  .bento__card--link { min-height: var(--bento-small-h); }
+  .bento__card--link:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+  /* The ask, with the location line's light */
+  .bento__open {
+    display: inline-flex; align-items: center; gap: var(--bento-open-gap);
+    align-self: flex-start;
+    margin: 0 calc(var(--bento-go-h) + var(--bento-gap)) var(--bento-open-below) 0;
+    padding: var(--bento-open-pad);
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--bg) 55%, transparent);
+    font-family: var(--font-mono); font-weight: var(--weight-mono); font-size: var(--step-fine); line-height: 1.4;
+    letter-spacing: var(--tracking-mono-label); text-transform: uppercase;
+  }
+  .bento__open i {
+    position: relative; flex: none;
+    width: var(--status-dot); height: var(--status-dot);
+    border-radius: var(--radius-pill);
+    background: var(--status);
+  }
+  .bento__open i::after {
+    content: ''; position: absolute; inset: calc((var(--status-dot) - var(--status-ring)) / 2);
+    border: 1px solid var(--status); border-radius: var(--radius-pill);
+    animation: bento-ping var(--dur-status-ring) cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  @keyframes bento-ping {
+    0% { transform: scale(0.5); opacity: 1; }
+    75%, 100% { transform: scale(1.6); opacity: 0; }
+  }
+
+  .bento__hi { display: flex; align-items: center; gap: var(--bento-hi-gap); }
+  .bento__hi img {
+    width: var(--bento-avatar); height: var(--bento-avatar); flex: none;
+    border-radius: var(--radius-pill); object-fit: cover;
+  }
+  .bento__hi h3 {
+    margin: 0;
+    font-family: var(--font-serif); font-weight: var(--weight-serif);
+    font-size: var(--step-title); line-height: var(--leading-title); letter-spacing: var(--tracking-title);
+  }
+  .bento__hi em { font-style: italic; }
+
+  .bento__card p {
+    margin: 0;
+    color: var(--bento-copy);
+    font-size: var(--step-copy); line-height: var(--leading-copy); letter-spacing: var(--tracking-copy);
+    text-wrap: pretty;
+  }
+  .bento__bio { max-width: var(--bento-bio-max); margin-top: var(--bento-bio-gap) !important; }
+  .bento__bio + .bento__bio { margin-top: var(--bento-bio-next) !important; }
+
+  .bento__label { margin: 0 0 var(--space-head-link); color: var(--bento-copy); }
+  .bento__card--life p { max-width: var(--measure); }
+
+  .bento__icon {
+    width: var(--bento-icon); height: var(--bento-icon);
+    fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .bento__name {
+    margin: auto 0 0;
+    font-family: var(--font-sans);
+    font-size: var(--step-item); line-height: var(--leading-item); letter-spacing: var(--tracking-item);
+    font-weight: var(--weight-sans);
+  }
+
+  /* The round arrow: the home cards' .card-go, mirrored into the
+     top-right corner so it opens leftward, inside the card. */
+  .bento__go {
+    position: absolute; top: var(--bento-go-inset); right: var(--bento-go-inset); z-index: 1;
+    width: var(--bento-go-w); height: var(--bento-go-h);
+    color: var(--fg);
+    transition: color var(--home-go-fade) linear var(--home-go-hold);
+    pointer-events: none;
+  }
+  /* The profile card opens /about: one link laid over the whole card. */
+  .bento__cover { position: absolute; inset: 0; border-radius: inherit; z-index: 0; }
+  .bento__cover:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .bento__go s {
+    position: absolute; right: 0; top: 0;
+    width: var(--bento-go-h); height: var(--bento-go-h);
+    border-radius: var(--radius-pill);
+    box-shadow: inset 0 0 0 1px var(--home-go-ring);
+  }
+  .bento__go u {
+    position: absolute; inset: 0; border-radius: var(--radius-pill);
+    background: var(--fg);
+    clip-path: circle(calc(var(--bento-go-h) / 2) at calc(100% - var(--bento-go-h) / 2) 50%);
+    opacity: 0;
+    transition: clip-path var(--home-go-close) var(--ease-in-out-go), opacity var(--home-go-fade) linear var(--home-go-hold);
+  }
+  .bento__go i {
+    position: absolute; right: 0; top: 0; z-index: 1;
+    width: var(--bento-go-h); height: var(--bento-go-h);
+    display: grid; place-items: center;
+    transition: transform var(--home-go-open) var(--ease-out);
+  }
+  .bento__go :global(svg) {
+    width: var(--bento-go-arrow); height: var(--bento-go-arrow);
+    fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .bento__go b {
+    position: absolute; right: var(--home-go-label-x); top: 0; z-index: 1;
+    font-family: var(--font-sans); font-weight: var(--weight-sans);
+    font-size: var(--home-go-label-size); line-height: var(--bento-go-h);
+    opacity: 0; transform: translateX(6px);
+    transition: opacity var(--home-go-fade) var(--ease-out), transform var(--home-go-open) var(--ease-out);
+  }
+  .bento__card:is(:hover, :focus-within) .bento__go { color: var(--bg); transition: color var(--home-go-in) linear; }
+  .bento__card:is(:hover, :focus-within) .bento__go u {
+    clip-path: circle(var(--bento-go-w) at calc(100% - var(--bento-go-h) / 2) 50%);
+    opacity: 1;
+    transition: opacity var(--home-go-in) linear, clip-path var(--home-go-open) var(--ease-out) var(--home-go-lag);
+  }
+  .bento__card:is(:hover, :focus-within) .bento__go i {
+    transform: translateX(calc(var(--bento-go-h) - var(--bento-go-w)));
+    transition: transform var(--home-go-open) var(--ease-out) var(--home-go-lag);
+  }
+  .bento__card:is(:hover, :focus-within) .bento__go b {
+    opacity: 1; transform: none;
+    transition: opacity var(--home-go-fade) var(--ease-out) var(--home-go-label-lag), transform var(--home-go-open) var(--ease-out);
+  }
+
+  @media (max-width: 61.25rem) {
+    .bento__grid { grid-template-columns: 1fr 1fr; }
+    .bento__card--profile { grid-column: 1 / -1; grid-row: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bento__open i::after { animation: none; opacity: 0; }
+    .bento__card, .bento__go, .bento__go * { transition: none !important; }
+  }
+</style>

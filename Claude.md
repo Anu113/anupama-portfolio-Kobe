@@ -714,13 +714,17 @@ walked back. Concretely, in the current implementation:
   here: `--status` green is the one colour besides the accent and the
   project hues (only on that dot), and the weather is fetched in the
   browser from Open-Meteo (no key, no cookies, but the visitor's IP
-  reaches them). Don't extend either beyond this line.
+  reaches them). Don't extend either beyond this line, bar one: the
+  same pulsing light on the "Open to…" pill of the home page's bento
+  (below), on request, 2026-11-26.
 - **Project hues** are the one place colour appears beyond the accent: one
   muted hue per company (Okta sky `#c9dcf2`, PayPal lilac `#e0d6ef`, Walmart
   butter `#f4dc9c`), only behind that company's screenshots — home card
   stage, /work thumbnail, case study cover. Set via `data-hue` from
   `hueFor()` in `data/work.ts`; tokens in `tokens.css` (PROJECT HUES). Never
-  on text, chrome or full-width bands.
+  on text, chrome or full-width bands. One requested exception: the home
+  page's bento cards (below) are tinted in these hues and the home
+  cards' grounds.
 - **Case study type** (`work/[slug].astro`, `CaseBlocks.astro`), after
   carlthomasiv.com/work/ona-conversations, chosen on request from a mock:
   the title is the one large line (`--step-case-title`, 30→40px); section
@@ -926,12 +930,28 @@ walked back. Concretely, in the current implementation:
   the way the paintings share hers.
 - The home page is now: hero →
   "Selected *work*" head + six project cards →
-  "Beyond *work*" ring → one-line playground pointer → Small talk →
+  "A bit *about me*" bento → "Beyond *work*" ring → one-line playground pointer → Small talk →
   Now → footer (which carries contact). The hero is the screen minus
   `--hero-peek`, so the "Selected work" heading line shows at the
   bottom of the first screen on laptops and up (on request, 2026-11-17);
   "View all work" sits after the cards (on request, 2026-11-17). On short screens `--hero-pad-top`
   gives way first (HOME HERO in `tokens.css`).
+- **A bit about me** (`AboutBento.astro`, ABOUT BENTO in `tokens.css`;
+  on request, 2026-11-26, after marygans.com's bento, picked in
+  `experiments/home-bento`: "A · Like hers", Colours, Pulse, size M,
+  words 4, with the Email card dropped since the footer has contact).
+  Between Selected work and Beyond work: her profile card (the "Open to
+  `site.seeking` roles" pill with the location line's green pulsing
+  light, her photo, "Hi, I'm Anupama, a *staff product designer.*", two
+  lines of bio; the card opens /about), an "Outside the work" card
+  (badminton, watercolour, Indian handloom, in a line she picked), and
+  LinkedIn and Resume cards. Each card is a soft card tinted in a light
+  hue the site already uses (profile apricot, outside sage, LinkedIn
+  sky, Resume butter), mixed far down in dark mode; 28px corners as the
+  home cards. On hover the tint deepens and the home cards' round
+  arrow, mirrored to the top-right, fills with ink and opens to a word.
+  Its reason: right after the work, a recruiter gets level, the ask,
+  the person and the resume in one glance.
 - **Now** (`Now.astro`, `site.now` in `data/site.ts`; on request, after
   carlthomasiv.com's): a hairline, a mono "NOW" label and one grey
   paragraph in her words on what she's thinking about. No heading, no
