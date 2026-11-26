@@ -1031,7 +1031,14 @@ walked back. Concretely, in the current implementation:
   soft texture (Privacy, Scan & Go) or the project hue as a lit colour
   block (Okta IAM, Debit Card); `ground` in `data/workPlay.ts`, WORK
   GROUND in `tokens.css`. The home page's project cards use plain
-  project hues instead (since 2026-11-24, see the cards above). /work is left as it is for now, on request. The photos are
+  project hues instead (since 2026-11-24, see the cards above). Since
+  2026-11-26, on request, /work's card has the home card's shape and
+  words (`CaseCard.astro`): the stage at the home stage's height with
+  20px corners, then grey chips (company first), the title in the item
+  role, the impact line in the copy role and the round "View" arrow.
+  The chips and arrow are one definition, `.card-chips` / `.card-go` in
+  `global.css`, for both pages; what's on the stage (these grounds,
+  hover-play) stays /work's own. The photos are
   stand-ins from PayPal's and
   Walmart's sites until licensed or her own ones replace them.
 - **On case studies, a phone sits in a device box** (`DeviceBox.astro`,

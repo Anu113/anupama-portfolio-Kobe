@@ -85,7 +85,7 @@ const flow = media.type === 'play' && isPlay(workPlay[media.play]) ? workPlay[me
 const pairFull = media.type === 'pair' ? workPlay[media.play] : undefined;
 const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.steps[0]] } : null;
 ---
-<article class:list={['pc', wide && 'pc--wide', wide && flip && 'pc--flip']} data-locked={locked || undefined} style={`--stage-ground: ${groundVar}`}>
+<article data-card class:list={['pc', wide && 'pc--wide', wide && flip && 'pc--flip']} data-locked={locked || undefined} style={`--stage-ground: ${groundVar}`}>
   <div class="pc__stage" data-phone role="img" aria-label={media.alt}>
     {media.type === 'desktop' ? (
       <img class="pc__desktop" src={media.image} alt="" loading="lazy" decoding="async" />
@@ -143,7 +143,7 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
   <div class="pc__body">
     {/* His chips (andreas.vision): the company, then the labels from
         labelsFor() in data/work.ts, one small chip each. */}
-    <ul class="pc__chips" aria-label="Company, domain and discipline">
+    <ul class="pc__chips card-chips" aria-label="Company, domain and discipline">
       <li class="pc__co">{locked && <LockIcon class="pc__lock" size="1em" />}{company}</li>
       {tags.map((t) => <li>{t}</li>)}
     </ul>
@@ -152,7 +152,7 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
     {/* The arrow under the words: a ghost ring at rest; on hover the ink
         fills it and spreads into "View" (see the styles). A label: the
         card itself is the link. */}
-    <span class="pc__go" aria-hidden="true"><s></s><u></u><b>View</b><i><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></i></span>
+    <span class="card-go" aria-hidden="true"><s></s><u></u><b>View</b><i><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></i></span>
   </div>
 </article>
 
@@ -179,19 +179,8 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
     padding-top: var(--home-card-text-gap);
     flex: 1;
   }
-  /* His chips: one per label, the company first (HOME CARDS in tokens.css). */
-  .pc__chips { display: flex; flex-wrap: wrap; gap: var(--home-chip-gap); list-style: none; margin: 0 0 var(--home-chip-title-gap); padding: 0; }
-  .pc__chips li {
-    font-family: var(--font-sans);
-    font-size: var(--home-chip-size);
-    font-weight: var(--weight-sans);
-    line-height: var(--home-chip-h);
-    padding: 0 var(--home-chip-pad);
-    border-radius: var(--radius-home-chip);
-    color: var(--home-chip-fg);
-    background: var(--home-chip-fill);
-    white-space: nowrap;   /* a chip never breaks across lines */
-  }
+  /* The chips and the arrow are shared with /work's cards: .card-chips
+     and .card-go in global.css. */
   .pc__co :global(.pc__lock) { display: inline-block; margin-right: 0.4em; vertical-align: -0.1em; }
   /* Locked: the frost is the hover, so the work holds still under it. */
   @media (hover: hover) {
@@ -221,66 +210,6 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
     max-width: var(--home-tagline-max);
     text-wrap: pretty;
   }
-  /* The arrow under the words ("3 · Arrow under text", "F · Ghost to ink"
-     of experiments/home-card-border/). A fixed box, so nothing around it
-     moves. At rest: a ring (s) with the ink arrow. On hover the ink layer
-     (u) first fills the ring (the arrow turning white with it), then
-     spreads into the whole pill by clip-path, so it is never a grey
-     half-fill, while the arrow rides to the end and "View" comes in.
-     Leaving plays it back: the ink draws in to the ring and only there
-     fades, together with the arrow's colour, so the arrow always reads.
-     Values under HOME CARDS in tokens.css. */
-  .pc__go {
-    position: relative; display: block; flex: none;
-    width: var(--home-go-w); height: var(--home-go-h);
-    margin-top: var(--home-go-gap);
-    color: var(--fg);
-    transition: color var(--home-go-fade) linear var(--home-go-hold);
-  }
-  .pc__go s {
-    position: absolute; left: 0; top: 0;
-    width: var(--home-go-h); height: var(--home-go-h);
-    border-radius: 999px;
-    box-shadow: inset 0 0 0 1px var(--home-go-ring);
-  }
-  .pc__go u {
-    position: absolute; inset: 0; border-radius: 999px;
-    background: var(--fg);
-    clip-path: circle(calc(var(--home-go-h) / 2) at calc(var(--home-go-h) / 2) 50%);
-    opacity: 0;
-    transition:
-      clip-path var(--home-go-close) var(--ease-in-out-go),
-      opacity var(--home-go-fade) linear var(--home-go-hold);
-  }
-  .pc__go i {
-    position: absolute; left: 0; top: 0; z-index: 1;
-    width: var(--home-go-h); height: var(--home-go-h);
-    display: grid; place-items: center;
-    transition: transform var(--home-go-open) var(--ease-out);
-  }
-  .pc__go svg { width: 15px; height: 15px; }
-  .pc__go b {
-    position: absolute; left: var(--home-go-label-x); top: 0; z-index: 1;
-    font-family: var(--font-sans); font-weight: var(--weight-sans);
-    font-size: var(--home-go-label-size); line-height: var(--home-go-h);
-    opacity: 0; transform: translateX(-6px);
-    transition: opacity var(--home-go-fade) var(--ease-out), transform var(--home-go-open) var(--ease-out);
-  }
-  .pc:is(:hover, :has(.pc__link:focus-visible)) .pc__go { color: var(--bg); transition: color var(--home-go-in) linear; }
-  .pc:is(:hover, :has(.pc__link:focus-visible)) .pc__go u {
-    clip-path: circle(var(--home-go-w) at calc(var(--home-go-h) / 2) 50%);
-    opacity: 1;
-    transition: opacity var(--home-go-in) linear, clip-path var(--home-go-open) var(--ease-out) var(--home-go-lag);
-  }
-  .pc:is(:hover, :has(.pc__link:focus-visible)) .pc__go i {
-    transform: translateX(calc(var(--home-go-w) - var(--home-go-h)));
-    transition: transform var(--home-go-open) var(--ease-out) var(--home-go-lag);
-  }
-  .pc:is(:hover, :has(.pc__link:focus-visible)) .pc__go b {
-    opacity: 1; transform: none;
-    transition: opacity var(--home-go-fade) var(--ease-out) var(--home-go-label-lag), transform var(--home-go-open) var(--ease-out);
-  }
-
   /* The wide card: the words on the left, the work on the right, the
      title in the serif heading. */
   @media (min-width: 861px) {
@@ -429,7 +358,7 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .pc__device, .pc__desktop, .pc__go, .pc__go * { transition: none !important; }
+    .pc__device, .pc__desktop { transition: none !important; }
     .pc:hover :is(.pc__device, .pc__desktop),
     .pc:has(.pc__link:focus-visible) :is(.pc__device, .pc__desktop) { transform: none; }
   }

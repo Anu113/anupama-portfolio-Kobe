@@ -417,3 +417,87 @@ a:focus-visible {
   text-decoration-color: var(--link-line-hover);
   text-decoration-thickness: var(--link-thick-hover);
 }
+
+/* --- Project card words: chips and the "View" arrow --------------------
+   Shared by the home page's cards (ProjectCard.astro) and /work's
+   (CaseCard.astro), so both pages label and open a case the same way
+   (2026-11-26, on request). The card that hosts them carries
+   `data-card`; hovering it, or focusing anything in it, opens the arrow.
+
+   Chips: andreas.vision's, one per label, the company first.
+   The arrow ("3 · Arrow under text", "F · Ghost to ink" of
+   experiments/home-card-border/): a fixed box, so nothing around it
+   moves. At rest, a ring (s) with the ink arrow (i). On hover the ink
+   layer (u) first fills the ring (the arrow turning white with it), then
+   spreads into the whole pill by clip-path, so it is never a grey
+   half-fill, while the arrow rides to the end and "View" (b) comes in.
+   Leaving plays it back: the ink draws in to the ring and only there
+   fades, together with the arrow's colour, so the arrow always reads.
+   Values under HOME CARDS in tokens.css. */
+.card-chips { display: flex; flex-wrap: wrap; gap: var(--home-chip-gap); list-style: none; margin: 0 0 var(--home-chip-title-gap); padding: 0; }
+.card-chips li {
+  font-family: var(--font-sans);
+  font-size: var(--home-chip-size);
+  font-weight: var(--weight-sans);
+  line-height: var(--home-chip-h);
+  letter-spacing: normal;
+  text-transform: none;
+  padding: 0 var(--home-chip-pad);
+  border-radius: var(--radius-home-chip);
+  color: var(--home-chip-fg);
+  background: var(--home-chip-fill);
+  white-space: nowrap;   /* a chip never breaks across lines */
+}
+.card-go {
+  position: relative; display: block; flex: none;
+  width: var(--home-go-w); height: var(--home-go-h);
+  margin-top: var(--home-go-gap);
+  color: var(--fg);
+  transition: color var(--home-go-fade) linear var(--home-go-hold);
+}
+.card-go s {
+  position: absolute; left: 0; top: 0;
+  width: var(--home-go-h); height: var(--home-go-h);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--home-go-ring);
+}
+.card-go u {
+  position: absolute; inset: 0; border-radius: 999px;
+  background: var(--fg);
+  clip-path: circle(calc(var(--home-go-h) / 2) at calc(var(--home-go-h) / 2) 50%);
+  opacity: 0;
+  transition:
+    clip-path var(--home-go-close) var(--ease-in-out-go),
+    opacity var(--home-go-fade) linear var(--home-go-hold);
+}
+.card-go i {
+  position: absolute; left: 0; top: 0; z-index: 1;
+  width: var(--home-go-h); height: var(--home-go-h);
+  display: grid; place-items: center;
+  transition: transform var(--home-go-open) var(--ease-out);
+}
+.card-go svg { width: 15px; height: 15px; }
+.card-go b {
+  position: absolute; left: var(--home-go-label-x); top: 0; z-index: 1;
+  font-family: var(--font-sans); font-weight: var(--weight-sans);
+  font-size: var(--home-go-label-size); line-height: var(--home-go-h);
+  opacity: 0; transform: translateX(-6px);
+  transition: opacity var(--home-go-fade) var(--ease-out), transform var(--home-go-open) var(--ease-out);
+}
+[data-card]:is(:hover, :focus-visible, :has(:focus-visible)) .card-go { color: var(--bg); transition: color var(--home-go-in) linear; }
+[data-card]:is(:hover, :focus-visible, :has(:focus-visible)) .card-go u {
+  clip-path: circle(var(--home-go-w) at calc(var(--home-go-h) / 2) 50%);
+  opacity: 1;
+  transition: opacity var(--home-go-in) linear, clip-path var(--home-go-open) var(--ease-out) var(--home-go-lag);
+}
+[data-card]:is(:hover, :focus-visible, :has(:focus-visible)) .card-go i {
+  transform: translateX(calc(var(--home-go-w) - var(--home-go-h)));
+  transition: transform var(--home-go-open) var(--ease-out) var(--home-go-lag);
+}
+[data-card]:is(:hover, :focus-visible, :has(:focus-visible)) .card-go b {
+  opacity: 1; transform: none;
+  transition: opacity var(--home-go-fade) var(--ease-out) var(--home-go-label-lag), transform var(--home-go-open) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-go, .card-go * { transition: none !important; }
+}
