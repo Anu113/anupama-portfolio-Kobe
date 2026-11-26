@@ -763,8 +763,13 @@
   --home-card-line: color-mix(in srgb, #5c1712 16%, transparent);   /* oxblood, faint ("Faint line") */
   --radius-home-card: 28px;
   --radius-home-stage: 20px;
-  --home-card-pad: 1.5rem 1.5rem 1.75rem;
-  --home-card-gap: 1.5rem;             /* between cards, both ways */
+  /* The paper card has no line or shadow, so any padding round the work
+     read as stray air: the coloured stages sat 72px apart and 24px in from
+     the page's edge (2026-11-26, "spacing between the cards is off"). The
+     stage is the card's edge now; only the words under a pair keep room
+     below them before the next row. */
+  --home-card-pad: 0 0 2.5rem;         /* + the gap: ~56px under the words, as his */
+  --home-card-gap: 1rem;               /* between the coloured stages, both ways (andreas.vision's 16px, 2026-11-26) */
   --home-card-rise: -3px;              /* the card on hover */
   --home-card-grow: 1.05;              /* the work inside it on hover (his) */
   --home-work-dur: 700ms;              /* the work's zoom, his slower ease-out */

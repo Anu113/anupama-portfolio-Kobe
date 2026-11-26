@@ -284,8 +284,8 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
   /* The wide card: the words on the left, the work on the right, the
      title in the serif heading. */
   @media (min-width: 861px) {
-    .pc--wide { display: grid; grid-template-columns: var(--home-wide-cols); align-items: center; gap: 2rem; }
-    .pc--wide .pc__body { order: -1; padding: 0 0 0 1rem; flex: none; }
+    .pc--wide { display: grid; grid-template-columns: var(--home-wide-cols); align-items: center; gap: 2rem; padding: 0; }
+    .pc--wide .pc__body { order: -1; padding: 0; flex: none; }
     .pc--wide .pc__title {
       font-family: var(--font-serif); font-weight: var(--weight-serif);
       font-size: var(--step-heading); line-height: var(--leading-heading); letter-spacing: normal;
@@ -293,7 +293,7 @@ const pairFlow = pairFull && isPlay(pairFull) ? { ...pairFull, steps: [pairFull.
     }
     /* The second wide card: the work first, the words on the right. */
     .pc--flip { grid-template-columns: var(--home-wide-cols-flip); }
-    .pc--flip .pc__body { order: 0; padding: 0 1rem 0 0; }
+    .pc--flip .pc__body { order: 0; padding: 0; }
   }
 
   /* The stage: the work on its project's hue. */

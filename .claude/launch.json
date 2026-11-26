@@ -328,6 +328,26 @@
       ],
       "port": 4383,
       "autoPort": true
+    },
+    {
+      "name": "home-no-globe-dist",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory .claude/worktrees/home-no-globe/dist"
+      ],
+      "port": 4385,
+      "autoPort": true
+    },
+    {
+      "name": "device-replay-mockup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory experiments/device-replay"
+      ],
+      "port": 4387,
+      "autoPort": true
     }
   ]
 }
