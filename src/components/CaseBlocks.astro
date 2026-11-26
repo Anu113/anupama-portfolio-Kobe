@@ -38,7 +38,12 @@
    `bars` (scores against the bar to clear, numbers always printed),
    `fixes` (each finding beside what changed) and `aside` (a gap named
    where it happened). Ink only, no hairlines; values under CASE STORY in
-   tokens.css. */
+   tokens.css.
+
+   Four blocks for the Privacy case's process, art and Learn more cards
+   ("F" of experiments/privacy-process, on request, 2026-11-26), each in
+   its own component: `sketches` (SketchCollage), `illos` (PrivacyArt),
+   `sketchrows` (SketchRows) and `cardparts` (LearnCardParts). */
 import type { CaseBlock } from '../data/cases';
 import Reveal from './Reveal.astro';
 import EnrollPrototype from './EnrollPrototype.astro';
@@ -49,6 +54,10 @@ import PrivacyCompare from './PrivacyCompare.astro';
 import ContextualPrivacy from './ContextualPrivacy.astro';
 import ChaseScreens from './ChaseScreens.astro';
 import ChaseDiagram from './ChaseDiagram.astro';
+import SketchCollage from './SketchCollage.astro';
+import PrivacyArt from './PrivacyArt.astro';
+import SketchRows from './SketchRows.astro';
+import LearnCardParts from './LearnCardParts.astro';
 
 interface Props { blocks: CaseBlock[] }
 const { blocks } = Astro.props;
@@ -248,6 +257,11 @@ const claimNum = blocks.map((b) =>
     {block.kind === 'see' && (
       <p class="see">{block.text} <a href={block.href}>{block.label}</a></p>
     )}
+
+    {block.kind === 'sketches' && <SketchCollage label={block.label} items={block.items} />}
+    {block.kind === 'illos' && <PrivacyArt door={block.door} items={block.items} palette={block.palette} credit={block.credit} />}
+    {block.kind === 'sketchrows' && <SketchRows label={block.label} src={block.src} alt={block.alt} caption={block.caption} items={block.items} />}
+    {block.kind === 'cardparts' && <LearnCardParts notes={block.notes} cards={block.cards} />}
 
     {block.kind === 'metrics' && (
       <div class="group">

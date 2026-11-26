@@ -94,7 +94,32 @@ export type CaseBlock =
       happened rather than saved for the reflection. */
   | { kind: 'aside'; label: string; text: string }
   /** One line pointing to another case (or part of one): text, then a link. */
-  | { kind: 'see'; text: string; href: string; label: string };
+  | { kind: 'see'; text: string; href: string; label: string }
+  /* The Privacy case's process, art and Learn more cards ("F" of
+     experiments/privacy-process, on request, 2026-11-26). */
+  /** The process as one collage of pencil sheets, with a numbered line
+      under it per step (SketchCollage.astro). Pointing at a sheet or its
+      line brings that sheet to the front. */
+  | { kind: 'sketches'; label?: string; items: { name: string; src: string; alt: string; text: string }[] }
+  /** Her illustrations: the research finding behind them, then each one
+      with what it means and where it's used, its colours, and her credit
+      (PrivacyArt.astro). */
+  | {
+      kind: 'illos';
+      door: { src: string; alt: string; finding: string; heard: string; meant: string };
+      items: { name: string; src: string; alt: string; means: string; where: string; blue?: boolean }[];
+      palette: { name: string; token: string }[];
+      credit: string;
+    }
+  /** One sketch beside term/detail rows (SketchRows.astro). */
+  | { kind: 'sketchrows'; label?: string; src: string; alt: string; caption?: string; items: { term: string; detail: string }[] }
+  /** A Learn more card taken apart: one card large with numbered notes,
+      then each card with the question it answers (LearnCardParts.astro). */
+  | {
+      kind: 'cardparts';
+      notes: { title: string; text: string }[];
+      cards: { src: string; title: string; answers: string }[];
+    };
 
 /** One note on a before/after phone. Boxes are [x, y, width, height] in %
     of the screen, measured off the drawn screens. `at` is where the pin
@@ -724,6 +749,62 @@ export const cases: CaseStudy[] = [
           },
         ],
       },
+      /* Her illustrations ("F" of experiments/privacy-process, on request,
+         2026-11-26). She drew all four (her word, 2026-11-26). The door is
+         the symbol from early testing, a stock picture, so the credit names
+         her four only. Findings are from her Figma boards: "fatalism
+         towards privacy" and the door "came up most" in early testing. */
+      {
+        id: 'illustrations',
+        answers: ['people'],
+        nav: 'The illustrations',
+        label: 'The illustrations',
+        heading: 'What the illustrations mean',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'Our early research kept landing on the same feeling: privacy is already gone, and there\'s nothing you can do about it. So I drew illustrations that show the opposite: you\'re the one in charge of your data.',
+            ],
+          },
+          {
+            kind: 'illos',
+            door: {
+              src: '/images/paypal-privacy/process/door.webp',
+              alt: 'A red panelled door on a soft green shape',
+              finding: 'In early testing, the symbol people tied to privacy most was a door.',
+              heard: 'Privacy felt out of their control. They expected PayPal not to sell or share their data, and to keep it safe.',
+              meant: 'Show a person doing something, not a locked vault. Something you can open and close yourself.',
+            },
+            items: [
+              { name: 'The keeper', src: '/images/paypal-privacy/process/art-keeper.webp', alt: 'A woman with a phone beside a large blue padlock', means: 'A person next to the lock, holding her phone. She controls the lock, not PayPal.', where: 'Top of Data and privacy, in the second version.' },
+              { name: 'The folder', src: '/images/paypal-privacy/process/art-folder.webp', alt: 'A yellow folder full of papers behind a small padlock', means: 'Your data as a file. You can ask for a copy, fix it, or delete it.', where: 'Your data rights.' },
+              { name: 'The keyhole shield', src: '/images/paypal-privacy/process/art-shield.webp', alt: 'A shield with a keyhole', means: 'A check-in on your settings once a year. I wanted it to feel like an anniversary, not a warning.', where: 'The yearly check card.', blue: true },
+              { name: 'The device and one detail', src: '/images/paypal-privacy/learn-others.webp', alt: 'A phone showing a payment of $30.00, with a crossed-out eye beside it', means: 'A phone plus one detail that tells you what the card is about, like a profile and $30 for what other people can see.', where: 'The Learn more cards.', blue: true },
+            ],
+            palette: [
+              { name: 'Blue', token: '--illo-blue' },
+              { name: 'Deep blue', token: '--illo-deep' },
+              { name: 'Green', token: '--illo-green' },
+              { name: 'Sky', token: '--illo-sky' },
+              { name: 'Yellow', token: '--illo-yellow' },
+              { name: 'Glow', token: '--illo-glow' },
+            ],
+            credit: 'I drew all four: the keeper, the folder, the shield and the card art.',
+          },
+          {
+            kind: 'sketchrows',
+            label: 'Why we moved the art',
+            src: '/images/paypal-privacy/process/sketch-hub.webp',
+            alt: 'Pencil wireframe of the Data and privacy page: art on top, three groups of settings, Learn more cards last, with notes',
+            caption: 'My first sketch of the page: art on top.',
+            items: [
+              { term: 'Why it was there', detail: 'To make the page feel friendlier. My board calls it the "delight factor".' },
+              { term: 'What I kept', detail: 'The art on the Learn more cards at the bottom, where it doesn\'t push a setting down.' },
+            ],
+          },
+        ],
+      },
       {
         id: 'team',
         answers: ['people'],
@@ -731,6 +812,23 @@ export const cases: CaseStudy[] = [
         label: 'How the work got made',
         heading: 'Four structures went in. One came out.',
         blocks: [
+          /* The process as one collage of her pencil sketches ("F" of
+             experiments/privacy-process, on request, 2026-11-26). Facts from
+             her boards: two sessions with partner teams, fatalism, three
+             layers with five questions, the card sort table (each column
+             in steps of 1/30), and "celebrate it like an anniversary". */
+          {
+            kind: 'sketches',
+            label: 'From my notebook',
+            items: [
+              { name: 'Discover', src: '/images/paypal-privacy/process/sketch-discover.webp', alt: '', text: 'We went through support calls and a year of settings traffic, and held two sessions with partner teams.' },
+              { name: 'Define', src: '/images/paypal-privacy/process/sketch-define.webp', alt: '', text: 'People felt privacy was out of their control.' },
+              { name: 'Ideate', src: '/images/paypal-privacy/process/sketch-ideate.webp', alt: '', text: 'Three layers: the hub, a product category, then answers to five questions.' },
+              { name: 'Test', src: '/images/paypal-privacy/process/sketch-test.webp', alt: '', text: 'I ran four closed card sorts. In one, 24 of 30 people put marketing emails under Communications.' },
+              { name: 'Iterate', src: '/images/paypal-privacy/process/sketch-iterate.webp', alt: '', text: 'The layers folded into one page, in three groups.' },
+              { name: 'The yearly check', src: '/images/paypal-privacy/process/sketch-anniv.webp', alt: '', text: 'Once a year, a card asks if your settings still suit you.' },
+            ],
+          },
           /* The process as evidence (change 03): the funnel and the scores
              drawn, the card-sort paragraph folded into them. */
           {
@@ -757,10 +855,6 @@ export const cases: CaseStudy[] = [
           {
             kind: 'points',
             items: [
-              {
-                title: 'Start from what people do',
-                body: 'A year of settings traffic, a review with the product triad, and sessions with customer service and the teams whose features needed a setting. The most-used tasks set the order on each page, balanced against stakeholders and GDPR.',
-              },
               {
                 title: 'Contextual privacy',
                 body: 'Most privacy questions start somewhere else: a first visit, a shopping integration, the middle of a payment. Each of those moments got a short explanation in place, with a link to the setting.',
@@ -824,6 +918,40 @@ export const cases: CaseStudy[] = [
               { at: 86, before: [0, 23.3, 100, 14.2], after: [0, 23.3, 100, 20], was: 'Blue on blue: in baseline testing, many people never saw it.', now: 'White, set apart from the global navigation.' },
               { at: 47.5, before: [8, 24, 44, 12], after: [6, 24, 66, 18], was: 'Small type: Account, Security, Payments, Notifications.', now: 'Larger type: Personal info, Financial settings, Privacy and security, Communications.' },
               { at: 13, before: [9, 33, 8, 5], after: [4, 39, 13, 5], was: 'A small notch marks the current page.', now: 'A clear marker under the current page.' },
+            ],
+          },
+        ],
+      },
+      /* The Learn more cards taken apart ("F" of experiments/privacy-process,
+         on request, 2026-11-26). Which card answers which of her five
+         layer-3 questions is our reading: TO CONFIRM with her. What each
+         card opens is still to be written (see CLAUDE.md). */
+      {
+        id: 'learn-more',
+        answers: ['people'],
+        nav: 'Learn more cards',
+        label: 'Learn more about PayPal privacy',
+        heading: 'How the Learn more cards work',
+        blocks: [
+          {
+            kind: 'prose',
+            text: [
+              'They\'re for people who want to know what happens to their data, so they sit last, after every setting. Our first idea put this a layer deeper, and rapid research flagged the extra click.',
+            ],
+          },
+          {
+            kind: 'cardparts',
+            notes: [
+              { title: 'Colour field', text: 'One colour per topic.' },
+              { title: 'Spot art', text: 'A phone and one detail. No faces.' },
+              { title: 'The detail', text: 'A crossed-out eye: some info is hidden.' },
+              { title: 'Title', text: 'The question, two lines at most.' },
+              { title: 'One target', text: 'The whole card opens it.' },
+            ],
+            cards: [
+              { src: '/images/paypal-privacy/learn-others.webp', title: 'What others see when you use PayPal', answers: 'Is my data shared with anyone?' },
+              { src: '/images/paypal-privacy/learn-emails.webp', title: 'Manage emails & notifications', answers: 'What can I control?' },
+              { src: '/images/paypal-privacy/learn-data.webp', title: 'Examples of how we use your data', answers: 'What is my data used for?' },
             ],
           },
         ],

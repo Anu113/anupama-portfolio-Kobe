@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayPal Privacy — illustrations, Learn more cards, process sketches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<!--
+  Mock, 2026-11-26, on request: three new sections for the PayPal Privacy
+  case (paypal-privacy), shown as they'd sit on the case page.
+    A · The illustrations: what each picture is and what it means.
+    B · The Learn more cards taken apart.
+    C · The design process, told in pencil sketches (two layouts).
+  Facts come from her Figma file (WqJYNtCbRY0QGUPtodXrbn, page "PayPal's
+  Privacy Settings Redesign": boards Process, Define (the door), Layering IA,
+  Early take on design, The new revised ramp) and from cases.ts. Art in
+  art/ is cropped from Figma screenshots of those boards (1x, so soft).
+  The sketches are drawn in the browser by the little renderer at the
+  bottom (seeded jitter, two pencil passes, graphite grain filter): they
+  are new drawings of her boards' content, not scans of her own pages.
+  Serve from the repo root: /experiments/privacy-process/
+-->
+<style>
+  :root {
+    --font-serif: 'Crimson Pro', Georgia, serif;
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, monospace;
+    --font-hand: 'Nanum Pen Script', 'Bradley Hand', cursive;
+    --bg: #fcfcfc; --fg: #262626; --dim: #707070; --soft: color-mix(in srgb, #262626 3%, #fcfcfc);
+    --blue: #2f6fd6;
+    /* sketch materials */
+    --paper: #f6f3ec; --paper-edge: #e7e2d6;
+    --graphite: #3b3a37; --pen: #1f2a44; --marker: #f8d64e;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #efeeea; color: var(--fg); font: 600 13px/1.7 var(--font-sans); }
+  .doc { max-width: 1240px; margin: 0 auto; padding: 56px 32px 160px; }
+  h1 { font: 300 44px/1.1 var(--font-serif); margin: 0 0 10px; letter-spacing: -0.01em; }
+  h2 { font: 300 32px/1.15 var(--font-serif); margin: 6px 0 10px; }
+  h3 { font: 600 18px/1.3 var(--font-sans); margin: 0 0 6px; }
+  em { font-style: italic; }
+  p { margin: 0; }
+  .dek { color: var(--dim); max-width: 78ch; }
+  .lbl { font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .x { font: 400 11px/1 var(--font-mono); background: color-mix(in srgb, #262626 8%, #fcfcfc); padding: 2px 5px; }
+
+  /* the mock frame: each option sits on a white "case page" sheet */
+  .opt { margin-top: 64px; }
+  .opt__bar { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 12px; }
+  .opt__bar b { font: 300 32px/1.1 var(--font-serif); }
+  .opt { scroll-margin-top: 112px; }
+  .jump { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0; margin: 32px 0 0; background: var(--bg); }
+  .jump a { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--fg); text-decoration: none; padding: 10px 14px; border-radius: 999px; background: color-mix(in srgb, var(--fg) 6%, transparent); }
+  .jump a:hover, .jump a:focus-visible { background: var(--fg); color: var(--bg); }
+  .jump a.rec { box-shadow: inset 0 0 0 1px var(--fg); }
+
+  /* D · folded on the case page: the Small talk accordion, reused */
+  .stub { margin-top: 56px; }
+  .stub:first-child { margin-top: 0; }
+  .stub h2 { margin-bottom: 14px; }
+  .stub__lines { display: grid; gap: 10px; max-width: 62ch; }
+  .stub__lines i { display: block; height: 10px; border-radius: 5px; background: color-mix(in srgb, var(--fg) 7%, transparent); }
+  .stub__lines i:nth-child(2) { width: 88%; } .stub__lines i:nth-child(3) { width: 64%; }
+  .stub__note { margin-top: 10px; font: 400 10px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .fold { position: relative; isolation: isolate; margin-top: 24px; border-radius: 12px; }
+  .fold::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: color-mix(in srgb, var(--fg) 3%, var(--bg)); transition: scale 300ms cubic-bezier(0.77, 0, 0.175, 1); }
+  .fold:not(.is-open):hover::before { scale: 1.015; }
+  .fold__row { width: 100%; display: flex; align-items: center; gap: 24px; padding: 20px 18px 20px 20px; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; border-radius: 12px; }
+  .fold__row:focus-visible { outline: 2px solid var(--fg); outline-offset: 0; }
+  .fold__txt { flex: 1; display: grid; gap: 6px; }
+  .fold__t { font: 600 18px/1.3 var(--font-sans); }
+  .fold__s { font-size: 12px; line-height: 1.7; color: var(--dim); }
+  .fold__meta { flex: none; font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .fold__sign { flex: none; width: 20px; height: 20px; color: var(--dim); transition: transform 200ms ease-out; }
+  .fold.is-open .fold__sign { transform: rotate(45deg); }
+  .fold__panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 600ms cubic-bezier(.16,1,.3,1); }
+  .fold.is-open .fold__panel { grid-template-rows: 1fr; }
+  .fold__inner { overflow: hidden; min-height: 0; }
+  .fold__body { padding: 8px 32px 40px; opacity: 0; transition: opacity 300ms ease-out; }
+  .fold.is-open .fold__body { opacity: 1; transition-delay: 120ms; }
+  .fold__body > .copy:first-child { margin-top: 0; }
+  .fold__close { margin-top: 32px; padding: 0; border: 0; background: none; font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--fg); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  @media (prefers-reduced-motion: reduce) { .fold::before, .fold__sign, .fold__panel, .fold__body { transition: none; } }
+
+  /* E · a preview you can see, then the accordion */
+  .pv { margin-top: 24px; border-radius: 28px; background: color-mix(in srgb, var(--fg) 3%, var(--bg)); }
+  .pv__top { display: grid; grid-template-columns: 1.15fr 1fr; gap: 40px; align-items: center; padding: 28px; }
+  .pv__media { border-radius: 20px; background: var(--bg); padding: 24px; display: grid; place-items: center; min-height: 260px; }
+  .pv__media .sheet { width: 100%; }
+  .pv__media--two { grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: center; }
+  .pv__media--two { grid-template-columns: 1.4fr 1fr; }
+  .pv__crop { height: 260px; overflow: hidden; border-radius: 12px; box-shadow: 0 1px 4px rgb(0 0 0 / .12); justify-self: center; width: 100%; max-width: 160px; }
+  .pv__crop img { display: block; width: 100%; }
+  .pv__media--cards { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .pv__media--cards img { width: 100%; border-radius: 10px; }
+  .pv__media--art img { max-height: 220px; max-width: 100%; mix-blend-mode: multiply; }
+  .pv__txt { display: grid; gap: 12px; align-content: center; }
+  .pv__txt .lbl { margin: 0; }
+  .pv__t { font: 300 28px/1.15 var(--font-serif); margin: 0; }
+  .pv__s { font-size: 13px; line-height: 1.7; color: var(--dim); margin: 0; }
+  .pv__stats { display: flex; flex-wrap: wrap; gap: 24px; margin: 4px 0 0; }
+  .pv__stats div { display: grid; gap: 4px; }
+  .pv__stats strong { font: 300 28px/1 var(--font-serif); }
+  .pv__stats span { font: 400 10px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .pv::before { display: none; }
+  .pv__btn { width: auto; justify-self: start; display: inline-flex; align-items: center; gap: 10px; margin-top: 8px; padding: 11px 14px 11px 18px; border: 0; border-radius: 999px; background: var(--fg); color: var(--bg); font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; cursor: pointer; }
+  .pv__btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .pv__btn svg { width: 14px; height: 14px; transition: transform 200ms ease-out; }
+  .pv.is-open .pv__btn svg { transform: rotate(45deg); }
+  .pv .fold__body { padding: 8px 56px 48px; }
+  @media (max-width: 1000px) { .pv__top { grid-template-columns: 1fr; } .pv .fold__body { padding: 8px 24px 40px; } }
+  @media (prefers-reduced-motion: reduce) { .pv__btn svg { transition: none; } }
+
+  /* F · everything shown, said once */
+  .fsec + .fsec { margin-top: 112px; }
+  .spec p.m { margin-top: 6px; font-size: 12px; line-height: 1.6; color: var(--dim); }
+  .call--three { grid-template-columns: repeat(3, 1fr); }
+  .call--three .shot { height: 360px; }
+  .call--three .shot--sketch { padding: 20px; align-content: center; background: var(--soft); }
+  .call--three .shot--sketch .sheet { width: 100%; max-width: 230px; }
+  .three--q .c { grid-template-columns: 80px 1fr; }
+  .three--q img { width: 80px; }
+  .outs--two { grid-template-columns: repeat(2, 1fr); }
+
+  /* F · the process as one collage of sheets */
+  .collage { position: relative; aspect-ratio: 100 / 53; margin-top: 40px; }
+  .collage__p { position: absolute; width: 32%; transform: rotate(var(--r)); transition: transform 500ms cubic-bezier(.16,1,.3,1); }
+  .collage__p .sheet { box-shadow: 0 1px 0 var(--paper-edge), 0 14px 30px -16px rgb(60 50 30 / .45); }
+  .collage__p > .num { position: absolute; top: -8px; left: -8px; z-index: 2; }
+  .collage__p.is-on { z-index: 10; transform: rotate(0deg) scale(1.06); }
+  .collage__list { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 32px; }
+  .collage__list li { display: flex; gap: 12px; align-items: start; cursor: default; }
+  .collage__list b { display: block; font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+  .collage__list p { margin-top: 4px; font-size: 12px; line-height: 1.6; color: var(--dim); }
+  .collage__list li.is-on b { text-decoration: underline; text-underline-offset: 3px; }
+  @media (max-width: 760px) {
+    .collage { aspect-ratio: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .collage__p { position: relative; left: auto !important; top: auto !important; width: auto; }
+    .collage__list { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { .collage__p { transition: none; } }
+  .rows--three { grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 28px; }
+  .rec { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--blue); }
+  .page { background: var(--bg); border-radius: 20px; padding: 72px 80px 80px; }
+  .why { margin-top: 14px; color: var(--dim); max-width: 90ch; }
+  .why b { color: var(--fg); }
+
+  /* case-page register, as on work/[slug] */
+  .opener { font: 400 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); display: flex; gap: 14px; }
+  .opener span + span { color: var(--fg); }
+  .sec-title { font: 300 22px/1.3 var(--font-serif); margin: 14px 0 8px; max-width: 30ch; }
+  .sec-title em { font-style: italic; }
+  .copy { max-width: 62ch; color: var(--fg); }
+  .cap { font: 400 11px/1.5 var(--font-mono); color: var(--dim); margin-top: 10px; }
+  .gap-l { margin-top: 56px; } .gap-m { margin-top: 32px; }
+
+  /* ---------- A · illustrations ---------- */
+  .door-row { display: grid; grid-template-columns: 280px 1fr; gap: 48px; align-items: center; margin-top: 40px; }
+  .door-row img { width: 100%; display: block; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 18px; }
+  .pair p { color: var(--dim); }
+  .pair b { display: block; color: var(--fg); font: 400 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+
+  .specs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; }
+  .spec__art { aspect-ratio: 1; border-radius: 28px; background: var(--soft); display: grid; place-items: center; overflow: hidden; }
+  .spec__art img { max-width: 72%; max-height: 72%; display: block; mix-blend-mode: multiply; }
+  .spec__art--blue img, .spec__art[style] img { mix-blend-mode: normal; }
+  .spec__art--blue { background: #1d3ec3; }
+  .spec__art--blue img { max-width: 44%; }
+  .spec h3 { margin-top: 14px; font-size: 14px; }
+  .spec dl { margin: 8px 0 0; display: grid; gap: 6px; }
+  .spec dt { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .spec dd { margin: 0; font-size: 12px; line-height: 1.6; }
+
+  .palette { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .palette span { display: flex; align-items: center; gap: 8px; font: 400 10px/1 var(--font-mono); color: var(--dim); }
+  .palette i { width: 22px; height: 22px; border-radius: 6px; display: block; }
+
+  .call { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 24px; align-items: start; margin-top: 24px; }
+  .call figure { margin: 0; }
+  .call .shot { height: 400px; overflow: hidden; border-radius: 22px; background: var(--soft); display: grid; justify-items: center; padding-top: 20px; }
+  .call .shot img { width: 210px; display: block; border-radius: 14px; box-shadow: 0 1px 4px rgb(0 0 0 / .12); }
+  .call figcaption { font: 400 11px/1.5 var(--font-mono); color: var(--dim); margin-top: 10px; }
+  .outs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 56px; }
+  .outs > div { background: color-mix(in srgb, var(--fg) 3%, transparent); border-radius: 28px; padding: 24px; }
+  .outs strong { display: block; font: 300 40px/1 var(--font-serif); margin-bottom: 12px; }
+  .outs p { margin: 0; font-size: 12px; line-height: 1.7; color: var(--dim); }
+  @media (max-width: 760px) { .outs { grid-template-columns: 1fr; } }
+  .rows { display: grid; gap: 18px; }
+  .rows div b { display: block; font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin-bottom: 6px; }
+
+  /* ---------- B · card anatomy ---------- */
+  .anat { display: grid; grid-template-columns: 1fr 340px 1fr; gap: 0; align-items: center; margin-top: 40px; }
+  .anat__card { position: relative; }
+  .anat__card img { width: 340px; display: block; border-radius: 26px; image-rendering: auto; }
+  .anat__notes { display: grid; gap: 30px; }
+  .anat__notes--l { text-align: right; padding-right: 36px; }
+  .anat__notes--r { padding-left: 36px; }
+  .note { position: relative; }
+  .note b { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--fg); display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .anat__notes--l .note b { justify-content: flex-end; }
+  .note p { color: var(--dim); font-size: 12px; line-height: 1.6; }
+  .num { width: 18px; height: 18px; border-radius: 50%; background: var(--fg); color: var(--bg); font: 400 10px/18px var(--font-mono); text-align: center; flex: none; }
+  .pin { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); color: var(--fg); font: 400 11px/22px var(--font-mono); text-align: center; box-shadow: 0 0 0 1.5px var(--fg); }
+
+  .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+  .three .c { border-radius: 28px; background: var(--soft); padding: 20px; display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: start; }
+  .three img { width: 96px; border-radius: 10px; display: block; }
+  .three dl { margin: 0; display: grid; gap: 10px; }
+  .three dt { font: 400 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .three dd { margin: 4px 0 0; font-size: 12px; line-height: 1.55; }
+
+  .placement { display: grid; grid-template-columns: 260px 1fr; gap: 40px; align-items: center; margin-top: 24px; }
+
+  /* ---------- sketches ---------- */
+  .sheet { background: var(--paper); border-radius: 3px; box-shadow: 0 1px 0 var(--paper-edge), 0 10px 24px -14px rgb(60 50 30 / .35); position: relative; overflow: hidden; }
+  .sheet::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .5; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45  0 0 0 0 .40  0 0 0 0 .32  0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .sheet svg { display: block; width: 100%; height: auto; position: relative; }
+  .sheet--dots { background-image: radial-gradient(circle, rgb(60 55 45 / .16) 0.8px, transparent 1.2px); background-size: 16px 16px; background-color: var(--paper); }
+  .t1 { transform: rotate(-0.8deg); } .t2 { transform: rotate(0.6deg); } .t3 { transform: rotate(-0.4deg); } .t4 { transform: rotate(0.9deg); }
+
+  svg .p { fill: none; stroke: var(--graphite); stroke-width: 1.15; stroke-linecap: round; stroke-linejoin: round; opacity: .62; }
+  svg .k { fill: none; stroke: var(--pen); stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+  svg .h { fill: none; stroke: var(--graphite); stroke-width: .7; stroke-linecap: round; opacity: .35; }
+  svg .tp { fill: var(--graphite); opacity: .78; font-family: var(--font-hand); }
+  svg .tk { fill: var(--pen); opacity: .95; font-family: var(--font-hand); }
+  svg .hi { fill: var(--marker); opacity: .55; mix-blend-mode: multiply; }
+
+  /* C · option A: six steps, a sheet each */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px 28px; margin-top: 40px; }
+  .step .lbl { color: var(--fg); margin-bottom: 12px; display: flex; gap: 10px; }
+  .step .lbl span:first-child { color: var(--dim); }
+  .step p { margin-top: 14px; font-size: 12px; color: var(--dim); line-height: 1.6; }
+  .step p b { color: var(--fg); }
+
+  /* C · option B: sketch → shipped */
+  .ss { display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; gap: 12px; margin-top: 40px; }
+  .ss + .ss { margin-top: 56px; }
+  .ss__arrow { font: 400 14px/1 var(--font-mono); color: var(--dim); text-align: center; }
+  .ss__real { border-radius: 28px; background: var(--soft); display: grid; place-items: center; padding: 28px; min-height: 100%; }
+  .ss__real img { display: block; max-width: 100%; border-radius: 12px; }
+  .ss__real--clip { height: 380px; overflow: hidden; align-items: start; }
+  .ss__real--clip img { width: 230px; box-shadow: 0 1px 4px rgb(0 0 0 / .12); }
+  .ss__cards { display: flex; gap: 8px; } .ss__cards img { width: 120px; }
+  .ss figcaption, .ss__cap { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 40px 1fr; gap: 12px; }
+  .ss__cap p { font: 400 11px/1.5 var(--font-mono); color: var(--dim); }
+
+  .src { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+  .src img { width: 100%; display: block; border-radius: 10px; background: #fff; }
+  .src p { font: 400 10px/1.4 var(--font-mono); color: var(--dim); margin-top: 6px; }
+
+  @media (max-width: 1000px) {
+    .page { padding: 40px 24px; }
+    .specs, .steps, .three { grid-template-columns: 1fr 1fr; }
+    .anat, .door-row, .call, .placement, .ss { grid-template-columns: 1fr; }
+    .anat__notes--l { text-align: left; padding: 0; } .anat__notes--l .note b { justify-content: flex-start; }
+    .anat__notes--r { padding: 0; } .ss__arrow { display: none; }
+  }
+</style>
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; }
+  .sheet { width: 400px; border-radius: 0; box-shadow: none; }
+  .sheet::after { display: none; }
+  .sheet[class] { transform: none !important; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- graphite: the stroke is kept only where the noise lets it through,
+         so lines break up and grain like pencil on paper -->
+    <filter id="graphite" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="2" seed="4" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.7 1.45" result="m"/>
+      <feComposite in="SourceGraphic" in2="m" operator="in" result="g"/>
+      <feTurbulence type="turbulence" baseFrequency=".03" numOctaves="1" seed="9" result="w"/>
+      <feDisplacementMap in="g" in2="w" scale="1.6"/>
+    </filter>
+    <filter id="ink" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="2" numOctaves="1" seed="2" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -.8 1.3" result="m"/>
+      <feComposite in="SourceGraphic" in2="m" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+<div id="slot"></div>
+<script>
+
+/* A tiny pencil renderer. Each primitive is drawn as a jittered path:
+   ends overshoot a little, long lines bow, pencil goes over itself twice
+   and a pen stroke once. Seeded, so a sketch looks the same each load. */
+const NS = 'http://www.w3.org/2000/svg';
+const mk = (n, a = {}) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+const mulberry = (a) => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+class Pencil {
+  constructor(svg, seed) {
+    this.r = mulberry(seed);
+    this.gp = mk('g', { filter: 'url(#graphite)' });
+    this.gk = mk('g', { filter: 'url(#ink)' });
+    this.gh = mk('g');
+    svg.append(this.gh, this.gp, this.gk);
+    this.pen = false;
+  }
+  j(a) { return (this.r() * 2 - 1) * a; }
+  path(pts, cls) {
+    let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+    for (let i = 1; i < pts.length - 1; i++) {
+      const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2;
+      d += ` Q${pts[i][0].toFixed(1)} ${pts[i][1].toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
+    }
+    const l = pts[pts.length - 1]; d += ` L${l[0].toFixed(1)} ${l[1].toFixed(1)}`;
+    (cls === 'k' ? this.gk : cls === 'h' ? this.gh : this.gp).append(mk('path', { d, class: cls }));
+  }
+  get cls() { return this.pen ? 'k' : 'p'; }
+  get passes() { return this.pen ? 1 : 2; }
+  line(x1, y1, x2, y2, o = {}) {
+    const len = Math.hypot(x2 - x1, y2 - y1) || 1, ux = (x2 - x1) / len, uy = (y2 - y1) / len, nx = -uy, ny = ux;
+    const passes = o.passes ?? this.passes, cls = o.cls ?? this.cls;
+    for (let p = 0; p < passes; p++) {
+      const os = o.os ?? Math.min(4, len * .06);
+      const a = [x1 - ux * this.j(os) * (p ? 1 : .4), y1 - uy * this.j(os)], b = [x2 + ux * Math.abs(this.j(os)), y2 + uy * Math.abs(this.j(os))];
+      const bow = this.j(len * .012 + .6), n = Math.max(2, Math.round(len / 16)), pts = [];
+      for (let i = 0; i <= n; i++) {
+        const t = i / n, s = Math.sin(Math.PI * t) * bow + this.j(.45);
+        pts.push([a[0] + (b[0] - a[0]) * t + nx * s + (p ? this.j(.8) : 0), a[1] + (b[1] - a[1]) * t + ny * s + (p ? this.j(.8) : 0)]);
+      }
+      this.path(pts, cls);
+    }
+  }
+  rect(x, y, w, h, o) { this.line(x, y, x + w, y, o); this.line(x + w, y, x + w, y + h, o); this.line(x + w, y + h, x, y + h, o); this.line(x, y + h, x, y, o); }
+  outline(pts, o = {}) {
+    const passes = o.passes ?? this.passes, cls = o.cls ?? this.cls;
+    for (let p = 0; p < passes; p++) this.path(pts.map(([x, y]) => [x + this.j(.7 + p * .4), y + this.j(.7 + p * .4)]), cls);
+  }
+  rrect(x, y, w, h, r, o) {
+    const pts = [], arc = (cx, cy, a0) => { for (let i = 0; i <= 4; i++) { const a = a0 + i / 4 * Math.PI / 2; pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); } };
+    const sx = x + r + this.j(3);
+    pts.push([sx, y]); arc(x + w - r, y + r, -Math.PI / 2); arc(x + w - r, y + h - r, 0); arc(x + r, y + h - r, Math.PI / 2); arc(x + r, y + r, Math.PI);
+    pts.push([sx + 6, y + this.j(1)]);
+    this.outline(pts, o);
+  }
+  ellipse(cx, cy, rx, ry, o = {}) {
+    const passes = o.passes ?? this.passes, cls = o.cls ?? this.cls;
+    for (let p = 0; p < passes; p++) {
+      const a0 = this.r() * Math.PI * 2, span = Math.PI * 2 + .35 + this.r() * .3, n = 22, pts = [];
+      for (let i = 0; i <= n; i++) { const a = a0 + span * i / n, d = 1 + (i / n) * this.j(.08); pts.push([cx + Math.cos(a) * rx * d, cy + Math.sin(a) * ry * d]); }
+      this.path(pts, cls);
+    }
+  }
+  hatch(x, y, w, h, gap = 5) {
+    for (let k = -h; k < w; k += gap + this.j(1)) {
+      const x1 = Math.max(x, x + k), y1 = y + (x1 - (x + k)), x2 = Math.min(x + w, x + k + h), y2 = y + (x2 - (x + k));
+      if (x2 > x1) this.line(x1, y1, x2, y2, { cls: 'h', passes: 1, os: 1 });
+    }
+  }
+  scribble(x, y, w, n = 2, gap = 7) { for (let i = 0; i < n; i++) { const l = w * (i === n - 1 ? .45 + this.r() * .3 : .8 + this.r() * .2); this.wave(x, y + i * gap, l); } }
+  wave(x, y, l) { const pts = []; for (let i = 0; i <= l / 4; i++) pts.push([x + i * 4, y + Math.sin(i * 1.7) * 1.1 + this.j(.4)]); this.path(pts, this.cls); }
+  arrow(x1, y1, x2, y2, bend = 20) {
+    const mx = (x1 + x2) / 2 - (y2 - y1) / Math.hypot(x2 - x1, y2 - y1) * bend, my = (y1 + y2) / 2 + (x2 - x1) / Math.hypot(x2 - x1, y2 - y1) * bend, pts = [];
+    for (let i = 0; i <= 12; i++) { const t = i / 12; pts.push([(1 - t) ** 2 * x1 + 2 * (1 - t) * t * mx + t * t * x2 + this.j(.4), (1 - t) ** 2 * y1 + 2 * (1 - t) * t * my + t * t * y2 + this.j(.4)]); }
+    this.path(pts, this.cls);
+    const a = Math.atan2(y2 - my, x2 - mx), h = 8;
+    this.line(x2, y2, x2 - Math.cos(a - .45) * h, y2 - Math.sin(a - .45) * h, { passes: 1, os: 0 });
+    this.line(x2, y2, x2 - Math.cos(a + .45) * h, y2 - Math.sin(a + .45) * h, { passes: 1, os: 0 });
+  }
+  text(x, y, s, size = 20, o = {}) {
+    const t = mk('text', { x, y, class: this.pen ? 'tk' : 'tp', 'font-size': size, 'text-anchor': o.anchor || 'start', transform: `rotate(${o.rot ?? this.j(1.5)} ${x} ${y})` });
+    t.textContent = s; (this.pen ? this.gk : this.gp).append(t);
+  }
+  marker(x, y, w, h) { this.gh.append(mk('rect', { x, y, width: w, height: h, class: 'hi', rx: 2, transform: `rotate(${this.j(1.2)} ${x} ${y})` })); }
+  cross(x, y, w, h) { this.line(x, y, x + w, y + h, { passes: 1 }); this.line(x + w, y, x, y + h, { passes: 1 }); }
+  tick(x, y, s = 10) { this.line(x, y, x + s * .35, y + s * .4, { passes: 1, os: 0 }); this.line(x + s * .35, y + s * .4, x + s, y - s * .5, { passes: 1, os: 1 }); }
+  phone(x, y, w, h) { this.rrect(x, y, w, h, Math.min(16, w * .14)); this.line(x + w * .38, y + 7, x + w * .62, y + 7, { passes: 1, os: 1 }); }
+  chev(x, y) { this.line(x, y - 3, x + 3, y, { passes: 1, os: 0 }); this.line(x + 3, y, x, y + 3, { passes: 1, os: 0 }); }
+  toggle(x, y, on) { this.rrect(x, y, 18, 9, 4.5, { passes: 1 }); this.ellipse(on ? x + 13.5 : x + 4.5, y + 4.5, 3, 3, { passes: 1 }); }
+}
+
+const scenes = {
+  discover(s) {
+    s.text(18, 32, 'the old page — what lives where?', 24);
+    s.phone(34, 52, 120, 228);
+    for (let i = 0; i < 5; i++) { const y = 92 + i * 34; s.rect(46, y - 5, 9, 9); s.scribble(64, y - 3, 62, 2, 7); s.chev(136, y); }
+    s.line(46, 76, 120, 76);
+    s.pen = true;
+    s.text(184, 96, '"debit card PIN —', 22); s.text(194, 118, 'security or payment??"', 22);
+    s.arrow(182, 112, 150, 124, -14);
+    s.text(184, 166, 'tabs don\'t scale', 22);
+    s.marker(182, 196, 150, 16);
+    s.text(184, 210, '75% stop on page 1', 22);
+    s.pen = false;
+    s.text(184, 252, 'CS calls · a year of traffic', 19);
+    s.text(184, 272, 'triad review · 2 team sessions', 19);
+  },
+  define(s) {
+    s.text(18, 32, 'what does privacy look like?', 24);
+    // lock
+    s.rrect(34, 100, 54, 44, 6); s.outline([[47, 100], [47, 84], [54, 74], [68, 74], [75, 84], [75, 100]]); s.ellipse(61, 118, 4, 4, { passes: 1 }); s.hatch(36, 102, 50, 40, 6);
+    // shield
+    s.outline([[124, 78], [150, 70], [176, 78], [174, 118], [150, 146], [126, 118], [124, 80]]);
+    // eye
+    s.outline([[198, 108], [222, 90], [252, 90], [272, 108], [250, 126], [222, 126], [198, 108]]); s.ellipse(235, 108, 9, 9);
+    // door
+    s.rect(300, 66, 52, 82); s.rect(308, 74, 16, 28, { passes: 1 }); s.rect(330, 74, 16, 28, { passes: 1 }); s.rect(308, 110, 16, 30, { passes: 1 }); s.rect(330, 110, 16, 30, { passes: 1 }); s.ellipse(346, 106, 2.5, 2.5, { passes: 1 });
+    s.text(61, 176, 'lock', 20, { anchor: 'middle' }); s.text(150, 176, 'shield', 20, { anchor: 'middle' }); s.text(235, 176, 'eye', 20, { anchor: 'middle' }); s.text(326, 176, 'door', 20, { anchor: 'middle' });
+    s.pen = true;
+    s.ellipse(326, 106, 44, 54);
+    s.arrow(300, 214, 318, 182, 10);
+    s.text(212, 240, 'came up most', 24);
+    s.text(212, 262, 'in testing', 24);
+    s.pen = false;
+    s.text(22, 228, 'fatalism:', 22); s.text(22, 250, '"it can\'t be controlled"', 20);
+    s.text(22, 278, '→ show control, not walls', 20);
+  },
+  ideate(s) {
+    s.pen = true;
+    s.text(18, 32, 'layering the IA', 24);
+    const P = [[24, 'hub'], [148, 'category'], [272, 'answers']];
+    P.forEach(([x, l], i) => {
+      s.text(x + 2, 62, String(i + 1), 26); s.text(x + 22, 62, l, 20);
+      s.phone(x, 72, 96, 168);
+    });
+    // 1 · 2×2 tiles
+    s.pen = false;
+    s.ellipse(72, 102, 14, 12); s.scribble(52, 124, 40, 1);
+    [[34, 136], [74, 136], [34, 180], [74, 180]].forEach(([x, y]) => { s.rect(x, y, 34, 36); s.scribble(x + 5, y + 24, 22, 1); });
+    // 2 · art + rows
+    s.rect(160, 88, 72, 34); s.cross(160, 88, 72, 34);
+    for (let i = 0; i < 4; i++) { const y = 138 + i * 22; s.ellipse(166, y, 4, 4, { passes: 1 }); s.scribble(176, y - 1, 44, 1); }
+    // 3 · toggles
+    for (let i = 0; i < 4; i++) { const y = 92 + i * 24; s.scribble(282, y + 4, 44, 1); s.toggle(340, y, i % 3 !== 1); }
+    s.rect(284, 192, 72, 36, { passes: 1 }); s.scribble(292, 204, 52, 2, 8);
+    s.pen = true;
+    s.arrow(118, 150, 146, 150, -10); s.arrow(242, 150, 270, 150, -10);
+    s.text(24, 266, '5 Qs: what · where from · why ·', 19);
+    s.text(24, 286, 'shared with whom · what can I control', 19);
+  },
+  test(s) {
+    s.text(18, 32, 'closed card sort × 4 · 20 tasks', 24);
+    const cols = ['personal', 'financial', 'privacy+sec', 'comms'];
+    cols.forEach((c, i) => {
+      const x = 22 + i * 94;
+      s.pen = true; s.rect(x, 52, 82, 26); s.text(x + 41, 71, c, 18, { anchor: 'middle' }); s.pen = false;
+      const n = [3, 4, 3, 2][i];
+      for (let k = 0; k < n; k++) { const y = 90 + k * 30 + s.j(2), xo = x + 6 + s.j(3); s.rect(xo, y, 70, 22); s.scribble(xo + 7, y + 11, 48, 1); }
+    });
+    s.pen = true;
+    s.tick(130, 210, 12); s.tick(222, 210, 12);
+    s.text(22, 252, 'rapid research on the layers:', 20);
+    s.pen = false;
+    s.text(22, 276, 'extra click ✗   emails — where?   "correct my data"?', 18);
+  },
+  iterate(s) {
+    s.text(18, 32, 'fold the layers', 24);
+    [[30, 64], [42, 76], [54, 88]].forEach(([x, y]) => s.rrect(x, y, 96, 132, 10));
+    s.pen = true; s.cross(34, 70, 116, 150);
+    s.arrow(168, 150, 222, 150, -16);
+    s.pen = false;
+    s.phone(236, 44, 128, 240);
+    s.scribble(250, 72, 80, 1);
+    const G = [['profile', 84], ['permissions', 144], ['your rights', 204]];
+    G.forEach(([g, y]) => {
+      s.pen = true; s.text(250, y, g, 18); s.pen = false;
+      for (let i = 0; i < 2; i++) { const yy = y + 10 + i * 20; s.rect(250, yy, 100, 16, { passes: 1 }); s.scribble(258, yy + 8, 60, 1); s.chev(340, yy + 8); }
+    });
+    s.pen = true; s.text(30, 252, 'one page,', 22); s.text(30, 274, 'three groups', 22);
+  },
+  anniv(s) {
+    s.pen = true;
+    s.rrect(28, 52, 224, 120, 14);
+    s.scribble(46, 84, 130, 2, 12);
+    s.text(46, 146, 'review your settings →', 20);
+    s.pen = false;
+    s.rrect(194, 70, 44, 44, 6); s.line(194, 84, 238, 84); s.line(206, 64, 206, 76, { passes: 1 }); s.line(226, 64, 226, 76, { passes: 1 });
+    s.text(216, 106, '1 yr', 20, { anchor: 'middle' });
+    s.line(250, 52, 256, 44, { passes: 1, os: 0 }); s.line(262, 62, 272, 60, { passes: 1, os: 0 }); s.line(258, 56, 268, 48, { passes: 1, os: 0 });
+    s.pen = true;
+    s.marker(264, 196, 120, 18);
+    s.text(268, 211, 'celebrate,', 26);
+    s.text(268, 236, 'don\'t nag', 26);
+    s.arrow(262, 200, 240, 160, 12);
+    s.pen = false;
+    s.text(30, 210, '"you haven\'t looked in a year —', 19);
+    s.text(30, 232, ' still happy with deals?"', 19);
+    s.text(30, 272, 'once a year · not a banner', 19);
+  },
+  hub(s) {
+    s.phone(24, 18, 140, 270);
+    s.rect(40, 40, 108, 54); s.cross(40, 40, 108, 54);
+    s.scribble(56, 108, 76, 1); s.scribble(48, 120, 92, 1);
+    const ys = [138, 182, 226];
+    ys.forEach(y => { s.scribble(38, y, 40, 1); s.rect(36, y + 8, 116, 14, { passes: 1 }); s.rect(36, y + 24, 116, 14, { passes: 1 }); });
+    s.pen = true;
+    [36, 76, 116].forEach(x => s.rect(x, 270, 34, 12, { passes: 1 }));
+    s.text(196, 52, 'art on top = delight', 22);
+    s.text(196, 74, '…but it pushes', 22); s.text(196, 96, 'settings down?', 22);
+    s.arrow(192, 64, 152, 66, -8);
+    s.text(196, 168, 'three clear groups', 22);
+    s.arrow(192, 162, 158, 184, 10);
+    s.text(196, 262, 'learn more → last', 22);
+    s.arrow(192, 258, 156, 274, 8);
+  },
+  cards(s) {
+    s.pen = true; s.text(18, 32, 'learn more — one idea a card', 24); s.pen = false;
+    [24, 146, 268].forEach((x, i) => {
+      s.rrect(x, 56, 106, 148, 10);
+      s.rrect(x + 36, 70, 34, 56, 5); s.scribble(x + 42, 84, 22, 3, 8);
+      if (i === 0) { s.ellipse(x + 82, 110, 8, 8, { passes: 1 }); s.line(x + 74, 118, x + 90, 102, { passes: 1 }); }
+      if (i === 1) s.rect(x + 22, 108, 50, 16, { passes: 1 });
+      if (i === 2) s.rrect(x + 62, 80, 26, 44, 4, { passes: 1 });
+      s.hatch(x + 4, 136, 98, 60, 9);
+      s.scribble(x + 10, 168, 80, 2, 10);
+    });
+    s.pen = true;
+    s.text(24, 236, 'title = the question', 22);
+    s.arrow(96, 222, 60, 190, -10);
+    s.text(212, 236, 'whole card taps', 22);
+    s.text(24, 276, 'device + one detail, no faces', 20);
+  },
+  placement(s) {
+    s.phone(30, 14, 200, 334);
+    s.rect(52, 40, 156, 20, { passes: 1 }); s.scribble(60, 50, 90, 1);
+    [80, 150, 220].forEach(y => { s.scribble(52, y, 54, 1); [0, 1].forEach(i => { s.rect(50, y + 10 + i * 24, 160, 20, { passes: 1 }); s.scribble(60, y + 20 + i * 24, 80, 1); }); });
+    s.pen = true;
+    s.marker(46, 290, 168, 44);
+    s.rrect(50, 294, 64, 38, 6); s.rrect(120, 294, 64, 38, 6); s.rrect(190, 294, 40, 38, 6);
+    s.text(130, 284, 'last', 20, { anchor: 'middle' });
+  }
+};
+
+
+const q = new URLSearchParams(location.search);
+const sc = q.get('scene'), seed = +q.get('seed'), cls = q.get('cls') || 't1';
+document.getElementById('slot').innerHTML = `<div class="sheet ${cls}"><svg viewBox="0 0 400 300" data-scene="${sc}" data-seed="${seed}"></svg></div>`;
+const svg = document.querySelector('svg[data-scene]');
+document.fonts.ready.then(() => { scenes[sc](new Pencil(svg, seed)); document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>
