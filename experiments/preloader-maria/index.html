@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preloader — exactly mariavasilyeva.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:wght@300&display=swap" rel="stylesheet">
+<style>
+  /* Served from the repo root (launch config "sound-mockup", /experiments/preloader-maria/).
+     A copy of mariavasilyeva.com's first-load cover, read off her live code on 2026-11-25
+     (index.html #lo, css/_.css, js/_.js), with her numbers:
+       - ground #131313, type #f9f9f9; rem = min(.661376vw, 1.01833svh)
+       - three bands of the same five uppercase lines (2rem, line-height 1.2, -.02em),
+         hairline above and below each band (#e9e9e92e), bands 3rem apart, centred;
+         band 1 hugs the right (100vw - 32.5rem), band 2 the middle, band 3 the left;
+         lines indented 6 / 2 / 0 / 2.5 / 4.5rem
+       - each line slides in from off the left over 2150ms (in-out, power 6), starting
+         i * 100ms * (0.4..1.4) apart; its first letter smears behind it (28 stamps over
+         670ms) and its last letter too (44 stamps over 1070ms); the smear fades once
+         the ease passes .3 and is gone at .97
+       - landed, a line holds 780ms * (0.3..1.6), then slides off to the right while a
+         fresh copy slides in again; it loops until the page is ready
+       - "▸ n%" 1.4rem, 2.4rem off the bottom, centred
+       - when the page has loaded and every line has landed once: 100%, the counter
+         fades (.4s), and the black becomes one sheet whose bottom edge lifts to the
+         top over 1500ms (in-out quart). The edge is columns 120px wide (72px under
+         769px), each its own height from noise, up to 16% of the screen at mid-lift,
+         re-stepping as it moves (more when it moves fast). The words are cut off
+         at that edge. Under it the page rises from 30% of the screen down into place.
+     Fonts swapped for ours (her "feat" and "synt" are licensed): Crimson Pro 300,
+     Azeret Mono. Under the sheet: a capture of our hero. */
+  :root {
+    --r: min(.661376vw, 1.01833svh);
+    --black: #131313; --white: #f9f9f9; --hair: #e9e9e92e;
+    --serif: 'Crimson Pro', serif; --mono: 'Azeret Mono', monospace;
+  }
+  @media (max-width: 768px) { :root { --r: min(2.54453vw, 1.17371svh); } }
+  :root[data-ink='ours'] { --black: #262626; --white: #fcfcfc; }
+  :root[data-ink='ours'][data-mode='dark'] { --black: #ecebe8; --white: #1b1a19; --hair: #1b1a192e; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #fcfcfc; }
+  :root[data-mode='dark'] body { background: #1b1a19; }
+
+  /* The page under the cover: a capture of the hero */
+  #page { position: fixed; inset: 0; will-change: transform; }
+  #page img { width: 100%; height: 100%; object-fit: contain; object-position: center top; display: block; }
+
+  /* The cover */
+  #sheet { position: fixed; inset: 0; z-index: 9998; width: 100vw; height: 100svh; pointer-events: none; }
+  #lo { position: fixed; inset: 0; z-index: 9999; overflow: hidden; pointer-events: none; }
+  #lo-bg { position: absolute; inset: 0; background: var(--black); }
+  #lo-txt { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center;
+    color: var(--white); text-transform: uppercase; font-family: var(--serif); font-weight: 300; }
+  .lo-g { position: relative; display: flex; flex-direction: column; align-items: flex-start;
+    border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair);
+    --lo-free: calc(100vw - 32.5 * var(--r)); }
+  .lo-g + .lo-g { margin-top: calc(3 * var(--r)); }
+  .lo-g:nth-of-type(1) { --gs: var(--lo-free); }
+  .lo-g:nth-of-type(2) { --gs: calc(50vw - 16.25 * var(--r)); }
+  .lo-g:nth-of-type(3) { --gs: 0px; }
+  .lo-g p { margin: 0; white-space: nowrap; font-size: calc(2 * var(--r)); line-height: 1.2; letter-spacing: -.02em;
+    transform: translateX(var(--gs)) translateX(var(--st)); visibility: hidden; }
+  .lo-g p:nth-child(1) { --st: calc(6 * var(--r)); }
+  .lo-g p:nth-child(2) { --st: calc(2 * var(--r)); }
+  .lo-g p:nth-child(3) { --st: 0px; }
+  .lo-g p:nth-child(4) { --st: calc(2.5 * var(--r)); }
+  .lo-g p:nth-child(5) { --st: calc(4.5 * var(--r)); }
+  #words { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #lo-pc { position: absolute; bottom: calc(2.4 * var(--r)); left: 50%; transform: translateX(-50%);
+    color: var(--white); font-family: var(--mono); font-size: calc(1.4 * var(--r)); line-height: 1;
+    transition: opacity .4s cubic-bezier(.16,1,.3,1); white-space: nowrap; }
+  #lo.out #lo-pc { opacity: 0; }
+
+  /* Mock controls, not part of the design */
+  #ctl { position: fixed; z-index: 10000; right: 10px; top: 10px; display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100vw - 20px); opacity: .85;
+    font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; }
+  #ctl .grp { display: flex; gap: 2px; background: rgb(255 255 255 / .92); border: 1px solid rgb(0 0 0 / .12); border-radius: 999px; padding: 3px; }
+  #ctl button { font: inherit; border: 0; background: none; color: #262626; padding: 3px 7px; border-radius: 999px; cursor: pointer; }
+  #ctl button[aria-pressed='true'] { background: #262626; color: #fcfcfc; }
+  #ctl button:focus-visible { outline: 2px solid #262626; outline-offset: 1px; }
+</style>
+</head>
+<body>
+<div id="page"><img id="shot" src="../curtain-bars/hero-light.webp" alt="The home page hero"></div>
+<canvas id="sheet" aria-hidden="true"></canvas>
+<div id="lo">
+  <div id="lo-bg"></div>
+  <div id="lo-txt" aria-hidden="true">
+    <div class="lo-g"><p></p><p></p><p></p><p></p><p></p></div>
+    <div class="lo-g"><p></p><p></p><p></p><p></p><p></p></div>
+    <div class="lo-g"><p></p><p></p><p></p><p></p><p></p></div>
+    <canvas id="words"></canvas>
+  </div>
+  <div id="lo-pc" aria-hidden="true"><span>▸</span> <span id="lo-pcv">0</span>%</div>
+</div>
+
+<div id="ctl">
+  <div class="grp" role="group" aria-label="Words">
+    <button data-words="ref" aria-pressed="true">Her words</button>
+    <button data-words="ours" aria-pressed="false">Our words</button>
+  </div>
+  <div class="grp" role="group" aria-label="Colour">
+    <button data-ink="ref" aria-pressed="true">Her black</button>
+    <button data-ink="ours" aria-pressed="false">Our ink</button>
+  </div>
+  <div class="grp" role="group" aria-label="Mode">
+    <button data-mode="light" aria-pressed="true">Light</button>
+    <button data-mode="dark" aria-pressed="false">Dark</button>
+  </div>
+  <div class="grp" role="group" aria-label="Connection">
+    <button data-net="fast" aria-pressed="true">Fast</button>
+    <button data-net="slow" aria-pressed="false">Slow (6s)</button>
+  </div>
+  <div class="grp"><button id="replay">Replay</button></div>
+</div>
+
+<script>
+// ---- her numbers ----
+const D = 2150, HOLD = 780, STEP = 100, SEP = 200, STAMPS = 28, PITCH = .66, TWINDOW = 670,
+  TALPHA = .5, TMERGE0 = .3, TMERGE1 = .97, ESTAMPS = 44, EWINDOW = 1070, TGAP = 1.1;
+const REVEAL = 1500, RIDE = .3, AMP = .16, FLOWQ = .15, BASE = .35, EDGE_PAD = .0052;
+const WORDS = {
+  ref: ['Loading the playlist', 'it might take some time', 'finding the right tune', 'Be ready to hit play', 'Enjoy the experience'],
+  ours: ['Loading the work', 'it might take a moment', 'checking the spacing', 'nudging the last pixel', 'Enjoy the work'],
+};
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const U = (t) => t < .5 ? 32 * t ** 6 : 1 - 32 * (1 - t) ** 6;           // in-out, power 6
+const O1 = (t) => Math.sin(t * Math.PI * .5);
+const IO4 = (t) => t < .5 ? 8 * t ** 4 : 1 - 8 * (1 - t) ** 4;          // in-out quart
+const G = (t) => Math.max(0, Math.min(1, (TMERGE1 - U(t)) / (TMERGE1 - TMERGE0)));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+// ---- state ----
+const $ = (s) => document.querySelector(s);
+const root = document.documentElement, lo = $('#lo'), loBg = $('#lo-bg'), pcv = $('#lo-pcv'),
+  wordsCv = $('#words'), sheetCv = $('#sheet'), page = $('#page');
+const wx = wordsCv.getContext('2d'), sx = sheetCv.getContext('2d');
+let opts = { words: 'ref', net: 'fast' };
+let lines = [], ghosts = [], W = 0, H = 0, run = 0, raf = 0;
+
+function fillWords() {
+  document.querySelectorAll('.lo-g').forEach((g) => g.querySelectorAll('p').forEach((p, i) => p.textContent = WORDS[opts.words][i]));
+}
+function size() {
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  for (const c of [wordsCv, sheetCv]) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); }
+}
+function measure() {
+  const ps = [...document.querySelectorAll('.lo-g p')];
+  const cs = getComputedStyle(ps[0]);
+  const fs = parseFloat(cs.fontSize);
+  return ps.map((p) => {
+    const r = p.getBoundingClientRect();
+    const range = document.createRange(); range.selectNodeContents(p);
+    const tr = range.getBoundingClientRect();
+    const t = p.textContent.toUpperCase();
+    // canvas textBaseline 'top' sits on the em box; centre it in the 1.2 line like the DOM
+    return { t, lead: t.charAt(0), end: t.charAt(t.length - 1), tx: tr.left, right: tr.right, y: r.top + (r.height - fs) / 2, size: fs };
+  });
+}
+function font(l) { return `300 ${l.size}px "Crimson Pro", serif`; }
+
+// position history, as [time, x, time, x, ...]
+function at(h, t) {
+  if (t <= (h[0] ?? 0)) return h[1] ?? 0;
+  for (let i = h.length - 2; i >= 2; i -= 2) if (h[i] <= t) { const k = (t - h[i]) / ((h[i + 2] ?? h[i]) - h[i] || 1); return h[i + 1] + ((h[i + 3] ?? h[i + 1]) - h[i + 1]) * k; }
+  return h[1] ?? 0;
+}
+function smear(l, x, now, merge, ch, off, cw, n, win) {
+  const from = merge > 0 ? at(l.hist, now - win * merge) : x, span = x - from;
+  if (span <= 1) return;
+  const fade = l.size * PITCH * 2, gap = Math.max(cw, l.size * .55) * TGAP;
+  let last = x;
+  for (let i = 1; i <= n; i++) {
+    const p = Math.min(x - span * (1 - O1(1 - i / n)), last - gap);
+    if (p <= from) break;
+    last = p;
+    const a = l.ta * (1 - i / n) * Math.min(1, (p - from) / fade);
+    if (a <= .01) continue;
+    const px = p + off; if (px + cw < 0) break;
+    if (px < W) { wx.globalAlpha = a; wx.fillText(ch, px, l.y); }
+  }
+}
+function draw(l, x, now, merge) {
+  wx.font = font(l);
+  l.hist.push(now, x);
+  const old = now - Math.max(TWINDOW, EWINDOW) - 100;
+  while (l.hist.length > 4 && l.hist[2] < old) l.hist.splice(0, 2);
+  l.lw ??= wx.measureText(l.lead).width;
+  smear(l, x, now, merge, l.lead, 0, l.lw, STAMPS, TWINDOW);
+  l.ew ??= wx.measureText(l.end).width;
+  l.eo ??= wx.measureText(l.t).width - l.ew;
+  smear(l, x, now, merge, l.end, l.eo, l.ew, ESTAMPS, EWINDOW);
+  wx.globalAlpha = 1; wx.fillText(l.t, x, l.y);
+}
+const travel = (l) => l.tx + l.right + Math.max(0, SEP - 2 * l.tx);
+
+function wordsFrame(now) {
+  wx.clearRect(0, 0, W, H);
+  wx.textBaseline = 'top'; wx.fillStyle = getComputedStyle(root).getPropertyValue('--white').trim();
+  try { wx.letterSpacing = '-0.02em'; } catch {}
+  let settled = true;
+  for (const l of lines) {
+    let x = l.tx, merge = 0;
+    if (l.phase === 'wait') { settled = false; if (now < l.until) continue; l.phase = 'enter'; l.t0 = now; l.hist.length = 0; }
+    if (l.phase === 'enter') {
+      const k = Math.min((now - l.t0) / D, 1);
+      x = l.tx - travel(l) * (1 - U(k)); merge = G(k);
+      if (k >= 1) { l.phase = 'rest'; l.until = now + HOLD * (.3 + Math.random() * 1.3); l.landed = true; }
+    } else if (l.phase === 'rest' && now >= l.until) {
+      ghosts.push({ ...l, from: l.tx, travel: W - l.tx + 60, hist: [], t0: now });
+      l.phase = 'enter'; l.t0 = now; l.hist.length = 0; l.ta = TALPHA + Math.random() * (1 - TALPHA); x = l.tx - travel(l);
+    }
+    draw(l, x, now, merge);
+    if (!l.landed) settled = false;
+  }
+  for (let i = ghosts.length - 1; i >= 0; i--) {
+    const g = ghosts[i], k = Math.min((now - g.t0) / D, 1);
+    draw(g, g.from + g.travel * U(k), now, G(k));
+    if (k >= 1) ghosts.splice(i, 1);
+  }
+  return settled;
+}
+
+// ---- the sheet: GLSL hash/noise ported ----
+const fract = (v) => v - Math.floor(v);
+const hash = (x, y) => fract(Math.sin(x * 127.1 + y * 311.7) * 43758.5453123);
+function noise(x, y) {
+  const ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
+  const ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
+  const a = hash(ix, iy), b = hash(ix + 1, iy), c = hash(ix, iy + 1), d = hash(ix + 1, iy + 1);
+  return (a + (b - a) * ux) + ((c + (d - c) * ux) - (a + (b - a) * ux)) * uy;
+}
+function level(ci, f) { const h = noise(ci * 1.7, f) * .6 + noise(ci * .35, f * .7 + 5) * .4; return h * h * (3 - 2 * h); }
+const v7 = (t) => { t = clamp(t, 0, 1); const c = t * t; return c * (2 - c); };
+const env = (q) => v7(q / .12) * v7((1 - q) / .12);
+const sheet = { q: 0, fl: 0, pv: 0, spd: 0 };
+function drawSheet(q) {
+  const j = EDGE_PAD * H, J = H + 2 * j, yB = H + j - q * J;
+  const dy = (q - sheet.pv) * J; sheet.pv = q;
+  sheet.spd += (Math.abs(dy) - sheet.spd) * .08;
+  const B = clamp(sheet.spd / (H * .025), 0, 1);
+  sheet.fl += dy * .0018 * (1 + B * 2.5);
+  const amp = AMP * H * (1 + B * .7) * env(q), flow = Math.round(sheet.fl / FLOWQ) * FLOWQ + 31;
+  const pitch = W <= 768 ? 72 : 120;
+  sx.clearRect(0, 0, W, H);
+  sx.fillStyle = getComputedStyle(root).getPropertyValue('--black').trim();
+  for (let ci = 0; ci * pitch < W; ci++) {
+    const bottom = yB + (level(ci, flow) - BASE) * amp;
+    if (bottom > 0) sx.fillRect(ci * pitch, 0, pitch + .5, Math.min(bottom, H));
+  }
+  return yB;
+}
+
+// ---- one run ----
+function start() {
+  cancelAnimationFrame(raf); const id = ++run;
+  fillWords(); size();
+  lines = measure().map((l, i) => ({ ...l, phase: 'wait', until: 0, hist: [], ta: TALPHA + Math.random() * (1 - TALPHA), t0: 0, landed: false, idx: i }));
+  ghosts = [];
+  lo.classList.remove('out'); lo.style.clipPath = ''; lo.style.opacity = ''; lo.style.transition = '';
+  loBg.style.opacity = 1; sx.clearRect(0, 0, W, H); sheet.fl = 0; sheet.pv = 0; sheet.spd = 0;
+  page.style.transform = ''; pcv.textContent = '0';
+  const loadMs = opts.net === 'slow' ? 6000 : 900;
+  let t0 = null, shown = 0, revealAt = null;
+  if (reduced) {
+    setTimeout(() => { if (id !== run) return; pcv.textContent = '100'; lo.style.transition = 'opacity .6s'; lo.style.opacity = 0; }, loadMs);
+    return;
+  }
+  const tick = (now) => {
+    if (id !== run) return;
+    t0 ??= now;
+    if (lines[0].until === 0) lines.forEach((l, i) => l.until = now + i * STEP * (.4 + Math.random()));
+    const el = now - t0;
+    const loaded = Math.min(1, el / loadMs);
+    shown += (loaded * 100 - shown) * .12;
+    const settled = wordsFrame(now);
+    if (revealAt === null) {
+      pcv.textContent = String(Math.round(loaded >= 1 ? Math.max(shown, 99.5) : shown));
+      if (loaded >= 1 && settled) {
+        revealAt = now; pcv.textContent = '100';
+        loBg.style.opacity = 0; lo.classList.add('out');
+        page.style.transform = `translate3d(0, ${RIDE * H}px, 0)`;
+      }
+    }
+    if (revealAt !== null) {
+      const k = Math.min((now - revealAt) / REVEAL, 1), q = IO4(k);
+      const yB = drawSheet(q);
+      const cut = H - yB; lo.style.clipPath = cut > 0 ? `inset(0 0 ${cut}px 0)` : '';
+      page.style.transform = `translate3d(0, ${RIDE * H * (1 - q)}px, 0)`;
+      if (k >= 1) { sx.clearRect(0, 0, W, H); lo.style.opacity = 0; page.style.transform = ''; return; }
+    }
+    raf = requestAnimationFrame(tick);
+  };
+  raf = requestAnimationFrame(tick);
+}
+
+// ---- controls ----
+function press(group, attr, val) { document.querySelectorAll(`[data-${group}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset[group] === val))); }
+document.querySelectorAll('[data-words]').forEach((b) => b.onclick = () => { opts.words = b.dataset.words; press('words', 0, opts.words); start(); });
+document.querySelectorAll('[data-ink]').forEach((b) => b.onclick = () => { root.dataset.ink = b.dataset.ink; press('ink', 0, b.dataset.ink); start(); });
+document.querySelectorAll('[data-mode]').forEach((b) => b.onclick = () => { root.dataset.mode = b.dataset.mode; $('#shot').src = `../curtain-bars/hero-${b.dataset.mode}.webp`; press('mode', 0, b.dataset.mode); start(); });
+document.querySelectorAll('[data-net]').forEach((b) => b.onclick = () => { opts.net = b.dataset.net; press('net', 0, opts.net); start(); });
+$('#replay').onclick = start;
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(start, 150); });
+document.fonts.load('300 20px "Crimson Pro"').finally(start);
+</script>
+</body>
+</html>
