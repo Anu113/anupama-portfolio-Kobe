@@ -32,7 +32,7 @@
    contents there, as on the reference. The spy still runs, so the strip
    still knows the section. */
 interface Props {
-  sections: { id: string; nav: string }[];
+  sections: { id: string; nav: string; fallback?: string }[];
 }
 const { sections } = Astro.props;
 ---
@@ -46,7 +46,7 @@ const { sections } = Astro.props;
     </li>
     {sections.map((s) => (
       <li class="rail__item" data-rail-item>
-        <a class="rail__link" href={`#${s.id}`} data-rail-link={s.id}>
+        <a class="rail__link" href={`#${s.id}`} data-rail-link={s.id} data-rail-fallback={s.fallback}>
           <span class="rail__bar" aria-hidden="true"></span><span class="rail__label">{s.nav}</span>
         </a>
       </li>
@@ -120,9 +120,24 @@ const { sections } = Astro.props;
   // Marks the section under the upper reading area as current. Nothing
   // in the band (above the first section) means "Start".
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-rail-link]')];
-  const targets = links
-    .map((l) => (l.dataset.railLink ? document.getElementById(l.dataset.railLink) : null))
-    .filter((el): el is HTMLElement => Boolean(el));
+  // A section behind a case's gate stands in as the gate while it's
+  // hidden (data-rail-fallback); once unlocked it's itself again.
+  const resolve = (l: HTMLElement): HTMLElement | null => {
+    const el = l.dataset.railLink ? document.getElementById(l.dataset.railLink) : null;
+    if (el && !el.closest('[hidden]')) return el;
+    return l.dataset.railFallback ? document.getElementById(l.dataset.railFallback) : el;
+  };
+  const sectionLinks = links.filter((l) => l.dataset.railLink);
+  const targetsNow = () => sectionLinks.map(resolve).filter((el): el is HTMLElement => Boolean(el));
+  let targets = targetsNow();
+  // Any link (rail or the strip's menu) to a section still behind the
+  // gate goes to the gate instead of a hidden target.
+  document.addEventListener('click', (e) => {
+    const a = (e.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+    const el = a && document.getElementById(a.hash.slice(1));
+    const gate = el?.closest('[hidden]') && document.querySelector<HTMLElement>('[data-case-gate]')?.closest('section');
+    if (gate) { e.preventDefault(); gate.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+  });
 
   if (links.length) {
     const visible = new Set<string>();
@@ -131,8 +146,10 @@ const { sections } = Astro.props;
     const paint = () => {
       // Document order wins, so scrolling up and down lands on the same
       // section at the same scroll position.
-      const id = targets.find((t) => visible.has(t.id))?.id ?? '';
-      const index = Math.max(0, links.findIndex((l) => l.dataset.railLink === id));
+      const index = Math.max(0, links.findIndex((l) => {
+        const t = l.dataset.railLink ? resolve(l) : null;
+        return t ? visible.has(t.id) : false;
+      }));
       links.forEach((l, i) => {
         if (i === index) l.setAttribute('aria-current', 'true');
         else l.removeAttribute('aria-current');
@@ -154,12 +171,15 @@ const { sections } = Astro.props;
       { rootMargin: '-25% 0px -60% 0px', threshold: 0 }
     );
     targets.forEach((t) => io.observe(t));
+    // Gated sections too, so they count once the gate opens.
+    sectionLinks.forEach((l) => { const el = document.getElementById(l.dataset.railLink!); if (el) io.observe(el); });
 
     // The reading line. "Start" spans the page top to the first section;
     // each section spans its own box to the next one's top (so the gap
     // between sections belongs to the one above, and bars meet end to end).
     const items = [...document.querySelectorAll<HTMLElement>('[data-rail-item]')];
     const spans = () => {
+      targets = targetsNow();
       const tops = targets.map((t) => t.getBoundingClientRect().top + scrollY);
       const last = targets.at(-1);
       const end = last ? last.getBoundingClientRect().bottom + scrollY : 0;

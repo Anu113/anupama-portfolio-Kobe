@@ -89,13 +89,15 @@ const answersOf = (s: { answers?: string[] }) =>
     : '';
 const gmail = gmailCompose();
 const pageId = `${study.slug}-page-content`;
-/* The rail's and the strip's contents: only the free sections, plus one
-   entry for the gate when there is one — a link that scrolled to hidden
-   content would be a dead click, and the gate's own id is a real, visible
-   anchor either way. */
+/* The rail's and the strip's contents: every section, locked or not (on
+   request, 2026-11-26: "Start / Full case study" said nothing about the
+   case). A section behind the gate carries the gate's id as `fallback`:
+   while it's hidden, its link goes to the gate and the rail reads the
+   gate in its place, so no click is dead; once unlocked it's a plain
+   link to the section. */
 const railSections = [
   ...openSections.map((s) => ({ id: s.id, nav: s.nav })),
-  ...(gatedSections.length ? [{ id: gateId, nav: 'Full case study' }] : []),
+  ...gatedSections.map((s) => ({ id: s.id, nav: s.nav, fallback: gateId })),
 ];
 
 /* The headline numbers (CaseNumbers) — pulled from the case's own Impact
