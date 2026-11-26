@@ -262,14 +262,14 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'An admin at a big company rarely looks at one person. The console only knew how to show one.',
+        heading: 'Admins at big companies change access for whole groups, but the console showed one person at a time.',
         blocks: [
           {
             kind: 'prose',
             text: [
               'At a few hundred users you can open each person\'s page. At forty thousand you\'re asking "everyone in Finance who still has Salesforce" and changing all of them at once. The console made you do that one page at a time, and new enterprise customers took 14 weeks to get set up on it.',
               'Developers had the same trouble from the other side. Teams publishing to the Okta Integration Network, and developers building Okta into their own products, met screens that assumed they already knew how Okta worked.',
-              'Meanwhile four squads were fixing their own screens in parallel, each in its own words. Every release pulled them further apart.',
+              'At the same time, four squads were fixing their own screens, each with its own words and patterns. Every release made them look less alike.',
             ],
           },
           {
@@ -329,7 +329,7 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'No new console, no cutover date.',
+        heading: 'We rebuilt the console in place instead of launching a new one.',
         blocks: [
           {
             kind: 'prose',
@@ -345,21 +345,21 @@ export const cases: CaseStudy[] = [
         id: 'team',
         nav: 'How the work got made',
         label: 'How the work got made',
-        heading: 'Four squads, one weekly crit, and a rule about components.',
+        heading: 'How four squads worked as one design team',
         blocks: [
           {
             kind: 'points',
             items: [
               {
-                title: 'Crit ends on a decision',
+                title: 'Every crit ended with a decision',
                 body: 'Once a week, an hour, two pieces of work at most, and every crit ended with a decision and a name next to it. Before, we had a review meeting that collected opinions and settled nothing.',
               },
               {
-                title: 'Two squads, then the system',
+                title: 'Components joined the system once two squads needed them',
                 body: 'A component joined the design system once two squads needed it. That cut most of the near-copies our system designer had been sorting out, and "is this in the system?" got a yes or no.',
               },
               {
-                title: 'Everyone watches research',
+                title: 'Every designer watched research',
                 body: 'One researcher and six designers, so every designer sat in on one admin session a month, whether or not it was their area. Arguments about what admins do got shorter once we\'d all watched the same people.',
               },
             ],
@@ -376,7 +376,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'Developer onboarding starts with one question.',
+        heading: 'Developer onboarding starts by asking if you\'ve used Auth0 before.',
         blocks: [
           {
             kind: 'prose',
@@ -437,7 +437,7 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: 'Faster for admins, and no one asked to stop working.',
+        heading: 'Admins got faster, and no one had to migrate.',
         blocks: [
           /* -32% confirmed by her (2026-11-25); 9 weeks to set up a customer
              removed at her word (2026-11-25). -27% support volume and "64 components
@@ -452,7 +452,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'The last one is the one I\'d talk about. We rebuilt the main console of an identity product, and no security team had to stop what they were doing.',
+              'The second number matters most to me. We rebuilt the main console of an identity product, and no security team had to stop what they were doing.',
             ],
           },
         ],
@@ -461,7 +461,7 @@ export const cases: CaseStudy[] = [
         id: 'reflection',
         nav: "What I'd do differently",
         label: "What I'd do differently",
-        heading: 'Two things I got wrong.',
+        heading: 'I\'d add a second system designer sooner, and ask for funding sooner.',
         blocks: [
           {
             kind: 'points',
@@ -1095,7 +1095,7 @@ export const cases: CaseStudy[] = [
         answers: ['law'],
         nav: 'How a request works',
         label: 'How a request works',
-        heading: 'Six steps behind every request, and four ways one can go wrong.',
+        heading: 'Every request goes through six steps, and the flow had to handle four special cases.',
         blocks: [
           {
             kind: 'rows',
@@ -1126,7 +1126,7 @@ export const cases: CaseStudy[] = [
         answers: ['people', 'law'],
         nav: 'The craft',
         label: 'The craft',
-        heading: 'Pick the data, see where the request is, and see what stays.',
+        heading: 'You pick your data, see where your request is, and see what PayPal keeps.',
         blocks: [
           {
             kind: 'compare',
@@ -1197,7 +1197,7 @@ export const cases: CaseStudy[] = [
     description:
       'Walmart Scan & Go: scan items with the Walmart app as you shop, pay on your phone, and skip the checkout line. From research to the first store pilot in a year.',
     meta: [
-      { label: 'Team', value: 'Team of 11' },
+      { label: 'Team', value: 'Me, 1 PM, 1 researcher, 1 content strategist, 7 engineers' },
       { label: 'Research', value: 'Remote research, in-store prototype testing' },
       { label: 'Timeline', value: 'Feb 2020 – Feb 2021, first pilot launch' },
     ],
@@ -1207,7 +1207,7 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'Checkout was the slowest part of a Walmart trip, and in 2020 the queue became a health question.',
+        heading: 'Checkout was the slowest part of a Walmart trip, and in 2020 people didn\'t want to stand in a queue.',
         blocks: [
           {
             kind: 'prose',
@@ -1256,7 +1256,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'Product designer on a team of eleven, from research to the pilot build.',
+        heading: 'I designed the whole Scan & Go flow, from research to the first store pilot.',
         blocks: [
           {
             kind: 'rows',
@@ -1318,7 +1318,7 @@ export const cases: CaseStudy[] = [
         id: 'team',
         nav: 'How the work got made',
         label: 'How the work got made',
-        heading: 'Research set the guidelines, sketches set the journey, and the store tested both.',
+        heading: 'We did research first, sketched the journey, then tested it in stores.',
         blocks: [
           {
             kind: 'points',
@@ -1328,11 +1328,11 @@ export const cases: CaseStudy[] = [
                 body: 'Before any screen: pain points in the store, what shoppers are trying to get done, what they buy, and how they felt about self-checkout during COVID. The user goals were to save time, keep their distance, and stay on budget.',
               },
               {
-                title: 'The journey, on the wall',
-                body: 'The journey was sketched in three stages: getting in, finding and scanning items, and cart and checkout. Then I listed the edge cases each stage had to survive: an out-of-stock shelf tag, a dead battery, the network dropping, a mis-scan that triggers an audit.',
+                title: 'Sketching the journey',
+                body: 'We sketched the journey in three stages: getting in, finding and scanning items, and cart and checkout. Then I listed the edge cases each stage had to handle: an out-of-stock shelf tag, a dead battery, the network dropping, a mis-scan that triggers an audit.',
               },
               {
-                title: 'Six guidelines before hi-fi',
+                title: 'Six guidelines we set before high-fidelity design',
                 body: 'Fewer clicks. Clear affordances. Consistent with the rest of the Walmart app. Visual aids for quick recall. Accessible. Exceptions that help people recognise, diagnose and recover.',
               },
             ],
@@ -1374,7 +1374,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'Designed for one hand, a moving cart, and a store full of awkward items.',
+        heading: 'The app had to work with one hand, on a moving cart, for items like produce and beer.',
         blocks: [
           {
             kind: 'figure',
@@ -1422,7 +1422,7 @@ export const cases: CaseStudy[] = [
             src: '/images/scan-go/errors.webp',
             alt: 'Error states: QR code not read, bags could not be added, items could not be verified, and produce that must be bought at the register',
             caption:
-              'When the technology or the network fails, degrade gracefully. Every error says what happened and what to do next, and the worst case hands the trip to an associate at a register.',
+              'Every error says what happened and what to do next. If nothing else works, the trip goes to an associate at a register.',
             ratio: '1510 / 770',
             wide: true,
           },
@@ -1440,7 +1440,7 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: 'A pilot in stores within a year, with bigger baskets.',
+        heading: 'We had a pilot in stores within a year, and baskets got bigger.',
         blocks: [
           {
             kind: 'metrics',
@@ -1465,7 +1465,7 @@ export const cases: CaseStudy[] = [
                 body: 'Scan-and-go purchasing at every physical store, which brings theft prevention and fraud into the design rather than the policy.',
               },
               {
-                title: 'Edge cases as features',
+                title: 'Design for edge cases directly',
                 body: 'Low battery and lost or poor connection, designed for directly instead of caught by a generic error.',
               },
               {
@@ -1480,7 +1480,7 @@ export const cases: CaseStudy[] = [
         id: 'reflection',
         nav: "What I'd do differently",
         label: "What I'd do differently",
-        heading: 'What the pilot taught me.',
+        heading: 'I\'d plan the rollout and the associates\' side from the start.',
         blocks: [
           {
             kind: 'points',
@@ -1524,9 +1524,9 @@ export const cases: CaseStudy[] = [
       alt: 'The Chase Pay linking screen inside Walmart Pay, beside a Chase card',
     },
     description:
-      'Walmart Pay: adding Chase Pay to the wallet after Savings Catcher retired. A partner integration that arrived as a finished formula, taken to a store test that broke it.',
+      'Walmart Pay: adding Chase Pay to the wallet after Savings Catcher retired. Chase had a ready-made design for it, and I tested it with customers in a store before we shipped.',
     meta: [
-      { label: 'Team', value: '1 design manager, 1 researcher, 1 PM, 10+ engineers' },
+      { label: 'Team', value: 'Me, 1 design manager, 1 researcher, 1 PM, 10+ engineers' },
       { label: 'Partners', value: '5 stakeholders, JPMorgan Chase' },
       { label: 'Timeline', value: 'June 2019 – April 2020' },
     ],
@@ -1536,13 +1536,13 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'Savings Catcher retired on 14 May 2019, and Walmart Pay went with it.',
+        heading: 'When Savings Catcher retired in May 2019, people stopped using Walmart Pay.',
         blocks: [
           {
             kind: 'prose',
             text: [
-              '"Save Money. Live Better." is Walmart\'s slogan, and Savings Catcher was the literal version of it: scan a receipt, and if a competitor advertised the item cheaper, get the difference back. It was also the reason a lot of people opened the Walmart app at the register at all. It was discontinued on 14 May 2019.',
-              'Walmart Pay lost the habit that had been carrying it. Without the price-matching payoff, paying in-app was slower than pulling out a card and offered nothing in return, so people stopped. Chase Pay was the answer on the table: a card issuer\'s own rewards, redeemable inside a wallet the customer had already set up, with no second app to learn.',
+              '"Save Money. Live Better." is Walmart\'s slogan, and Savings Catcher was the literal version of it: scan a receipt, and if a competitor advertised the item cheaper, get the difference back. It was also the main reason people opened the Walmart app at the register. It was discontinued on 14 May 2019.',
+              'Without the price matching, paying in-app was slower than pulling out a card and offered nothing in return, so people stopped. Chase Pay was the answer on the table: a card issuer\'s own rewards, redeemable inside a wallet the customer had already set up, with no second app to learn.',
             ],
           },
           {
@@ -1579,7 +1579,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'The product designer on Walmart Pay, negotiating across two companies.',
+        heading: 'I was the only designer on it, working with teams at Walmart and Chase.',
         blocks: [
           {
             kind: 'rows',
@@ -1612,14 +1612,14 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'The integration arrived as a finished formula. I took it to a store floor anyway.',
+        heading: 'Chase had a ready-made design. I tested it in a store before we used it.',
         blocks: [
           {
             kind: 'prose',
             text: [
               'By the June 2019 kickoff, Chase had already shipped this integration several times over: with PayPal, with Samsung Pay, with merchants including Starbucks. There was a pattern, it worked, and it came with a partner who had every reason to want it applied as-is.',
               'That helped, and it didn\'t. I wasn\'t starting from a blank page. But the design was close to a finished formula, with little room to explore, and it had been proven in other companies\' apps. Not in ours, next to a Walmart register, for a customer who had never heard of Chase Pay.',
-              'So instead of applying it, I spent seven weeks on iterations, critiques and prototyping, and we put it in front of twelve real Walmart-and-Chase customers in a store in Dallas. The study broke the formula in two places, and we\'d never have seen either from the office.',
+              'So instead of applying it, I spent seven weeks on iterations, critiques and prototyping, and we put it in front of twelve real Walmart-and-Chase customers in a store in Dallas. The study found two problems with it that we wouldn\'t have seen from the office.',
             ],
           },
           {
@@ -1643,7 +1643,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'prose',
             text: [
-              'That second one is why the seven weeks were worth it. A convenience feature read as a way to lose control of your money. The fix was cheap once we knew, but the formula would never have shown us.',
+              'The second finding is why the seven weeks were worth it. People saw a convenience feature as a way to lose control of their money. The fix was cheap once we knew.',
             ],
           },
         ],
@@ -1652,7 +1652,7 @@ export const cases: CaseStudy[] = [
         id: 'team',
         nav: 'How the work got made',
         label: 'How the work got made',
-        heading: 'Seven weeks of iteration in two offices, then a week on a store floor in a third.',
+        heading: 'Seven weeks of design, then a week of testing in a Dallas store.',
         blocks: [
           {
             kind: 'points',
@@ -1695,13 +1695,13 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'Three moves, all of them cheap to build.',
+        heading: 'I changed pictures, layout and words, so the fixes were cheap to build.',
         blocks: [
           {
             kind: 'prose',
             text: [
               'The constraint on the fixes was the same one that had shaped the project: this was a partner integration late in its life, not a rebuild. So I stuck to changes that cost engineering almost nothing: pictures, layout and words. Low technical effort, faster to scan, and they moved the things the study said were broken.',
-              'The other constant was that Chase Pay had to weave in and stand out at the same time. It belongs in the pack of payment options, or it reads as a separate product to learn. It also has to be distinguishable from a normal card during setup and every time you use it, or you get the security problem the study surfaced.',
+              'Chase Pay also had to fit in with the other payment options, or it would look like a separate product to learn. But it had to look different from a normal card during setup and every time you paid, or we\'d get the security worry the study found.',
             ],
           },
           {
@@ -1802,7 +1802,7 @@ export const cases: CaseStudy[] = [
             label: 'What the study settled, beyond this feature',
             items: [
               {
-                title: 'Security, security, security',
+                title: 'Security comes first',
                 body: 'People want their money safely spent, and they read safety off the interface. Real and perceived security problems are a deal-killer at any stage of a payment flow. So the reassurance is product work, and it starts on the first screen.',
               },
               {
@@ -1810,7 +1810,7 @@ export const cases: CaseStudy[] = [
                 body: 'Merely adding a payment option does not move adoption. Customers need a benefit big enough to be worth changing a habit at a register, and saving time and effort is where that starts.',
               },
               {
-                title: 'Money, time, effort, security',
+                title: 'People weigh money, time, effort and security',
                 body: 'Everything the study surfaced, good or bad, came back to one of those four. Monetary incentive is what triggers action; the other three are what stop it.',
               },
             ],
@@ -1821,7 +1821,7 @@ export const cases: CaseStudy[] = [
         id: 'reflection',
         nav: "What I'd do differently",
         label: "What I'd do differently",
-        heading: 'Two things I found late that were findable early.',
+        heading: 'Three things I could have found earlier.',
         blocks: [
           {
             kind: 'points',
@@ -1835,7 +1835,7 @@ export const cases: CaseStudy[] = [
                 body: 'The redirect alert made people feel safer, and I took the positive signal at face value for too long. It was only after many iterations that I noticed it never promised the trip to Chase was momentary. Reading the alert against the anxiety it was supposed to answer, rather than against whether people liked it, would have caught that in one pass.',
               },
               {
-                title: 'I would have taken the formula to customers in week one',
+                title: 'I\'d test Chase\'s design with customers in week one',
                 body: 'The store test came after seven weeks of design. A rough version of Chase\'s ready-made pattern in front of a handful of customers at the start would have surfaced both findings before the screens were drawn, and turned the weeks of iteration into weeks of fixing the right things.',
               },
             ],
@@ -1897,15 +1897,15 @@ export const cases: CaseStudy[] = [
             label: 'What was at stake',
             items: [
               {
-                title: 'A stalled catalog',
+                title: 'The catalog was growing too slowly',
                 body: 'Every quarter the submission backlog grew faster than review capacity, and a thinner catalog is a weaker story against every other identity platform courting the same partners.',
               },
               {
-                title: 'ISV goodwill',
+                title: 'Partners were giving up',
                 body: 'A partner with real engineering resources elsewhere would try Okta once, hit an opaque rejection, and quietly deprioritize the integration.',
               },
               {
-                title: 'A team stretched flat',
+                title: 'Every fix had to be built four times',
                 body: 'Four categories were each maintaining their own submission tooling, so every improvement had to be built four times or not at all.',
               },
             ],
@@ -2056,7 +2056,7 @@ export const cases: CaseStudy[] = [
         id: 'team',
         nav: 'How the work got made',
         label: 'How the work got made',
-        heading: 'An audit, a journey map, and a blueprint before a single shared component got drawn.',
+        heading: 'We audited what existed and mapped the journey before designing any components.',
         blocks: [
           {
             kind: 'prose',
@@ -2085,15 +2085,15 @@ export const cases: CaseStudy[] = [
             label: 'Design principles',
             items: [
               {
-                title: 'State is not optional',
-                body: 'Every submission has a visible status, everywhere it appears: console, manifest editor, docs. If an ISV has to ask what’s happening, the screen has failed.',
+                title: 'Always show the status',
+                body: 'Every submission has a visible status, everywhere it appears: console, manifest editor, docs. An ISV should never have to ask what’s happening.',
               },
               {
-                title: 'Errors at the field',
+                title: 'Show errors next to the field',
                 body: 'Validation runs as the manifest is written, so nobody waits a full review cycle to hear it failed. An error names the field and how to fix it.',
               },
               {
-                title: 'One schema, no synonyms',
+                title: 'One name for each thing',
                 body: 'A concept has one name across every category’s docs, error copy and UI. The old system had three names for a redirect URI depending on which category’s docs you read.',
               },
             ],
@@ -2196,7 +2196,7 @@ export const cases: CaseStudy[] = [
         id: 'reflection',
         nav: "What I'd do differently",
         label: "What I'd do differently",
-        heading: 'Two places I moved slower than the work needed.',
+        heading: 'I\'d document the schema sooner, and make "extensible" concrete sooner.',
         blocks: [
           {
             kind: 'points',
@@ -2256,7 +2256,7 @@ export const cases: CaseStudy[] = [
       'PayPal Debit Card: rebuilding card enrollment inside the PayPal app around identity checks and fee disclosure, and adding cash back offers, so more people finish signing up and start using the card the same day.',
     meta: [
       { label: 'Surface', value: 'PayPal mobile app: enrollment, card home, rewards, notifications' },
-      { label: 'Partners', value: 'Product, engineering, compliance and legal, The Bancorp Bank, research' },
+      { label: 'Team', value: 'Me, 2 designers, 2 PMs, 1 researcher, 9 engineers, with compliance, legal and The Bancorp Bank' },
       { label: 'Timeline', value: 'Flows dated Apr–Jun 2022' },
     ],
     role: 'Owned the design direction · Strategy and the core flows',
@@ -2265,7 +2265,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The work',
         label: 'The work',
-        heading: 'Sign up, use it today, then a reason to keep using it.',
+        heading: 'How you sign up, use the card the same day, and earn cash back.',
         blocks: [
           {
             kind: 'prototype',
@@ -2387,7 +2387,7 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'Fewer screens was the easy fix. I answered people\'s doubts instead.',
+        heading: 'Instead of cutting screens, I answered the questions that made people leave.',
         blocks: [
           {
             kind: 'prose',
@@ -2413,7 +2413,7 @@ export const cases: CaseStudy[] = [
         id: 'team',
         nav: 'Working with constraints',
         label: 'Working with constraints',
-        heading: 'Every screen had to carry a regulation, and still read in one glance.',
+        heading: 'Each screen had to include legal text and still be quick to read.',
         blocks: [
           {
             kind: 'points',
@@ -2471,7 +2471,7 @@ export const cases: CaseStudy[] = [
         id: 'reflection',
         nav: "What I'd do differently",
         label: "What I'd do differently",
-        heading: 'Two things I’d do sooner.',
+        heading: 'I’d test the new name sooner, and design the offers page first.',
         blocks: [
           {
             kind: 'points',
@@ -2529,7 +2529,7 @@ export const cases: CaseStudy[] = [
     description:
       'PayPal ID verification: a document scan and a face scan with a liveness check, designed and tested over 11 rounds of research, for iOS, Android and mobile web.',
     meta: [
-      { label: 'Team', value: 'Content strategist, lead researcher, 3 PMs, 2 privacy officers, 15+ engineers, with Risk, Legal, Fraud Ops and ML' },
+      { label: 'Team', value: 'Me, 1 content strategist, 1 researcher, 3 PMs, 2 privacy officers, 15+ engineers, with Risk, Legal, Fraud Ops and ML' },
       { label: 'Platforms', value: 'iOS, Android and mobile web' },
       { label: 'Timeline', value: 'September 2021 – May 2022 · launched in the US, UK and Canada (beta), then globally' },
     ],
@@ -2613,7 +2613,7 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'The fastest scan tested worst. I slowed it down.',
+        heading: 'The fastest scan did worst in testing, so I slowed it down.',
         blocks: [
           {
             kind: 'prose',
@@ -2649,7 +2649,7 @@ export const cases: CaseStudy[] = [
                 body: 'We mapped every flow where identity blocked access, like crypto onboarding, account recovery and high-risk payments. Then we interviewed customers, support agents and fraud analysts.',
               },
               {
-                title: 'Prototypes that move',
+                title: 'We built prototypes that move',
                 body: 'Design prototypes couldn\'t respond to a moving face, so the feedback was thin. With an iOS engineer I built 20 native prototypes to compare device movement with head movement. Capturing faces in motion also gave the fraud models better signals.',
               },
               {
@@ -2807,7 +2807,7 @@ export const cases: CaseStudy[] = [
     description:
       'PayPal shared some customer data with ad partners like Facebook and Google, and everyone was opted in unless they found the setting. About 1% ever did. In 2023 compliance flipped the default: no sharing until a customer agrees. I designed how PayPal asks.',
     meta: [
-      { label: 'Team', value: '1 content designer, 1 researcher, 1 PM, legal, 6 engineers' },
+      { label: 'Team', value: 'Me, 1 content designer, 1 researcher, 1 PM, 6 engineers, with legal' },
       { label: 'Platforms', value: 'PayPal app and web' },
       { label: 'Timeline', value: '2023 · rapid research April 2023' },
     ],
@@ -2873,7 +2873,7 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'No pre-ticked box.',
+        heading: 'Nobody is opted in until they say yes.',
         blocks: [
           {
             kind: 'prose',
@@ -2899,7 +2899,7 @@ export const cases: CaseStudy[] = [
         id: 'team',
         nav: 'How the work got made',
         label: 'How the work got made',
-        heading: 'Two days, eight people.',
+        heading: 'We tested it with eight people over two days.',
         blocks: [
           {
             kind: 'prose',
@@ -2939,7 +2939,7 @@ export const cases: CaseStudy[] = [
         id: 'apa',
         nav: 'Auto Privacy Advisor',
         label: 'A feature: Auto Privacy Advisor',
-        heading: 'If 1% find the setting, bring the setting to them.',
+        heading: 'Only about 1% of people found the setting, so I proposed bringing it to them.',
         blocks: [
           {
             kind: 'prose',
@@ -3121,7 +3121,7 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'Building a separate system rather than bending the one that existed.',
+        heading: 'We built a separate system instead of stretching the existing ones.',
         blocks: [
           {
             kind: 'prose',
@@ -3159,7 +3159,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'The decisions that show: colour, a 4px baseline, and the input field.',
+        heading: 'The main decisions were colour, a 4px baseline and the input field.',
         blocks: [
           {
             kind: 'points',
@@ -3280,7 +3280,7 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'A beta was live, and nobody knew which of its problems were the expensive ones.',
+        heading: 'A beta was live, and no one knew which of its problems cost the most.',
         blocks: [
           {
             kind: 'prose',
@@ -3306,7 +3306,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'Research, interaction, visual, prototyping and testing, on a system wired to eight others.',
+        heading: 'I did the research, design, prototyping and testing, on a system connected to eight others.',
         blocks: [
           {
             kind: 'rows',
@@ -3341,7 +3341,7 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'Two sides of the same transaction, wanting different things.',
+        heading: 'Buyers and suppliers wanted different things from the same agreement.',
         blocks: [
           {
             kind: 'prose',
@@ -3361,7 +3361,7 @@ export const cases: CaseStudy[] = [
         id: 'process',
         nav: 'How it got made',
         label: 'How the work got made',
-        heading: 'Six phases of research before a single screen.',
+        heading: 'We did six phases of research before designing any screens.',
         blocks: [
           {
             kind: 'points',
@@ -3438,7 +3438,7 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: 'It launched on 8 October 2020 and was measured.',
+        heading: 'It launched on 8 October 2020, and we measured the results.',
         blocks: [
           {
             kind: 'metrics',
@@ -3482,7 +3482,7 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'A chatbot is only as good as the loop that fixes it.',
+        heading: 'The chatbot needed a way for people to fix the questions it couldn\'t answer.',
         blocks: [
           {
             kind: 'prose',
@@ -3506,7 +3506,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'Three user types, one console, end to end.',
+        heading: 'I designed one console for three types of users.',
         blocks: [
           {
             kind: 'rows',
@@ -3529,7 +3529,7 @@ export const cases: CaseStudy[] = [
         id: 'process',
         nav: 'How it got made',
         label: 'How the work got made',
-        heading: 'Identity first, then wireframes, then the states that get hit.',
+        heading: 'I started with the identity, then wireframes, then the main states.',
         blocks: [
           {
             kind: 'prose',
@@ -3557,7 +3557,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'The identity, resolved and documented.',
+        heading: 'The final identity and its guidelines',
         blocks: [
           {
             kind: 'figure',
@@ -3642,7 +3642,7 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'A clean, flat look on a surface people find overwhelming.',
+        heading: 'We kept the look clean and flat because credit reports feel overwhelming.',
         blocks: [
           {
             kind: 'prose',
@@ -3656,7 +3656,7 @@ export const cases: CaseStudy[] = [
         id: 'process',
         nav: 'How it got made',
         label: 'How the work got made',
-        heading: 'Moodboard, wireframes, then the visual language.',
+        heading: 'I started with a moodboard, then wireframes, then the visual style.',
         blocks: [
           {
             kind: 'figure',
@@ -3717,12 +3717,12 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'Personal lending, compressed into minutes.',
+        heading: 'A personal loan that arrives in minutes',
         blocks: [
           {
             kind: 'prose',
             text: [
-              "RatanIndia's Lender's App is a personal loan app that makes financing easier than ever before. Getting a personal loan is now simple and fast.",
+              "RatanIndia's Lender's App gives personal loans. You verify yourself, pick an amount, and the money reaches your bank account within minutes.",
             ],
           },
         ],
@@ -3731,7 +3731,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'The whole product, in three screens.',
+        heading: 'The whole app is three screens.',
         blocks: [
           {
             kind: 'points',
@@ -3783,7 +3783,7 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'Investing as a utility, sold to people who have never opened a brokerage account.',
+        heading: 'qplum wanted to make investing simple for people who had never opened a brokerage account.',
         blocks: [
           {
             kind: 'prose',
@@ -3808,7 +3808,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'The only designer, across onboarding, funding and the apps.',
+        heading: 'I was the only designer, across onboarding, funding and the apps.',
         blocks: [
           {
             kind: 'rows',
@@ -3831,7 +3831,7 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'A chatbot giving financial advice sits inside a regulated perimeter.',
+        heading: 'A chatbot that gives financial advice has to follow financial regulations.',
         blocks: [
           {
             kind: 'prose',
@@ -3904,7 +3904,7 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'Half of Sri Lanka’s mobile market, and a customer whose balance just hit zero.',
+        heading: 'Dialog has half of Sri Lanka’s mobile users, and the loan is for when their balance hits zero.',
         blocks: [
           {
             kind: 'prose',
@@ -3929,7 +3929,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'The loan flow, the brand guideline and the mobile site.',
+        heading: 'I designed the loan flow, its brand guideline and the mobile site.',
         blocks: [
           {
             kind: 'rows',
@@ -3944,7 +3944,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'The flow, the brand guideline, and the mobile site.',
+        heading: 'Asking for a loan right when service stops',
         blocks: [
           {
             kind: 'figure',
@@ -3987,7 +3987,7 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'A well-known advisory firm with a site that was not carrying it.',
+        heading: 'A well-known advisory firm had a website that didn\'t match its reputation.',
         blocks: [
           {
             kind: 'prose',
@@ -4001,7 +4001,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'End to end, with researchers alongside.',
+        heading: 'I designed it end to end, working with researchers.',
         blocks: [
           {
             kind: 'rows',
@@ -4023,7 +4023,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'Wireframe, then visuals.',
+        heading: 'I did wireframes first, then the visuals.',
         blocks: [
           {
             kind: 'figure',
@@ -4066,7 +4066,7 @@ export const cases: CaseStudy[] = [
         id: 'situation',
         nav: 'The situation',
         label: 'The situation',
-        heading: 'People’s files live in six places and none of them talk.',
+        heading: 'People keep files in six cloud drives that don’t connect.',
         blocks: [
           {
             kind: 'prose',
@@ -4081,7 +4081,7 @@ export const cases: CaseStudy[] = [
         id: 'scope',
         nav: 'My scope',
         label: 'My scope',
-        heading: 'Designed it, and built some of it.',
+        heading: 'I designed it and built part of it.',
         blocks: [
           {
             kind: 'rows',
@@ -4096,7 +4096,7 @@ export const cases: CaseStudy[] = [
         id: 'hard-call',
         nav: 'The hard call',
         label: 'The hard call',
-        heading: 'Rows with functions built in, to stop the toggling.',
+        heading: 'Each row has its own actions, so you don\'t switch screens.',
         blocks: [
           {
             kind: 'prose',
@@ -4110,7 +4110,7 @@ export const cases: CaseStudy[] = [
         id: 'process',
         nav: 'How it got made',
         label: 'How the work got made',
-        heading: 'Discover, define, design.',
+        heading: 'I worked in three steps: discover, define, design.',
         blocks: [
           {
             kind: 'points',
@@ -4127,7 +4127,7 @@ export const cases: CaseStudy[] = [
         id: 'craft',
         nav: 'The craft',
         label: 'The craft',
-        heading: 'Depth from thin lines rather than colour.',
+        heading: 'Thin lines show depth instead of colour.',
         blocks: [
           {
             kind: 'prose',
