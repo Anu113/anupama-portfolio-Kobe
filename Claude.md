@@ -937,14 +937,15 @@ walked back. Concretely, in the current implementation:
   the way the paintings share hers.
 - The home page is now: hero →
   "Selected *work*" head + six project cards →
-  "A bit *about me*" bento → "Beyond *work*" ring → one-line playground pointer → Small talk →
+  "Beyond *work*" ring → one-line playground pointer → Small talk →
   Now → footer (which carries contact). The hero is the screen minus
   `--hero-peek`, so the "Selected work" heading line shows at the
   bottom of the first screen on laptops and up (on request, 2026-11-17);
   "View all work" sits after the cards (on request, 2026-11-17). On short screens `--hero-pad-top`
   gives way first (HOME HERO in `tokens.css`).
-- **A bit about me** (`AboutBento.astro`, ABOUT BENTO in `tokens.css`;
-  on request, 2026-11-26, after marygans.com's bento, picked in
+- **A bit about me, parked** (`AboutBento.astro`, ABOUT BENTO in
+  `tokens.css`; parked the same day, on request: "we will work on this
+  later"; no page mounts it). Built on request, 2026-11-26, after marygans.com's bento, picked in
   `experiments/home-bento`: "A · Like hers", Colours, Pulse, size M,
   words 4, with the Email card dropped since the footer has contact).
   Between Selected work and Beyond work: her profile card (the "Open to
