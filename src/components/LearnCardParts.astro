@@ -1,0 +1,113 @@
+---
+/* LearnCardParts.astro — the `cardparts` block on the Privacy case: one
+   "Learn more about PayPal privacy" card taken apart ("F" of
+   experiments/privacy-process, on request, 2026-11-26). The first card
+   is drawn large with five numbered pins and a note for each, two on
+   the left and three on the right; then the three cards in a row, each
+   with the question it answers.
+
+   The cards are built as on the case's hub screens: her art band on top
+   (learn-*.webp, from her Figma), the title under it in PayPal's navy.
+   Pins are ink, the site's own marks, never the accent. Static. Values
+   under PRIVACY PROCESS in tokens.css. */
+interface Props {
+  notes: { title: string; text: string }[];
+  cards: { src: string; title: string; answers: string }[];
+}
+const { notes, cards } = Astro.props;
+const big = cards[0];
+// Where each pin sits on the large card, in % of the card.
+const pins = [
+  'left: -0.7rem; top: 8%;',
+  'left: 46%; top: 30%;',
+  'left: 66%; top: 60%;',
+  'left: -1rem; top: 84%;',
+  'right: -0.7rem; bottom: -0.7rem;',
+];
+const left = notes.slice(0, 2);
+const right = notes.slice(2);
+---
+<div class="lmc">
+  <div class="lmc__parts">
+    <ol class="lmc__notes lmc__notes--l">
+      {left.map((n, i) => (
+        <li><span class="lmc__pin" aria-hidden="true">{i + 1}</span><div><p class="u-label-mono lmc__t">{n.title}</p><p class="lmc__x">{n.text}</p></div></li>
+      ))}
+    </ol>
+    <figure class="lmc__big" aria-label={`A Learn more card, enlarged: ${big.title}`}>
+      <div class="lmc__card">
+        <img src={big.src} alt="" width="444" height="300" loading="lazy" decoding="async" />
+        <p class="lmc__title">{big.title}</p>
+      </div>
+      {pins.map((p, i) => <span class="lmc__pin lmc__pin--on" style={p} aria-hidden="true">{i + 1}</span>)}
+    </figure>
+    <ol class="lmc__notes lmc__notes--r" start="3">
+      {right.map((n, i) => (
+        <li><span class="lmc__pin" aria-hidden="true">{i + 3}</span><div><p class="u-label-mono lmc__t">{n.title}</p><p class="lmc__x">{n.text}</p></div></li>
+      ))}
+    </ol>
+  </div>
+
+  <ul class="lmc__row">
+    {cards.map((c) => (
+      <li class="lmc__item">
+        <div class="lmc__card lmc__card--sm">
+          <img src={c.src} alt="" width="444" height="300" loading="lazy" decoding="async" />
+          <p class="lmc__title">{c.title}</p>
+        </div>
+        <div>
+          <p class="u-label-mono lmc__t">Answers</p>
+          <p class="lmc__q">{c.answers}</p>
+        </div>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .lmc { display: grid; row-gap: var(--case-block-gap); }
+  .lmc__parts {
+    display: grid; grid-template-columns: minmax(0, 1fr) var(--lmc-w) minmax(0, 1fr);
+    gap: var(--col-gap); align-items: center;
+  }
+  .lmc__notes { list-style: none; margin: 0; padding: 0; display: grid; row-gap: var(--case-list-gap); }
+  .lmc__notes li { display: flex; gap: 0.6rem; align-items: start; }
+  .lmc__t { margin: 0; color: var(--fg); }
+  .lmc__x { margin: 0.35rem 0 0; font-size: var(--step-small); line-height: 1.55; color: var(--fg-dim); }
+
+  .lmc__big { position: relative; margin: 0; }
+  .lmc__card {
+    background: var(--lmc-card); border-radius: var(--lmc-radius); overflow: hidden;
+    box-shadow: var(--lmc-shadow);
+  }
+  .lmc__card img { display: block; width: 100%; height: auto; }
+  .lmc__title {
+    margin: 0; padding: 0.9rem 1rem 1.1rem; color: var(--lmc-ink);
+    font-family: var(--font-sans); font-weight: var(--weight-sans);
+    font-size: var(--step-body); line-height: 1.35;
+  }
+  .lmc__pin {
+    display: inline-grid; place-items: center; flex: none;
+    width: var(--lmc-pin); height: var(--lmc-pin); border-radius: 50%;
+    background: var(--fg); color: var(--bg); font: 400 0.6875rem/1 var(--font-mono);
+  }
+  .lmc__pin--on { position: absolute; box-shadow: 0 0 0 3px var(--bg); }
+
+  .lmc__row {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--case-card-gap);
+  }
+  .lmc__item {
+    display: grid; grid-template-columns: var(--lmc-thumb) minmax(0, 1fr); gap: 1rem; align-items: start;
+    background: var(--case-card); border-radius: var(--radius-case-card); padding: 1.25rem;
+  }
+  .lmc__card--sm { border-radius: 0.5rem; }
+  .lmc__card--sm .lmc__title { padding: 0.4rem 0.5rem 0.5rem; font-size: var(--lmc-thumb-title); }
+  .lmc__q { margin: 0.4rem 0 0; font-size: var(--step-small); line-height: 1.5; color: var(--fg); }
+
+  @media (max-width: 900px) {
+    .lmc__parts { grid-template-columns: 1fr; justify-items: start; }
+    .lmc__big { width: var(--lmc-w); order: -1; }
+    .lmc__row { grid-template-columns: 1fr; }
+  }
+</style>

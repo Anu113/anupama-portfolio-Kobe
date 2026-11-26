@@ -1,0 +1,41 @@
+---
+/* SketchRows.astro — the `sketchrows` block: one pencil sheet beside a
+   few term/detail rows. On the Privacy case it carries "Why we moved the
+   art": her first sketch of the page, then why the art was there and
+   what she kept ("F" of experiments/privacy-process, on request,
+   2026-11-26; the one sketch-to-screen moment she kept). The sheet is an
+   image from experiments/privacy-process/render.html. Static. */
+interface Props {
+  label?: string;
+  src: string;
+  alt: string;
+  caption?: string;
+  items: { term: string; detail: string }[];
+}
+const { label, src, alt, caption, items } = Astro.props;
+---
+<div class="skr">
+  {label && <p class="u-label-mono skr__label">{label}</p>}
+  <div class="skr__grid">
+    <figure class="skr__fig">
+      <img src={src} alt={alt} width="800" height="600" loading="lazy" decoding="async" />
+      {caption && <figcaption class="u-label-mono skr__cap">{caption}</figcaption>}
+    </figure>
+    <dl class="skr__rows">
+      {items.map((it) => (
+        <div><dt class="u-label-mono">{it.term}</dt><dd>{it.detail}</dd></div>
+      ))}
+    </dl>
+  </div>
+</div>
+
+<style>
+  .skr__label { margin: 0 0 1.25rem; }
+  .skr__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--col-gap); align-items: center; }
+  .skr__fig { margin: 0; }
+  .skr__fig img { display: block; width: 100%; height: auto; box-shadow: var(--sketch-shadow); transform: rotate(-1deg); }
+  .skr__cap { margin-top: 1rem; text-transform: none; letter-spacing: 0.03em; }
+  .skr__rows { margin: 0; display: grid; row-gap: var(--case-list-gap); }
+  .skr__rows dd { margin: 0.4rem 0 0; color: var(--fg-dim); text-wrap: pretty; }
+  @media (max-width: 820px) { .skr__grid { grid-template-columns: 1fr; } }
+</style>

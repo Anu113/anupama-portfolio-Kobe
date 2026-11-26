@@ -1,0 +1,107 @@
+---
+/* SketchCollage.astro — the `sketches` block: the design process as one
+   collage of pencil sheets, four over two, each turned a little and
+   overlapping like papers on a desk, with a numbered line under it per
+   step. On request (2026-11-26, "F" of experiments/privacy-process: "club
+   all those sketches into one overlapping collage").
+
+   The sheets are images, drawn by the pencil renderer in
+   experiments/privacy-process and rendered by its render.html; the
+   handwriting is baked in, so no fourth font family reaches the site.
+
+   Pointing at a sheet or its line brings that sheet to the front,
+   straightened and a little larger. Its reason: half of each sheet is
+   under another, so this is how you read the one you're on. Everything a
+   sheet says is also in its line, so nothing is lost to a keyboard or a
+   screen reader; the sheets are decoration for them. Fine pointers only;
+   no movement under reduced motion. Under 760px the collage becomes a
+   plain two-column grid. Values under PRIVACY PROCESS in tokens.css. */
+interface Props {
+  label?: string;
+  items: { name: string; src: string; alt: string; text: string }[];
+}
+const { label, items } = Astro.props;
+// Where each sheet lies: left %, top %, turn. Four in the top row, two
+// laid over them.
+const lay = [
+  [0, 2, -3], [23, 9, 2.5], [46, 0, -1.5], [68, 7, 3], [14, 44, 1.5], [40, 46, -2.5],
+];
+---
+<div class="sk">
+  {label && <p class="u-label-mono sk__label">{label}</p>}
+  <div class="sk__desk" aria-hidden="true">
+    {items.map((it, i) => {
+      const [l, t, r] = lay[i % lay.length];
+      return (
+        <div class="sk__sheet" data-step={i} style={`--l: ${l}%; --t: ${t}%; --r: ${r}deg;`}>
+          <img src={it.src} alt="" width="800" height="600" loading="lazy" decoding="async" />
+          <span class="sk__num">{i + 1}</span>
+        </div>
+      );
+    })}
+  </div>
+  <ol class="sk__list">
+    {items.map((it, i) => (
+      <li data-step={i}>
+        <span class="sk__num" aria-hidden="true">{i + 1}</span>
+        <div>
+          <p class="u-label-mono sk__name">{it.name}</p>
+          <p class="sk__text">{it.text}</p>
+        </div>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<script>
+  // Point at a sheet or its line: that sheet comes to the front.
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
+  document.querySelectorAll<HTMLElement>('.sk').forEach((root) => {
+    root.querySelectorAll<HTMLElement>('[data-step]').forEach((el) => {
+      const set = (on: boolean) => {
+        if (!fine.matches) return;
+        root.querySelectorAll(`[data-step="${el.dataset.step}"]`).forEach((x) => x.classList.toggle('is-on', on));
+      };
+      el.addEventListener('pointerenter', () => set(true));
+      el.addEventListener('pointerleave', () => set(false));
+    });
+  });
+</script>
+
+<style>
+  .sk__label { margin: 0 0 1.25rem; }
+  .sk__desk { position: relative; aspect-ratio: var(--collage-ratio); }
+  .sk__sheet {
+    position: absolute; left: var(--l); top: var(--t); width: var(--sketch-w);
+    transform: rotate(var(--r));
+    transition: transform var(--dur-sketch-raise) var(--ease-sketch-raise);
+  }
+  .sk__sheet img { display: block; width: 100%; height: auto; box-shadow: var(--sketch-shadow); }
+  .sk__sheet.is-on { z-index: 2; transform: rotate(0deg) scale(var(--sketch-raise)); }
+  .sk__sheet .sk__num { position: absolute; top: -0.5rem; left: -0.5rem; }
+
+  .sk__num {
+    display: inline-grid; place-items: center; flex: none;
+    width: 1.125rem; height: 1.125rem; border-radius: 50%;
+    background: var(--fg); color: var(--bg);
+    font: 400 0.625rem/1 var(--font-mono);
+  }
+  .sk__list {
+    list-style: none; margin: 2rem 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sketch-list-gap);
+  }
+  .sk__list li { display: flex; gap: 0.75rem; align-items: start; }
+  .sk__list li.is-on .sk__name { text-decoration: underline; text-underline-offset: 3px; }
+  .sk__name { margin: 0; color: var(--fg); }
+  .sk__text { margin: 0.35rem 0 0; font-size: var(--step-small); line-height: 1.6; color: var(--fg-dim); text-wrap: pretty; }
+
+  @media (max-width: 760px) {
+    .sk__desk { aspect-ratio: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .sk__sheet { position: relative; left: auto; top: auto; width: auto; }
+    .sk__list { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sk__sheet { transition: none; }
+    .sk__sheet.is-on { transform: rotate(var(--r)); }
+  }
+</style>

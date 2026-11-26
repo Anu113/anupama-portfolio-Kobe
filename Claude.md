@@ -1123,6 +1123,29 @@ walked back. Concretely, in the current implementation:
   a cut-down "lite" version were mocked
   (`experiments/privacy-case-learnings/cover-*.html`) and turned down;
   don't change the cover itself.
+- **The Privacy case's process, illustrations and Learn more cards**
+  (on request, 2026-11-26, "F" of `experiments/privacy-process/`: every
+  part shown, nothing folded, each fact said once). "How the work got
+  made" opens on her design process as one overlapping collage of six
+  pencil sheets (`sketches`, `SketchCollage.astro`), each with a line under
+  it. Pointing at a sheet or its line brings that sheet to the front. A
+  section, "The illustrations" (after What shipped), comes next
+  (`illos`, `PrivacyArt.astro`). It covers the door finding, then her four
+  illustrations, each with what it means and where it's used, then their
+  colours and her credit. She drew all four, her word; the door is a stock
+  picture from testing and isn't credited to her. After it, "Why we moved
+  the art" puts her first sketch beside two rows (`sketchrows`,
+  `SketchRows.astro`); that's the one sketch-to-screen moment she kept, on
+  request. "Learn more cards", after the craft, takes one card apart with
+  five ink pins, then shows each card with the question it answers
+  (`cardparts`, `LearnCardParts.astro`). Which card answers which question
+  is still to be confirmed. The sheets are images rendered by
+  `experiments/privacy-process/render.html` (headless Chrome, 2x, paper
+  and handwriting baked in, so no fourth font reaches the site). They're
+  new drawings of her boards' content, not her notebook pages. Values
+  under PRIVACY PROCESS in `tokens.css`. Copy mixes "we" (the team),
+  "I" (what she owned, made or judged) and "me" (team listings), after
+  andreas.vision.
 - `cases.ts` holds case-study content as structural prose with `[X]`
   placeholders for real numbers — written from what this file already
   records about each project, not confirmed by Anupama. It also currently
