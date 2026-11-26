@@ -1885,3 +1885,45 @@
   --iam-loop: 6s;                  /* the role card's switch */
   --iam-review: 9s;                /* the review dialog, start to Undo */
 }
+
+/* ============================================================
+   ABOUT BENTO (AboutBento.astro) — "A bit about me" on the home page,
+   after marygans.com's bento (on request, 2026-11-26; picked in
+   experiments/home-bento: "A · Like hers", Colours, Pulse, size M,
+   words 4, no Email card). Each card is a soft card in one of the light
+   hues the site already uses (a requested exception to rule 2, these
+   cards only); in dark mode the hue is mixed far down into the ground so
+   light text still reads. Copy on a tinted card is a deeper grey:
+   about 6.9 : 1 light, 8 : 1 dark. The 28px corners are the home cards'
+   (--radius-home-card).
+   ============================================================ */
+:root {
+  --bento-profile: var(--ground-apricot);
+  --bento-life: var(--ground-sage);
+  --bento-linkedin: var(--hue-okta);
+  --bento-resume: var(--hue-walmart);
+  --bento-k: 60%;            /* how much hue in the card at rest */
+  --bento-k-hover: 85%;
+  --bento-copy: color-mix(in srgb, var(--fg-dim) 55%, var(--fg));
+  --bento-gap: 1rem;
+  --bento-pad: 1.5rem;
+  --bento-pad-profile: 1.75rem;
+  --bento-small-h: 9.5rem;   /* LinkedIn and Resume */
+  --bento-open-pad: 6px 12px;
+  --bento-open-gap: 8px;
+  --bento-open-below: 1.25rem;
+  --bento-avatar: 52px;
+  --bento-hi-gap: 1rem;
+  --bento-bio-max: 52ch;
+  --bento-bio-gap: 1rem;
+  --bento-bio-next: 0.75rem;
+  --bento-icon: 22px;
+  --bento-go-w: 84px;
+  --bento-go-h: 34px;
+  --bento-go-inset: 1rem;
+  --bento-go-arrow: 15px;
+}
+:root[data-mode='dark'] {
+  --bento-k: 14%;
+  --bento-k-hover: 22%;
+}

@@ -8,6 +8,7 @@ import AskBubble from '../components/AskBubble.astro';
 import LocalTime from '../components/LocalTime.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import BeyondWork from '../components/BeyondWork.astro';
+import AboutBento from '../components/AboutBento.astro';
 import SmallTalk from '../components/SmallTalk.astro';
 import Now from '../components/Now.astro';
 
@@ -124,6 +125,10 @@ const cards = homeCards.map((c) => {
     <a class="btn--link" href="/work">View all work <span class="btn__arrow" aria-hidden="true">→</span></a>
   </div>
 </Section>
+
+  <!-- A bit about me: profile, outside the work, LinkedIn and Resume as
+       a bento (AboutBento.astro; experiments/home-bento, 2026-11-26). -->
+  <AboutBento />
 
   <!-- Beyond work: her photos and paintings on a drifting ring, after
        andreas.vision (BeyondWork.astro). Full width — the ring runs to
