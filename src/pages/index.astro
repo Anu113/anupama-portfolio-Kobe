@@ -8,7 +8,6 @@ import AskBubble from '../components/AskBubble.astro';
 import LocalTime from '../components/LocalTime.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import BeyondWork from '../components/BeyondWork.astro';
-import AboutBento from '../components/AboutBento.astro';
 import SmallTalk from '../components/SmallTalk.astro';
 import Now from '../components/Now.astro';
 
@@ -126,9 +125,9 @@ const cards = homeCards.map((c) => {
   </div>
 </Section>
 
-  <!-- A bit about me: profile, outside the work, LinkedIn and Resume as
-       a bento (AboutBento.astro; experiments/home-bento, 2026-11-26). -->
-  <AboutBento />
+  <!-- "A bit about me" (AboutBento.astro) is parked, on request
+       (2026-11-26, "we will work on this later"): the component and its
+       ABOUT BENTO tokens stay; no page mounts it. -->
 
   <!-- Beyond work: her photos and paintings on a drifting ring, after
        andreas.vision (BeyondWork.astro). Full width — the ring runs to
