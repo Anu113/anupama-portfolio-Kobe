@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Unlock feedback — round arrow</title>
+<!--
+  Round 3 (on request: "is the Unlock button necessary? maybe just the
+  black round arrow we have"). No "Unlock" pill: the passcode is sent
+  with the site's round ink arrow, which turns into a small green tick
+  when the passcode is right. The arrow is a real submit button
+  (aria-label "Unlock"), so Enter, a click and a screen reader all work.
+  Three placements:
+    G · Arrow at the field's end — revised to best practice (round 3b):
+        always solid ink (never faded or disabled), 38px so it's an easy
+        tap, sitting on the underline like the Mac login's arrow. Pressed
+        with nothing typed, it says "Enter the passcode." and keeps focus
+        in the field.
+    H · Arrow beside the field — the pill pair's 42px ink circle, on its
+        own, to the right of the field; hover slides a fresh arrow in.
+    I · Ring arrow under the field — the home cards' thin grey ring that
+        fills with ink on hover.
+  All three: the tick holds until the case's cover has loaded (max
+  2.5s), then the case opens at the top. A wrong passcode nudges the
+  field. Round 1 (lock, pill, field) is in git history; round 2 (small
+  ticks with the Unlock pill) is ticks.html.
+  Passcode for the mock: demo.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#fcfcfc;--fg:#262626;--dim:#707070;--card:color-mix(in srgb,var(--fg) 3%,var(--bg));
+  --ring:color-mix(in srgb,var(--fg) 22%,transparent);
+  --sky:#c9dcf2;--ok:#23a455;
+  --serif:'Crimson Pro',Georgia,serif;--sans:'Manrope',system-ui,sans-serif;--mono:'Azeret Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);--ease-io:cubic-bezier(.65,0,.35,1)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--fg);font:600 14px/1.7 var(--sans);letter-spacing:.03em}
+.mono{font:400 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+
+.bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;
+  padding:14px clamp(20px,4vw,40px);background:var(--bg);border-bottom:1px solid color-mix(in srgb,var(--fg) 10%,transparent)}
+.bar button,.bar label{font:400 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim);background:none;border:0;cursor:pointer;padding:4px 0}
+.bar button[aria-pressed=true]{color:var(--fg);text-decoration:underline;text-underline-offset:4px}
+.bar .note{margin-left:auto;text-transform:none;letter-spacing:.02em;font-size:12px}
+.bar input{accent-color:var(--fg);vertical-align:-2px;margin-right:6px}
+.desc{max-width:40rem;margin:28px auto 0;padding:0 20px;text-align:center;font-size:12px;color:var(--dim)}
+
+.locked{padding:56px clamp(20px,4vw,40px) 120px;transition:opacity 280ms var(--ease)}
+.locked.is-leaving{opacity:0}
+.col{max-width:48rem;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}
+.eyebrow{margin:0 0 1rem}
+.case{font-size:13px;color:var(--dim);margin:0 0 .4rem}
+h1{font:300 clamp(1.875rem,1.643rem + .952vw,2.5rem)/1.1 var(--serif);letter-spacing:-.03em;margin:0 0 .9rem;text-wrap:balance}
+h1 em{font-style:italic}
+.body{font-size:13px;color:var(--dim);max-width:34rem;margin:0 0 2.25rem;text-wrap:balance}
+dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;width:100%;margin:0 0 2.5rem;text-align:left}
+dl>div{background:var(--card);border-radius:28px;padding:1.4rem 1.5rem 1.5rem}
+dt{margin-bottom:.45rem}
+dd{margin:0;font-size:13px;line-height:1.55}
+@media (max-width:700px){dl{grid-template-columns:1fr}}
+
+form{width:100%;max-width:22rem;display:flex;flex-direction:column;align-items:center}
+.lbl{margin-bottom:.25rem}
+.row{display:flex;align-items:center;gap:10px;width:100%}
+.wrap{position:relative;flex:1;display:flex;align-items:center;border-bottom:1px solid var(--fg)}
+.wrap:focus-within{box-shadow:0 1px 0 var(--fg)}
+.wrap input{flex:1;min-width:0;border:0;background:none;color:var(--fg);font:600 14px var(--sans);padding:.6rem 0 .6rem 2.5rem;text-align:center;outline:none}
+.eye{display:grid;place-items:center;width:2.25rem;height:2.25rem;color:var(--dim);flex:none}
+.err{color:var(--fg);font-size:12px;margin-top:.6rem;min-height:1.2em}
+.wait{margin-top:.4rem;min-height:1.4em;opacity:0;transition:opacity 300ms var(--ease)}
+.wait.on{opacity:1}
+.dots i{font-style:normal;animation:blink 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.2}40%{opacity:1}}
+.reach{font-size:13px;color:var(--dim);margin-top:1rem}
+.reach a{color:var(--fg);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--fg) 45%,transparent);text-underline-offset:3px}
+@keyframes nudge{0%,100%{translate:0}20%{translate:-6px}40%{translate:5px}60%{translate:-3px}80%{translate:2px}}
+.is-wrong{animation:nudge 360ms var(--ease-io)}
+
+/* ---- the round arrow, shared: arrow and tick stacked, one shows ---- */
+.go{position:relative;flex:none;display:grid;place-items:center;border:0;border-radius:50%;padding:0;cursor:pointer;
+  background:var(--fg);color:var(--bg);overflow:hidden;
+  transition:background-color 320ms var(--ease),opacity 220ms var(--ease),transform 160ms var(--ease)}
+.go:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.go:active{transform:scale(.94)}
+.go .a,.go .t{position:absolute;inset:0;display:grid;place-items:center;transition:transform 420ms var(--ease),opacity 220ms var(--ease)}
+.go svg{width:42%;height:42%}
+.go .t{opacity:0;transform:scale(.4)}
+.go .t path{stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset 340ms var(--ease) 140ms}
+.go.is-yes{background:var(--ok);color:#fff}
+.go.is-yes .a{opacity:0;transform:translateX(70%)}
+.go.is-yes .t{opacity:1;transform:none}
+.go.is-yes .t path{stroke-dashoffset:0}
+
+/* G · at the field's end: always solid, 38px, sits on the line */
+.g .wrap{padding-bottom:4px}
+.g .go{width:38px;height:38px;margin:0 0 0 2px}
+.g .go:not(.is-yes):hover{background:color-mix(in srgb,var(--fg) 86%,var(--bg))}
+.g .wrap input{padding-left:4.9rem}
+
+/* H · beside the field, the pill pair's 42px circle; hover slides a fresh arrow in */
+.h .go{width:42px;height:42px}
+.h .go .a2{position:absolute;inset:0;display:grid;place-items:center;transform:translateX(-100%);transition:transform 420ms var(--ease)}
+.h .go:not(.is-yes):hover .a{transform:translateX(100%)}
+.h .go:not(.is-yes):hover .a2{transform:none}
+.h .go.is-yes .a2{opacity:0}
+.h .wrap input{padding-left:2.25rem}
+
+/* I · under the field, the cards' thin ring that fills with ink on hover */
+.i .go{width:42px;height:42px;margin-top:1.25rem;background:transparent;color:var(--fg);box-shadow:inset 0 0 0 1px var(--ring)}
+.i .go::before{content:'';position:absolute;inset:0;border-radius:50%;background:var(--fg);clip-path:circle(0 at 50% 50%);transition:clip-path 420ms var(--ease)}
+.i .go:not(.is-yes):is(:hover,:focus-visible){color:var(--bg)}
+.i .go:not(.is-yes):is(:hover,:focus-visible)::before{clip-path:circle(50% at 50% 50%)}
+.i .go .a,.i .go .t{z-index:1}
+.i .go.is-yes{background:var(--ok);color:#fff;box-shadow:none}
+.i .go.is-yes::before{clip-path:circle(0 at 50% 50%)}
+
+.form{display:none}
+#stage.opt-g .form.g,#stage.opt-h .form.h,#stage.opt-i .form.i{display:flex}
+
+.casepage{display:none;padding:40px clamp(20px,4vw,40px) 120px}
+.casepage.on{display:block}
+.casepage [data-rise]{animation:rise 480ms var(--ease) both;animation-delay:calc(var(--i) * 60ms)}
+@keyframes rise{from{opacity:0;translate:0 10px}}
+.chead{max-width:60rem;margin:0 auto 32px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end}
+.chead h2{font:300 40px/1.1 var(--serif);letter-spacing:-.03em}
+.cover{max-width:60rem;margin:0 auto;aspect-ratio:16/8;border-radius:20px;background:var(--sky);display:grid;place-items:center}
+.again{display:block;margin:32px auto 0;font:400 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:none;border:0;color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:1ms!important;transition-delay:0ms!important}
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="bar" role="toolbar" aria-label="Mock options">
+  <button data-opt="g" aria-pressed="true">G · Arrow at the field's end (best practice)</button>
+  <button data-opt="h" aria-pressed="false">H · Arrow beside the field</button>
+  <button data-opt="i" aria-pressed="false">I · Ring arrow under the field</button>
+  <label><input type="checkbox" id="slow" />Slow network</label>
+  <span class="note">Passcode: demo</span>
+</div>
+<p class="desc" id="desc"></p>
+
+<main id="stage" class="opt-g">
+  <section class="locked" id="gate">
+    <div class="col">
+      <p class="mono eyebrow">Okta · Under NDA</p>
+      <p class="case">Identity &amp; Access Management console</p>
+      <h1>The interesting parts are <em>confidential</em>.</h1>
+      <p class="body">The detailed process is protected, but here is the public version. Have the passcode? Step in for the full case study.</p>
+      <dl>
+        <div><dt class="mono">Role</dt><dd>Staff Product Designer, lead of six</dd></div>
+        <div><dt class="mono">Scope</dt><dd>Admin console for identity and access</dd></div>
+        <div><dt class="mono">Outcome</dt><dd>Public version on request</dd></div>
+      </dl>
+      <div id="forms" style="width:100%;display:flex;justify-content:center"></div>
+      <p class="sr" role="status" id="live"></p>
+      <p class="reach">No passcode? <a href="#">Email me</a> and I'll walk you through it.</p>
+    </div>
+  </section>
+
+  <section class="casepage" id="casepage" tabindex="-1" aria-label="Okta IAM case study">
+    <div class="chead">
+      <div>
+        <p class="mono" data-rise style="--i:0">Okta · IAM</p>
+        <h2 data-rise style="--i:1">Identity &amp; Access Management console</h2>
+      </div>
+      <p class="mono" data-rise style="--i:2">Role · Staff Product Designer</p>
+    </div>
+    <div class="cover" data-rise style="--i:3"><span class="mono">Cover (loaded)</span></div>
+    <button class="again" id="again" type="button">Try again</button>
+  </section>
+</main>
+
+<script>
+const PASS = 'demo';
+const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const EYE = '<span class="eye" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg></span>';
+const go = (extra = '') => `<button class="go" type="submit" aria-label="Unlock"><span class="a">${ARROW}</span>${extra}<span class="t">${TICK}</span></button>`;
+const tail = '<p class="err" role="alert"></p><p class="mono wait">Opening the case<span class="dots"><i>.</i><i>.</i><i>.</i></span></p>';
+const lbl = id => `<label class="mono lbl" for="${id}">Passcode</label>`;
+
+document.getElementById('forms').innerHTML = `
+  <form class="form g" autocomplete="off">${lbl('pw-g')}
+    <div class="row"><div class="wrap"><input id="pw-g" type="password" />${EYE}${go()}</div></div>${tail}</form>
+  <form class="form h" autocomplete="off">${lbl('pw-h')}
+    <div class="row"><div class="wrap"><input id="pw-h" type="password" />${EYE}</div>${go('<span class="a2">' + ARROW + '</span>')}</div>${tail}</form>
+  <form class="form i" autocomplete="off">${lbl('pw-i')}
+    <div class="row"><div class="wrap"><input id="pw-i" type="password" />${EYE}</div></div>${go()}${tail}</form>`;
+
+const desc = {
+  g: "The arrow sits at the end of the field, like the Mac login's. Always solid ink, never faded, 38px so it's an easy tap. Pressed empty, it asks for the passcode. Right passcode: it turns green and becomes a tick.",
+  h: "The pill pair's black circle on its own, to the right of the field. Hover slides a fresh arrow in, as on the home page. Right passcode: green with a tick.",
+  i: "The home cards' thin grey ring under the field; it fills with ink on hover. Right passcode: green with a tick. The closest to the cards a visitor just clicked."
+};
+const stage = document.getElementById('stage');
+const gate = document.getElementById('gate');
+const page = document.getElementById('casepage');
+const live = document.getElementById('live');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let opt = 'g', run = 0;
+
+const parts = f => ({ pw: f.querySelector('input'), wrap: f.querySelector('.wrap'), go: f.querySelector('.go'), err: f.querySelector('.err'), wait: f.querySelector('.wait') });
+
+function setOpt(o){
+  opt = o; stage.className = 'opt-' + o;
+  document.querySelectorAll('[data-opt]').forEach(b => b.setAttribute('aria-pressed', b.dataset.opt === o));
+  document.getElementById('desc').textContent = desc[o];
+  reset();
+}
+document.querySelectorAll('[data-opt]').forEach(b => b.onclick = () => setOpt(b.dataset.opt));
+
+function reset(){
+  run++;
+  gate.hidden = false; gate.classList.remove('is-leaving'); page.classList.remove('on'); live.textContent = '';
+  document.querySelectorAll('.form').forEach(f => {
+    const p = parts(f);
+    p.go.classList.remove('is-yes'); p.go.setAttribute('aria-label', 'Unlock'); p.wrap.classList.remove('is-wrong');
+    p.wait.classList.remove('on'); p.err.textContent = '';
+    p.pw.value = ''; p.pw.disabled = false; p.pw.removeAttribute('aria-invalid');
+    p.go.disabled = false;
+  });
+}
+document.getElementById('again').onclick = () => { reset(); scrollTo(0, 0); document.querySelector('.form.' + opt + ' input').focus(); };
+
+
+document.querySelectorAll('.form input').forEach(i => i.addEventListener('input', () => {
+  const f = i.closest('.form'); f.querySelector('.err').textContent = ''; i.removeAttribute('aria-invalid');
+}));
+
+const coverReady = () => new Promise(r => setTimeout(r, document.getElementById('slow').checked ? 2000 : 150));
+const wait_ = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+
+document.querySelectorAll('.form').forEach(f => f.addEventListener('submit', async e => {
+  e.preventDefault();
+  const p = parts(f);
+  if (!p.pw.value.trim()) {
+    p.err.textContent = 'Enter the passcode.';
+    p.pw.setAttribute('aria-invalid', 'true');
+    p.pw.focus();
+    return;
+  }
+  if (p.pw.value.trim().toLowerCase() !== PASS) {
+    p.err.textContent = "That's not it. Try again.";
+    p.pw.setAttribute('aria-invalid', 'true');
+    p.wrap.classList.remove('is-wrong'); void p.wrap.offsetWidth; p.wrap.classList.add('is-wrong');
+    p.pw.focus(); p.pw.select();
+    return;
+  }
+  const me = run;
+  p.err.textContent = ''; p.pw.removeAttribute('aria-invalid');
+  p.go.classList.add('is-yes'); p.go.setAttribute('aria-label', 'Unlocked');
+  p.pw.disabled = true;
+  live.textContent = 'Unlocked. Opening the case study.';
+
+  const slowHint = setTimeout(() => p.wait.classList.add('on'), 1200);
+  await Promise.all([wait_(900), Promise.race([coverReady(), wait_(2500)])]);
+  clearTimeout(slowHint);
+  if (me !== run) return;
+  gate.classList.add('is-leaving');
+  await wait_(280);
+  if (me !== run) return;
+  gate.hidden = true; scrollTo(0, 0);
+  page.classList.add('on'); page.focus({ preventScroll: true });
+}));
+
+setOpt('g');
+</script>
+</body>
+</html>

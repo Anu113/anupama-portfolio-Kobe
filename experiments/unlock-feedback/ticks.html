@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Unlock feedback — small green ticks</title>
+<!--
+  The locked case (LockedGate.astro) gives no sign the passcode worked:
+  the gate vanishes and the case swaps in, often half-loaded and scrolled
+  part-way down. Three ways to say "yes" before the case arrives, each
+  holding the yes until the case's cover has loaded (up to 2.5s), then
+  landing the case at the top with the site's page-arrival rise.
+  A wrong passcode nudges the field side to side in all three.
+  Passcode for the mock: demo. "Slow network" delays the cover by 2s.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400&family=Crimson+Pro:ital,wght@0,300;1,300&family=Manrope:wght@600&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#fcfcfc;--fg:#262626;--dim:#707070;--card:color-mix(in srgb,var(--fg) 3%,var(--bg));
+  --sky:#c9dcf2;--ok:#23a455;--ok-ink:#fff;
+  --serif:'Crimson Pro',Georgia,serif;--sans:'Manrope',system-ui,sans-serif;--mono:'Azeret Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);--ease-io:cubic-bezier(.65,0,.35,1)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--fg);font:600 14px/1.7 var(--sans);letter-spacing:.03em}
+.mono{font:400 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+
+/* ---- mock controls ---- */
+.bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;
+  padding:14px clamp(20px,4vw,40px);background:var(--bg);border-bottom:1px solid color-mix(in srgb,var(--fg) 10%,transparent)}
+.bar button,.bar label{font:400 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim);background:none;border:0;cursor:pointer;padding:4px 0}
+.bar button[aria-pressed=true]{color:var(--fg);text-decoration:underline;text-underline-offset:4px}
+.bar .note{margin-left:auto;text-transform:none;letter-spacing:.02em;font-size:12px}
+.bar input{accent-color:var(--fg);vertical-align:-2px;margin-right:6px}
+.desc{max-width:40rem;margin:28px auto 0;padding:0 20px;text-align:center;font-size:12px;color:var(--dim)}
+
+/* ---- the gate, as LockedGate today ---- */
+.locked{padding:56px clamp(20px,4vw,40px) 120px;transition:opacity 280ms var(--ease)}
+.locked.is-leaving{opacity:0}
+.col{max-width:48rem;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;margin:0 0 1rem}
+.case{font-size:13px;color:var(--dim);margin:0 0 .4rem}
+h1{font:300 clamp(1.875rem,1.643rem + .952vw,2.5rem)/1.1 var(--serif);letter-spacing:-.03em;margin:0 0 .9rem;text-wrap:balance}
+h1 em{font-style:italic}
+.body{font-size:13px;color:var(--dim);max-width:34rem;margin:0 0 2.25rem;text-wrap:balance}
+dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;width:100%;margin:0 0 2.5rem;text-align:left}
+dl>div{background:var(--card);border-radius:28px;padding:1.4rem 1.5rem 1.5rem}
+dt{margin-bottom:.45rem}
+dd{margin:0;font-size:13px;line-height:1.55}
+@media (max-width:700px){dl{grid-template-columns:1fr}}
+form{width:100%;max-width:22rem;display:flex;flex-direction:column;align-items:center}
+.lbl{margin-bottom:.25rem}
+.wrap{position:relative;width:100%;border-bottom:1px solid var(--fg)}
+.wrap:focus-within{box-shadow:0 1px 0 var(--fg)}
+.wrap input{width:100%;border:0;background:none;color:var(--fg);font:600 14px var(--sans);padding:.6rem 2.5rem;text-align:center;outline:none;transition:opacity 200ms var(--ease)}
+.err{color:var(--fg);font-size:12px;margin-top:.6rem;min-height:1.2em}
+.btn{position:relative;margin-top:1.5rem;height:42px;min-width:7.5rem;font:400 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  background:var(--fg);color:var(--bg);border:0;border-radius:99px;padding:0 1.6rem;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:.55rem;overflow:hidden;
+  transition:min-width 420ms var(--ease),width 420ms var(--ease),padding 420ms var(--ease)}
+.btn:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.status{margin-top:.9rem;min-height:1.4em}
+.reach{font-size:13px;color:var(--dim);margin-top:1rem}
+.reach a{color:var(--fg);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--fg) 45%,transparent);text-underline-offset:3px}
+
+/* wrong passcode: one short nudge, all options */
+@keyframes nudge{0%,100%{translate:0}20%{translate:-6px}40%{translate:5px}60%{translate:-3px}80%{translate:2px}}
+.wrap.is-wrong{animation:nudge 360ms var(--ease-io)}
+
+/* ---- the tick: a small green disc, white tick drawn in ---- */
+.tk{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--ok);color:var(--ok-ink);flex:none}
+.tk svg{width:11px;height:11px}
+.tk path{stroke-dasharray:24;stroke-dashoffset:24}
+@keyframes pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+.is-yes .tk{animation:pop 380ms var(--ease) both}
+.is-yes .tk path{animation:draw 320ms var(--ease) 160ms forwards}
+.peek{position:absolute;right:0;top:50%;translate:0 -50%;width:2.25rem;height:2.25rem;display:grid;place-items:center;color:var(--dim)}
+.peek .tk{display:none}
+
+/* D · In the field: the eye at the field's end becomes the tick */
+.opt-d .wrap.is-yes .eye{display:none}
+.opt-d .wrap.is-yes .peek .tk{display:inline-grid}
+
+/* E · In the button: the label turns to "Unlocked" with the tick before it */
+.btn .tk{display:none;width:16px;height:16px}
+.btn .tk svg{width:10px;height:10px}
+.opt-e .btn.is-yes .tk{display:inline-grid}
+
+/* F · Under the button: a ring draws round, then the tick, beside "Unlocked" */
+.done{display:none;align-items:center;gap:.5rem;margin-top:.9rem;font:400 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}
+.opt-f .done.is-yes{display:inline-flex}
+.ring{width:18px;height:18px;color:var(--ok)}
+.ring circle{stroke-dasharray:57;stroke-dashoffset:57}
+.ring path{stroke-dasharray:24;stroke-dashoffset:24}
+.done.is-yes .ring circle{animation:draw 420ms var(--ease) forwards}
+.done.is-yes .ring path{animation:draw 280ms var(--ease) 360ms forwards}
+.done.is-yes span{animation:fadein 300ms var(--ease) 200ms both}
+@keyframes fadein{from{opacity:0}}
+
+/* waiting on the cover: a quiet line, never a spinner */
+.wait{opacity:0;transition:opacity 300ms var(--ease)}
+.wait.on{opacity:1}
+.dots i{font-style:normal;animation:blink 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.2}40%{opacity:1}}
+
+/* ---- the case, arriving ---- */
+.casepage{display:none;padding:40px clamp(20px,4vw,40px) 120px}
+.casepage.on{display:block}
+.casepage [data-rise]{animation:rise 480ms var(--ease) both;animation-delay:calc(var(--i) * 60ms)}
+@keyframes rise{from{opacity:0;translate:0 10px}}
+.chead{max-width:60rem;margin:0 auto 32px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end}
+.chead h2{font:300 40px/1.1 var(--serif);letter-spacing:-.03em}
+.cover{max-width:60rem;margin:0 auto;aspect-ratio:16/8;border-radius:20px;background:var(--sky);display:grid;place-items:center;color:var(--dim)}
+.again{display:block;margin:32px auto 0;font:400 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:none;border:0;color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:1ms!important;transition-delay:0ms!important}
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="bar" role="toolbar" aria-label="Mock options">
+  <button data-opt="d" aria-pressed="true">D · Tick in the field</button>
+  <button data-opt="e" aria-pressed="false">E · Tick in the button</button>
+  <button data-opt="f" aria-pressed="false">F · Tick that draws</button>
+  <label><input type="checkbox" id="slow" />Slow network</label>
+  <span class="note">Passcode: demo</span>
+</div>
+<p class="desc" id="desc"></p>
+
+<main id="stage" class="opt-d">
+  <section class="locked" id="gate">
+    <div class="col">
+      <p class="mono eyebrow">Okta · Under NDA</p>
+      <p class="case">Identity &amp; Access Management console</p>
+      <h1>The interesting parts are <em>confidential</em>.</h1>
+      <p class="body">The detailed process is protected, but here is the public version. Have the passcode? Step in for the full case study.</p>
+      <dl>
+        <div><dt class="mono">Role</dt><dd>Staff Product Designer, lead of six</dd></div>
+        <div><dt class="mono">Scope</dt><dd>Admin console for identity and access</dd></div>
+        <div><dt class="mono">Outcome</dt><dd>Public version on request</dd></div>
+      </dl>
+      <form id="form" autocomplete="off">
+        <label class="mono lbl" for="pw">Passcode</label>
+        <div class="wrap" id="wrap">
+          <input id="pw" type="password" aria-describedby="err" />
+          <span class="peek" aria-hidden="true"><svg class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg><span class="tk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></span>
+        </div>
+        <p class="err" id="err" role="alert"></p>
+        <button class="btn" id="btn" type="submit">
+          <span class="tk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="lab" id="lab">Unlock</span>
+        </button>
+        <p class="done" id="done"><svg class="ring" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="9" transform="rotate(-90 10 10)"/><path d="M5.8 10.4l2.9 2.9 5.5-5.6"/></svg><span>Unlocked</span></p>
+        <p class="mono status wait" id="wait">Opening the case<span class="dots"><i>.</i><i>.</i><i>.</i></span></p>
+        <p class="sr" role="status" id="live"></p>
+      </form>
+      <p class="reach">No passcode? <a href="#">Email me</a> and I'll walk you through it.</p>
+    </div>
+  </section>
+
+  <section class="casepage" id="casepage" tabindex="-1" aria-label="Okta IAM case study">
+    <div class="chead">
+      <div>
+        <p class="mono" data-rise style="--i:0">Okta · IAM</p>
+        <h2 data-rise style="--i:1">Identity &amp; Access Management console</h2>
+      </div>
+      <p class="mono" data-rise style="--i:2">Role · Staff Product Designer</p>
+    </div>
+    <div class="cover" data-rise style="--i:3"><span class="mono">Cover (loaded)</span></div>
+    <button class="again" id="again" type="button">Try again</button>
+  </section>
+</main>
+
+<script>
+const PASS = 'demo';
+const desc = {
+  d: 'The eye at the end of the field turns into a small green tick that pops in. Nothing else moves; the yes sits where the passcode was typed.',
+  e: 'The button reads "Unlocked" with a small green tick before it. The yes is under the pointer that pressed.',
+  f: 'Under the button, a thin green ring draws round and a tick draws in, beside "Unlocked". A little slower and a little cuter.'
+};
+const stage = document.getElementById('stage');
+const gate = document.getElementById('gate');
+const page = document.getElementById('casepage');
+const form = document.getElementById('form');
+const pw = document.getElementById('pw');
+const wrap = document.getElementById('wrap');
+const err = document.getElementById('err');
+const btn = document.getElementById('btn');
+const lab = document.getElementById('lab');
+const wait = document.getElementById('wait');
+const live = document.getElementById('live');
+const done = document.getElementById('done');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let opt = 'd', run = 0;
+
+function setOpt(o){
+  opt = o;
+  stage.className = 'opt-' + o;
+  document.querySelectorAll('[data-opt]').forEach(b => b.setAttribute('aria-pressed', b.dataset.opt === o));
+  document.getElementById('desc').textContent = desc[o];
+  reset();
+}
+document.querySelectorAll('[data-opt]').forEach(b => b.onclick = () => setOpt(b.dataset.opt));
+
+function reset(){
+  run++;
+  gate.hidden = false; gate.classList.remove('is-leaving');
+  page.classList.remove('on');
+  [btn, wrap, done].forEach(el => el.classList.remove('is-yes','is-wrong'));
+  lab.textContent = 'Unlock'; btn.disabled = false;
+  wait.classList.remove('on'); err.textContent = ''; live.textContent = '';
+  pw.value = ''; pw.disabled = false; pw.removeAttribute('aria-invalid');
+}
+document.getElementById('again').onclick = () => { reset(); scrollTo(0, 0); pw.focus(); };
+
+// Stand-in for the case cover's decode(): instant, or 2s on "slow".
+const coverReady = () => new Promise(r => setTimeout(r, document.getElementById('slow').checked ? 2000 : 150));
+const wait_ = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  if (pw.value.trim().toLowerCase() !== PASS) {
+    err.textContent = "That's not it. Try again.";
+    pw.setAttribute('aria-invalid', 'true');
+    wrap.classList.remove('is-wrong'); void wrap.offsetWidth; wrap.classList.add('is-wrong');
+    pw.select();
+    return;
+  }
+  err.textContent = ''; pw.removeAttribute('aria-invalid');
+  const me = run;
+  pw.disabled = true; btn.disabled = true;
+  live.textContent = 'Unlocked. Opening the case study.';
+
+  // 1 · say yes
+  if (opt === 'd') wrap.classList.add('is-yes');
+  if (opt === 'e') { btn.classList.add('is-yes'); lab.textContent = 'Unlocked'; }
+  if (opt === 'f') done.classList.add('is-yes');
+
+  // 2 · hold the yes at least 700ms, and until the cover is ready (max 2.5s)
+  const ready = coverReady();
+  const slowHint = setTimeout(() => wait.classList.add('on'), 1200);
+  await Promise.all([wait_(900), Promise.race([ready, wait_(2500)])]);
+  clearTimeout(slowHint);
+  if (me !== run) return;
+
+  // 3 · gate fades, case lands at the top and rises
+  gate.classList.add('is-leaving');
+  await wait_(280);
+  if (me !== run) return;
+  gate.hidden = true;
+  scrollTo(0, 0);
+  page.classList.add('on');
+  page.focus({ preventScroll: true });
+});
+
+setOpt('d');
+</script>
+</body>
+</html>
