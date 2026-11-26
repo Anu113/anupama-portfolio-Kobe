@@ -23,7 +23,7 @@
 // from her decks (ID proofing, Privacy, the Chase study) are unchanged.
 //
 // CONFIRMED by her (2026-11-25), as written: Ads consent 41% opted in,
-// Okta IAM -32% admin task time, Okta OIN -48% submission cycle time,
+// Okta IAM 32% less admin task time, Okta OIN 23 → 12 days (-48%),
 // Scan & Go +25% basket size, Chase Pay +18% / 34% / 2.1x. Also confirmed
 // as written: team and timeline on Okta OIN, Scan & Go and Ads consent;
 // the hard calls and reflections of Okta IAM, Okta OIN, Debit Card and Ads
@@ -420,7 +420,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'metrics',
             items: [
-              { value: '-32%', label: 'Admin task time on the four busiest flows' },
+              { value: '32%', label: 'Less time on admins\' four busiest tasks' },
               { value: '0', label: 'Customers asked to migrate' },
             ],
           },
@@ -671,7 +671,7 @@ export const cases: CaseStudy[] = [
             label: 'First version → second',
             items: [
               { value: '2 → 1', label: 'Taps from the privacy page to any setting' },
-              { value: '4 → 3', label: 'Groups: four tiles became three headings on one page' },
+              { value: '4 → 3', label: 'Four tiles became three headings on one page' },
             ],
           },
           /* The gap, named where it happened (change 05). */
@@ -839,8 +839,8 @@ export const cases: CaseStudy[] = [
             kind: 'metrics',
             label: 'After launch in early 2023',
             items: [
-              { value: '60%', label: 'Fewer support calls about privacy settings' },
-              { value: '4.7/5', label: 'Average rating of the new settings, from 150 users' },
+              { value: '60%', label: 'Fewer calls to support about privacy settings' },
+              { value: '4.7/5', label: 'From 150 people who rated the new settings' },
             ],
           },
         ],
@@ -1029,13 +1029,13 @@ export const cases: CaseStudy[] = [
         answers: ['people', 'law'],
         nav: 'Impact',
         label: 'Impact',
-        heading: 'Data access 76% faster.',
+        heading: 'People get their data sooner.',
         blocks: [
           {
             kind: 'metrics',
             label: 'After launch',
             items: [
-              { value: '76%', label: 'Faster data access time' },
+              { value: '76%', label: 'Less time from asking for your data to getting it' },
             ],
           },
         ],
@@ -1318,8 +1318,8 @@ export const cases: CaseStudy[] = [
             kind: 'metrics',
             label: 'Pilot, recorded 17 March 2021',
             items: [
-              { value: '25%', label: 'Increase in basket size' },
-              { value: '15 min', label: 'Average checkout time, reduced by 30 minutes' },
+              { value: '25%', label: 'Bigger baskets' },
+              { value: '15 min', label: 'Average checkout, 30 minutes less than before' },
               { value: '757', label: 'New customers' },
             ],
           },
@@ -1363,7 +1363,7 @@ export const cases: CaseStudy[] = [
               },
               {
                 title: 'Design for the store associate too',
-                body: 'Hosts verify ages, run audits and rescue failed trips. Their experience belongs among the key metrics, not just the shopper\'s.',
+                body: 'Hosts verify ages, run audits and rescue failed trips. Their experience should be measured too, beside the shopper\'s.',
               },
               {
                 title: 'Most of the work was edge cases',
@@ -1586,7 +1586,7 @@ export const cases: CaseStudy[] = [
           {
             kind: 'chase',
             set: 'benefits',
-            claim: 'Name the benefit, not the brand',
+            claim: 'Name the benefit before the brand',
             caption:
               'The benefits page, before and after. Bullets about cards became three lines on security, effort and rewards, the things the study said people weigh.',
           },
@@ -1647,9 +1647,9 @@ export const cases: CaseStudy[] = [
             kind: 'metrics',
             label: 'Outcome',
             items: [
-              { value: '+18%', label: 'Walmart Pay monthly active users in the six months after launch' },
+              { value: '18%', label: 'More people using Walmart Pay each month, six months after launch' },
               { value: '34%', label: 'Of Chase cardholders setting up Walmart Pay linked Chase Pay' },
-              { value: '2.1x', label: 'Repeat Walmart Pay use among customers who linked Chase Pay' },
+              { value: '2.1×', label: 'As likely to pay with Walmart Pay again, once Chase Pay was linked' },
             ],
           },
           {
@@ -1658,7 +1658,6 @@ export const cases: CaseStudy[] = [
             items: [
               { value: '27 Feb 2020', label: 'Launched in the Walmart iOS app' },
               { value: '4 Jun 2020', label: 'Launched in the Walmart Android app' },
-              { value: '2', label: 'Platforms, one design, three months apart' },
             ],
           },
           {
@@ -2051,36 +2050,16 @@ export const cases: CaseStudy[] = [
         id: 'impact',
         nav: 'Impact',
         label: 'Impact',
-        heading: 'What changed, and how we knew.',
+        heading: 'Partners got listed in half the time.',
         blocks: [
-          {
-            kind: 'prose',
-            text: [
-              'We validated in two passes: structured usability sessions with ISV engineers working through real manifests before launch, then instrumentation on the shipped framework once the first two categories had cut over, so the before/after wasn’t only what the audit had found.',
-            ],
-          },
+          /* Removed 2026-11-26 ("no number should look like AI"): 61% resolved
+             without review, 2 of 4 categories at launch, 38 shared components,
+             24 ISVs, and the lines on how it was validated. All were written
+             stand-ins she never confirmed. Only the 23 → 12 days is hers. */
           {
             kind: 'metrics',
-            label: 'Business',
             items: [
-              { value: '61%', label: 'Submissions resolved without a human review, first pass' },
-              { value: '-48%', label: 'Time from first submission to published, down from 23 days to 12' },
-              { value: '2 of 4', label: 'Integration categories on the framework at launch; the rest followed without a rebuild' },
-            ],
-          },
-          {
-            kind: 'metrics',
-            label: 'Team and craft',
-            items: [
-              { value: '38', label: 'Shared components adopted across every category' },
-              { value: '24', label: 'ISVs whose real manifests validated the framework before launch' },
-              { value: 'AA', label: 'WCAG 2.1 conformance across the shared component set' },
-            ],
-          },
-          {
-            kind: 'prose',
-            text: [
-              'The number I’d point to first is "2 of 4, and the rest followed without a rebuild." That was the bet. The first category didn\'t need to be smoother; the third and fourth needed to cost nothing extra.',
+              { value: '23 → 12 days', label: 'From a partner\'s first submission to a published listing' },
             ],
           },
         ],
@@ -2341,26 +2320,23 @@ export const cases: CaseStudy[] = [
             kind: 'metrics',
             label: 'Business',
             items: [
-              { value: '20%', label: 'Faster card applications' },
+              { value: '20%', label: 'Less time to apply for the card' },
               { value: '18%', label: 'More cards activated the same day' },
-              { value: '25%', label: 'Fewer support calls about shipping' },
+              { value: '25%', label: 'Fewer calls asking where the card was' },
             ],
           },
           {
             kind: 'metrics',
             label: 'Customers',
             items: [
-              { value: '+9 pts', label: 'NPS among debit card users' },
+              { value: '9 pts', label: 'Higher NPS among debit card users' },
             ],
           },
-          {
-            kind: 'prose',
-            text: ['Enrollment abandonment fell from 68%, short of the 40% goal.'],
-          },
-          {
-            kind: 'prose',
-            text: ['Measured over the first 90 days after launch against the 90 days before, on the same entry points. NPS from PayPal’s quarterly debit card survey.'],
-          },
+          /* Removed 2026-11-26 ("no number should look like AI"): "abandonment
+             fell from 68%, short of the 40% goal" and a line on how the numbers
+             were measured (90 days either side, a quarterly survey). Both were
+             written stand-ins; the deck has neither. Add her real result and
+             period here when she has them. */
         ],
       },
       {
@@ -2726,8 +2702,7 @@ export const cases: CaseStudy[] = [
             kind: 'metrics',
             label: 'Before the change',
             items: [
-              { value: '~1%', label: 'Of customers found the setting and opted out' },
-              { value: '~99%', label: 'Of customers who would leave ad audiences until they said yes' },
+              { value: 'About 1%', label: 'Of customers ever found the setting and opted out' },
             ],
           },
           {
@@ -2881,9 +2856,9 @@ export const cases: CaseStudy[] = [
             kind: 'metrics',
             label: 'After launch',
             items: [
-              { value: '41%', label: 'Of customers shown the ask opted in under the new default' },
+              { value: '41%', label: 'Of customers who saw the ask said yes' },
               { value: '9', label: 'Markets where it shipped' },
-              { value: '-35%', label: 'Support contacts about ads and data sharing, first quarter after launch' },
+              { value: '35%', label: 'Fewer contacts to support about ads and data sharing, first quarter after launch' },
             ],
           },
           {
@@ -3033,7 +3008,7 @@ export const cases: CaseStudy[] = [
         id: 'process',
         nav: 'How it got made',
         label: 'How the work got made',
-        heading: 'Every component shipped with three documents, not one drawing.',
+        heading: 'Every component shipped with three guides: interaction, visual and usage.',
         blocks: [
           {
             kind: 'points',
